@@ -1,0 +1,79 @@
+{
+    "FastApiRequestDefault": {
+        "mac_address": "0050.f112.df0c",
+        "ip_address": "172.20.58.24"
+    },   
+    "SNMP": {
+        "version": "2",
+        "retries": "5",
+        "read_community": "public",
+        "write_community": "private"
+    },
+    "PnmBulkDataTransfer": {
+        "method": "tftp",
+        "tftp": {
+            "ip_v4": "172.20.10.153",
+            "ip_v6": "2001:10::153",
+            "remote_dir": ""
+        },
+        "http": {
+            "base_url": "http://files.example.com/",
+            "port":80
+        },
+        "https": {
+            "base_url": "https://files.example.com/",
+            "port":443
+        }         
+    },
+    "PnmFileRetrieval": {
+        "method": "local",
+        "save_dir":"data/pnm",
+        "transaction_db":"data/db/transactions.json",
+        "capture_group_db": "data/db/capture_group.json",
+        "operation_db": "data/db/operation_capture.json",
+        "retries": 5,
+        "local": {
+            "src_dir": "/srv/tftp"
+        },
+        "tftp": {
+            "host": "localhost",
+            "port":69,
+            "remote_dir": ""
+        },
+        "ftp": {
+            "host": "ftp.example.com",
+            "port":21,
+            "user": "user",
+            "password": "pass",
+            "remote_dir": "/files"
+        },
+        "scp": {
+            "host": "scp.example.com",
+            "port": "22",
+            "user": "user",
+            "password": "pass",
+            "remote_dir": "/files"
+        },
+        "sftp": {
+            "host": "sftp.example.com",
+            "port": 22,
+            "user": "user",
+            "password": "pass",
+            "remote_dir": "/files"
+        },
+        "http": {
+            "base_url": "http://files.example.com/",
+            "port":80
+        },
+        "https": {
+            "base_url": "https://files.example.com/",
+            "port":443
+        }        
+    },
+    "logging": {
+        "log_level":"DEBUG",
+        "log_dir":"logs",
+        "log_filename":"pnm_log_%Y%m%d_%H%M%S.log"
+    }
+    
+}

@@ -1,0 +1,250 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
+from dataclasses import dataclass
+import json
+import logging
+from typing import List
+from enum import IntEnum
+from lib.utils import Utils
+
+class SpectrumRetrievalType(IntEnum):
+    """
+    Defines the method by which spectrum analysis results are retrieved from a cable modem.
+
+    Attributes:
+        FILE (int): Retrieve results from a file (e.g., via TFTP).
+        SNMP (int): Retrieve results directly using SNMP queries.
+    """
+    FILE = 1
+    SNMP = 2
+
+class WindowFunction(IntEnum):
+    """
+    Enum representing windowing functions used during spectrum analysis via
+    Discrete Fourier Transform (DFT).
+
+    These functions help reduce spectral leakage by shaping the input signal
+    prior to transformation. Not all devices support all functions; attempting
+    to configure an unsupported window function may result in an SNMP
+    `inconsistentValue` error.
+
+    Reference:
+        Harris, Fredric J. (1978). "On the use of Windows for Harmonic Analysis
+        with the Discrete Fourier Transform", Proceedings of the IEEE,
+        Vol. 66, Issue 1, doi:10.1109/PROC.1978.10837
+
+    Values:
+        OTHER (0): Unspecified or device-specific windowing function.
+        HANN (1): Hann window — reduces side lobes, suitable for general use.
+        BLACKMAN_HARRIS (2): High dynamic range window with low spectral leakage.
+        RECTANGULAR (3): No windowing; equivalent to a raw DFT.
+        HAMMING (4): Similar to Hann but with slightly different tapering.
+        FLAT_TOP (5): Flatter frequency response — good for amplitude accuracy.
+        GAUSSIAN (6): Gaussian shape; parameterized by standard deviation.
+        CHEBYSHEV (7): Minimizes main lobe width for a given side lobe level.
+    """
+    OTHER = 0
+    HANN = 1
+    BLACKMAN_HARRIS = 2
+    RECTANGULAR = 3
+    HAMMING = 4
+    FLAT_TOP = 5
+    GAUSSIAN = 6
+    CHEBYSHEV = 7
+
+class SpectrumAnalysisDefaults(IntEnum):
+    """
+    Enum class representing the default configuration values for spectrum analysis.
+
+    These defaults are used to control the parameters for spectrum analysis in DOCSIS-based systems.
+    The values are used in the configuration of spectrum analysis commands, like center frequencies, 
+    frequency span, noise bandwidth, and window function.
+
+    Attributes:
+        ENABLE (int): The enable flag for the spectrum analysis.
+        FILE_ENABLE (SpectrumRetrievalType): Whether to enable file-based retrieval for spectrum analysis results.
+        INACTIVITY_TIMEOUT (int): Timeout in seconds before the spectrum analysis is considered inactive.
+        FIRST_SEGMENT_CENTER_FREQ (int): Center frequency (in Hz) for the first spectrum segment.
+        LAST_SEGMENT_CENTER_FREQ (int): Center frequency (in Hz) for the last spectrum segment.
+        SEGMENT_FREQ_SPAN (int): Frequency span (in Hz) of each spectrum segment.
+        NUM_BINS_PER_SEGMENT (int): Number of bins used in each spectrum segment.
+        NOISE_BW (int): Equivalent noise bandwidth in MHz.
+        WINDOW_FUNCTION (WindowFunction): The window function used in the analysis (e.g., Hann, Hamming).
+        NUM_AVERAGES (int): The number of averages used for the analysis.
+    """
+    
+    ENABLE = 1
+    FILE_ENABLE = SpectrumRetrievalType.FILE
+    INACTIVITY_TIMEOUT = 100
+    FIRST_SEGMENT_CENTER_FREQ = 108_000_000
+    LAST_SEGMENT_CENTER_FREQ = 900_000_000
+    SEGMENT_FREQ_SPAN = 7_500_00
+    NUM_BINS_PER_SEGMENT = 256
+    NOISE_BW = 110
+    WINDOW_FUNCTION = WindowFunction.HANN
+    NUM_AVERAGES = 1
+
+    @classmethod
+    def to_dict(cls) -> dict:
+        """
+        Convert the enum class to a dictionary where each enum name is mapped to its value.
+
+        Returns:
+            dict: A dictionary containing the enum names as keys and the corresponding values.
+        """
+        return {key.name: key.value for key in cls}
+
+    @classmethod
+    def to_json(cls) -> str:
+        """
+        Export the default spectrum analysis configuration values as a JSON string.
+
+        This method serializes the class's default attribute values into a dictionary and converts it
+        to a JSON string. This is useful for getting the configuration data in JSON format without
+        writing to a file.
+
+        Returns:
+            str: The JSON string representation of the class's default configuration.
+        
+        Example:
+            json_string = SpectrumAnalysisDefaults.to_json()
+        """
+        return json.dumps(cls.to_dict(), indent=4)
+
+@dataclass
+class DocsIf3CmSpectrumAnalysisCtrlCmd:
+    """
+    Represents the control command configuration for DOCSIS 3.0/3.1+ Cable Modem Spectrum Analysis.
+
+    This class encapsulates all parameters required to initiate a spectrum analysis test using
+    SNMP control objects. It includes default values (via `SpectrumAnalysisDefaults`) and provides
+    setter methods for each parameter to validate and update values safely before sending SNMP `set` operations.
+
+    Source: https://mibs.cablelabs.com/MIBs/DOCSIS/
+    MIB: DOCS-IF3-MIB
+
+    Attributes:
+        docsIf3CmSpectrumAnalysisCtrlCmdEnable (int): Enables spectrum analysis (1 = true, 2 = false).
+        docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout (int): Timeout in seconds for inactivity before abort.
+        docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency (int): Starting frequency of analysis (Hz).
+        docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency (int): Ending frequency of analysis (Hz).
+        docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan (int): Span per segment (Hz).
+        docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment (int): Number of FFT bins per segment.
+        docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth (int): ENBW used in DFT windowing.
+        docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction (int): Window function ID to apply (see `WindowFunction` enum).
+        docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages (int): Number of FFT averages to smooth noise floor.
+        docsIf3CmSpectrumAnalysisCtrlCmdFileEnable (int): Enables storing result to file (1 = true, 2 = false).
+        docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus (int): Read-only measurement status (1 = running, 2 = notRunning).
+        docsIf3CmSpectrumAnalysisCtrlCmdFileName (str): Optional filename for output binary file.
+
+    Methods:
+        set_enable(value): Validates and sets enable flag.
+        set_inactivity_timeout(value): Sets inactivity timeout (0–86400).
+        set_first_segment_center_frequency(value): Sets first segment center frequency (>0).
+        set_last_segment_center_frequency(value): Sets last segment center frequency (>0).
+        set_segment_frequency_span(value): Sets span in Hz (1 MHz – 900 MHz).
+        set_num_bins_per_segment(value): Sets bin count (2 – 2048).
+        set_equivalent_noise_bandwidth(value): Sets ENBW in Hz (50 – 500).
+        set_window_function(value): Sets window function from `WindowFunction` enum.
+        set_number_of_averages(value): Sets number of FFT averages (1 – 1000).
+        set_file_enable(value): Enables/disables file output.
+        set_meas_status(value): Sets measurement status (1 = running, 2 = notRunning).
+        set_file_name(value): Sets file name for output.
+        get_member_list(): Returns full SNMP object list with `.0` instance suffixes.
+    """    
+    docsIf3CmSpectrumAnalysisCtrlCmdEnable: int = SpectrumAnalysisDefaults.ENABLE
+    docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout: int = SpectrumAnalysisDefaults.INACTIVITY_TIMEOUT
+    docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency: int = SpectrumAnalysisDefaults.FIRST_SEGMENT_CENTER_FREQ
+    docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency: int = SpectrumAnalysisDefaults.LAST_SEGMENT_CENTER_FREQ
+    docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan: int = SpectrumAnalysisDefaults.SEGMENT_FREQ_SPAN
+    docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment: int = SpectrumAnalysisDefaults.NUM_BINS_PER_SEGMENT
+    docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth: int = SpectrumAnalysisDefaults.NOISE_BW
+    docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction: int = SpectrumAnalysisDefaults.WINDOW_FUNCTION
+    docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages: int = SpectrumAnalysisDefaults.NUM_AVERAGES
+    docsIf3CmSpectrumAnalysisCtrlCmdFileEnable: int = SpectrumAnalysisDefaults.FILE_ENABLE
+    docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus: int = -1
+    docsIf3CmSpectrumAnalysisCtrlCmdFileName: str = f"spectrum_analysis_{Utils.time_stamp()}.bin"
+
+    def __post_init__(self):
+        self.logger = logging.getLogger(__name__)
+        if not self.logger.handlers:
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+            self.logger.setLevel(logging.INFO)
+
+    def set_enable(self, value: int):
+        if value not in (1, 2):
+            raise ValueError("Enable must be 1 (true) or 2 (false)")
+        self.docsIf3CmSpectrumAnalysisCtrlCmdEnable = value
+        self.logger.info(f"Set enable to {value}")
+
+    def set_inactivity_timeout(self, value: int):
+        if not 0 <= value <= 86400:
+            raise ValueError("InactivityTimeout must be between 0 and 86400 seconds")
+        self.docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout = value
+        self.logger.info(f"Set inactivity timeout to {value}")
+
+    def set_first_segment_center_frequency(self, value: int):
+        if value <= 0:
+            raise ValueError("FirstSegmentCenterFrequency must be a positive integer")
+        self.docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency = value
+        self.logger.info(f"Set first segment center frequency to {value}")
+
+    def set_last_segment_center_frequency(self, value: int):
+        if value <= 0:
+            raise ValueError("LastSegmentCenterFrequency must be a positive integer")
+        self.docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency = value
+        self.logger.info(f"Set last segment center frequency to {value}")
+
+    def set_segment_frequency_span(self, value: int):
+        if not 1000000 <= value <= 900000000:
+            raise ValueError("SegmentFrequencySpan must be between 1 MHz and 900 MHz")
+        self.docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan = value
+        self.logger.info(f"Set segment frequency span to {value}")
+
+    def set_num_bins_per_segment(self, value: int):
+        if not 2 <= value <= 2048:
+            raise ValueError("NumBinsPerSegment must be between 2 and 2048")
+        self.docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment = value
+        self.logger.info(f"Set number of bins per segment to {value}")
+
+    def set_equivalent_noise_bandwidth(self, value: int):
+        if not 50 <= value <= 500:
+            raise ValueError("EquivalentNoiseBandwidth must be between 50 and 500")
+        self.docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth = value
+        self.logger.info(f"Set equivalent noise bandwidth to {value}")
+
+    def set_window_function(self, value: int):
+        try:
+            window = WindowFunction(value)
+        except ValueError:
+            raise ValueError("Invalid WindowFunction value")
+        self.docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction = window
+        self.logger.info(f"Set window function to {window.name} ({value})")
+
+    def set_number_of_averages(self, value: int):
+        if not 1 <= value <= 1000:
+            raise ValueError("NumberOfAverages must be between 1 and 1000")
+        self.docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages = value
+        self.logger.info(f"Set number of averages to {value}")
+
+    def set_file_enable(self, value: int):
+        if value not in (1, 2):
+            raise ValueError("FileEnable must be 1 (true) or 2 (false)")
+        self.docsIf3CmSpectrumAnalysisCtrlCmdFileEnable = value
+        self.logger.info(f"Set file enable to {value}")
+
+    def set_meas_status(self, value: int):
+        if value not in (1, 2):
+            raise ValueError("MeasStatus must be 1 (running) or 2 (notRunning)")
+        self.docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus = value
+        self.logger.info(f"Set measurement status to {value}")
+
+    def set_file_name(self, value: str):
+        if not isinstance(value, str):
+            raise ValueError("FileName must be a string")
+        self.docsIf3CmSpectrumAnalysisCtrlCmdFileName = value
+        self.logger.info(f"Set file name to {value}")

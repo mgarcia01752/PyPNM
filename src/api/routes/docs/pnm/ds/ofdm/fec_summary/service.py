@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
+import logging
+from typing import Tuple
+from api.routes.common.extended.common_measure_service import CommonMeasureService
+from config.pnm_config_manager import PnmConfigManager
+from docsis.cable_modem import CableModem
+from docsis.cm_snmp_operation import FecSummaryType
+from lib.inet import Inet
+from pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
+
+
+class CmDsOfdmFecSummaryService(CommonMeasureService):
+    """
+    Service class for handling downstream OFDM FEC Summary operations.
+
+    This class initiates a PNM test to retrieve Forward Error Correction (FEC) summary statistics
+    for downstream OFDM channels over a specified time window (e.g., 10 minutes or 24 hours).
+
+    Parameters:
+        cable_modem (CableModem): The target cable modem to run the FEC summary test on.
+        fec_summary_type (FecSummaryType): The FEC summary interval type (e.g., TEN_MIN, ONE_DAY).
+        tftp_server_inet (Inet): The IP address of the TFTP server used for result file retrieval.
+        tftp_path (str, optional): The path on the TFTP server where test results are stored. Defaults to "".
+        snmp_write_community (str, optional): The SNMP write community string. Defaults to "private".
+    """
+    def __init__(self, cable_modem: CableModem,
+                 fec_summary_type: FecSummaryType, 
+                 tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
+                 tftp_path: str = PnmConfigManager.get_tftp_path()):
+        super().__init__(DocsPnmCmCtlTest.DS_OFDM_CODEWORD_ERROR_RATE,  
+                        cable_modem,
+                        tftp_servers,
+                        tftp_path,
+                        cable_modem.getWriteCommunity(),
+                        fec_summary_type=fec_summary_type)
+        self.logger = logging.getLogger(self.__class__.__name__)
