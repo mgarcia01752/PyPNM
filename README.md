@@ -1,4 +1,4 @@
-# PyPNM — DOCSIS 3.1 Proactive Network Maintenance Toolkit
+# PyPNM — DOCSIS 3.1/4.0 Proactive Network Maintenance Toolkit
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
