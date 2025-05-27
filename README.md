@@ -20,6 +20,10 @@
 
 ## Prerequisites
 
+## OS Tested
+
+  Ubuntu 22.04
+
 ### System Tools
 
 Make sure you have these installed on Ubuntu/Debian:
