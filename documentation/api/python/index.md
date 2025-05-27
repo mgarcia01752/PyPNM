@@ -1,4 +1,4 @@
-# Python API Measurement Types Index
+# Python API Measurement Types
 
 This section introduces the core PNM measurement types available via the PyPNM Python API. Each measurement class parses a raw PNM binary file into a structured Python `dict` or JSON-like object. Downstream, you can convert that output into frequency vs. amplitude spectra, time-domain traces, or statistical summaries depending on the file type.
 
@@ -38,7 +38,8 @@ Chain these steps in scripts, dashboards, or Jupyter notebooks for custom analyt
 ```
 
 * **PNMFile**: A Python `bytes` or byte-stream representing raw PNM capture data.
-* [**PnmHeader**](../../../src/pnm/process/pnm_header.py): Parses and holds header metadata extracted from the byte-stream.
+* [**PnmHeader**](../../../src/pypnm/pnm/process/pnm_header.py): Parses and holds header metadata extracted from the byte-stream.
+* [**PnmFileType**](../../../src/pypnm/pnm/process/pnm_file_type.py): Check PNM Header against PNM FileTypes.
 * **PnmParser**: Consumes the header and payload to produce structured measurement data.
 ---
 
@@ -54,21 +55,21 @@ Use `json.dumps(parser_output)` to emit JSON, or access fields via standard dict
 
 ---
 
-## 🎯 Measurement Types
+## 🎯 Measurement Types (Parsers)
 
-| Measurement Type              | Parser Class                                                                       | Description                                                                           |
-| ----------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| **OFDM Symbol Capture**       | [CmSymbolCapture](../../../src/pnm/process/CmSymbolCapture.py)                     | Extracts raw OFDM symbol waveforms for time-domain and IQ analysis.                   |
-| **OFDM RxMER**                | [CmDsOfdmRxMer](../../../src/pnm/process/CmDsOfdmRxMer.py)                         | Computes modulation error ratio per subcarrier; useful for carrier health heatmaps.   |
-| **OFDM FEC Summary**          | [CmDsOfdmFecSummary](../../../src/pnm/process/CmDsOfdmFecSummary.py)               | Aggregates FEC counters for reliability metrics over time.                            |
-| **Spectrum Analysis**         | [CmSpectrumAnalysis](../../../src/pnm/process/CmSpectrumAnalysis.py)               | Captures power spectral density snapshots in the frequency domain.                    |
-| **Channel Estimation**        | [CmDsOfdmChanEstimateCoef](../../../src/pnm/process/CmDsOfdmChanEstimateCoef.py)   | Retrieves equalizer tap coefficients for channel impulse response estimation.         |
-| **Modulation Profile**        | [CmDsOfdmModulationProfile](../../../src/pnm/process/CmDsOfdmModulationProfile.py) | Shows modulation orders configured on each subcarrier.                                |
-| **Constellation Display**     | [CmDsConstDispMeas](../../../src/pnm/process/CmDsConstDispMeas.py)                 | Provides IQ scatter data for symbol constellation visualization.                      |
-| **Downstream Histogram**      | [CmDsHist](../../../src/pnm/process/CmDsHist.py)                                   | Outputs ADC histograms for detecting compression, clipping, or noise characteristics. |
-| **Upstream Pre-Equalization** | [CmUsPreEq](../../../src/pnm/process/CmUsPreEq.py)                                 | Parses pre-equalizer tap data for upstream OFDMA carriers.                            |
-| **ATDMA Pre-Equalization**    | [DocsEqualizerData](../../../src/pnm/process/DocsEqualizerData.py)                 | Parses legacy ATDMA equalizer taps for upstream DOCSIS channels.                      |
-| **Latency Reporting**         | [CmLatencyRpt](../../../src/pnm/process/CmLatencyRpt.py)                           | Reports one-way delay and jitter statistics from PNM captures.                        |
+| Measurement Type              | Parser Class                                                                       | Description                                                                           | Status |
+| ----------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | :----: |
+| **OFDM Symbol Capture**       | [CmSymbolCapture](../../../src/pypnm/pnm/process/CmSymbolCapture.py)               | Extracts raw OFDM symbol waveforms for time-domain and IQ analysis.                   | CMTS Dependend    |
+| **OFDM RxMER**                | [CmDsOfdmRxMer](../../../src/pypnm/pnm/process/CmDsOfdmRxMer.py)                   | Computes modulation error ratio per subcarrier; useful for carrier health heatmaps.   | ✅     |
+| **OFDM FEC Summary**          | [CmDsOfdmFecSummary](../../../src/pypnm/pnm/process/CmDsOfdmFecSummary.py)         | Aggregates FEC counters for reliability metrics over time.                            | ✅     |
+| **Spectrum Analysis**         | [CmSpectrumAnalysis](../../../src/pypnm/pnm/process/CmSpectrumAnalysis.py)         | Captures power spectral density snapshots in the frequency domain.                    | ✅     |
+| **Channel Estimation**        | [CmDsOfdmChanEstimateCoef](../../../src/pypnm/pnm/process/CmDsOfdmChanEstimateCoef.py) | Retrieves equalizer tap coefficients for channel impulse response estimation.         | ✅     |
+| **Modulation Profile**        | [CmDsOfdmModulationProfile](../../../src/pypnm/pnm/process/CmDsOfdmModulationProfile.py) | Shows modulation orders configured on each subcarrier.                                | ✅     |
+| **Constellation Display**     | [CmDsConstDispMeas](../../../src/pypnm/pnm/process/CmDsConstDispMeas.py)           | Provides IQ scatter data for symbol constellation visualization.                      | ✅     |
+| **Downstream Histogram**      | [CmDsHist](../../../src/pypnm/pnm/process/CmDsHist.py)                             | Outputs ADC histograms for detecting compression, clipping, or noise characteristics. | ✅     |
+| **Upstream Pre-Equalization** | [CmUsPreEq](../../../src/pypnm/pnm/process/CmUsPreEq.py)                           | Parses pre-equalizer tap data for upstream OFDMA carriers.                            | ✅     |
+| **ATDMA Pre-Equalization**    | [DocsEqualizerData](../../../src/pypnm/pnm/process/DocsEqualizerData.py)           | Parses legacy ATDMA equalizer taps for upstream DOCSIS channels.                      | ✅     |
+| **Latency Reporting**         | [CmLatencyRpt](../../../src/pypnm/pnm/process/CmLatencyRpt.py)                     | Reports one-way delay and jitter statistics from PNM captures.                        | TBD    |
 
 ---
 
@@ -76,7 +77,7 @@ Use `json.dumps(parser_output)` to emit JSON, or access fields via standard dict
 
 Use higher-level service wrappers to automate PNM file retrieval and parsing:
 
-* [RxMER Service Example](../../../examples/service/cm-service-set-ds-rxmer.py)
+* [RxMER Service Example](../../../src/pypnm/examples/service/cm-service-set-ds-rxmer.py)
 
 ### Main Service Calls
 
