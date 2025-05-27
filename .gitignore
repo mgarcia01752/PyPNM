@@ -24,3 +24,7 @@ htmlcov/
 
 # Logs
 *.log
+
+# PyPNM 
+data/db/*
+data/pnm/*
