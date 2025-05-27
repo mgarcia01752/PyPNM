@@ -6,7 +6,7 @@ echo "🛠  Running setup-and-test…"
 
 echo
 echo "🔧 Configuring PYTHONPATH…"
-./install_py_path.sh "$(pwd)"
+./scripts/install_py_path.sh "$(pwd)"
 
 echo
 echo "🎉 All done! To get started:"
