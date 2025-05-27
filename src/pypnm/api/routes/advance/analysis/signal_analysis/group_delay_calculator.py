@@ -6,21 +6,29 @@ from typing import Sequence, Union, Tuple, Dict, Any
 
 class GroupDelayCalculator:
     """
-    Compute group delay from per-subcarrier complex channel estimates,
-    supporting single, multi-snapshot, and real/imag input arrays.
+    Compute group delay from per-subcarrier complex channel estimates.
+    
+    Supports:
+        - Single snapshot or multiple snapshots
+        - Complex arrays or real/imaginary pairs
 
-    Accepted input shapes for H:
-      - 1D array-like of complex values (length K)
-      - 2D array-like of shape (M, K) of complex values
-      - 2D array-like of shape (K, 2) representing one snapshot of real/imag pairs
-      - 3D array-like of shape (M, K, 2) of real/imag pairs
+    Accepted input formats for `H`:
+        - 1D list/array of complex values (length K)
+        - 2D list/array of shape (M, K) of complex values
+        - 2D array of shape (K, 2) → one snapshot of real/imag pairs
+        - 3D array of shape (M, K, 2) → M snapshots of real/imag pairs
 
-    Methods:
-      - compute_group_delay_full() -> (freqs, tau_g) : full-length per-subcarrier delays
-      - snapshot_group_delay()    -> np.ndarray      : full-length per-snapshot delays
-      - median_group_delay()      -> (freqs, tau_med): median delay per subcarrier
-      - dataset_info()            -> dict            : dataset dimensions
-      - to_dict()                 -> dict            : comprehensive output
+    Parameters:
+        H (array-like): Channel estimates (complex or real/imag format)
+        freqs (array-like): 1D array of subcarrier frequencies (Hz)
+
+    Raises:
+        ValueError: For invalid input shapes or dimension mismatches
+
+    Attributes:
+        f (np.ndarray): 1D frequency array (length K)
+        H_raw (np.ndarray): Shape (M, K), raw complex data
+        H_avg (np.ndarray): Shape (K,), average channel response
     """
 
     def __init__(
@@ -32,25 +40,24 @@ class GroupDelayCalculator:
         ],
         freqs: Sequence[float]
     ):
-        # Frequency array
-        self.f = np.asarray(freqs, dtype=float).flatten()
-        if self.f.ndim != 1:
+        # Validate frequency shape BEFORE flattening
+        freqs = np.asarray(freqs, dtype=float)
+        if freqs.ndim != 1:
             raise ValueError("freqs must be a 1D sequence of frequencies.")
+        self.f = freqs.flatten()
 
-        # Raw input to array
+        # Parse input H to complex array
         H_arr_raw = np.asarray(H)
-        # If 2D real/imag of shape (K,2), treat as single snapshot
+
+        # Real/imag formats
         if H_arr_raw.ndim == 2 and H_arr_raw.shape[1] == 2 and not np.iscomplexobj(H_arr_raw):
-            H_arr_raw = H_arr_raw[np.newaxis, :, :]
-        # If 3D real/imag shape (M, K, 2)
+            H_arr_raw = H_arr_raw[np.newaxis, :, :]  # Add batch dim
         if H_arr_raw.ndim == 3 and H_arr_raw.shape[2] == 2 and not np.iscomplexobj(H_arr_raw):
-            # Interpret last axis as [real, imag]
             H_complex = H_arr_raw[..., 0] + 1j * H_arr_raw[..., 1]
         else:
-            # Cast directly to complex, supports 1D or 2D
             H_complex = np.asarray(H_arr_raw, dtype=complex)
 
-        # Now require H_complex to be 1D or 2D
+        # Validate and reshape
         if H_complex.ndim == 1:
             if H_complex.size != self.f.size:
                 raise ValueError("Length of H must match length of freqs.")
@@ -61,63 +68,68 @@ class GroupDelayCalculator:
                 raise ValueError(f"Each snapshot must have length {self.f.size}, got {K}")
             self.H_raw = H_complex
         else:
-            raise ValueError(
-                "H must be 1D complex, 2D complex, or real/imag array of shape (K,2) or (M,K,2)."
-            )
+            raise ValueError("H must be 1D complex, 2D complex, or real/imag array of shape (K,2) or (M,K,2).")
 
-        # Coherently average across snapshots
+        # Snapshot-averaged channel
         self.H_avg = np.mean(self.H_raw, axis=0)
 
     def compute_group_delay_full(self) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Compute group delay at each subcarrier frequency with length K:
-          - forward difference at index 0
-          - central difference for k=1..K-2
-          - backward difference at index K-1
+        Compute group delay for the average channel H_avg at each subcarrier.
+
+        Uses:
+            - forward difference at index 0
+            - central difference at k=1...K-2
+            - backward difference at index K-1
+
         Returns:
-          freqs: np.ndarray shape (K,)
-          tau_g: np.ndarray shape (K,), group delay in seconds
+            Tuple[freqs, tau_g]:
+                freqs: ndarray, shape (K,)
+                tau_g: ndarray, group delay in seconds, shape (K,)
         """
         phi = np.unwrap(np.angle(self.H_avg))
         K = self.f.size
         tau_g = np.zeros(K)
         df = np.diff(self.f)
-        # forward difference
+
         tau_g[0] = -(phi[1] - phi[0]) / (2 * np.pi * df[0])
-        # central differences
-        for k in range(1, K-1):
-            tau_g[k] = -(phi[k+1] - phi[k-1]) / (
-                2 * np.pi * (self.f[k+1] - self.f[k-1])
+        for k in range(1, K - 1):
+            tau_g[k] = -(phi[k + 1] - phi[k - 1]) / (
+                2 * np.pi * (self.f[k + 1] - self.f[k - 1])
             )
-        # backward difference
         tau_g[-1] = -(phi[-1] - phi[-2]) / (2 * np.pi * df[-1])
         return self.f, tau_g
 
     def snapshot_group_delay(self) -> np.ndarray:
         """
-        Compute group delay for each snapshot, full length per subcarrier.
+        Compute group delay for each snapshot in H_raw.
+
         Returns:
-          array of shape (M, K).
+            ndarray: shape (M, K), one row per snapshot
         """
         M, K = self.H_raw.shape
         taus = np.zeros((M, K))
+        df = np.diff(self.f)
+
         for m in range(M):
             phi = np.unwrap(np.angle(self.H_raw[m]))
-            df = np.diff(self.f)
             taus[m, 0] = -(phi[1] - phi[0]) / (2 * np.pi * df[0])
-            for k in range(1, K-1):
-                taus[m, k] = -(phi[k+1] - phi[k-1]) / (
-                    2 * np.pi * (self.f[k+1] - self.f[k-1])
+            for k in range(1, K - 1):
+                taus[m, k] = -(phi[k + 1] - phi[k - 1]) / (
+                    2 * np.pi * (self.f[k + 1] - self.f[k - 1])
                 )
             taus[m, -1] = -(phi[-1] - phi[-2]) / (2 * np.pi * df[-1])
+
         return taus
 
     def median_group_delay(self) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Compute the median group delay across snapshots per subcarrier.
+        Compute the median group delay across all snapshots for each subcarrier.
+
         Returns:
-          freqs: np.ndarray shape (K,)
-          tau_med: np.ndarray shape (K,)
+            Tuple[freqs, tau_med]:
+                freqs: ndarray of shape (K,)
+                tau_med: median group delay values, shape (K,)
         """
         taus = self.snapshot_group_delay()
         tau_med = np.median(taus, axis=0)
@@ -125,14 +137,20 @@ class GroupDelayCalculator:
 
     def dataset_info(self) -> Dict[str, Any]:
         """
-        Return dataset dimensions: number of subcarriers (K) and snapshots (M).
+        Return the dataset shape information.
+
+        Returns:
+            Dict[str, int]: {'subcarriers': K, 'snapshots': M}
         """
         M, K = self.H_raw.shape
         return {'subcarriers': K, 'snapshots': M}
 
     def to_dict(self) -> Dict[str, Any]:
         """
-        Return all relevant data and computed metrics as a dictionary.
+        Serialize group delay analysis into a dictionary.
+
+        Returns:
+            Dict[str, Any]: All input, metadata, and computed outputs.
         """
         freqs_list = self.f.tolist()
         H_raw_list = [row.tolist() for row in self.H_raw]

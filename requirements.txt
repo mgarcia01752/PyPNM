@@ -8,3 +8,4 @@ Requests==2.32.3
 setuptools==59.6.0
 pandas==2.2.3
 uvicorn==0.34.2
+pytest>=7.0.0
