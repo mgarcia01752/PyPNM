@@ -7,11 +7,12 @@ from typing import Union
 
 try:
     from pysnmp.proto.rfc1902 import OctetString
+    
 except ImportError:
-    OctetString = None  # fallback if pysnmp is not installed
+    OctetString = None
 
 class MacAddress:
-    def __init__(self, mac_address: Union[str, bytes, bytearray, 'OctetString']):
+    def __init__(self, mac_address: Union[str, bytes, bytearray, 'OctetString']) -> None:
         """
         Initialize a MacAddress object.
 

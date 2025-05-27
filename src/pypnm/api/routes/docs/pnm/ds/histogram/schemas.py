@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from pydantic import Field
-from api.routes.common.classes.common_endpoint_classes.schemas import PnmDataResponse, PnmRequest, PnmResponse
+from api.routes.common.classes.common_endpoint_classes.schemas import PnmDataResponse, PnmRequest
 
 class PnmHistogramRequest(PnmRequest):
     """Request model used to trigger measurement-related operations on a cable modem."""

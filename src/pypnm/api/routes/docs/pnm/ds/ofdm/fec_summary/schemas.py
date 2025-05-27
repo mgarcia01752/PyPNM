@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from typing import Optional
 from pydantic import Field
 
-from api.routes.common.classes.common_endpoint_classes.schemas import PnmDataResponse, PnmMeasurementResponse, PnmRequest, PnmResponse
+from api.routes.common.classes.common_endpoint_classes.schemas import PnmDataResponse, PnmRequest
 from docsis.cm_snmp_operation import FecSummaryType
 
 class PnmFecSummaryRequest(PnmRequest):
