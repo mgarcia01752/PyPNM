@@ -1,15 +1,3 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
-
-[project]
-name = "pypnm"
-version = "0.1.0"
-description = "Proactive Network Maintenance tooling"
-authors = [{name="Maurice Garcia", email="mgarcia01752@outlook.com"}]
-license = {text="MIT"}
-readme = "README.md"
-dependencies = [
-  "fastapi",
-  # … your other runtime deps …
-]
