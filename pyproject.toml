@@ -1,7 +1,3 @@
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "pypnm"
 version = "1.0.0"
@@ -9,29 +5,33 @@ description = "DOCSIS 3.1/4.0 Proactive Network Maintenance Toolkit"
 readme = "README.md"
 requires-python = ">=3.10"
 
-# Core runtime dependencies
+# Core runtime dependencies…
 dependencies = [
   "fastapi>=0.95.0",
   "uvicorn[standard]>=0.22.0",
   "numpy>=1.25.0",
   "pysnmp>=7.1.20",
-  "python-dotenv>=1.0.0"
+  "python-dotenv>=1.0.0",
 ]
 
-# Optional groups of dependencies
+# Authors must be an array:
+authors = [
+  { name = "Maurice Garcia", email = "mgarcia01752@outlook.com" }
+]
+
 [project.optional-dependencies]
 dev = [
   "pytest>=7.4.0",
-  "pytest-cov",          # coverage reporting
-  "black",               # code formatting
-  "mypy",                # static typing checks
+  "pytest-cov",
+  "black",
+  "mypy",
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/mgarcia01752/PyPNM"
-"Repository" = "https://github.com/mgarcia01752/PyPNM"
-"Bug Tracker" = "https://github.com/mgarcia01752/PyPNM/issues"
+Homepage = "https://github.com/mgarcia01752/PyPNM"
+Repository = "https://github.com/mgarcia01752/PyPNM"
+Bug-Tracker = "https://github.com/mgarcia01752/PyPNM/issues"
 
-[project.authors]
-name = "Maurice Garcia"
-email = "mgarcia01752@outlook.com"
+[project.scripts]
+pypnm = "pypnm.cli:main"
+
