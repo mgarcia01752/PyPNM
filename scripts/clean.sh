@@ -1,84 +1,127 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Cleans logs, Python caches, build artifacts, PNM data, and output files.
 
+set -euo pipefail
+IFS=$'\n\t'
+
+# -----------------------------------------------------------------------------
 # Usage info
+# -----------------------------------------------------------------------------
 usage() {
-    echo "Usage: $0 [ACTION]... [ROOT_DIR]"
-    echo ""
-    echo "Actions:"
-    echo "  --all         Clean logs, __pycache__, .pytest_cache, *.pyc, builds"
-    echo "  --logs        Only clean logs directory"
-    echo "  --python      Only clean Python cache files"
-    echo "  --build       Clean dist/, build/, *.egg-info"
-    echo "  --pnm         Clean data/tftp and data/db directories"
-    echo "  --output      Clean output directory (PNM process files)"
-    echo "  help          Show this help message"
-    echo ""
-    echo "If ROOT_DIR is not specified, it defaults to current directory."
-    exit 1
+  cat <<EOF
+Usage: $(basename "$0") [OPTIONS] [ROOT_DIR]
+
+Options:
+  --all         Clean logs, Python cache, build artifacts, PNM data, output
+  --logs        Clean only logs/
+  --python      Clean only Python caches (__pycache__, *.pyc, .pytest_cache)
+  --build       Clean build/, dist/, *.egg-info
+  --pnm         Clean data/pnm/ and data/db/
+  --output      Clean output/
+  -h, --help    Show this help and exit
+
+ROOT_DIR defaults to the current directory if not provided.
+EOF
+  exit 1
 }
 
-# Default root directory
+# -----------------------------------------------------------------------------
+# Defaults
+# -----------------------------------------------------------------------------
 ROOT_DIR="."
-ACTIONS=()
+declare -a ACTIONS=()
 
-# Parse arguments
-for arg in "$@"; do
-    case "$arg" in
-        --all|--logs|--python|--build|--pnm|--output)
-            ACTIONS+=("$arg")
-            ;;
-        help|-h|--help)
-            usage
-            ;;
-        *)
-            ROOT_DIR="$arg"
-            ;;
-    esac
+# -----------------------------------------------------------------------------
+# Parse args
+# -----------------------------------------------------------------------------
+while (( $# )); do
+  case "$1" in
+    --all|--logs|--python|--build|--pnm|--output)
+      ACTIONS+=("$1")
+      shift
+      ;;
+    -h|--help)
+      usage
+      ;;
+    *)
+      # assume this is the root dir
+      ROOT_DIR="$1"
+      shift
+      ;;
+  esac
 done
 
-if [ ${#ACTIONS[@]} -eq 0 ]; then
-    usage
+if [[ ${#ACTIONS[@]} -eq 0 ]]; then
+  usage
 fi
 
-echo "Root directory: $ROOT_DIR"
+# Canonicalize ROOT_DIR
+ROOT_DIR=$(realpath "$ROOT_DIR")
+echo "🔍 Cleaning in root directory: $ROOT_DIR"
 
-# Execute requested actions
-for ACTION in "${ACTIONS[@]}"; do
-    case "$ACTION" in
-        --all)
-            echo "Cleaning all logs, cache, build, PNM, and output files..."
-            rm -rf "$ROOT_DIR"/logs/* || true
-            rm -rf "$ROOT_DIR"/.pytest_cache
-            find "$ROOT_DIR" -type d -name '__pycache__' -exec rm -rf {} + -print
-            find "$ROOT_DIR" -type f -name '*.pyc' -delete -print
-            rm -rf "$ROOT_DIR"/build "$ROOT_DIR"/dist "$ROOT_DIR"/*.egg-info
-            rm -rf "$ROOT_DIR"/data/pnm/* "$ROOT_DIR"/data/db/*
-            rm -rf "$ROOT_DIR"/output/*
-            ;;
-        --logs)
-            echo "Cleaning logs..."
-            rm -rf "$ROOT_DIR"/logs/* || true
-            ;;
-        --python)
-            echo "Cleaning Python cache files and folders..."
-            find "$ROOT_DIR" -type d -name '__pycache__' -exec rm -rf {} + -print
-            find "$ROOT_DIR" -type f -name '*.pyc' -delete -print
-            rm -rf "$ROOT_DIR"/.pytest_cache
-            ;;
-        --build)
-            echo "Cleaning build artifacts..."
-            rm -rf "$ROOT_DIR"/build "$ROOT_DIR"/dist "$ROOT_DIR"/*.egg-info
-            ;;
-        --pnm)
-            echo "Cleaning PNM files..."
-            rm -rf "$ROOT_DIR"/data/pnm/* "$ROOT_DIR"/data/db/*
-            ;;
-        --output)
-            echo "Cleaning output PNM process files..."
-            rm -rf "$ROOT_DIR"/output/*
-            ;;
-    esac
+# -----------------------------------------------------------------------------
+# Helper: safe remove
+# -----------------------------------------------------------------------------
+safe_rm() {
+  local path="$1"
+  if [[ -e $path ]]; then
+    rm -rf "$path"
+    echo "🗑️  Removed: $path"
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# Perform actions
+# -----------------------------------------------------------------------------
+for action in "${ACTIONS[@]}"; do
+  case "$action" in
+
+    --all)
+      echo "🚀 Performing full cleanup..."
+      safe_rm "$ROOT_DIR/logs/"*
+      safe_rm "$ROOT_DIR/.pytest_cache"
+      find "$ROOT_DIR" -type d -name '__pycache__' -print -exec rm -rf {} +
+      find "$ROOT_DIR" -type f -name '*.pyc'     -print -delete
+      safe_rm "$ROOT_DIR/build"
+      safe_rm "$ROOT_DIR/dist"
+      safe_rm "$ROOT_DIR"/*.egg-info
+      safe_rm "$ROOT_DIR/data/pnm/"*
+      safe_rm "$ROOT_DIR/data/db/"*
+      safe_rm "$ROOT_DIR/output/"*
+      ;;
+
+    --logs)
+      echo "🧹 Cleaning logs..."
+      safe_rm "$ROOT_DIR/logs/"*
+      ;;
+
+    --python)
+      echo "🐍 Cleaning Python caches..."
+      find "$ROOT_DIR" -type d -name '__pycache__' -print -exec rm -rf {} +
+      find "$ROOT_DIR" -type f -name '*.pyc'     -print -delete
+      safe_rm "$ROOT_DIR/.pytest_cache"
+      ;;
+
+    --build)
+      echo "🏗️  Cleaning build artifacts..."
+      safe_rm "$ROOT_DIR/build"
+      safe_rm "$ROOT_DIR/dist"
+      safe_rm "$ROOT_DIR"/*.egg-info
+      ;;
+
+    --pnm)
+      echo "📦 Cleaning PNM data..."
+      safe_rm "$ROOT_DIR/data/pnm/"*
+      safe_rm "$ROOT_DIR/data/db/"*
+      ;;
+
+    --output)
+      echo "📤 Cleaning output files..."
+      safe_rm "$ROOT_DIR/output/"*
+      ;;
+
+  esac
 done
 
-echo "Cleanup complete."
-exit 0
+echo "✅ Cleanup complete."

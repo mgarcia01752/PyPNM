@@ -90,22 +90,33 @@ Environment variables will be loaded automatically if `python-dotenv` is install
 
 ### Step 5: Launch the FastAPI Web Service
 
-Start the server using the CLI:
-
 ```bash
-pypnm --help  # view available options
-pypnm        # launch with defaults
-```
+pypnm --help
 
+usage: pypnm [-h] [--host HOST] [--port PORT] [--ssl] [--cert CERT] [--key KEY]
+
+Launch the PyPNM FastAPI service with optional HTTPS support.
+
+options:
+  -h, --help   show this help message and exit
+  --host HOST  Host to bind (default: 127.0.0.1)
+  --port PORT  Port to bind (default: 8000)
+  --ssl        Enable HTTPS (requires cert and key)
+  --cert CERT  Path to SSL certificate
+  --key KEY    Path to SSL private key
+
+```
 **Optional CLI arguments:**
 
 ```bash
 pypnm --host 0.0.0.0 --port 443 --ssl --cert ./certs/cert.pem --key ./certs/key.pem
 ```
 
-* `--ssl`: Enables HTTPS
-* `--cert`, `--key`: Paths to SSL certificate and private key
-* `--host`, `--port`: Bind address and port
+**Start with defaults**
+
+```bash
+pypnm
+```
 
 ---
 
