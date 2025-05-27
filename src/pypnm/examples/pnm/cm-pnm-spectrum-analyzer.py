@@ -10,7 +10,7 @@ from docsis.cable_modem import CableModem
 from docsis.cm_snmp_operation import DocsPnmCmCtlStatus, SpectrumRetrievalType
 from lib.inet import Inet
 from lib.mac_address import MacAddress
-from pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import DocsIf3CmSpectrumAnalysisCtrlCmd
+from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import DocsIf3CmSpectrumAnalysisCtrlCmd
 
 # Configure logging
 logging.basicConfig(

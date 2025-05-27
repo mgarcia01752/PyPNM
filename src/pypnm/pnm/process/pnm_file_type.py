@@ -3,7 +3,6 @@
 
 from enum import Enum
 
-
 class PnmFileType(Enum):
     """
     Enumeration of PNM file types, mapping human-readable names to

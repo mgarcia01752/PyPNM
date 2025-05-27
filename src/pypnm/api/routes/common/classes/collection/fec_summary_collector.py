@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from typing import Any, Dict, List
-from pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
+from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
 
 class FecSummaryCollector:
     """

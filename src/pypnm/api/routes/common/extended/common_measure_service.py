@@ -14,16 +14,12 @@ from config.config_manager import ConfigManager
 from api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
 from api.routes.common.extended.common_messaging_service import CommonMessagingService, MessageResponse
 from api.routes.common.service.status_codes import ServiceStatusCode
-
 from docsis.cable_modem import CableModem
 from docsis.cm_snmp_operation import DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType
-
 from lib.inet import Inet
 from lib.utils import Utils
-
-from pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import DocsIf3CmSpectrumAnalysisCtrlCmd, WindowFunction
-from pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
-
+from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import DocsIf3CmSpectrumAnalysisCtrlCmd, WindowFunction
+from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 from snmp.snmp_module_class import DocsisIfType
 from snmp.snmp_v2c import Snmp_v2c
 

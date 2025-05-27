@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-
 import argparse
 import json
 import sys
 
 try:
     import requests
+
 except ImportError:
     print("❌ The 'requests' library is not installed. Please install it before running this script.")
     sys.exit(1)

@@ -7,9 +7,9 @@ import struct
 from typing import Dict, List, Optional, Tuple
 
 from lib.shannon.series import ShannonSeries
-from pnm.lib.signal_statistics import SignalStatistics
-from pnm.process.pnm_file_type import PnmFileType
-from pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.lib.signal_statistics import SignalStatistics
+from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.process.pnm_header import PnmHeader
 
 
 class CmDsOfdmRxMer(PnmHeader):

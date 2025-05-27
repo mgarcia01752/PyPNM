@@ -13,9 +13,9 @@ from config.config_manager import ConfigManager
 from docsis.cm_snmp_operation import DocsPnmCmCtlTest
 from lib.mac_address import MacAddress
 from lib.file_processor import FileProcessor
-from pnm.process.pnm_file_type import PnmFileType
-from pnm.process.pnm_header import PnmHeader
-from pnm.process.pnm_type_header_mapper import PnmFileTypeMapper
+from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.process.pnm_type_header_mapper import PnmFileTypeMapper
 
 from .schemas import (
     FileEntry,

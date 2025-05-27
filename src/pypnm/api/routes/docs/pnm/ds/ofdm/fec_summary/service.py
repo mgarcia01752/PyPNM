@@ -8,7 +8,7 @@ from config.pnm_config_manager import PnmConfigManager
 from docsis.cable_modem import CableModem
 from docsis.cm_snmp_operation import FecSummaryType
 from lib.inet import Inet
-from pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
+from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 
 
 class CmDsOfdmFecSummaryService(CommonMeasureService):

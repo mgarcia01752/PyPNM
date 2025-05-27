@@ -6,7 +6,7 @@ import logging
 from typing import Any, Dict, List, Tuple
 from collections import OrderedDict
 
-from pnm.process.pnm_parameter import PnmObjectAndParameters
+from pypnm.pnm.process.pnm_parameter import PnmObjectAndParameters
 
 
 class Sort(enum.Enum):

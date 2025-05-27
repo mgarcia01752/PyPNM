@@ -6,7 +6,6 @@ from typing import List
 from fastapi import HTTPException
 
 from api.routes.common.classes.common_endpoint_classes.schemas import PnmResponse
-from api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from api.routes.common.service.status_codes import ServiceStatusCode
 from api.routes.docs.dev.schemas import EventLogEntry
 from docsis.cable_modem import CableModem

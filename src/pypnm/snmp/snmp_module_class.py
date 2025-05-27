@@ -3,8 +3,6 @@
 
 from enum import IntEnum
 
-from enum import IntEnum
-
 class DocsPnmBulkUploadControl(IntEnum):
     """
     Enum for DocsPnmBulkUploadControl SNMP object.

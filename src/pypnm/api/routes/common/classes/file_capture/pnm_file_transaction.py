@@ -12,7 +12,7 @@ from config.config_manager import ConfigManager
 from docsis.cable_modem import CableModem
 from docsis.data_type.sysDescr import SystemDescriptor
 from lib.mac_address import MacAddress
-from pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
+from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 
 class PnmFileTransaction:
     """

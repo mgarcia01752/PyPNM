@@ -4,7 +4,7 @@
 import logging
 from typing import Dict, List, Any, Optional, Tuple, Union
 from api.routes.common.classes.analysis.analysis import Analysis
-from pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
+from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
 
 class DsModulationProfileAggregator:
     """

@@ -7,8 +7,8 @@ from api.routes.common.extended.common_measure_service import CommonMeasureServi
 from config.pnm_config_manager import PnmConfigManager
 from docsis.cable_modem import CableModem
 from lib.inet import Inet
-from pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import SpectrumRetrievalType, WindowFunction
-from pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
+from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import SpectrumRetrievalType, WindowFunction
+from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 
 class CmSpectrumAnalysisService(CommonMeasureService):
     """

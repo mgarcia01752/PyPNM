@@ -11,8 +11,8 @@ from api.routes.advance.analysis.signal_analysis.detection.lte.phase_slope_lte_d
 from api.routes.advance.analysis.signal_analysis.group_delay_calculator import GroupDelayCalculator
 from api.routes.advance.common.pnm_collection import PnmCollection
 from api.routes.common.classes.analysis.analysis import Analysis
-from pnm.lib.min_avg_max import MinAvgMax
-from pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
+from pypnm.pnm.lib.min_avg_max import MinAvgMax
+from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 
 class MultiChanEstimationAnalysisType(Enum):
     """

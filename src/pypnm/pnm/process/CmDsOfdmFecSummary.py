@@ -6,8 +6,8 @@ from typing import List, Dict, Optional
 from struct import unpack, calcsize
 import logging
 
-from pnm.process.pnm_file_type import PnmFileType
-from pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.process.pnm_header import PnmHeader
 
 class CmDsOfdmFecSummary(PnmHeader):
     def __init__(self, binary_data: bytes):

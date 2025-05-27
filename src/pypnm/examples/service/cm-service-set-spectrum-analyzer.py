@@ -15,7 +15,7 @@ from lib.file_processor import FileProcessor
 from lib.inet import Inet
 from lib.mac_address import MacAddress
 from lib.utils import TimeUnit, Utils
-from pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import SpectrumRetrievalType, WindowFunction
+from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import SpectrumRetrievalType, WindowFunction
 
 # Configure logging
 logging.basicConfig(

@@ -3,7 +3,7 @@
 
 from typing import Any, Dict, List, Optional
 
-from pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
+from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
 
 
 class FecSummaryAggregator:

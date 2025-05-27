@@ -6,13 +6,8 @@ Module: common_endpoint_classes.schema.sys
 
 Defines request and response models for system SNMP operations (sysDescr and sysUpTime).
 """
-from typing import Any, Dict, Optional
-from pydantic import BaseModel, Field
-
 from api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import BaseDeviceConnectRequest
 from api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
-from docsis.data_type.sysDescr import SystemDescriptor
-
 
 class SysRequest(BaseDeviceConnectRequest):
     """

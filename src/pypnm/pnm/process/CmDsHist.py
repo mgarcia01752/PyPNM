@@ -6,9 +6,8 @@ import logging
 import os
 from struct import calcsize, unpack
 from typing import Optional, List
-from matplotlib import pyplot as plt
-from pnm.process.pnm_file_type import PnmFileType
-from pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.process.pnm_header import PnmHeader
 
 class CmDsHist(PnmHeader):
     """
@@ -108,61 +107,3 @@ class CmDsHist(PnmHeader):
             str: JSON representation of the histogram summary.
         """
         return json.dumps(self.to_dict(), indent=4)
-
-    def plot_histogram(
-        self,
-        title: str = "Downstream Histogram",
-        save_path: Optional[str] = 'output/histogram.png',
-        detect_clipping: bool = True,
-        clipping_threshold_ratio: float = 0.05  # 5% of total hits in outer bin
-    ) -> None:
-        if not self.hit_count_values:
-            self.logger.waren("No histogram data available to plot.")
-            return
-
-        plt.figure(figsize=(12, 6))
-        bins = range(len(self.hit_count_values))
-        total_hits = sum(self.hit_count_values)
-
-        plt.bar(bins, self.hit_count_values, color='skyblue', edgecolor='black')
-        plt.title(title)
-        plt.xlabel("Bin Index")
-        plt.ylabel("Hit Count")
-        plt.grid(True, linestyle='--', alpha=0.7)
-
-        # Add dwell count as annotation
-        if self.dwell_count_values:
-            try:
-                dwell = self.dwell_count_values[0]
-                plt.text(0.95, 0.95, f"Dwell Count (per bin): {dwell:,}",
-                        horizontalalignment='right',
-                        verticalalignment='top',
-                        transform=plt.gca().transAxes,
-                        fontsize=10,
-                        bbox=dict(boxstyle="round", facecolor="white", edgecolor="gray"))
-            except Exception as e:
-                self.logger.warn(f"Could not annotate dwell count: {e}")
-
-        # Optional laser clipping detection
-        clipping_detected = True
-        if detect_clipping and total_hits > 0:
-            outer_bins = [self.hit_count_values[0], self.hit_count_values[-1]]
-            threshold = total_hits * clipping_threshold_ratio
-            if any(hit > threshold for hit in outer_bins):
-                clipping_detected = True
-                plt.text(0.5, 0.9, "⚠️ Possible Clipping Detected",
-                        horizontalalignment='center',
-                        transform=plt.gca().transAxes,
-                        color='red',
-                        fontsize=12,
-                        bbox=dict(boxstyle="round", facecolor="white", edgecolor="red"))
-
-        # Save or show
-        if save_path:
-            filename = os.path.abspath(save_path)
-            plt.savefig(filename)
-            self.logger.debug(f"Histogram saved to: {filename}")
-        else:
-            plt.show()
-
-        plt.close()

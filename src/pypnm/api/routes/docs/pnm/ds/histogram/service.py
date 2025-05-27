@@ -8,7 +8,7 @@ from api.routes.common.extended.common_measure_service import CommonMeasureServi
 from config.pnm_config_manager import PnmConfigManager
 from lib.inet import Inet
 from docsis.cable_modem import CableModem
-from pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
+from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 
 
 class CmDsHistogramService(CommonMeasureService):

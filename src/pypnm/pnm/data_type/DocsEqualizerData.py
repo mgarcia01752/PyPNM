@@ -3,8 +3,7 @@
 
 import logging
 import math
-from typing import Dict, List, Tuple
-
+from typing import Dict, List
 
 class DocsEqualizerData:
     """

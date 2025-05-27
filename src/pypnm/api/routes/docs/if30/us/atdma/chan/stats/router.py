@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from typing import List
 
-from api.routes.common.classes.common_endpoint_classes.schemas import PnmRequest, PnmChannelEntryResponse
+from api.routes.common.classes.common_endpoint_classes.schemas import PnmChannelEntryResponse
 from api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
 from api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from api.routes.common.service.status_codes import ServiceStatusCode

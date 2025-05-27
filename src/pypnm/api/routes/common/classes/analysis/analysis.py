@@ -9,8 +9,8 @@ import numpy as np
 from api.routes.common.extended.common_messaging_service import MessageResponse
 from lib.shannon.series import ShannonSeries
 from lib.shannon.shannon import Shannon
-from pnm.lib.signal_statistics import SignalStatistics
-from pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.lib.signal_statistics import SignalStatistics
+from pypnm.pnm.process.pnm_file_type import PnmFileType
 
 class RxMerCarrierType(Enum):
     EXCLUSION   = "0"

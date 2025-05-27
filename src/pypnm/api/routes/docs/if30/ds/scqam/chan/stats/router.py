@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from fastapi import APIRouter, logger
+from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from typing import List, Union
 

@@ -1,18 +1,17 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from enum import Enum
 import logging
 from typing import Any, Dict
 
-from pnm.process.CmDsConstDispMeas import CmDsConstDispMeas
-from pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
-from pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
-from pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
-from pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
-from pnm.process.CmUsPreEq import CmUsPreEq
-from pnm.process.pnm_file_type import PnmFileType
-from pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.process.CmDsConstDispMeas import CmDsConstDispMeas
+from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
+from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
+from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
+from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
+from pypnm.pnm.process.CmUsPreEq import CmUsPreEq
+from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.process.pnm_header import PnmHeader
 
 
 class PnmObjectAndParameters(PnmHeader):

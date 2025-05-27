@@ -2,9 +2,9 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from pnm.lib.fixed_point_decoder import FixedPointDecoder
-from pnm.process.pnm_file_type import PnmFileType
-from pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder
+from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.process.pnm_header import PnmHeader
 from struct import calcsize, unpack
 from typing import Optional, List, Tuple
 

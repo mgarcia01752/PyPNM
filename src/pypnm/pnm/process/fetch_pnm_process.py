@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from pnm.process.pnm_file_type import PnmFileType
-from pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.process.pnm_header import PnmHeader
 
 class PnmFileTypeObjectFetcher(PnmHeader):
     """
@@ -28,27 +28,27 @@ class PnmFileTypeObjectFetcher(PnmHeader):
 
         # Map PNM type to parser class explicitly
         if pnm_type == PnmFileType.SYMBOL_CAPTURE:
-            from pnm.process.CmSymbolCapture import CmSymbolCapture as ParserClass
+            from pypnm.pnm.process.CmSymbolCapture import CmSymbolCapture as ParserClass
         elif pnm_type == PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT:
-            from pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef as ParserClass
+            from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef as ParserClass
         elif pnm_type == PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY:
-            from pnm.process.CmDsConstDispMeas import CmDsConstDispMeas as ParserClass
+            from pypnm.pnm.process.CmDsConstDispMeas import CmDsConstDispMeas as ParserClass
         elif pnm_type == PnmFileType.RECEIVE_MODULATION_ERROR_RATIO:
-            from pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer as ParserClass
+            from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer as ParserClass
         elif pnm_type == PnmFileType.DOWNSTREAM_HISTOGRAM:
-            from pnm.process.CmDsHist import CmDsHist as ParserClass
+            from pypnm.pnm.process.CmDsHist import CmDsHist as ParserClass
         elif pnm_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS:
-            from pnm.process.CmUsPreEq import CmUsPreEq as ParserClass
+            from pypnm.pnm.process.CmUsPreEq import CmUsPreEq as ParserClass
         elif pnm_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE:
-            from pnm.process.CmUsPreEq import CmUsPreEq as ParserClass
+            from pypnm.pnm.process.CmUsPreEq import CmUsPreEq as ParserClass
         elif pnm_type == PnmFileType.OFDM_FEC_SUMMARY:
-            from pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary as ParserClass
+            from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary as ParserClass
         elif pnm_type == PnmFileType.SPECTRUM_ANALYSIS:
-            from pnm.process.CmSpectrumAnalysis import CmSpectrumAnalysis as ParserClass
+            from pypnm.pnm.process.CmSpectrumAnalysis import CmSpectrumAnalysis as ParserClass
         elif pnm_type == PnmFileType.OFDM_MODULATION_PROFILE:
-            from pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile as ParserClass
+            from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile as ParserClass
         elif pnm_type == PnmFileType.LATENCY_REPORT:
-            from pnm.process.CmLatencyRpt import CmLatencyRpt as ParserClass
+            from pypnm.pnm.process.CmLatencyRpt import CmLatencyRpt as ParserClass
         else:
             raise ValueError(f"Unsupported PNM file type: {pnm_type}")
 

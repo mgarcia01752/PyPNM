@@ -8,7 +8,6 @@ from docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanEntry
 from lib.inet import Inet
 from lib.mac_address import MacAddress
 
-
 class DsOfdmChannelService:
 
     def __init__(self, mac_address: str, ip_address: str):

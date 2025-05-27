@@ -3,7 +3,7 @@
 
 from typing import Optional
 from docsis.cm_snmp_operation import DocsPnmCmCtlTest
-from pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.process.pnm_file_type import PnmFileType
 
 
 class PnmFileTypeMapper:

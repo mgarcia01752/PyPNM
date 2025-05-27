@@ -14,9 +14,12 @@ class ConfigManager:
 
     Expected config file path: `config/system.json`
     """
+    ROOT_PATH = 'settings'
+    CONFIG_NAME = 'system.json'
+    
 
     _config_data: dict[str, Any] = {}
-    _config_path: str = os.path.join("config", "system.json")
+    _config_path: str = os.path.join(ROOT_PATH,CONFIG_NAME)
 
     def __init__(self, config_path: Optional[str] = None) -> None:
         """

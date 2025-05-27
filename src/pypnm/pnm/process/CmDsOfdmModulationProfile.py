@@ -8,8 +8,8 @@ from typing import Any, Optional, List, Dict, Union
 from dataclasses import dataclass, field
 from enum import IntEnum
 from venv import logger
-from pnm.process.pnm_file_type import PnmFileType
-from pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.process.pnm_header import PnmHeader
 
 class ModulationOrderType(IntEnum):
     zero_bit_loaded = 0

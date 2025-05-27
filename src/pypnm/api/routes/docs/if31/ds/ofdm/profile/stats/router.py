@@ -9,8 +9,6 @@ from api.routes.common.service.status_codes import ServiceStatusCode
 from api.routes.docs.if31.ds.ofdm.profile.stats.schemas import OfdmProfileStatsResponse
 from api.routes.docs.if31.ds.ofdm.profile.stats.service import OfdmProfileStatsService
 
-
-
 class OfdmProfileStatsRouter:
     """
     Router class for DOCSIS 3.1 Downstream OFDM Modulation Profile Statistics.

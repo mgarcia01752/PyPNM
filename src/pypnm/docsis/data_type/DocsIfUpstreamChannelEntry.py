@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from pnm.data_type import DocsEqualizerData
+from pypnm.pnm.data_type import DocsEqualizerData
 from snmp.snmp_v2c import Snmp_v2c
 from snmp.snmp_compiled_oids import COMPILED_OIDS
 

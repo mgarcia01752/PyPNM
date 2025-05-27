@@ -10,10 +10,9 @@ from pysnmp.hlapi.v3arch.asyncio import (
     ObjectType,ObjectIdentity, get_cmd,set_cmd, walk_cmd)
 
 from pysnmp.proto.rfc1902 import (OctetString)
-from pysnmp.smi import builder, view
 from lib.inet import Inet
 from lib.inet_utils import InetUtils
-from snmp.snmp_compile_mibs import CompileMibs
+
 from snmp.snmp_module_class import InetAddressType
 
 class Snmp_v2c:
@@ -44,7 +43,6 @@ class Snmp_v2c:
     TRUE = 1
     FALSE = 2
 
-    COMPILE_MIBS = False
     SNMP_PORT = 161
 
     def __init__(self, host: Inet, community: str = "private", port: int = SNMP_PORT):
@@ -62,16 +60,6 @@ class Snmp_v2c:
         self._community = community
         self._snmp_engine = SnmpEngine()
 
-        if self.COMPILE_MIBS:
-            com_mibs = CompileMibs('/home/maurice/Projects/OpenPNM-Python/mibs',
-                                   '/home/maurice/Projects/OpenPNM-Python/mibs/pymibs')
-
-            mibBuilder = builder.MibBuilder()
-            mibBuilder.loadTexts = True
-            mibBuilder.addMibSources(builder.DirMibSource(com_mibs.get_compile_dir()))
-
-            self._mibViewController: view.MibViewController = view.MibViewController(mibBuilder)
-
     async def get(self, oid: Union[str, Tuple[str, str, int]]):
         """
         Perform an SNMP GET operation.
@@ -87,9 +75,6 @@ class Snmp_v2c:
         """
         self.logger.debug(f'Input OID: {oid}')
         identity = self._resolve_oid(oid)
-
-        if self.COMPILE_MIBS:
-            identity = identity.resolveWithMib(self._mibViewController)
 
         obj = ObjectType(identity)
 

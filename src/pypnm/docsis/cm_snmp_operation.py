@@ -5,7 +5,6 @@ from enum import Enum
 import logging
 import time
 from typing import List, Tuple, Union
-from pysnmp.proto.rfc1902 import OctetString, Counter32, Bits, Counter64, Gauge32, Integer, Integer32, IpAddress
 from docsis.data_type.DocsDevEventEntry import DocsDevEventEntry
 from docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanEntry
 from docsis.data_type.DocsIf31CmDsOfdmProfileStatsEntry import DocsIf31CmDsOfdmProfileStatsEntry
@@ -14,16 +13,14 @@ from docsis.data_type.DocsIf31CmUsOfdmaChanEntry import DocsIf31CmUsOfdmaChanEnt
 from docsis.data_type.DocsIfDownstreamChannel import DocsIfDownstreamChannel
 from docsis.data_type.DocsIfSignalQualityEntry import DocsIfSignalQuality
 from docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChannelEntry
-from docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst
-from docsis.lib.pnm_bulk_data import DocsPnmBulkDataGroup, DocsPnmBulkFileEntry
 from docsis.data_type.sysDescr import SystemDescriptor
-from lib.format_string import Format
-from lib.inet import Inet
-from lib.inet_utils import InetUtils
-from lib.mac_address import MacAddress
-from pnm.data_type.DocsEqualizerData import DocsEqualizerData
-from pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import DocsIf3CmSpectrumAnalysisCtrlCmd, SpectrumRetrievalType
-from pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
+from pypnm.lib.inet import Inet
+from pypnm.lib.inet_utils import InetUtils
+from pypnm.lib.mac_address import MacAddress
+from pypnm.pnm.data_type.DocsEqualizerData import DocsEqualizerData
+from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
+    DocsIf3CmSpectrumAnalysisCtrlCmd, SpectrumRetrievalType)
+from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 from snmp.snmp_v2c import Snmp_v2c
 from snmp.snmp_compiled_oids import COMPILED_OIDS
 from typing import Optional

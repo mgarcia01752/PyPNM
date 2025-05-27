@@ -13,12 +13,12 @@ from api.routes.common.classes.collection.ds_modulation_profile_aggregator impor
 from api.routes.common.classes.collection.ds_rxmer_aggregator import DsRxMerAggregator
 from api.routes.common.classes.collection.fec_summary_aggregator import FecSummaryAggregator
 from lib.shannon.shannon import Shannon
-from pnm.lib.min_avg_max import MinAvgMax
-from pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
-from pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
-from pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
-from pnm.process.pnm_file_type import PnmFileType
-from pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.lib.min_avg_max import MinAvgMax
+from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
+from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
+from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
+from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.process.pnm_header import PnmHeader
 
 class MultiRxMerAnalysisType(Enum):
     """

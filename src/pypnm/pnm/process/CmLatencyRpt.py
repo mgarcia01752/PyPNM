@@ -2,9 +2,8 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from pnm.process.pnm_file_type import PnmFileType
-from pnm.process.pnm_header import PnmHeader
-
+from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.process.pnm_header import PnmHeader
 
 class CmLatencyRpt(PnmHeader):
     def __init__(self, binary_data: bytes):

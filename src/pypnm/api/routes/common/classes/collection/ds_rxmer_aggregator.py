@@ -4,8 +4,8 @@
 import logging
 from typing import Dict, List, Any, Optional
 from api.routes.common.classes.analysis.analysis import Analysis
-from pnm.lib.min_avg_max import MinAvgMax
-from pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
+from pypnm.pnm.lib.min_avg_max import MinAvgMax
+from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
 
 class DsRxMerAggregator:
     """

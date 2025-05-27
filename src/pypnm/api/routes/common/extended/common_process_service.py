@@ -10,15 +10,15 @@ from api.routes.common.extended.common_messaging_service import (
 from api.routes.common.service.status_codes import ServiceStatusCode
 from config.config_manager import ConfigManager
 from lib.file_processor import FileProcessor
-from pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
-from pnm.process.CmDsConstDispMeas import CmDsConstDispMeas
-from pnm.process.CmDsHist import CmDsHist
-from pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
-from pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
-from pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
-from pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
-from pnm.process.CmSpectrumAnalysis import CmSpectrumAnalysis
-from pnm.process.CmUsPreEq import CmUsPreEq
+from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
+from pypnm.pnm.process.CmDsConstDispMeas import CmDsConstDispMeas
+from pypnm.pnm.process.CmDsHist import CmDsHist
+from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
+from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
+from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
+from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
+from pypnm.pnm.process.CmSpectrumAnalysis import CmSpectrumAnalysis
+from pypnm.pnm.process.CmUsPreEq import CmUsPreEq
 
 class CommonProcessService(CommonMessagingService):
     def __init__(self, message_response:MessageResponse, **extra_options):

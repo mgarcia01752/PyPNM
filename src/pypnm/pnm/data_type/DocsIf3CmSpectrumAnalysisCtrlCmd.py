@@ -4,7 +4,6 @@
 from dataclasses import dataclass
 import json
 import logging
-from typing import List
 from enum import IntEnum
 from lib.utils import Utils
 

@@ -6,10 +6,10 @@ from struct import unpack, calcsize
 from typing import List, Optional, Tuple, Dict
 import json
 
-from pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
-from pnm.lib.fixed_point_decoder import FixedPointDecoder
-from pnm.process.pnm_file_type import PnmFileType
-from pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
+from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder
+from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.process.pnm_header import PnmHeader
 
 
 class CmDsConstDispMeas(PnmHeader):

@@ -5,13 +5,11 @@ import logging
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import BaseDeviceConnectRequest
-from api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
+from api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
 from api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from api.routes.common.service.status_codes import ServiceStatusCode
 from api.routes.docs.dev.schemas import EventLogResponse
 from api.routes.docs.dev.service import CmDocsDevService
-from docsis.cable_modem import CableModem
-from lib.mac_address import MacAddress
 
 logger = logging.getLogger(__name__)
 

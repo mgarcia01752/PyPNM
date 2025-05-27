@@ -5,7 +5,7 @@ from typing import List
 from docsis.cable_modem import CableModem
 from lib.inet import Inet
 from lib.mac_address import MacAddress
-from pnm.data_type.DocsEqualizerData import DocsEqualizerData
+from pypnm.pnm.data_type.DocsEqualizerData import DocsEqualizerData
 
 class UsScQamChannelService:
     """

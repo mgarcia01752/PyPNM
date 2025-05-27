@@ -5,8 +5,8 @@ import json
 import logging
 from struct import unpack, calcsize
 from typing import Optional, List, Dict
-from pnm.process.pnm_file_type import PnmFileType
-from pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.process.pnm_header import PnmHeader
 
 class CmSpectrumAnalysis(PnmHeader):
     """

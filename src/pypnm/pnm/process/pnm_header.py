@@ -5,7 +5,7 @@ import logging
 import struct
 from typing import Any, Dict, Optional
 
-from pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.process.pnm_file_type import PnmFileType
 
 class PnmHeader:
     def __init__(self, byte_array):
