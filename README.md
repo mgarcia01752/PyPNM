@@ -22,12 +22,7 @@
 
 ### Operating System
 
-PyPNM is designed to run on Linux-based systems. If you’re on **Windows**, the recommended approach is to use the **Windows Subsystem for Linux (WSL)**.
-
-- **WSL Installation Guide**:  
-  https://learn.microsoft.com/windows/wsl/install
-
-Once WSL is set up, launch your chosen Linux distribution (for example, Ubuntu) and proceed as if you were on a native Linux box.
+PyPNM is designed to run on Linux-based systems. 
 
 **Recommended distributions:**
 - Ubuntu 22.04 LTS  
@@ -35,7 +30,6 @@ Once WSL is set up, launch your chosen Linux distribution (for example, Ubuntu) 
 - Fedora Workstation  
 
 _No special OS kernel patches are required beyond a standard Linux environment._
-
 
 ### System Tools
 
