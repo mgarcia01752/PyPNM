@@ -6,9 +6,9 @@ import logging
 from typing import Callable, List, Dict, Any
 
 import numpy as np
-from api.routes.common.extended.common_messaging_service import MessageResponse
-from lib.shannon.series import ShannonSeries
-from lib.shannon.shannon import Shannon
+from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
+from pypnm.lib.shannon.series import ShannonSeries
+from pypnm.lib.shannon.shannon import Shannon
 from pypnm.pnm.lib.signal_statistics import SignalStatistics
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 

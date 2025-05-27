@@ -10,7 +10,7 @@ import paramiko
 import urllib.parse
 from scp import SCPClient
 from tftpy import TftpClient
-from config.config_manager import ConfigManager
+from pypnm.config.config_manager import ConfigManager
 
 class PnmFileRetrievalMethod(Enum):
     LOCAL = "local"

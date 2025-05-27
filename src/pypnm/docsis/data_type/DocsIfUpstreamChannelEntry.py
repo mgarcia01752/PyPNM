@@ -3,8 +3,8 @@
 
 import logging
 from pypnm.pnm.data_type import DocsEqualizerData
-from snmp.snmp_v2c import Snmp_v2c
-from snmp.snmp_compiled_oids import COMPILED_OIDS
+from pypnm.snmp.snmp_v2c import Snmp_v2c
+from pypnm.snmp.snmp_compiled_oids import COMPILED_OIDS
 
 class DocsIfUpstreamChannelEntry:
 

@@ -9,10 +9,10 @@ Defines a pre-check service for CableModem connectivity, verifying reachability 
 import logging
 from typing import Tuple, Optional
 
-from api.routes.common.service.status_codes import ServiceStatusCode
-from docsis.cable_modem import CableModem
-from lib.inet import Inet
-from lib.mac_address import MacAddress
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
 
 
 class CableModemServicePreCheck:

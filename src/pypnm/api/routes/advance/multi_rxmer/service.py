@@ -5,14 +5,14 @@ import logging
 from math import ceil
 import math
 
-from api.routes.advance.common.capture_service import AbstractCaptureService
-from api.routes.common.extended.common_messaging_service import MessageResponse
-from api.routes.common.service.status_codes import ServiceStatusCode
-from api.routes.docs.pnm.ds.ofdm.fec_summary.service import CmDsOfdmFecSummaryService
-from api.routes.docs.pnm.ds.ofdm.modulation_profile.service import CmDsOfdmModProfileService
-from api.routes.docs.pnm.ds.ofdm.rxmer.service import CmDsOfdmRxMerService
-from docsis.cable_modem import CableModem
-from docsis.cm_snmp_operation import FecSummaryType
+from pypnm.api.routes.advance.common.capture_service import AbstractCaptureService
+from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.docs.pnm.ds.ofdm.fec_summary.service import CmDsOfdmFecSummaryService
+from pypnm.api.routes.docs.pnm.ds.ofdm.modulation_profile.service import CmDsOfdmModProfileService
+from pypnm.api.routes.docs.pnm.ds.ofdm.rxmer.service import CmDsOfdmRxMerService
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.cm_snmp_operation import FecSummaryType
 
 class MultiRxMerService(AbstractCaptureService):
     """

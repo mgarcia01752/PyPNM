@@ -4,10 +4,10 @@
 from typing import Optional, Union
 from pydantic import BaseModel, Field, field_validator
 
-from api.routes.advance.common.operation_state import OperationState
-from api.routes.common.service.status_codes import ServiceStatusCode
-from config.config_common import SystemConfigCommonSettings as SCSC
-from lib.mac_address import MacAddress
+from pypnm.api.routes.advance.common.operation_state import OperationState
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.config.config_common import SystemConfigCommonSettings as SCSC
+from pypnm.lib.mac_address import MacAddress
 
 
 class BaseDeviceResponse(BaseModel):

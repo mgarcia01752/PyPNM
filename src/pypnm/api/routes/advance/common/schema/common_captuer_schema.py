@@ -4,8 +4,8 @@
 from typing import Optional
 
 from pydantic import BaseModel, Field
-from api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import BaseDeviceConnectRequest
-from api.routes.common.classes.common_endpoint_classes.schema.base_response import BaseDeviceResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import BaseDeviceConnectRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_response import BaseDeviceResponse
 
 class CaptureParameters(BaseModel):
     """

@@ -6,11 +6,12 @@ import asyncio
 import argparse
 import logging
 
-from docsis.cable_modem import CableModem
-from lib.inet import Inet
-from lib.mac_address import MacAddress
-from snmp.snmp_v2c import Snmp_v2c
-from snmp.snmp_compiled_oids import COMPILED_OIDS
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
+
+from pypnm.snmp.snmp_v2c import Snmp_v2c
+from pypnm.snmp.snmp_compiled_oids import COMPILED_OIDS
 
 async def main():
     parser = argparse.ArgumentParser(description="SNMP Get Next")

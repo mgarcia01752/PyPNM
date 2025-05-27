@@ -4,8 +4,8 @@ import binascii
 from pathlib import Path
 from typing import Optional, Union
 
-from pnm.process.pnm_file_type import PnmFileType
-from pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.process.pnm_header import PnmHeader
 
 logger = logging.getLogger(__name__)
 

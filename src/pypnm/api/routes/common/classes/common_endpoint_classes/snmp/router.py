@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+__skip_autoregister__ = True
+
 from enum import Enum
 import logging
 from abc import ABC, abstractmethod

@@ -1,6 +1,3 @@
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
-
 import importlib
 import pathlib
 import sys
@@ -9,26 +6,23 @@ from fastapi import FastAPI
 def auto_register_routers(app: FastAPI):
     """
     Auto-discovers and registers FastAPI routers by looking for 'router.py' files
-    under src/pypnm/api/routes. Builds import paths like 'api.routes.x.y.router'.
+    under src/pypnm/api/routes. Skips files explicitly marked as non-routable.
     """
     print("🔧 Starting auto_register_routers()")
 
-    # Locate 'pypnm' root (not 'src')
+    # Find project root (up to 'pypnm')
     project_root = pathlib.Path(__file__).resolve()
     while project_root.name != "pypnm":
         if project_root == project_root.parent:
-            print("❌ Could not find 'pypnm' directory from:", __file__)
+            print("❌ Could not find 'pypnm' directory.")
             return
         project_root = project_root.parent
 
-    print(f"📁 Located 'pypnm' directory: {project_root}")
-
     routes_path = project_root / "api" / "routes"
     if not routes_path.exists():
-        print(f"❌ routes_path does not exist: {routes_path}")
+        print(f"❌ Path not found: {routes_path}")
         return
 
-    # Ensure 'pypnm' is in sys.path
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
         print(f"📦 Added to sys.path: {project_root}")
@@ -43,6 +37,11 @@ def auto_register_routers(app: FastAPI):
             print(f"🔗 Importing module: {module_path}")
 
             module = importlib.import_module(module_path)
+
+            if getattr(module, "__skip_autoregister__", False):
+                print(f"⏭️  Skipped (marked non-routable): {module_path}")
+                continue
+
             router = getattr(module, "router", None)
             if router is None:
                 print(f"⚠️  No 'router' found in module: {module_path}")

@@ -5,31 +5,30 @@ import json
 import os
 from typing import Any, Optional
 
+
 class ConfigManager:
     """
     Manages application configuration stored in JSON format.
 
-    Loads configuration from a file and provides access to its keys using 
-    section/key-style access.
-
-    Expected config file path: `config/system.json`
+    Loads configuration two levels above this file:
+    Example: src/pypnm/system.json
     """
-    ROOT_PATH = 'settings'
-    CONFIG_NAME = 'system.json'
     
-
-    _config_data: dict[str, Any] = {}
-    _config_path: str = os.path.join(ROOT_PATH,CONFIG_NAME)
-
     def __init__(self, config_path: Optional[str] = None) -> None:
-        """
-        Initializes the ConfigManager.
-
-        Args:
-            config_path (Optional[str]): Optional custom path to the config JSON file.
-        """
+        
+        CONFIG_NAME = "system.json"
+        CONFIG_DIR = "settings"
+        CONFIG_PATH = os.path.join(CONFIG_DIR, CONFIG_NAME)        
+        
         if config_path:
             self._config_path = config_path
+        else:
+            # Two folders up from this file
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            root_dir = os.path.abspath(os.path.join(current_dir, ".."))
+            self._config_path = os.path.join(root_dir, CONFIG_PATH)
+
+        self._config_data: dict[str, Any] = {}
         self._load()
 
     def _load(self) -> None:
@@ -51,8 +50,7 @@ class ConfigManager:
             Any: The value from the configuration or the fallback.
         
         Example:
-            .get("key1","key2")
-            
+            config.get("database", "host")
         """
         data = self._config_data
         for key in keys:
@@ -62,25 +60,15 @@ class ConfigManager:
         return data
 
     def reload(self) -> None:
-        """
-        Reloads the configuration from disk.
-        """
+        """Reloads the configuration from disk."""
         self._load()
 
     def as_dict(self) -> dict[str, Any]:
-        """
-        Returns the entire configuration as a dictionary.
-
-        Returns:
-            dict[str, Any]: The full config.
-        """
+        """Returns the entire configuration as a dictionary."""
         return self._config_data.copy()
-    
+
     def save(self, new_config: dict[str, Any]) -> None:
-        """
-        Overwrites the entire config with new_config and writes to the config file.
-        """
+        """Overwrites and saves the entire config."""
         self._config_data = new_config
         with open(self._config_path, "w") as f:
             json.dump(self._config_data, f, indent=4)
-

@@ -3,12 +3,12 @@
 
 import logging
 
-from api.routes.system.schemas import SysRequest, SysDescrResponse, SysUpTimeResponse
-from api.routes.common.service.status_codes import ServiceStatusCode
-from docsis.cable_modem import CableModem
-from docsis.data_type.sysDescr import SystemDescriptor
-from lib.inet import Inet
-from lib.mac_address import MacAddress
+from pypnm.api.routes.system.schemas import SysRequest, SysDescrResponse, SysUpTimeResponse
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.data_type.sysDescr import SystemDescriptor
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
 
 logger = logging.getLogger(__name__)
 

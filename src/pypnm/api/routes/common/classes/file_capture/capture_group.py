@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 from json import JSONDecodeError
 
-from config.config_manager import ConfigManager
+from pypnm.config.config_manager import ConfigManager
 
 class CaptureGroup:
     """

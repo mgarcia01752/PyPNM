@@ -4,11 +4,11 @@
 import logging
 from typing import Tuple
 
-from api.routes.common.extended.common_measure_service import CommonMeasureService
-from config.pnm_config_manager import PnmConfigManager
-from lib.inet import Inet
+from pypnm.api.routes.common.extended.common_measure_service import CommonMeasureService
+from pypnm.config.pnm_config_manager import PnmConfigManager
+from pypnm.lib.inet import Inet
 
-from docsis.cable_modem import CableModem
+from pypnm.docsis.cable_modem import CableModem
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 
 class CmDsOfdmModProfileService(CommonMeasureService):

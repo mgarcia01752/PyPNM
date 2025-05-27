@@ -9,10 +9,7 @@ from pypnm.docsis.data_type import DocsIf31CmSystemCfgState
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 
-
-
 logger = logging.getLogger(__name__)
-
 
 class DiplexerConfigService:
     """

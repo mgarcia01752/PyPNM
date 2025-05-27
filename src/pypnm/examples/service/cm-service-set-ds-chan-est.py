@@ -6,15 +6,15 @@
 import argparse
 import asyncio
 import logging
-from api.routes.common.extended.common_messaging_service import MessageResponse
-from api.routes.common.extended.common_process_service import CommonProcessService
-from api.routes.common.service.status_codes import ServiceStatusCode
-from api.routes.docs.pnm.ds.ofdm.chan_est_coeff.service import CmDsOfdmChanEstCoefService
-from docsis.cable_modem import CableModem
-from lib.file_processor import FileProcessor
-from lib.inet import Inet
-from lib.mac_address import MacAddress
-from lib.utils import TimeUnit, Utils
+from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
+from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.docs.pnm.ds.ofdm.chan_est_coeff.service import CmDsOfdmChanEstCoefService
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.lib.file_processor import FileProcessor
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.utils import TimeUnit, Utils
 
 # Configure logging
 logging.basicConfig(

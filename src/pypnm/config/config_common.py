@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from config.config_manager import ConfigManager
+from pypnm.config.config_manager import ConfigManager
 
 
 class SystemConfigCommonSettings:

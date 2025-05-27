@@ -4,7 +4,7 @@
 from pydantic import BaseModel
 from typing import List
 
-from api.routes.common.classes.common_endpoint_classes.common_req_resp import CommonResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import CommonResponse
 
 class EventLogEntry(BaseModel):
     """

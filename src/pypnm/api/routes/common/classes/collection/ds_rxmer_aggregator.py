@@ -3,7 +3,7 @@
 
 import logging
 from typing import Dict, List, Any, Optional
-from api.routes.common.classes.analysis.analysis import Analysis
+from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
 from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
 

@@ -2,11 +2,11 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from config.pnm_config_manager import PnmConfigManager
-from lib.inet import Inet
-from lib.mac_address import MacAddress
-from docsis.cm_snmp_operation import CmSnmpOperation
-from lib.ping import Ping
+from pypnm.config.pnm_config_manager import PnmConfigManager
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
+from pypnm.docsis.cm_snmp_operation import CmSnmpOperation
+from pypnm.lib.ping import Ping
 
 class CableModem(CmSnmpOperation):
     """

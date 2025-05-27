@@ -3,7 +3,7 @@
 
 from pydantic import BaseModel, Field
 from typing import Dict, Optional, List
-from api.routes.common.classes.common_endpoint_classes.common_req_resp import CommonFileRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import CommonFileRequest
 
 class FileQueryRequest(CommonFileRequest):
     '''Base Model'''

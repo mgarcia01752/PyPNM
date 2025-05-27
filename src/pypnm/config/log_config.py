@@ -20,7 +20,7 @@ Expected JSON config structure:
 import logging
 import os
 from datetime import datetime
-from config.config_manager import ConfigManager
+from pypnm.config.config_manager import ConfigManager
 
 # Load logging configuration
 config_mgr = ConfigManager()

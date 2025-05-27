@@ -3,7 +3,7 @@
 
 from pydantic import BaseModel, Field
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import SpectrumRetrievalType, WindowFunction
-from api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmRequest
 
 
 class SpectrumAnalyzerParameters(BaseModel):

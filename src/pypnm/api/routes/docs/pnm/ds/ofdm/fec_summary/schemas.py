@@ -3,8 +3,8 @@
 
 from pydantic import Field
 
-from api.routes.common.classes.common_endpoint_classes.schemas import PnmDataResponse, PnmRequest
-from docsis.cm_snmp_operation import FecSummaryType
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmDataResponse, PnmRequest
+from pypnm.docsis.cm_snmp_operation import FecSummaryType
 
 class PnmFecSummaryRequest(PnmRequest):
     """Request model used to trigger measurement-related operations on a cable modem."""

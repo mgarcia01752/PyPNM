@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import json
 import logging
 from enum import IntEnum
-from lib.utils import Utils
+from pypnm.lib.utils import Utils
 
 class SpectrumRetrievalType(IntEnum):
     """

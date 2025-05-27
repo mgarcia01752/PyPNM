@@ -8,11 +8,11 @@ from pathlib import Path
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 
-from api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
-from config.config_manager import ConfigManager
-from docsis.cm_snmp_operation import DocsPnmCmCtlTest
-from lib.mac_address import MacAddress
-from lib.file_processor import FileProcessor
+from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
+from pypnm.config.config_manager import ConfigManager
+from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlTest
+from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.file_processor import FileProcessor
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 from pypnm.pnm.process.pnm_type_header_mapper import PnmFileTypeMapper

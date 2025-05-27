@@ -28,8 +28,8 @@ Instantiate an SNMPv2c client by providing:
 * **port**: SNMP port number (default: `161`)
 
 ```python
-from lib.inet import Inet
-from snmp.snmp_module import Snmp_v2c
+from pypnm.lib.inet import Inet
+from pypnm.snmp.snmp_module import Snmp_v2c
 
 snmp = Snmp_v2c(host=Inet("192.168.0.10"), community="public")
 ```

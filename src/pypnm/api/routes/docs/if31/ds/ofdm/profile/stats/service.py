@@ -9,9 +9,9 @@ Defines a service class for fetching DOCSIS 3.1 downstream OFDM profile statisti
 import logging
 from typing import List, Dict, Any
 
-from docsis.cable_modem import CableModem
-from lib.inet import Inet
-from lib.mac_address import MacAddress
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
 
 logger = logging.getLogger(__name__)
 

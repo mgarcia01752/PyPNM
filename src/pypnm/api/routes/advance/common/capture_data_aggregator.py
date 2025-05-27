@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import List, Tuple
 import logging
 
-from api.routes.advance.common.pnm_collection import PnmCollection
-from config.config_manager import ConfigManager
-from api.routes.common.classes.file_capture.capture_group import CaptureGroup
-from api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
+from pypnm.api.routes.advance.common.pnm_collection import PnmCollection
+from pypnm.config.config_manager import ConfigManager
+from pypnm.api.routes.common.classes.file_capture.capture_group import CaptureGroup
+from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
 
 
 class CaptureDataAggregator:

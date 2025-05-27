@@ -7,10 +7,10 @@ import argparse
 import asyncio
 import json
 import logging
-from docsis.cable_modem import CableModem
-from lib.inet import Inet
-from lib.mac_address import MacAddress
-from snmp.snmp_module_class import DocsisIfType
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
+from pypnm.snmp.snmp_module_class import DocsisIfType
 
 logging.basicConfig(
     level=logging.INFO,

@@ -4,7 +4,7 @@
 import json
 from typing import Sequence, List, Dict, Any
 
-from lib.shannon.shannon import Shannon
+from pypnm.lib.shannon.shannon import Shannon
 
 class ShannonSeries:
     """

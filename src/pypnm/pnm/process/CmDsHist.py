@@ -3,7 +3,6 @@
 
 import json
 import logging
-import os
 from struct import calcsize, unpack
 from typing import Optional, List
 from pypnm.pnm.process.pnm_file_type import PnmFileType

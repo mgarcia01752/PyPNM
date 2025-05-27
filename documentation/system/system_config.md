@@ -124,7 +124,7 @@ from config.system import SystemConfig
 from pypnm import ConfigManager
 
 # Load default config
-cfg = ConfigManager.load("config/system.json")
+cfg = ConfigManager()
 
 # Access values
 mac = cfg.get("FastApiRequestDefault", "mac_address")

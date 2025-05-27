@@ -3,9 +3,9 @@
 
 from ipaddress import ip_address
 from pydantic import BaseModel, Field, ConfigDict, field_validator
-from api.routes.common.classes.common_endpoint_classes.schema.base_snmp import SNMPConfig
-from config.config_common import SystemConfigCommonSettings as SCSC
-from lib.mac_address import MacAddress
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_snmp import SNMPConfig
+from pypnm.config.config_common import SystemConfigCommonSettings as SCSC
+from pypnm.lib.mac_address import MacAddress
 
 
 class BaseDeviceConnectRequest(BaseModel):

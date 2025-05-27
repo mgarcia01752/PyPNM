@@ -8,20 +8,21 @@ import shutil
 from time import sleep
 from typing import Dict, List,  Optional, Tuple, Union
 
-from api.routes.common.extended.common_measure_schema import (
+from pypnm.api.routes.common.extended.common_measure_schema import (
     DownstreamOfdmParameters, UpstreamOfdmaParameters)
-from config.config_manager import ConfigManager
-from api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
-from api.routes.common.extended.common_messaging_service import CommonMessagingService, MessageResponse
-from api.routes.common.service.status_codes import ServiceStatusCode
-from docsis.cable_modem import CableModem
-from docsis.cm_snmp_operation import DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType
-from lib.inet import Inet
-from lib.utils import Utils
+from pypnm.config.config_manager import ConfigManager
+from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
+from pypnm.api.routes.common.extended.common_messaging_service import CommonMessagingService, MessageResponse
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType
+from pypnm.lib.inet import Inet
+from pypnm.lib.utils import Utils
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import DocsIf3CmSpectrumAnalysisCtrlCmd, WindowFunction
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
-from snmp.snmp_module_class import DocsisIfType
-from snmp.snmp_v2c import Snmp_v2c
+
+from pypnm.snmp.snmp_module_class import DocsisIfType
+from pypnm.snmp.snmp_v2c import Snmp_v2c
 
 class CommonMeasureService(CommonMessagingService):
     """

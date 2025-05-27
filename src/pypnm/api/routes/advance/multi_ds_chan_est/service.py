@@ -3,11 +3,11 @@
 
 import logging
 
-from api.routes.advance.common.capture_service import AbstractCaptureService
-from api.routes.common.extended.common_messaging_service import MessageResponse
-from api.routes.common.service.status_codes import ServiceStatusCode
-from api.routes.docs.pnm.ds.ofdm.chan_est_coeff.service import CmDsOfdmChanEstCoefService
-from docsis.cable_modem import CableModem
+from pypnm.api.routes.advance.common.capture_service import AbstractCaptureService
+from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.docs.pnm.ds.ofdm.chan_est_coeff.service import CmDsOfdmChanEstCoefService
+from pypnm.docsis.cable_modem import CableModem
 
 class MultiChannelEstimationService(AbstractCaptureService):
     """

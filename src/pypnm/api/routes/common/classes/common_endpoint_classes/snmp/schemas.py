@@ -4,9 +4,9 @@
 from typing import Any, Dict, Optional, Union
 from pydantic import BaseModel, Field
 
-from api.routes.common.classes.common_endpoint_classes.common_req_resp import CommonRequest, CommonResponse
-from api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import BaseDeviceConnectRequest
-from api.routes.common.classes.common_endpoint_classes.schema.base_response import BaseDeviceResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import CommonRequest, CommonResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import BaseDeviceConnectRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_response import BaseDeviceResponse
 
 class SnmpRequest(BaseDeviceConnectRequest):
     """

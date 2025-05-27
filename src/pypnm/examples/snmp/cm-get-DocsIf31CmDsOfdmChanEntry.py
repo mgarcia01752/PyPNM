@@ -6,10 +6,10 @@ import argparse
 import asyncio
 import logging
 from typing import List
-from docsis.cable_modem import CableModem
-from docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanEntry
-from lib.inet import Inet
-from lib.mac_address import MacAddress
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanEntry
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
 
 # Configure logging
 logging.basicConfig(

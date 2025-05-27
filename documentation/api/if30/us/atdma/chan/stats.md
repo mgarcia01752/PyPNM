@@ -48,10 +48,10 @@ The service that processes the request and fetches upstream SC-QAM channel stats
 
 ```python
 from typing import List
-from docsis.cable_modem import CableModem
-from docsis.data_type import DocsIfUpstreamChannelEntry
-from lib.inet import Inet
-from lib.mac_address import MacAddress
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.data_type import DocsIfUpstreamChannelEntry
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
 
 class UsScQamChannelService:
 
@@ -83,8 +83,8 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from typing import List
 
-from api.routes.docs.if30.ds.scqam.chan.stats.schemas import UsScQamChannelEntryResponse, UsScQamChannelRequest
-from api.routes.docs.if30.ds.scqam.chan.stats.service import UsScQamChannelService
+from pypnm.api.routes.docs.if30.ds.scqam.chan.stats.schemas import UsScQamChannelEntryResponse, UsScQamChannelRequest
+from pypnm.api.routes.docs.if30.ds.scqam.chan.stats.service import UsScQamChannelService
 
 router = APIRouter(prefix="/docs/if/us/scqam/chan", tags=["DOCSIS 3.0 US SC-QAM Channel Stats"])
 

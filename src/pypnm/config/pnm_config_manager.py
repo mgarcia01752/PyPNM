@@ -2,8 +2,8 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from typing import Tuple
-from config.config_manager import ConfigManager
-from lib.inet import Inet
+from pypnm.config.config_manager import ConfigManager
+from pypnm.lib.inet import Inet
 
 class PnmConfigManager:
     """

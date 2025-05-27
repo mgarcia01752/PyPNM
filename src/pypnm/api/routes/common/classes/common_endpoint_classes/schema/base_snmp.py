@@ -9,7 +9,7 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field, ConfigDict, field_validator, model_validator
 from pydantic.alias_generators import to_camel
 
-from config.config_common import SystemConfigCommonSettings as SCSC
+from pypnm.config.config_common import SystemConfigCommonSettings as SCSC
 
 class SNMPv2c(BaseModel):
     """

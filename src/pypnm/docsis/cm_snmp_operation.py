@@ -5,15 +5,18 @@ from enum import Enum
 import logging
 import time
 from typing import List, Tuple, Union
-from docsis.data_type.DocsDevEventEntry import DocsDevEventEntry
-from docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanEntry
-from docsis.data_type.DocsIf31CmDsOfdmProfileStatsEntry import DocsIf31CmDsOfdmProfileStatsEntry
-from docsis.data_type.DocsIf31CmSystemCfgState import DocsIf31CmSystemCfgDiplexState
-from docsis.data_type.DocsIf31CmUsOfdmaChanEntry import DocsIf31CmUsOfdmaChanEntry
-from docsis.data_type.DocsIfDownstreamChannel import DocsIfDownstreamChannel
-from docsis.data_type.DocsIfSignalQualityEntry import DocsIfSignalQuality
-from docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChannelEntry
-from docsis.data_type.sysDescr import SystemDescriptor
+from pysnmp.proto.rfc1902 import OctetString, Counter32, Bits, Counter64, Gauge32, Integer, Integer32, IpAddress
+from pypnm.docsis.data_type.DocsDevEventEntry import DocsDevEventEntry
+from pypnm.docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanEntry
+from pypnm.docsis.data_type.DocsIf31CmDsOfdmProfileStatsEntry import DocsIf31CmDsOfdmProfileStatsEntry
+from pypnm.docsis.data_type.DocsIf31CmSystemCfgState import DocsIf31CmSystemCfgDiplexState
+from pypnm.docsis.data_type.DocsIf31CmUsOfdmaChanEntry import DocsIf31CmUsOfdmaChanEntry
+from pypnm.docsis.data_type.DocsIfDownstreamChannel import DocsIfDownstreamChannel
+from pypnm.docsis.data_type.DocsIfSignalQualityEntry import DocsIfSignalQuality
+from pypnm.docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChannelEntry
+from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst
+from pypnm.docsis.data_type.sysDescr import SystemDescriptor
+from pypnm.docsis.lib.pnm_bulk_data import DocsPnmBulkDataGroup, DocsPnmBulkFileEntry
 from pypnm.lib.inet import Inet
 from pypnm.lib.inet_utils import InetUtils
 from pypnm.lib.mac_address import MacAddress
@@ -21,11 +24,11 @@ from pypnm.pnm.data_type.DocsEqualizerData import DocsEqualizerData
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
     DocsIf3CmSpectrumAnalysisCtrlCmd, SpectrumRetrievalType)
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
-from snmp.snmp_v2c import Snmp_v2c
-from snmp.snmp_compiled_oids import COMPILED_OIDS
+from pypnm.snmp.snmp_v2c import Snmp_v2c
+from pypnm.snmp.snmp_compiled_oids import COMPILED_OIDS
 from typing import Optional
 
-from snmp.snmp_module_class import DocsPnmBulkUploadControl, DocsisIfType
+from pypnm.snmp.snmp_module_class import DocsPnmBulkUploadControl, DocsisIfType
 
 class DocsPnmBulkFileUploadStatus(Enum):
     """Represents the upload status of a DOCSIS PNM bulk data file."""

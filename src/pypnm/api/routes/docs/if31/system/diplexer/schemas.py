@@ -3,7 +3,7 @@
 
 from typing import Any
 from pydantic import BaseModel, Field
-from api.routes.common.classes.common_endpoint_classes.schema.base_response import BaseDeviceResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_response import BaseDeviceResponse
 
 class DiplexerConfig(BaseModel):
     """

@@ -15,7 +15,6 @@ from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.ds.ofdm.const_display.schemas import PnmConstellationDisplayRequest, PnmConstellationDisplayResponse
 from pypnm.api.routes.docs.pnm.ds.ofdm.const_display.service import CmDsOfdmConstDisplayService
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst as ConstDispConst
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 

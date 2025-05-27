@@ -5,9 +5,10 @@
 import argparse
 import asyncio
 import logging
-from docsis.cable_modem import CableModem
-from lib.inet import Inet
-from lib.mac_address import MacAddress
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
+
 
 async def main():
     parser = argparse.ArgumentParser(description="Set sysContact on Cable Modem via SNMP")

@@ -4,7 +4,7 @@
 import numpy as np
 from typing import List, Union, Dict, Any
 
-from pnm.lib.signal_statistics import SignalStatistics
+from pypnm.pnm.lib.signal_statistics import SignalStatistics
 
 class MinAvgMax:
     """

@@ -3,9 +3,9 @@
 
 from typing import Any, Dict, List
 from pydantic import BaseModel, Field
-from api.routes.advance.common.schema.common_captuer_schema import (
+from pypnm.api.routes.advance.common.schema.common_captuer_schema import (
     MultiCaptureParametersResponse, MultiCaptureRequest)
-from api.routes.common.classes.common_endpoint_classes.common_req_resp import (
+from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
     CommonAnalysisResponse, CommonMultiAnalysisRequest, CommonResponse)
 
 class MultiChanEstimationParameters(BaseModel):

@@ -4,7 +4,7 @@
 from enum import Enum
 import json
 from typing import Any, Dict, List, Optional, Tuple
-from api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 
 class MessageResponseType(Enum):
     """

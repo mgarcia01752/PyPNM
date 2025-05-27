@@ -2,10 +2,10 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from typing import Dict, List
-from docsis.cable_modem import CableModem
-from docsis.data_type import DocsIfDownstreamChannel
-from lib.inet import Inet
-from lib.mac_address import MacAddress
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.data_type import DocsIfDownstreamChannel
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
 
 class DsScQamChannelService:
     """

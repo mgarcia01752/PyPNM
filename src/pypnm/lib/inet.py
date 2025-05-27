@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from lib.inet_utils import InetUtils
+from pypnm.lib.inet_utils import InetUtils
 
 class Inet:
     """

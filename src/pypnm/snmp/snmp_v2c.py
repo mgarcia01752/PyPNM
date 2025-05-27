@@ -10,10 +10,10 @@ from pysnmp.hlapi.v3arch.asyncio import (
     ObjectType,ObjectIdentity, get_cmd,set_cmd, walk_cmd)
 
 from pysnmp.proto.rfc1902 import (OctetString)
-from lib.inet import Inet
-from lib.inet_utils import InetUtils
+from pypnm.lib.inet import Inet
+from pypnm.lib.inet_utils import InetUtils
 
-from snmp.snmp_module_class import InetAddressType
+from pypnm.snmp.snmp_module_class import InetAddressType
 
 class Snmp_v2c:
     """

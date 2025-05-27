@@ -4,7 +4,7 @@
 import abc
 from typing import TypeVar, Type, Any, Tuple, Dict
 
-from api.routes.advance.common.capture_service import AbstractCaptureService
+from pypnm.api.routes.advance.common.capture_service import AbstractCaptureService
 
 T = TypeVar("T", bound=AbstractCaptureService)
 

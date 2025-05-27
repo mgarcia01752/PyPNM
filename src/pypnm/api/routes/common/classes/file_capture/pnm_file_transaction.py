@@ -8,10 +8,10 @@ import time
 from typing import Dict, Optional
 from pathlib import Path
 
-from config.config_manager import ConfigManager
-from docsis.cable_modem import CableModem
-from docsis.data_type.sysDescr import SystemDescriptor
-from lib.mac_address import MacAddress
+from pypnm.config.config_manager import ConfigManager
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.data_type.sysDescr import SystemDescriptor
+from pypnm.lib.mac_address import MacAddress
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 
 class PnmFileTransaction:

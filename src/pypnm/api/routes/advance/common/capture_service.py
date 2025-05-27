@@ -7,13 +7,13 @@ import asyncio
 import logging
 from typing import Any, Dict, List, Tuple
 
-from api.routes.advance.common.operation_manager import OperationManager
-from api.routes.advance.common.operation_state import OperationState
-from api.routes.common.classes.file_capture.capture_group import CaptureGroup
-from api.routes.common.classes.file_capture.capture_sample import CaptureSample
-from api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
-from api.routes.common.extended.common_messaging_service import MessageResponse, MessageResponseType
-from api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.advance.common.operation_manager import OperationManager
+from pypnm.api.routes.advance.common.operation_state import OperationState
+from pypnm.api.routes.common.classes.file_capture.capture_group import CaptureGroup
+from pypnm.api.routes.common.classes.file_capture.capture_sample import CaptureSample
+from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
+from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse, MessageResponseType
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 
 
 class AbstractCaptureService(abc.ABC):

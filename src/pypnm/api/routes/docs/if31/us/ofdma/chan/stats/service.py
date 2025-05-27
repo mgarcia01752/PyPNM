@@ -3,10 +3,10 @@
 
 import logging
 from typing import Dict, List
-from docsis.cable_modem import CableModem
-from docsis.data_type.DocsIf31CmUsOfdmaChanEntry import DocsIf31CmUsOfdmaChanEntry
-from lib.inet import Inet
-from lib.mac_address import MacAddress
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.data_type.DocsIf31CmUsOfdmaChanEntry import DocsIf31CmUsOfdmaChanEntry
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
 
 
 class UsOfdmChannelService:

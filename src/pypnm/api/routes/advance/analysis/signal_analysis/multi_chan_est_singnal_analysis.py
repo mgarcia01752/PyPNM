@@ -5,12 +5,12 @@ from enum import Enum
 import logging
 from typing import Any, Dict, List, Optional
 
-from api.routes.advance.analysis.signal_analysis.detection.echo.ifft import IfftEchoDetector
-from api.routes.advance.analysis.signal_analysis.detection.echo.phase_slope import PhaseSlopeEchoDetector
-from api.routes.advance.analysis.signal_analysis.detection.lte.phase_slope_lte_detection import GroupDelayAnomalyDetector
-from api.routes.advance.analysis.signal_analysis.group_delay_calculator import GroupDelayCalculator
-from api.routes.advance.common.pnm_collection import PnmCollection
-from api.routes.common.classes.analysis.analysis import Analysis
+from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.ifft import IfftEchoDetector
+from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.phase_slope import PhaseSlopeEchoDetector
+from pypnm.api.routes.advance.analysis.signal_analysis.detection.lte.phase_slope_lte_detection import GroupDelayAnomalyDetector
+from pypnm.api.routes.advance.analysis.signal_analysis.group_delay_calculator import GroupDelayCalculator
+from pypnm.api.routes.advance.common.pnm_collection import PnmCollection
+from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
 from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 

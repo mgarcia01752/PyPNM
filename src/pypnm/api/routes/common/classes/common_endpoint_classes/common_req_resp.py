@@ -4,11 +4,11 @@
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator
 
-from api.routes.advance.common.operation_state import OperationState
-from api.routes.common.classes.common_endpoint_classes.schema.base_snmp import SNMPConfig
-from api.routes.common.service.status_codes import ServiceStatusCode
-from config.config_manager import ConfigManager
-from lib.mac_address import MacAddress
+from pypnm.api.routes.advance.common.operation_state import OperationState
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_snmp import SNMPConfig
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.config.config_manager import ConfigManager
+from pypnm.lib.mac_address import MacAddress
 
 config = ConfigManager()
 default_mac = config.get("FastApiRequestDefault", "mac_address")

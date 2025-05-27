@@ -3,8 +3,8 @@
 
 from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, Field
-from api.routes.advance.common.schema.common_captuer_schema import MultiCaptureRequest
-from api.routes.common.classes.common_endpoint_classes.common_req_resp import (
+from pypnm.api.routes.advance.common.schema.common_captuer_schema import MultiCaptureRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
     CommonAnalysisResponse, CommonMultiAnalysisRequest, CommonResponse)
 
 from enum import IntEnum, auto

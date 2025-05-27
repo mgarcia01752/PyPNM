@@ -5,12 +5,12 @@ import logging
 from typing import List
 from fastapi import HTTPException
 
-from api.routes.common.classes.common_endpoint_classes.schemas import PnmResponse
-from api.routes.common.service.status_codes import ServiceStatusCode
-from api.routes.docs.dev.schemas import EventLogEntry
-from docsis.cable_modem import CableModem
-from lib.inet import Inet
-from lib.mac_address import MacAddress
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmResponse
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.docs.dev.schemas import EventLogEntry
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
 
 logger = logging.getLogger(__name__)
 

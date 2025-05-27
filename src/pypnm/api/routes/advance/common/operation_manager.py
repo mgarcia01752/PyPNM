@@ -8,7 +8,7 @@ import logging
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
-from config.config_manager import ConfigManager
+from pypnm.config.config_manager import ConfigManager
 
 
 class OperationManager:
@@ -104,7 +104,7 @@ class OperationManager:
             ValueError: If the capture_group_id is not present in the CaptureGroup database.
         """
         # Verify that the capture group exists, or fail hard
-        from api.routes.common.classes.file_capture.capture_group import CaptureGroup
+        from pypnm.api.routes.common.classes.file_capture.capture_group import CaptureGroup
         cg = CaptureGroup(group_id=self.capture_group_id)
         if self.capture_group_id not in cg.list_groups():
             raise ValueError(

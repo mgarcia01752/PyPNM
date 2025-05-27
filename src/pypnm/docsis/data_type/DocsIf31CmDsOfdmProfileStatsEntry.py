@@ -4,8 +4,8 @@
 import logging
 from typing import List, Optional, Dict
 
-from snmp.snmp_v2c import Snmp_v2c
-from snmp.snmp_compiled_oids import COMPILED_OIDS
+from pypnm.snmp.snmp_v2c import Snmp_v2c
+from pypnm.snmp.snmp_compiled_oids import COMPILED_OIDS
 
 
 class DocsIf31CmDsOfdmProfileStatsEntry:
