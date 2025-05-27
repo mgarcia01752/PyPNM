@@ -3,11 +3,12 @@
 
 import logging
 from fastapi import APIRouter
-from api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest
-from api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
-from api.routes.common.service.status_codes import ServiceStatusCode
-from api.routes.docs.if31.ds.ofdm.profile.stats.schemas import OfdmProfileStatsResponse
-from api.routes.docs.if31.ds.ofdm.profile.stats.service import OfdmProfileStatsService
+
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.docs.if31.ds.ofdm.profile.stats.schemas import OfdmProfileStatsResponse
+from pypnm.api.routes.docs.if31.ds.ofdm.profile.stats.service import OfdmProfileStatsService
 
 class OfdmProfileStatsRouter:
     """

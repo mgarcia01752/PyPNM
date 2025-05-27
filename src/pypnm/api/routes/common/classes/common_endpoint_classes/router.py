@@ -7,13 +7,9 @@ from abc import ABC, abstractmethod
 from typing import List, Union
 from fastapi import APIRouter, HTTPException
 
-from api.routes.common.classes.common_endpoint_classes.schemas import (
-    PnmMeasurementResponse,
-    PnmAnalysisRequest,
-    PnmAnalysisResponse,
-    PnmRequest,
-)
-from api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmAnalysisResponse, PnmMeasurementResponse, PnmRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+
 
 class BaseFastApiRouter(ABC):
 

@@ -3,13 +3,11 @@
 
 import logging
 from typing import Tuple
-from api.routes.common.extended.common_measure_service import CommonMeasureService
-from config.pnm_config_manager import PnmConfigManager
-from docsis.cable_modem import CableModem
-from docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst as ConstelDisplayConst
-from lib.inet import Inet
+from pypnm.api.routes.common.extended.common_measure_service import CommonMeasureService
+from pypnm.config.pnm_config_manager import PnmConfigManager
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.lib.inet import Inet
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
-
 
 class CmDsOfdmConstDisplayService(CommonMeasureService):
     """

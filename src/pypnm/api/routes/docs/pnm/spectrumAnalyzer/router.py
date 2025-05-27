@@ -4,18 +4,19 @@
 import logging
 from typing import List, Union
 from fastapi import APIRouter, HTTPException
-from api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisResponse, PnmResponse
-from api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
-from api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
-from api.routes.common.extended.common_messaging_service import MessageResponse
-from api.routes.common.extended.common_process_service import CommonProcessService
-from api.routes.common.service.status_codes import ServiceStatusCode
-from api.routes.docs.pnm.ds.ofdm.fec_summary.schemas import PnmFecSummaryResponse
-from api.routes.docs.pnm.spectrumAnalyzer.schemas import CmSpecAnaAnalysisRequest, CmSpectrumAnalyzerRequest
-from api.routes.docs.pnm.spectrumAnalyzer.service import CmSpectrumAnalysisService
-from docsis.cable_modem import CableModem
-from lib.inet import Inet
-from lib.mac_address import MacAddress
+
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisResponse, PnmResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
+from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
+from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.docs.pnm.ds.ofdm.fec_summary.schemas import PnmFecSummaryResponse
+from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import CmSpecAnaAnalysisRequest, CmSpectrumAnalyzerRequest
+from pypnm.api.routes.docs.pnm.spectrumAnalyzer.service import CmSpectrumAnalysisService
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
 
 class SpectrumAnalyzerRouter:
     """

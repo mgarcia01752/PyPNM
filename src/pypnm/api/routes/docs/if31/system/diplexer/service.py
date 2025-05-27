@@ -3,11 +3,13 @@
 
 import logging
 
-from api.routes.docs.if31.system.diplexer.schemas import DiplexerConfigResult
-from docsis.cable_modem import CableModem
-from docsis.data_type import DocsIf31CmSystemCfgState
-from lib.inet import Inet
-from lib.mac_address import MacAddress
+from pypnm.api.routes.docs.if31.system.diplexer.schemas import DiplexerConfigResult
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.data_type import DocsIf31CmSystemCfgState
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
+
+
 
 logger = logging.getLogger(__name__)
 

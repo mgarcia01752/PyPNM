@@ -6,12 +6,11 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from typing import List
 
-from api.routes.common.classes.common_endpoint_classes.schemas import PnmChannelEntryResponse
-from api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
-from api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
-from api.routes.common.service.status_codes import ServiceStatusCode
-from api.routes.docs.if30.us.atdma.chan.stats.service import UsScQamChannelService
-
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmChannelEntryResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.docs.if30.us.atdma.chan.stats.service import UsScQamChannelService
 
 class UsScQamChannelRouter:
     """

@@ -54,7 +54,7 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)/src:$(pwd)/startup"
 # Launch FastAPI
 if [[ "$USE_SSL" == "true" ]]; then
   echo "🔒 Launching FastAPI with HTTPS on https://${HOST}:${PORT}"
-  uvicorn src.api.main:app \
+  uvicorn pypnm.api.main:app \
     --reload \
     --timeout-keep-alive 120 \
     --host "$HOST" \
@@ -63,7 +63,7 @@ if [[ "$USE_SSL" == "true" ]]; then
     --ssl-keyfile "$KEY_FILE"
 else
   echo "🌐 Launching FastAPI with HTTP on http://${HOST}:${PORT}"
-  uvicorn src.api.main:app \
+  uvicorn pypnm.api.main:app \
     --reload \
     --timeout-keep-alive 120 \
     --host "$HOST" \

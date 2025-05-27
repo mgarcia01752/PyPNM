@@ -7,11 +7,10 @@ from enum import Enum
 
 from fastapi import APIRouter, HTTPException
 
-from api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
-from api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
-from api.routes.common.service.status_codes import ServiceStatusCode
-from api.routes.system.schemas import SysDescrResponse, SysUpTimeResponse
-from api.routes.system.service import SystemSnmpService
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.system.schemas import SysDescrResponse, SysUpTimeResponse
 
 class SystemRouter:
     """

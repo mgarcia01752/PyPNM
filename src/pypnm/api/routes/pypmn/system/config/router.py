@@ -4,9 +4,9 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 
-from api.routes.pypmn.system.config.schemas import SystemConfigModel
-from config.config_manager import ConfigManager
-from config.pnm_config_manager import PnmConfigManager
+from pypnm.api.routes.pypmn.system.config.schemas import SystemConfigModel
+from pypnm.config.config_manager import ConfigManager
+from pypnm.config.pnm_config_manager import PnmConfigManager
 
 class PyPnmSystemConfigAPI:
     """

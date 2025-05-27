@@ -5,7 +5,7 @@ import os
 from fastapi import APIRouter, Path
 from fastapi.responses import FileResponse, JSONResponse
 
-from api.routes.docs.pnm.files.schemas import (
+from pypnm.api.routes.docs.pnm.files.schemas import (
     FileAnalysisRequest,
     FileQueryResponse,
     FileQueryRequest,
@@ -13,7 +13,7 @@ from api.routes.docs.pnm.files.schemas import (
     PushFileResponse,
     AnalysisResponse
 )
-from api.routes.docs.pnm.files.service import PnmFileService
+from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 
 class PnmFileManager:
     """

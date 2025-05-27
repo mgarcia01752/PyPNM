@@ -4,23 +4,19 @@
 import logging
 from typing import Union
 
-from api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
-from api.routes.common.classes.common_endpoint_classes.router import PnmFastApiRouter
-from api.routes.common.classes.common_endpoint_classes.schemas import (
-    PnmMeasurementResponse,
-    PnmAnalysisRequest,
-    PnmAnalysisResponse,
-    PnmRequest,
-)
-from api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
-from api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
-from api.routes.common.extended.common_messaging_service import MessageResponse
-from api.routes.common.extended.common_process_service import CommonProcessService
-from api.routes.common.service.status_codes import ServiceStatusCode
-from api.routes.docs.pnm.ds.ofdm.modulation_profile.service import CmDsOfdmModProfileService
-from docsis.cable_modem import CableModem
-from lib.inet import Inet
-from lib.mac_address import MacAddress
+from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
+from pypnm.api.routes.common.classes.common_endpoint_classes.router import PnmFastApiRouter
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmAnalysisResponse, PnmMeasurementResponse, PnmRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
+from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
+from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.docs.pnm.ds.ofdm.modulation_profile.service import CmDsOfdmModProfileService
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
+
 
 class ModulationProfileRouter(PnmFastApiRouter):
     """

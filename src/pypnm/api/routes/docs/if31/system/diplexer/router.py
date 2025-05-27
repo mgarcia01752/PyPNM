@@ -5,12 +5,13 @@ import logging
 from typing import Union
 from fastapi import APIRouter, HTTPException
 
-from api.routes.common.classes.common_endpoint_classes.schemas import PnmRequest
-from api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
-from api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
-from api.routes.common.service.status_codes import ServiceStatusCode
-from api.routes.docs.if31.system.diplexer.schemas import DiplexerResponse
-from api.routes.docs.if31.system.diplexer.service import DiplexerConfigService as DiplexConfigSrv
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.docs.if31.system.diplexer.schemas import DiplexerResponse
+from pypnm.api.routes.docs.if31.system.diplexer.service import DiplexerConfigService
+
 
 class DiplexerConfigResult:
     
@@ -41,7 +42,7 @@ class DiplexerConfigResult:
                         message=msg,
                     )  
 
-                config = await DiplexConfigSrv.fetch_diplexer_config(
+                config = await DiplexerConfigService.fetch_diplexer_config(
                     mac_address=request.mac_address,
                     ip_address=request.ip_address)
 

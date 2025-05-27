@@ -6,22 +6,18 @@ from typing import List, Union
 
 from fastapi import APIRouter, HTTPException
 
-from api.routes.common.classes.common_endpoint_classes.schemas import (
-    PnmAnalysisRequest, PnmAnalysisResponse,)
-from api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
-from api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
-from api.routes.common.extended.common_messaging_service import MessageResponse
-from api.routes.common.extended.common_process_service import CommonProcessService
-from api.routes.common.service.status_codes import ServiceStatusCode
-from api.routes.docs.pnm.ds.ofdm.const_display.service import CmDsOfdmConstDisplayService
-from api.routes.docs.pnm.ds.ofdm.const_display.schemas import (
-    PnmConstellationDisplayRequest as ConstDispRequest,
-    PnmConstellationDisplayResponse as ConstDispResponse,
-)
-
-from docsis.cable_modem import CableModem
-from lib.inet import Inet
-from lib.mac_address import MacAddress
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmAnalysisResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
+from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
+from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
+from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.docs.pnm.ds.ofdm.const_display.schemas import PnmConstellationDisplayRequest, PnmConstellationDisplayResponse
+from pypnm.api.routes.docs.pnm.ds.ofdm.const_display.service import CmDsOfdmConstDisplayService
+from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst as ConstDispConst
+from pypnm.lib.inet import Inet
+from pypnm.lib.mac_address import MacAddress
 
 
 class ConstellationDisplayRouter:
@@ -45,8 +41,8 @@ class ConstellationDisplayRouter:
         
     def _add_routes(self):
 
-        @self.router.post(f"/{self.base_endpoint}/getMeasurement", response_model=Union[ConstDispResponse,SnmpResponse])
-        async def get_measurement(request: ConstDispRequest) -> Union[ConstDispResponse, SnmpResponse]:
+        @self.router.post(f"/{self.base_endpoint}/getMeasurement", response_model=Union[PnmConstellationDisplayResponse,SnmpResponse])
+        async def get_measurement(request: PnmConstellationDisplayRequest) -> Union[PnmConstellationDisplayResponse, SnmpResponse]:
             """
             Trigger constellation display measurement for a specific cable modem.
 
@@ -90,7 +86,7 @@ class ConstellationDisplayRouter:
                 cps = CommonProcessService(msg_rsp)
                 msg_rsp = cps.process()
 
-                return ConstDispResponse(
+                return PnmConstellationDisplayResponse(
                     mac_address=request.mac_address,
                     status=msg_rsp.status,
                     data=msg_rsp.payload_to_dict(),

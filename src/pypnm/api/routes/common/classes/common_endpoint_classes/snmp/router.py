@@ -6,9 +6,9 @@ import logging
 from abc import ABC, abstractmethod
 from typing import List
 from fastapi import APIRouter, HTTPException
-from api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import BaseDeviceConnectRequest
-from api.routes.common.classes.common_endpoint_classes.snmp.schemas import (
-    SnmpAnalysisRequest, SnmpAnalysisResponse, SnmpRequest, SnmpResponse)
+
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import BaseDeviceConnectRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpAnalysisRequest, SnmpAnalysisResponse, SnmpResponse
 
 class SnmpFastApiRouter(ABC):
     """

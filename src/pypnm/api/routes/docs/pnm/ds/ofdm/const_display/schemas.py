@@ -3,8 +3,8 @@
 
 from pydantic import Field
 
-from api.routes.common.classes.common_endpoint_classes.schemas import PnmDataResponse, PnmRequest
-from docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst as ConsDisplaConstant
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmRequest
+
 
 class PnmConstellationDisplayRequest(PnmRequest):
     """Request model used to trigger measurement-related operations on a cable modem."""
