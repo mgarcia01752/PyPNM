@@ -26,14 +26,13 @@ Make sure you have these installed on Ubuntu/Debian:
 
 ```bash
   sudo apt update
-  sudo apt install -y \
-    git               \
-    curl              \
-  python3.10          \
-  python3.10-venv     \
-  python3-pip
+  sudo apt install -y   \
+        git             \
+        curl            \
+        python3.10      \
+        python3.10-venv \
+        python3-pip
   ```
-
 
 ## System Configuration
 
@@ -123,6 +122,9 @@ options:
   --key KEY    Path to SSL private key
 
 ```
+
+[Generating SSL Certificates](documentation/system/generate-ssl-certificates.md)
+
 **Optional CLI arguments:**
 
 ```bash
