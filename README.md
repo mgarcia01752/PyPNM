@@ -40,9 +40,6 @@ Make sure you have these installed on Ubuntu/Debian:
 
 Core application settings—including SNMP credentials, PNM file transfer methods, logging rules, and FastAPI defaults—are centralized in the system configuration file.
 
-* **Schema**: `src/pypnm/settings/system.json`
-* **Loader**: `ConfigManager` (`src/pypnm/config/config_manager.py`)
-
 ---
 
 ## 🛠 Key Features
