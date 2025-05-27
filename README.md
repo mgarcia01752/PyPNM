@@ -18,6 +18,23 @@
 * **FastAPI REST service** delivering clean JSON for integration into dashboards and automation
 * **Extensible architecture** for adding new measurement types and custom analytics
 
+## Prerequisites
+
+### System Tools
+
+Make sure you have these installed on Ubuntu/Debian:
+
+```bash
+  sudo apt update
+  sudo apt install -y \
+    git               \
+    curl              \
+  python3.10          \
+  python3.10-venv     \
+  python3-pip
+  ```
+
+
 ## System Configuration
 
 [SystemConfiguration](documentation/system/system_config.md)
