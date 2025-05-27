@@ -18,39 +18,6 @@
 * **FastAPI REST service** delivering clean JSON for integration into dashboards and automation
 * **Extensible architecture** for adding new measurement types and custom analytics
 
-## Prerequisites
-
-### Operating System
-
-PyPNM is designed to run on Linux-based systems. 
-
-**Recommended distributions:**
-- Ubuntu 22.04 LTS  
-- Debian (latest stable)  
-- Fedora Workstation  
-
-_No special OS kernel patches are required beyond a standard Linux environment._
-
-### System Tools
-
-Make sure you have these installed on Ubuntu/Debian:
-
-```bash
-  sudo apt update
-  sudo apt install -y   \
-        git             \
-        curl            \
-        python3.10      \
-        python3.10-venv \
-        python3-pip
-  ```
-
-## System Configuration
-
-[SystemConfiguration](documentation/system/system_config.md)
-
-Core application settings—including SNMP credentials, PNM file transfer methods, logging rules, and FastAPI defaults—are centralized in the system configuration file.
-
 ---
 
 ## 🛠 Key Features
@@ -63,6 +30,35 @@ Core application settings—including SNMP credentials, PNM file transfer method
 * **Capacity Margin Calculations**: Shannon-based bit-per-subcarrier limits and deltas
 * **RESTful API**: Auto-generated OpenAPI, Swagger UI, Postman collection for large-payload endpoints
 * **Command-Line Examples**: Utilities for standalone analysis scripts and batch processing
+
+---
+
+## Prerequisites
+
+### Operating System
+
+PyPNM is designed to run on Linux-based systems.
+
+**Recommended distributions:**
+- Ubuntu 22.04 LTS  
+- Debian (latest stable)  
+- Fedora Workstation  
+
+_No special OS kernel patches are required beyond a standard Linux environment._
+
+### Required System Packages
+
+Make sure you have these installed on Ubuntu/Debian:
+
+```bash
+  sudo apt update
+  sudo apt install -y   \
+        git             \
+        curl            \
+        python3.10      \
+        python3.10-venv \
+        python3-pip
+  ```
 
 ---
 
@@ -145,8 +141,6 @@ pypnm --host 0.0.0.0 --port 443 --ssl --cert ./certs/cert.pem --key ./certs/key.
 pypnm
 ```
 
----
-
 ### Step 6: Open the API Docs
 
 * **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
@@ -169,29 +163,6 @@ PyPNM’s Python API lets you integrate PNM telemetry end-to-end in your own Pyt
   Ready-to-run scripts demonstrating common tasks—loading a PNM file, batch RxMER captures, spectrum plots, etc.:
   [Example Scripts →](documentation/examples/index.md)
 
-**SNMP Client**
-
-Under the hood, PyPNM uses the pure-Python [pysnmp](https://pypi.org/project/pysnmp/) library for v1/v2c/v3 operations.
-You can install it directly (if you only need SNMP support) with:
-
-```bash
-pip install pysnmp
-```
-
-* **SNMPv2c Guide & API**
-  Learn how to use the built-in async SNMPv2c client:
-
-  * [SNMPv2c Overview →](documentation/api/python/snmp/index.md)
-  * [Class Reference →](src/pypnm/snmp/snmp_v2c.py)
-
-**Core Capabilities**
-
-1. **CableModem client**: SNMP/TFTP interface to trigger and retrieve PNM captures.
-2. **PNM Parsers**: Classes like `CmDsOfdmRxMer` and `CmSymbolCapture` to convert raw bytes into `dict` or Pydantic models.
-3. **Services & Aggregators**: High-level helpers combining capture, retrieval, parsing, and post-processing in a few method calls.
-
-Use these building blocks to integrate PNM workflows into dashboards, automation pipelines, or custom analytics tools.
-
 ---
 
 ## 📦 Supported Standards & Specs
@@ -205,29 +176,6 @@ Use these building blocks to integrate PNM workflows into dashboards, automation
 
   * [CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)
   * [CM-GL-PNM-HFC & CM-GL-PNM-3.1](https://www.cablelabs.com/specifications/CM-GL-PNM-HFC)
-
----
-
-## 🏗️ Architecture & Design
-
-* **Modular Aggregators**: Collect and merge time-series data (RxMER, FEC, profiles) into master stores.
-* **Analysis Services**: Encapsulate Shannon-limit calculations, deltas, and PNM file retrieval workflows.
-* **FastAPI Routers**: Standardized `APIRouter` modules with `POST` endpoints, explicit `response_model` schemas, and `JSONResponse`.
-* **ConfigManager**: JSON-based, reloadable configuration for SNMP/TFTP parameters.
-* **CI/CD Ready**: Integration with Jenkins pipelines and pytest for automated validation.
-
----
-
-## 🔧 Examples
-
-See the `examples/` folder for:
-
-* **RxMER Batch Processing**
-* **Spectrum Analysis via SNMP & PNM file**
-* **Modulation Profile Performance Reports**
-* **Live SNMP Session Scripts**
-
----
 
 ## 📜 License
 
