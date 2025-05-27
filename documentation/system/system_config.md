@@ -2,9 +2,9 @@
 
 This document describes the structure and meaning of the `system.json` configuration file. It also includes stub links to the config file location and the `ConfigManager` implementation.
 
-* **Config file**: [`config/system.json`](../../config/system.json)
-* **ConfigManager class**: [`ConfigManager`](../../src/config/config_manager.py)
-* **PNM ConfigManager class**: [`PnmConfigManager`](../../src/config/pnm_config_manager.py)
+* **Config file**: [`config/system.json`](../../src/pypnm/settings/system.json)
+* **ConfigManager class**: [`ConfigManager`](../../src/pypnm/config/config_manager.py)
+* **PNM ConfigManager class**: [`PnmConfigManager`](../../src/pypnm/config/pnm_config_manager.py)
 
 ---
 
@@ -14,8 +14,8 @@ Default parameters for REST requests to the FastAPI service.
 
 ```json
 "FastApiRequestDefault": {
-  "mac_address": "0050.f112.d72f",
-  "ip_address": "172.20.58.7"
+  "mac_address": "aabb.ccdd.eeff",
+  "ip_address": "192.168.100.1"
 }
 ```
 
@@ -48,7 +48,7 @@ Configuration for bulk PNM file transfers (e.g., spectrum or symbol captures).
 "PnmBulkDataTransfer": {
   "method": "tftp",
   "tftp": {
-    "ip_v4": "172.20.10.153",
+    "ip_v4": "192.168.200.1",
     "ip_v6": "2001:10::153",
     "remote_dir": ""
   },
@@ -103,7 +103,7 @@ Configuration for application logging.
 
 ```json
 "logging": {
-  "log_level": "DEBUG",
+  "log_level": "INFO",
   "log_dir": "logs",
   "log_filename": "pnm_log_%Y%m%d_%H%M%S.log"
 }

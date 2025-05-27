@@ -1,6 +1,5 @@
 fastapi==0.115.12
 lib==4.0.0
-matplotlib==3.10.3
 numpy==2.2.6
 pydantic==2.11.5
 pysmi==1.6.1
