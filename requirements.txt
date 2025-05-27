@@ -7,3 +7,4 @@ pysmi==1.6.1
 pysnmp==7.1.20
 Requests==2.32.3
 setuptools==59.6.0
+pandas==2.2.3
