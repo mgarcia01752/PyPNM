@@ -11,12 +11,12 @@
 
 ## System Configuration
 
-[SystemConfiguration](doc/system/system_config.md)
+[SystemConfiguration](documentation/system/system_config.md)
 
 Core application settings—including SNMP credentials, PNM file transfer methods, logging rules, and FastAPI defaults—are centralized in the system configuration file.
 
-* **Schema**: `config/system.json`
-* **Loader**: `ConfigManager` (`src/lib/config_manager.py`)
+* **Schema**: `src/pypnm/settings/system.json`
+* **Loader**: `ConfigManager` (`src/pypnm/config/config_manager.py`)
 
 ---
 
@@ -35,92 +35,113 @@ Core application settings—including SNMP credentials, PNM file transfer method
 
 ## 🚀 Getting Started
 
-### 1. Install from Source / Local Package
+### Step 1: Clone & Install Locally
 
-> **Note:** PyPNM is not published on PyPI. You can install it locally in two ways:
+> PyPNM is not published on PyPI. You can install it locally using an editable mode for development.
 
-**Editable install** (ideal for development):
+**Editable install (recommended for development):**
 
 ```bash
-git clone <your-repo-url>
-cd pypnm
+git clone https://github.com/mgarcia01752/PyPNM.git
+cd PyPNM
+```
+
+### Step 2: Create a Virtual Environment
+
+```bash
+python3 -m venv .env
+source .env/bin/activate
+```
+
+### Step 3: Install in Editable Mode
+
+```bash
 pip install -e .
 ```
 
-**Build and install a wheel** (for offline or locked-down environments):
+### Step 4: (Optional) Create a `.env` File
+
+If you need to override runtime settings, create a `.env` file in the root directory:
 
 ```bash
-cd pypnm
-python setup.py bdist_wheel
-pip install dist/pypnm-*.whl
+touch .env
 ```
 
-### 2. Configure Your Environment
+Example `.env` contents:
+
+```env
+PNM_CONFIG_PATH=src/pypnm/settings/system.json
+LOG_LEVEL=DEBUG
+SNMP_COMMUNITY=public
+```
+
+Environment variables will be loaded automatically if `python-dotenv` is installed (included in setup).
+
+---
+
+### Step 5: Launch the FastAPI Web Service
+
+Start the server using the CLI:
 
 ```bash
-export PYTHONPATH="${PYTHONPATH}:${PWD}/src:${PWD}/startup"
+pypnm --help  # view available options
+pypnm        # launch with defaults
 ```
 
-### 3. Run the FastAPI Service
-
-* **Single Measurement/Capture** — [Single-Capture API Guide](doc/api/fast-api/single/index.md)
-* **Multi-RxMER Capture** — [Multi-RxMER Capture API Guide](doc/api/fast-api/multi/index.md)
+**Optional CLI arguments:**
 
 ```bash
-./start-fastapi-service.sh
+pypnm --host 0.0.0.0 --port 443 --ssl --cert ./certs/cert.pem --key ./certs/key.pem
 ```
 
-Open your browser:
+* `--ssl`: Enables HTTPS
+* `--cert`, `--key`: Paths to SSL certificate and private key
+* `--host`, `--port`: Bind address and port
+
+---
+
+### Step 6: Open the API Docs
 
 * **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
 * **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 * **Postman**: Import [`postman_collection.json`](./postman_collection.json)
 
-> **Tip:** Use Postman for large or nested JSON responses—Swagger UI can struggle with very large data sets.
+> ⚠️ Tip: Use Postman for complex or nested JSON payloads—Swagger UI can struggle with large datasets.
 
 ---
-
-Here’s a cleaned-up, more consistent “## Python API” section—no code, just clear pointers and flow:
 
 ## Python API
 
 PyPNM’s Python API lets you integrate PNM telemetry end-to-end in your own Python scripts and applications:
 
-- **Full Reference**  
-  Browse the complete API docs for classes, methods, parameters, and return schemas:  
-  [Python API Reference →](doc/api/python/index.md)
+* **Full Reference**
+  Browse the complete API docs for classes, methods, parameters, and return schemas:
+  [Python API Reference →](documentation/api/python/index.md)
 
-- **Hands-On Examples**  
-  Ready-to-run scripts demonstrating common tasks—loading a PNM file, batch RxMER captures, spectrum plots, etc.:  
-  [Example Scripts →](doc/examples/index.md)
+* **Hands-On Examples**
+  Ready-to-run scripts demonstrating common tasks—loading a PNM file, batch RxMER captures, spectrum plots, etc.:
+  [Example Scripts →](documentation/examples/index.md)
 
 **SNMP Client**
-  
-  Under the hood, PyPNM uses the pure-Python [pysnmp](https://pypi.org/project/pysnmp/) library for v1/v2c/v3 operations.  
-  You can install it directly (if you only need SNMP support) with:  
-  
-  ```bash
-  pip install pysnmp
-  ````
+
+Under the hood, PyPNM uses the pure-Python [pysnmp](https://pypi.org/project/pysnmp/) library for v1/v2c/v3 operations.
+You can install it directly (if you only need SNMP support) with:
+
+```bash
+pip install pysnmp
+```
 
 * **SNMPv2c Guide & API**
   Learn how to use the built-in async SNMPv2c client:
 
-  * [SNMPv2c Overview →](doc/api/snmp/index.md)
-  * [Class Reference →](src/snmp/snmp_v2c.py)
-
+  * [SNMPv2c Overview →](documentation/api/python/snmp/index.md)
+  * [Class Reference →](src/pypnm/snmp/snmp_v2c.py)
 
 **Core Capabilities**
 
 1. **CableModem client**: SNMP/TFTP interface to trigger and retrieve PNM captures.
 2. **PNM Parsers**: Classes like `CmDsOfdmRxMer` and `CmSymbolCapture` to convert raw bytes into `dict` or Pydantic models.
 3. **Services & Aggregators**: High-level helpers combining capture, retrieval, parsing, and post-processing in a few method calls.
-
-**Getting Started**
-
-1. Pick an example from the “Example Scripts” link above.
-2. Adjust configuration (MAC, IP, file paths) for your environment.
-3. Run the script to see how the API returns Python data structures you can plot, analyze, or store.
 
 Use these building blocks to integrate PNM workflows into dashboards, automation pipelines, or custom analytics tools.
 
@@ -171,5 +192,3 @@ Released under the **MIT License**. See [LICENSE](LICENSE)
 
 **Maurice Garcia**
 ✉️ `mgarcia01752@outlook.com`
-
----
