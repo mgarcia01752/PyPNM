@@ -71,17 +71,6 @@ Welcome to the PyPNM documentation. Use this master index to navigate through al
 
 ---
 
-## 🖼 Images & Logos
-
-- [Dark-Mode Logo](images/logo/pypnm-dark-mode.png)
-- [Light-Mode Cable Modem Logo](images/logo/pypnm-light-mode-cable-cable-modem.png)
-- [Modem Inspect Clip](images/logo/pypnm-light-modem-inspect.png)
-- [Light-Mode Logo](images/logo/pypnm-light-mode.png)
-- [Python-PyPNM Logo](images/logo/pypnm-python-logo.png)
-- [Python-PyPNM Icon](images/logo/python-pypnm.png)
-
----
-
 ## ⚙️ System & Setup
 
 - [Generate SSL Certificates](system/generate-ssl-certificates.md)
