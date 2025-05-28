@@ -76,7 +76,7 @@ class MultiRxMerRouter(AbstractService):
                 inet=Inet(request.ip_address),
             )
 
-            status, msg = CableModemServicePreCheck(cable_modem=cable_modem).run_precheck()
+            status, msg = await CableModemServicePreCheck(cable_modem=cable_modem).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(

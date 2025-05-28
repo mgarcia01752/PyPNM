@@ -40,7 +40,7 @@ class UsScQamChannelRouter:
             Returns:
             - List[PnmChannelEntryResponse]: List of upstream channel statistics.
             """
-            status, msg = CableModemServicePreCheck(mac_address=request.mac_address,
+            status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                     ip_address=request.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
@@ -71,7 +71,7 @@ class UsScQamChannelRouter:
             Returns:
             - List[PnmChannelEntryResponse]: List of upstream channel statistics.
             """
-            status, msg = CableModemServicePreCheck(mac_address=request.mac_address,
+            status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                     ip_address=request.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)

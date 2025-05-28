@@ -32,7 +32,7 @@ class DiplexerConfigResult:
         async def diplexer_config(request: PnmRequest) -> Union[DiplexerResponse, SnmpResponse]:
             try:
 
-                status, msg = CableModemServicePreCheck(mac_address=request.mac_address,
+                status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                         ip_address=request.ip_address).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)

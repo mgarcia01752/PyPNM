@@ -75,7 +75,7 @@ class CableModemServicePreCheck:
                 inet=Inet(ip_address)
             )
 
-    def run_precheck(self) -> Tuple[ServiceStatusCode, str]:
+    async def run_precheck(self) -> Tuple[ServiceStatusCode, str]:
         """
         Execute a sequence of connectivity tests:
           1. ICMP ping reachability
@@ -94,7 +94,7 @@ class CableModemServicePreCheck:
             self.logger.error(msg)
             return status, msg
 
-        status = self.snmp_reachable()
+        status = await self.snmp_reachable()
         if status != ServiceStatusCode.SUCCESS:
             msg = f"SNMP check failed: {status}"
             self.logger.error(msg)
@@ -121,7 +121,7 @@ class CableModemServicePreCheck:
             self.logger.error(f"Error during ping check: {e}", exc_info=True)
             return ServiceStatusCode.PING_FAILED
 
-    def snmp_reachable(self) -> ServiceStatusCode:
+    async def snmp_reachable(self) -> ServiceStatusCode:
         """
         Perform an SNMP reachability check against the cable modem.
 
@@ -129,11 +129,12 @@ class CableModemServicePreCheck:
             ServiceStatusCode: SUCCESS if SNMP queries succeed, UNREACHABLE_SNMP otherwise.
         """
         try:
-            if self.cm.is_snmp_reachable():
+            if await self.cm.is_snmp_reachable():
                 self.logger.debug("SNMP reachable succeeded")
                 return ServiceStatusCode.SUCCESS
             self.logger.debug("SNMP reachable failed")
             return ServiceStatusCode.UNREACHABLE_SNMP
+        
         except Exception as e:
             self.logger.error(f"Error during SNMP check: {e}", exc_info=True)
             return ServiceStatusCode.UNREACHABLE_SNMP

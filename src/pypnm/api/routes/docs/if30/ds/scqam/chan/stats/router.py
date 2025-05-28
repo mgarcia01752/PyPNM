@@ -40,7 +40,7 @@ class DsScQamChannelRouter:
             Returns:
             - List[PnmChannelEntryResponse]: List of channel statistics entries.
             """
-            status, msg = CableModemServicePreCheck(mac_address=request.mac_address,
+            status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                     ip_address=request.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)

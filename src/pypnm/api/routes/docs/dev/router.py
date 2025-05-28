@@ -33,7 +33,7 @@ class DocsDevRouter:
             POST /docs/dev/eventLog
             Retrieves DOCSIS event log entries from a cable modem by IP and MAC address.
             """
-            status, msg = CableModemServicePreCheck(mac_address=request.mac_address,
+            status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                     ip_address=request.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 logger.error(msg)
@@ -65,7 +65,7 @@ class DocsDevRouter:
         @self.router.post("/reset", response_model=SnmpResponse)
         async def reset_cable_modem(request: BaseDeviceConnectRequest):
             
-            status, msg = CableModemServicePreCheck(mac_address=request.mac_address,
+            status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                     ip_address=request.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)

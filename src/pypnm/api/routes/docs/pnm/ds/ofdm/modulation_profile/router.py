@@ -38,7 +38,7 @@ class ModulationProfileRouter(PnmFastApiRouter):
 
         cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
 
-        status, msg = CableModemServicePreCheck(cable_modem=cm).run_precheck()
+        status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(
@@ -70,7 +70,7 @@ class ModulationProfileRouter(PnmFastApiRouter):
         
         cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
 
-        status, msg = CableModemServicePreCheck(cable_modem=cm).run_precheck()
+        status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(

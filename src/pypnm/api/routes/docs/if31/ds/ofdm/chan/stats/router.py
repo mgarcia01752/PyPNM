@@ -32,7 +32,7 @@ class DsOfdmChannelStatsRouter:
             POST /docs/if31/ds/ofdm/channel/stats
             Returns OFDM channel statistics from the modem.
             """
-            status, msg = CableModemServicePreCheck(mac_address=request.mac_address,
+            status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                     ip_address=request.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)

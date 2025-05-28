@@ -106,8 +106,6 @@ SNMP_COMMUNITY=public
 
 Environment variables will be loaded automatically if `python-dotenv` is installed (included in setup).
 
----
-
 ### Step 5: Launch the FastAPI Web Service
 
 ```bash

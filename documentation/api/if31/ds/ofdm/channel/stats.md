@@ -21,8 +21,8 @@ Fetches downstream OFDM channel configuration and performance data from a DOCSIS
 
 ```json
 {
-  "mac_address": "0050.f112.dcc3",
-  "ip_address": "172.20.63.10"
+  "mac_address": "aabb.ccdd.eeff",
+  "ip_address": "192.168.100.1"
 }
 ````
 

@@ -4,6 +4,7 @@
 from abc import ABC
 import logging
 import os
+from pathlib import Path
 import shutil
 from time import sleep
 from typing import Dict, List,  Optional, Tuple, Union
@@ -14,6 +15,7 @@ from pypnm.config.config_manager import ConfigManager
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
 from pypnm.api.routes.common.extended.common_messaging_service import CommonMessagingService, MessageResponse
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType
 from pypnm.lib.inet import Inet
@@ -68,11 +70,21 @@ class CommonMeasureService(CommonMessagingService):
         self.extra_options = extra_options
         self.config_mgr:ConfigManager = ConfigManager()
         self.log_prefix:str = f"MAC: {self.cm.get_mac_address} - INET: {self.cm.get_inet_address}"
-        self.save_dir = self.config_mgr.get("PnmFileRetrieval", "save_dir")
+        self.save_dir = PnmConfigManager.get_save_dir()
         
         if self.extra_options:
             self.logger.debug(f"{self.log_prefix} - OPTIONS: {self.extra_options}")
             self._preload_interface_parameters()
+            
+        self._precheck() 
+
+    def _precheck(self) -> None:
+        """
+        Perform pre-check and ensure the save directory exists.
+        """
+        self.logger.debug(f'PreCheck: SaveDir: {self.save_dir}')
+        save_path = Path(self.save_dir)
+        save_path.mkdir(parents=True, exist_ok=True)
 
     def _preload_interface_parameters(self) -> None:
         """
@@ -546,6 +558,7 @@ class CommonMeasureService(CommonMessagingService):
                  
         return ServiceStatusCode.SUCCESS, pnm_files
 
+
     def _handle_local_fetch(self, pnm_file_name: str) -> bool:
         """
         Handles copying a specified PNM file from a local source directory to a configured save directory.
@@ -567,7 +580,7 @@ class CommonMeasureService(CommonMessagingService):
         local_conf = self.config_mgr.get("PnmFileRetrieval", "local")
         src_dir = local_conf["src_dir"]
 
-        self.logger.debug(
+        self.logger.info(
             f'{self.log_prefix} - Local Copy - SRC: {src_dir} - SAVE: {self.save_dir} - FN: {pnm_file_name}'
         )
 

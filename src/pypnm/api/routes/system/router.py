@@ -11,6 +11,7 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.system.schemas import SysDescrResponse, SysUpTimeResponse
+from pypnm.api.routes.system.service import SystemSnmpService
 
 class SystemRouter:
     """
@@ -37,7 +38,7 @@ class SystemRouter:
             Handle POST /system/sysDescr
             """
             try:
-                status, msg = CableModemServicePreCheck(mac_address=request.mac_address,
+                status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                         ip_address=request.ip_address).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
@@ -47,7 +48,7 @@ class SystemRouter:
                         message=msg,
                     )                     
                 
-                return await SystemSnmpService.get_sysdescr(request) # type: ignore
+                return await SystemSnmpService.get_sysdescr(request)
             
             except Exception as exc:
                 self.logger.error(f"sysDescr error for {request.mac_address}@{request.ip_address}: {exc}")
@@ -66,7 +67,7 @@ class SystemRouter:
             Handle POST /system/upTime
             """
             try:
-                status, msg = CableModemServicePreCheck(mac_address=request.mac_address,
+                status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                         ip_address=request.ip_address).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
@@ -75,7 +76,7 @@ class SystemRouter:
                         status=status,
                         message=msg)                          
                 
-                return await SystemSnmpService.get_sys_up_time(request) # type: ignore
+                return await SystemSnmpService.get_sys_up_time(request) 
             
             except Exception as exc:
                 self.logger.error(f"sysUpTime error for {request.mac_address}@{request.ip_address}: {exc}")

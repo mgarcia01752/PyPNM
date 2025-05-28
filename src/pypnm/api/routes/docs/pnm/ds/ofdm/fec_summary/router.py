@@ -36,7 +36,7 @@ class FecSummaryRouter:
 
                 cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
 
-                status, msg = CableModemServicePreCheck(mac_address=request.mac_address, 
+                status, msg = await CableModemServicePreCheck(mac_address=request.mac_address, 
                                                         ip_address=request.ip_address).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)

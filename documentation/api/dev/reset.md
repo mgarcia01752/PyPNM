@@ -17,7 +17,7 @@ POST /docs/dev/reset
 
 ```json
 {
-  "mac_address": "0050.F112.DF0C",
+  "mac_address": "aabb.ccdd.eeff",
   "ip_address": "192.168.100.1"
 }
 ```

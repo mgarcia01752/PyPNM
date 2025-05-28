@@ -17,8 +17,8 @@ This API retrieves Forward Error Correction (FEC) summary data for downstream OF
 
 ```json
 {
-  "mac_address": "0050.f112.dcc3",
-  "ip_address": "172.20.63.10",
+  "mac_address": "aabb.ccdd.eeff",
+  "ip_address": "192.168.100.1",
   "fec_summary_type": 2
 }
 ```

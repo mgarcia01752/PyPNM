@@ -57,7 +57,7 @@ class ConstellationDisplayRouter:
             try:
                 cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
                 
-                status, msg = CableModemServicePreCheck(cable_modem=cm).run_precheck()
+                status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
@@ -100,7 +100,7 @@ class ConstellationDisplayRouter:
         @self.router.post(f"/{self.base_endpoint}/getAnalysis", response_model=Union[PnmAnalysisResponse, SnmpResponse])
         async def get_analysis(request: PnmAnalysisRequest):
             
-            status, msg = CableModemServicePreCheck(mac_address=request.mac_address, 
+            status, msg = await CableModemServicePreCheck(mac_address=request.mac_address, 
                                                     ip_address=request.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)

@@ -1,7 +1,7 @@
 {
     "FastApiRequestDefault": {
-        "mac_address": "0050.f112.df0c",
-        "ip_address": "172.20.58.24"
+        "mac_address": "0050.f112.d85c",
+        "ip_address": "172.20.63.12"
     },   
     "SNMP": {
         "version": "2",
@@ -27,10 +27,10 @@
     },
     "PnmFileRetrieval": {
         "method": "local",
-        "save_dir":"data/pnm",
-        "transaction_db":"data/db/transactions.json",
-        "capture_group_db": "data/db/capture_group.json",
-        "operation_db": "data/db/operation_capture.json",
+        "save_dir": ".data/pnm",
+        "transaction_db": ".data/db/transactions.json",
+        "capture_group_db": ".data/db/capture_group.json",
+        "operation_db": ".data/db/operation_capture.json",
         "retries": 5,
         "local": {
             "src_dir": "/srv/tftp"

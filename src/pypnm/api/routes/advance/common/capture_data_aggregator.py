@@ -78,6 +78,7 @@ class CaptureDataAggregator:
             file_count +=1
             
             file_path = self.save_dir / filename
+            self.logger.info(f'Reading: {file_path}')
             try:
                 content = file_path.read_bytes()
                 file_bin_entries.append((filename, content))
