@@ -1,11 +1,14 @@
 <p align="center">
-  <picture>
-    <!-- when in dark mode, use the dark logo -->
-    <source srcset="documentation/images/logo/pypnm-dark-mode.png" media="(prefers-color-scheme: dark)" />
-    <!-- fallback (light mode) -->
-    <img src="documentation/images/logo/pypnm-light-mode.png" alt="PyPNM Logo" width="200" />
-  </picture>
+  <a href="documentation/master-index.md">
+    <picture>
+      <!-- when in dark mode, use the dark logo -->
+      <source srcset="documentation/images/logo/pypnm-dark-mode.png" media="(prefers-color-scheme: dark)" />
+      <!-- fallback (light mode) -->
+      <img src="documentation/images/logo/pypnm-light-mode.png" alt="PyPNM Logo" width="200" />
+    </picture>
+  </a>
 </p>
+
 
 # PyPNM — DOCSIS 3.1/4.0 Proactive Network Maintenance Toolkit
 
