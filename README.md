@@ -10,10 +10,10 @@
 </p>
 
 
-# PyPNM (beta) — DOCSIS 3.1/4.0 Proactive Network Maintenance Toolkit
+# PyPNM (pre-alpha) — DOCSIS 3.1/4.0 Proactive Network Maintenance Toolkit
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
-[![Beta](https://img.shields.io/badge/status-beta-yellow.svg)](https://github.com/your-org/PyPNM/issues?q=is%3Aopen+is%3Aissue+label%3Abeta)
+![Pre-Release](https://img.shields.io/badge/release-pre--alpha-lightgrey)
 
 
 **PyPNM** is a modular, Python-based toolkit for parsing, analyzing, and visualizing DOCSIS 3.0/3.1 Proactive Network Maintenance (PNM) telemetry. It provides:
