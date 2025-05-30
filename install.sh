@@ -37,7 +37,6 @@ esac
 echo "Installing on Ubuntu $VERSION: $PYTHON_PKG (+ venv) and pip…"
 sudo apt update
 sudo apt install -y \
-     git \
      curl \
      "$PYTHON_PKG" \
      "$VENV_PKG" \

@@ -42,21 +42,19 @@
 
 PyPNM runs on standard Linux environments—no custom kernel patches required.
 
-**Recommended distributions:**
+**Tested distributions:**
 
 * Ubuntu 22.04 LTS
 * Ubuntu 24.04 LTS
-* Debian (latest stable)
-* Fedora Workstation
 
 ### Shell Dependencies
 
-Your distro’s package manager must provide:
+Install `git` if not already present (before cloning the repo):
 
-* `git`
-* `curl`
-* `python3` & `python3-venv`
-* `python3-pip`
+```bash
+sudo apt update
+sudo apt install -y git
+```
 
 ---
 
@@ -76,13 +74,12 @@ cd PyPNM
 The included `install.sh` will detect Ubuntu 22.04 vs 24.04 (or fall back to your distro’s default Python), install system packages, create a virtual environment, and install PyPNM in editable mode:
 
 ```bash
-chmod +x install.sh
 ./install.sh
 ```
 
 > **What it does:**
 >
-> 1. Installs `git`, `curl`, the correct `python3.x` & `python3.x-venv`, and `python3-pip`
+> 1. Installs `curl`, the correct `python3.x` & `python3.x-venv`, and `python3-pip`
 > 2. Creates and activates `.venv`
 > 3. Runs `pip install -e .`
 
