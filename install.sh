@@ -38,9 +38,24 @@ echo "Installing on Ubuntu $VERSION: $PYTHON_PKG (+ venv) and pip…"
 sudo apt update
 sudo apt install -y \
      curl \
+     wget \
      "$PYTHON_PKG" \
      "$VENV_PKG" \
      python3-pip
+
+# -------------------------------
+# Download DOCSIS MIBs ending in .txt into a 'mibs' directory
+# -------------------------------
+echo
+echo "Creating 'mibs' directory (if not existing)…"
+mkdir -p mibs
+
+echo "Downloading DOCSIS MIB files with a .txt extension into ./mibs…"
+wget -r -np -nH --cut-dirs=2 -A "*.txt" -R "index.html*" \
+     -P mibs "https://mibs.cablelabs.com/MIBs/DOCSIS/"
+
+echo
+echo "✅ DOCSIS .txt MIB files downloaded into the './mibs' directory."
 
 echo
 echo "✅ System packages installed."
@@ -57,3 +72,5 @@ pip install -e .
 echo
 echo "✅ PyPNM installed!"
 echo "To exit the virtual environment, run 'deactivate'."
+
+
