@@ -16,21 +16,19 @@
 
 **PyPNM** is a modular, Python-based toolkit for parsing, analyzing, and visualizing DOCSIS 3.0/3.1 Proactive Network Maintenance (PNM) telemetry. It provides:
 
-* **Structured SNMP integration** for real-time cable modem telemetry (RxMER, spectrum, equalization, modulation profiles, FEC, etc.)
-* **Binary capture parsing** via TFTP/SNMP–triggered files (OFDM symbols, histograms, latency traces)
-* **FastAPI REST service** delivering clean JSON for integration into dashboards and automation
-* **Extensible architecture** for adding new measurement types and custom analytics
+* **Structured SNMP integration** Real-time cable modem telemetry (RxMER, spectrum, equalization, modulation profiles, FEC, etc.)
+* **Binary capture parsing** TFTP/SNMP–triggered files (OFDM symbols, histograms, latency traces)
+* **FastAPI REST service** Delivering clean JSON for integration into dashboards and automation
 
 ## 🛠 Key Features
 
-* **Python API**: programmatic access to core parsing, aggregation, and analysis routines
-* **SNMP v2c Support**: telemetry acquisition via SNMP v2c
-* **OFDM Diagnostics**: RxMER, FEC summary, spectrum analysis, channel estimation, constellation display, modulation profiles
-* **Upstream Support**: ATDMA & TDMA pre-equalization tap analysis, latency reporting
-* **Error-Correction Insights**: aggregate FEC counters over time windows
+* **Python API**: Programmatic access to core parsing, aggregation, and analysis routines
+* **SNMP v2c Support**: Telemetry acquisition
+* **OFDM Diagnostics**: RxMER, FEC Summary, Channel Estimation, Constellation Display, Modulation Rrofile
+* **Upstream Support**: ATDMA/OFDMA pre-equalization tap analysis, latency reporting
 * **Capacity Margin Calculations**: Shannon-based bit-per-subcarrier limits and deltas
-* **RESTful API**: Auto-generated OpenAPI, Swagger UI, Postman collection
-* **Command-Line Examples**: standalone analysis scripts and batch processing utilities
+* **RESTful API**: OpenAPI, Swagger UI, Postman collection
+* **Command-Line Examples**: Standalone analysis scripts and batch processing utilities
 
 ## Prerequisites
 
