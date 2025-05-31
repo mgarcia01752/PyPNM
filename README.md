@@ -108,7 +108,7 @@ Use this master index to navigate through all guides, API references, examples, 
 ## Python API
 
 Integrate PNM telemetry end-to-end in your own Python scripts:
-<!--  -->
+
 * **Full Reference**: [Python API Reference →](documentation/api/python/index.md)
 * **Hands-On Examples**: [Example Scripts →](documentation/examples/index.md)
 

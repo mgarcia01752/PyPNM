@@ -14,15 +14,15 @@ All endpoints use `POST` requests and accept JSON payloads containing a cable mo
 
 | Endpoint                | Description                                                                                                  |
 |-------------------------|--------------------------------------------------------------------------------------------------------------|
-| `POST /pypnm/system/config/get | Retrieve current system configuration. |
-| `POST /pypnm/system/config/update | Update the system configuration. |
+| `POST /pypnm/system/config/get` | Retrieve current system configuration. |
+| `POST /pypnm/system/config/update` | Update the system configuration. |
 
 
 ### 🖥️ System Information
 
 | Endpoint                | Description                                                                                                  |
 |-------------------------|--------------------------------------------------------------------------------------------------------------|
-| `POST /system/sysdescr` | Retrieves the system description (`sysDescr`) of the cable modem, indicating hardware/software details.     |
+| `POST /system/sysDescr` | Retrieves the system description (`sysDescr`) of the cable modem, indicating hardware/software details.     |
 | `POST /system/uptime`   | Retrieves the modem's uptime in seconds since the last reboot.                                               |
 
 ---
@@ -40,13 +40,13 @@ All endpoints use `POST` requests and accept JSON payloads containing a cable mo
 
 | Endpoint                                | Description                                                                                                     |
 |-----------------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| `POST /docs/if31/system/diplexer`       | Retrieves diplexer settings that define frequency split between upstream and downstream.                       |
-| `POST /docs/if31/ds/ofdm/profile/stats` | Returns OFDM profile usage stats including codewords, errors, and profile IDs.                                |
-| `POST /docs/if31/ds/ofdm/chan/stats`    | Physical stats for OFDM downstream channels: channel ID, PLC power, center frequency.                         |
-| `POST /docs/if31/us/ofdma/chan/stats`   | Retrieves OFDMA upstream channel data: transmit power, active subcarriers, symbol rates, etc.                 |
-| `POST /docs/if30/ds/scqam/chan/stats`   | SC-QAM downstream signal quality: power levels, frequency, modulation.                                         |
-| `POST /docs/if30/us/atdma/chan/stats`   | ATDMA upstream info: frequency, modulation, pre-equalization, power levels.                                    |
-| `POST /docs/if30/us/atdma/chan/preEqualization`   | ATDMA upstream info: frequency, modulation, pre-equalization, power levels.                                    |
+| `POST /docs/if31/system/diplexer`       | Retrieves diplexer settings that define frequency split between upstream and downstream.                        |
+| `POST /docs/if31/ds/ofdm/profile/stats` | Returns OFDM profile usage stats including codewords, errors, and profile IDs.                                  |
+| `POST /docs/if31/ds/ofdm/chan/stats`    | Physical stats for OFDM downstream channels: channel ID, PLC power, center frequency.                           |
+| `POST /docs/if31/us/ofdma/chan/stats`   | Retrieves OFDMA upstream channel data: transmit power, active sub-carriers, symbol rates, etc.                  |
+| `POST /docs/if30/ds/scqam/chan/stats`   | SC-QAM downstream signal quality: power levels, frequency, modulation.                                          |
+| `POST /docs/if30/us/atdma/chan/stats`   | ATDMA upstream info: frequency, modulation, pre-equalization, power levels.                                     |
+| `POST /docs/if30/us/atdma/chan/preEqualization`   | ATDMA upstream info: frequency, modulation, pre-equalization, power levels.                           |
 
 ---
 
@@ -57,11 +57,11 @@ All endpoints use `POST` requests and accept JSON payloads containing a cable mo
 | `POST /docs/pnm/files`                     | Upload or retrieve PNM files for further analysis or visualization.                                         |
 | `POST /docs/pnm/spectrumAnalyzer`          | Captures a downstream spectrum snapshot to identify ingress or interference.                                |
 | `POST /docs/pnm/ds/histogram`              | Returns downstream SNR and MER histograms indicating signal quality distribution.                           |
-| `POST /docs/pnm/ds/ofdm/rxMer`             | Retrieves RxMER (Receive MER) values across OFDM subcarriers.                                               |
+| `POST /docs/pnm/ds/ofdm/rxMer`             | Retrieves RxMER (Receive MER) values across OFDM sub-carriers.                                              |
 | `POST /docs/pnm/ds/ofdm/constDisplay`      | Retrieves OFDM constellation data for visualization and noise analysis.                                     |
 | `POST /docs/pnm/ds/ofdm/fecSummary`        | Summarizes FEC performance: corrected/uncorrected codewords and error correction health.                    |
 | `POST /docs/pnm/ds/ofdm/chanEstimation`    | Retrieves downstream channel estimation data (impulse noise, group delay).                                  |
-| `POST /docs/pnm/ds/ofdm/modulationProfile` | Returns modulation profile and subcarrier bit-loading info.                                                 |
+| `POST /docs/pnm/ds/ofdm/modulationProfile` | Returns modulation profile and sub-carrier bit-loading info.                                                |
 | `POST /docs/pnm/us/ofdma/preEqualization`  | Gets upstream pre-equalization coefficients to assess plant impairments.                                    |
 | `POST /docs/pnm/lld/latencyReport`         | Retrieves Low Latency DOCSIS metrics like queue delay and flow behavior.                                    |
 
@@ -71,8 +71,8 @@ All endpoints use `POST` requests and accept JSON payloads containing a cable mo
 
 | Endpoint                                      | Description                                                                                           |
 |-----------------------------------------------|-------------------------------------------------------------------------------------------------------|
-| `POST /docs/pnm/ds/ofdm/rxMer/getMeasurement` | Gets the latest RxMER snapshot per subcarrier.                                                        |
-| `POST /docs/pnm/ds/ofdm/rxMer/getAnalysis`    | Generates visual plots (e.g., heatmap, line graph) of RxMER data.                                    |
+| `POST /docs/pnm/ds/ofdm/rxMer/getMeasurement` | Gets the latest RxMER snapshot per sub-carrier.                                                       |
+| `POST /docs/pnm/ds/ofdm/rxMer/getAnalysis`    | Generates visual plots (e.g., heatmap, line graph) of RxMER data.                                     |
 | `POST /docs/pnm/ds/ofdm/rxMer/getFiles`       | Lists or retrieves saved RxMER files from storage (e.g., TFTP or local).                              |
 
 ---
@@ -90,7 +90,7 @@ All endpoints use `POST` requests and accept JSON payloads containing a cable mo
 | Endpoint                                                       | Description                                                                                       |
 |----------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
 | `POST /docs/pnm/ds/ofdm/channelEstCoeff/getMeasurement`        | Fetch raw channel estimation coefficient data.                                                    |
-| `POST /docs/pnm/ds/ofdm/channelEstCoeff/getAnalysis`           | Analyze channel distortion metrics (e.g., group delay, frequency response).                      |
+| `POST /docs/pnm/ds/ofdm/channelEstCoeff/getAnalysis`           | Analyze channel distortion metrics (e.g., group delay, frequency response).                       |
 | `POST /docs/pnm/ds/ofdm/channelEstCoeff/getFiles`              | Download associated measurement files for offline inspection.                                     |
 
 ---
@@ -109,18 +109,18 @@ All endpoints use `POST` requests and accept JSON payloads containing a cable mo
 
 | Endpoint                                                                | Description                                                                  |
 |-------------------------------------------------------------------------|------------------------------------------------------------------------------|
-| `POST /docs/pnm/us/ofdma/preEqualization/getMeasurement`               | Gets complex tap coefficients from upstream channel.                         |
-| `POST /docs/pnm/us/ofdma/preEqualization/getAnalysis`                  | Derives metrics like magnitude, phase, and group delay from raw taps.        |
-| `POST /docs/pnm/us/ofdma/preEqualization/getFiles`                     | Lists/downloads pre-equalization data files.                                 |
+| `POST /docs/pnm/us/ofdma/preEqualization/getMeasurement`               | Gets complex tap coefficients from upstream channel.                          |
+| `POST /docs/pnm/us/ofdma/preEqualization/getAnalysis`                  | Derives metrics like magnitude, phase, and group delay from raw taps.         |
+| `POST /docs/pnm/us/ofdma/preEqualization/getFiles`                     | Lists/downloads pre-equalization data files.                                  |
 
 ## PNM Advance Operation and Analysis
 
 | Method | Endpoint                                 | Description                                      | Request Model           | Response Model                |
 | ------ | ---------------------------------------- | ------------------------------------------------ | ----------------------- | ----------------------------- |
-| POST   | `/advance/multiRxMer/start`              | Start a periodic RxMER capture                   | `MultiRxMerRequest`     | `MultiRxMerStartResponse`    |
-| GET    | `/advance/multiRxMer/status/{op_id}`     | Get current state & sample count for this op     | path param `operation_id` | `MultiRxMerStatusResponse`   |
-| GET    | `/advance/multiRxMer/results/{op_id}`    | Retrieve all timestamped transaction IDs & files | path param `operation_id` | `MultiRxMerResultsResponse`  |
-| POST   | `/advance/multiRxMer/stop/{op_id}`       | Signal capture to stop after current iteration   | path param `operation_id` | `MultiRxMerStatusResponse`   |
+| POST   | `/advance/multiRxMer/start`              | Start a periodic RxMER capture                   | `MultiRxMerRequest`     | `MultiRxMerStartResponse`     |
+| GET    | `/advance/multiRxMer/status/{op_id}`     | Get current state & sample count for this op     | path param `operation_id` | `MultiRxMerStatusResponse`  |
+| GET    | `/advance/multiRxMer/results/{op_id}`    | Retrieve all timestamped transaction IDs & files | path param `operation_id` | `MultiRxMerResultsResponse` |
+| POST   | `/advance/multiRxMer/stop/{op_id}`       | Signal capture to stop after current iteration   | path param `operation_id` | `MultiRxMerStatusResponse`  |
 
 
 ---
