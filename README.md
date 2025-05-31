@@ -137,7 +137,7 @@ Integrate PNM telemetry end-to-end in your own Python scripts:
 
   * [DOCSIS 3.1 Suite](https://www.cablelabs.com/specifications/search?category=DOCSIS&subcat=DOCSIS%203.1)
   * [CM-SP-CM-OSS Iv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
-  * [DOCSIS Local MIB Repository](mibs)
+  * [DOCSIS Local MIB Repository](mibs/index.md)
 * **PNM Architecture & Guidelines**
 
   * [CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)
