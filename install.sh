@@ -57,6 +57,32 @@ wget -r -np -nH --cut-dirs=2 -A "*.txt" -R "index.html*" \
 echo
 echo "✅ DOCSIS .txt MIB files downloaded into the './mibs' directory."
 
+
+# -------------------------------
+# Create index.md listing all .txt files
+# -------------------------------
+
+# Navigate into mibs (so links in index.md can be relative)
+cd mibs
+
+# Start (or overwrite) index.md
+cat << 'EOF' > index.md
+# DOCSIS MIB Files Index
+
+Below is a list of all downloaded `.txt` MIB files currently in this directory:
+
+EOF
+
+# Loop through each .txt file and append a Markdown bullet
+for file in *.txt; do
+  # If there are no matches, skip
+  [ -e "$file" ] || continue
+  echo "- [${file}](./${file})" >> index.md
+done
+
+echo
+echo "✅ Generated 'mibs/index.md' with a list of all .txt files."
+
 echo
 echo "✅ System packages installed."
 echo "Setting up Python virtual environment…"
