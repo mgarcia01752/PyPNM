@@ -61,8 +61,6 @@ git clone https://github.com/mgarcia01752/PyPNM.git
 cd PyPNM
 ```
 
----
-
 ### Step 2: Install system & Python dependencies
 
 The included `install.sh` will detect Ubuntu 22.04 vs 24.04 (or fall back to your distro’s default Python), install system packages, create a virtual environment, and install PyPNM in editable mode:
@@ -71,22 +69,12 @@ The included `install.sh` will detect Ubuntu 22.04 vs 24.04 (or fall back to you
 ./install.sh
 ```
 
-> **What it does:**
->
-> 1. Installs `curl`, the correct `python3.x` & `python3.x-venv`, and `python3-pip`
-> 2. Creates and activates `.venv`
-> 3. Runs `pip install -e .`
-
----
-
 ### Step 3: (If not already active) activate the virtual environment
 
 ```bash
 python3 -m venv .env
 source .env/bin/activate
 ```
-
----
 
 ### Step 4: Launch the FastAPI service
 
@@ -106,8 +94,6 @@ pypnm --host 0.0.0.0 --port 443 --ssl --cert ./certs/cert.pem --key ./certs/key.
 ```bash
 pypnm
 ```
-
----
 
 ### Step 5: Explore the API
 
