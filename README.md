@@ -21,7 +21,6 @@
 * **FastAPI REST service** delivering clean JSON for integration into dashboards and automation
 * **Extensible architecture** for adding new measurement types and custom analytics
 
-
 ## 🛠 Key Features
 
 * **Python API**: programmatic access to core parsing, aggregation, and analysis routines
@@ -118,7 +117,6 @@ pypnm
 
 > ⚠️ Tip: Use Postman for complex or large JSON payloads—Swagger UI can struggle with deeply nested schemas.
 
-
 ## [Python Documentation](documentation/master-index.md)
 
 Use this master index to navigate through all guides, API references, examples, and system docs.
@@ -129,7 +127,6 @@ Integrate PNM telemetry end-to-end in your own Python scripts:
 
 * **Full Reference**: [Python API Reference →](documentation/api/python/index.md)
 * **Hands-On Examples**: [Example Scripts →](documentation/examples/index.md)
-
 
 ## 📦 Supported Standards & Specs
 
@@ -143,11 +140,9 @@ Integrate PNM telemetry end-to-end in your own Python scripts:
   * [CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)
   * [CM-GL-PNM-HFC & CM-GL-PNM-3.1](https://www.cablelabs.com/specifications/CM-GL-PNM-HFC)
 
-
 ## 📜 License
 
 Released under the **MIT License**. See [LICENSE](LICENSE)
-
 
 ## 👤 Maintainer
 
