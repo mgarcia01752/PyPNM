@@ -99,7 +99,7 @@ pypnm
 
 * **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
 * **ReDoc**:     [http://localhost:8000/redoc](http://localhost:8000/redoc)
-* **Postman**:  Download [`Postman`](https://www.postman.com/downloads/)
+* **Postman**:   [`Download Postman`](https://www.postman.com/downloads/)
 
 > ⚠️ Tip: Use Postman for complex or large JSON payloads—Swagger UI can struggle with deeply nested schemas.
 
