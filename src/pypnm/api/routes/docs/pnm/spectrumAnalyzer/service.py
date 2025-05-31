@@ -3,12 +3,14 @@
 
 import logging
 from typing import Tuple
+
 from pypnm.api.routes.common.extended.common_measure_service import CommonMeasureService
+from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpectrumAnalyzerParameters
 from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
-from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import SpectrumRetrievalType, WindowFunction
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
+
 
 class CmSpectrumAnalysisService(CommonMeasureService):
     """
@@ -23,44 +25,50 @@ class CmSpectrumAnalysisService(CommonMeasureService):
             Defaults to the configured TFTP servers via `PnmConfigManager.get_tftp_servers()`.
         tftp_path (str, optional): Directory path on the TFTP server where output files are stored.
             Defaults to the configured path via `PnmConfigManager.get_tftp_path()`.
-        inactivity_timeout (int, optional): Timeout in seconds to wait before the spectrum analysis operation is considered failed due to inactivity.
-            Defaults to 100 seconds.
-        first_segment_center_freq (int, optional): Frequency in Hz of the first segment center.
-            Defaults to 108,000,000 Hz (108 MHz).
-        last_segment_center_freq (int, optional): Frequency in Hz of the last segment center.
-            Defaults to 1,002,000,000 Hz (1002 MHz).
-        segment_freq_span (int, optional): Frequency span in Hz of each segment.
-            Defaults to 1,000,000 Hz (1 MHz).
-        num_bins_per_segment (int, optional): Number of FFT bins per segment.
-            Defaults to 256.
-        noise_bw (int, optional): Equivalent noise bandwidth in kHz.
-            Defaults to 150 kHz.
-        window_function (WindowFunction, optional): FFT window function applied during analysis.
-            Defaults to `WindowFunction.HANN`.
-        num_averages (int, optional): Number of averages performed per segment.
-            Defaults to 1.
-        spectrum_retrieval_type (SpectrumRetrievalType, optional): Specifies how spectrum data is retrieved (e.g., via file or SNMP).
-            Defaults to `SpectrumRetrievalType.FILE`.
+        spec_analyzer_para (SpectrumAnalyzerParameters): 
+            Schema object containing all spectrum-analyzer-specific parameters:
+                - inactivity_timeout (int): Timeout in seconds to wait before the spectrum analysis operation is considered failed due to inactivity (default: 100).
+                - first_segment_center_freq (int): Frequency in Hz of the first segment center (default: 108_000_000).
+                - last_segment_center_freq (int): Frequency in Hz of the last segment center (default: 1_002_000_000).
+                - segment_freq_span (int): Frequency span in Hz of each segment (default: 1_000_000).
+                - num_bins_per_segment (int): Number of FFT bins per segment (default: 256).
+                - noise_bw (int): Equivalent noise bandwidth in kHz (default: 150).
+                - window_function (WindowFunction): FFT window function applied during analysis (default: WindowFunction.HANN).
+                - num_averages (int): Number of averages performed per segment (default: 1).
+                - spectrum_retrieval_type (SpectrumRetrievalType): Specifies how spectrum data is retrieved (default: SpectrumRetrievalType.FILE).
         snmp_write_community (str, optional): SNMP community string with write access, obtained from the cable modem.
             Passed internally; not typically set manually.
     """
 
-    def __init__(self,
+    def __init__(
+        self,
         cable_modem: CableModem,
         tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
         tftp_path: str = PnmConfigManager.get_tftp_path(),
         *,
-        inactivity_timeout: int = 100,
-        first_segment_center_freq: int = 108_000_000,
-        last_segment_center_freq: int = 1_002_000_000,
-        segment_freq_span: int = 1000000,
-        num_bins_per_segment: int = 256,
-        noise_bw: int = 150,
-        window_function: WindowFunction = WindowFunction.HANN,
-        num_averages: int = 1,
-        spectrum_retrieval_type: SpectrumRetrievalType = SpectrumRetrievalType.FILE,
+        spec_analyzer_para: SpectrumAnalyzerParameters,
     ):
+        # Initialize logger
         self.logger = logging.getLogger(self.__class__.__name__)
+        if not self.logger.handlers:
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+            self.logger.setLevel(logging.INFO)
+
+        # Extract parameters from the Pydantic schema
+        inactivity_timeout = spec_analyzer_para.inactivity_timeout
+        first_segment_center_freq = spec_analyzer_para.first_segment_center_freq
+        last_segment_center_freq = spec_analyzer_para.last_segment_center_freq
+        segment_freq_span = spec_analyzer_para.segment_freq_span
+        num_bins_per_segment = spec_analyzer_para.num_bins_per_segment
+        noise_bw = spec_analyzer_para.noise_bw
+        window_function = spec_analyzer_para.window_function
+        num_averages = spec_analyzer_para.num_averages
+        spectrum_retrieval_type = spec_analyzer_para.spectrum_retrieval_type
+
+        # Call the base class constructor with all required arguments
         super().__init__(
             DocsPnmCmCtlTest.SPECTRUM_ANALYZER,
             cable_modem,

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import json
 import logging
 from enum import IntEnum
+from typing import Any, Dict
 from pypnm.lib.utils import Utils
 
 class SpectrumRetrievalType(IntEnum):
@@ -247,3 +248,21 @@ class DocsIf3CmSpectrumAnalysisCtrlCmd:
             raise ValueError("FileName must be a string")
         self.docsIf3CmSpectrumAnalysisCtrlCmdFileName = value
         self.logger.info(f"Set file name to {value}")
+
+    def to_dict(self) -> Dict[str, Any]:
+        spectrum_cmd = {
+            "docsIf3CmSpectrumAnalysisCtrlCmdEnable":                          self.docsIf3CmSpectrumAnalysisCtrlCmdEnable,
+            "docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout":               self.docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout,
+            "docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency":     self.docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency,
+            "docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency":      self.docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency,
+            "docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan":            self.docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan,
+            "docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment":               self.docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment,
+            "docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth":        self.docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth,
+            "docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction":                  self.docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction,
+            "docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages":                self.docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages,
+            "docsIf3CmSpectrumAnalysisCtrlCmdFileEnable":                      self.docsIf3CmSpectrumAnalysisCtrlCmdFileEnable,
+            "docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus":                      self.docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus,
+            "docsIf3CmSpectrumAnalysisCtrlCmdFileName":                        self.docsIf3CmSpectrumAnalysisCtrlCmdFileName,
+        }
+        return spectrum_cmd
+    

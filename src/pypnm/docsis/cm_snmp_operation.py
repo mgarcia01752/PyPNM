@@ -1105,6 +1105,8 @@ class CmSnmpOperation:
         - Exception: If any error occurs during the SNMP set operations.
         """
         
+        self.logger.debug(f'SpectrumAnalyzerPara: {spec_ana_cmd.to_dict()}')
+        
         async def __snmp_set(field_name:str, obj_value, snmp_type) -> bool:
             base_oid = COMPILED_OIDS.get(field_name)
             if not base_oid:
@@ -1137,10 +1139,6 @@ class CmSnmpOperation:
         # Need to get Diplex Setting to make sure that the Spec Analyzer setting are within the band
         cscs:DocsIf31CmSystemCfgDiplexState = await self.getDocsIf31CmSystemCfgDiplexState()
         diplex_dict = cscs.to_dict()[0]
-        # diplex_dict["docsIf31CmSystemCfgStateDiplexerCapability"]
-        # diplex_dict["docsIf31CmSystemCfgStateDiplexerCfgBandEdge"]
-        # diplex_dict["docsIf31CmSystemCfgStateDiplexerDsLowerCapability"]
-        # diplex_dict["docsIf31CmSystemCfgStateDiplexerDsUpperCapability"]
         lower_edge = int(diplex_dict["docsIf31CmSystemCfgStateDiplexerCfgDsLowerBandEdge"]) * 1_000_000 
         upper_edge = diplex_dict["docsIf31CmSystemCfgStateDiplexerCfgDsUpperBandEdge"] * 1_000_000
         
@@ -1180,7 +1178,7 @@ class CmSnmpOperation:
                     if not await __snmp_set(field_name, Snmp_v2c.TRUE, snmp_type):
                         self.logger.error(f'Fail to set {field_name} to {Snmp_v2c.TRUE}')
                         return False
-                    
+                                        
                     continue
 
                 elif field_name == "docsIf3CmSpectrumAnalysisCtrlCmdFileEnable":
@@ -1216,36 +1214,7 @@ class CmSnmpOperation:
                 if not await __snmp_set(field_name, obj_value, snmp_type):
                     self.logger.error(f'Fail to set {field_name} to {obj_value}')
                     return False
-                
-                '''
-                base_oid = COMPILED_OIDS.get(field_name)
-                if not base_oid:
-                    self.logger.warning(f'OID not found for field "{field_name}", skipping.')
-                    continue
-
-                oid = f"{base_oid}.0"
-                self.logger.debug(f'Field-OID: {field_name} -> OID: {oid} -> {obj_value} -> Type: {snmp_type}')
-                
-                set_response = await self._snmp.set(oid, obj_value, snmp_type)
-                self.logger.debug(f'Set {field_name} [{oid}] = {obj_value}: {set_response}')
-                
-                if not set_response:
-                    self.logger.error(f'Failed to set {field_name} to ({obj_value})')
-                    return False
-                                
-                result = Snmp_v2c.snmp_set_result_value(set_response)[0]
-                
-                if not result:
-                    self.logger.error(f'Failed to set {field_name} to ({obj_value})')
-                    return False
-                                
-                self.logger.debug(f"Result({result}): {type(result)} -> Value({obj_value}): {type(obj_value)}")
-
-                if str(result) != str(obj_value):
-                    logging.error(f'Failed to set {field_name}. Expected ({obj_value}), got ({result})')
-                    return False
-                '''
-                                
+                                                
             return True
 
         except Exception:
@@ -1282,7 +1251,6 @@ class CmSnmpOperation:
                 self.logger.error(f'Filename mismatch. Expected "{last_pre_eq_filename}", got "{result[0] if result else "None"}"')
                 return False            
             
-
             if set_and_go:
                 time.sleep(1)
                 enable_oid = f'{COMPILED_OIDS["docsPnmCmUsPreEqFileEnable"]}.{ofdma_idx}'

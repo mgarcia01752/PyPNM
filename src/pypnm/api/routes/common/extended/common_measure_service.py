@@ -377,7 +377,7 @@ class CommonMeasureService(CommonMessagingService):
             count=1
             while True:
                 status_pnmfiles = await self.cm.getDocsPnmCmCtlStatus()
-                self.logger.debug(f"{self.log_prefix} - PNM status: {str(status_pnmfiles).upper()} - count: {count}")
+                self.logger.info(f"{self.log_prefix} - PNM status: {str(status_pnmfiles).upper()} - count: {count}")
                 if status_pnmfiles == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
                     count += 1
                     sleep(1)
@@ -398,6 +398,7 @@ class CommonMeasureService(CommonMessagingService):
             extract_idx = lambda idx: idx[0] if isinstance(idx, list) and idx else idx
             while wait_count < max_wait_count:
                 meas_status = await self.cm.getPnmMeasurementStatus(self.pnm_test_type, extract_idx(idx))
+                self.logger.info(f"{self.log_prefix} - MeasureStatus: {meas_status.name}")
                 if meas_status == MeasStatusType.SAMPLE_READY:
                     break
                 sleep(1)
@@ -557,7 +558,6 @@ class CommonMeasureService(CommonMessagingService):
                     return ServiceStatusCode.SPEC_ANALYZER_NOT_AVAILABLE, []
                  
         return ServiceStatusCode.SUCCESS, pnm_files
-
 
     def _handle_local_fetch(self, pnm_file_name: str) -> bool:
         """

@@ -2,14 +2,14 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-
 import argparse
 import asyncio
 import logging
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.api.routes.docs.pnm.ds.ofdm.chan_est_coeff.service import CmDsOfdmChanEstCoefService
+from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpectrumAnalyzerParameters
+from pypnm.api.routes.docs.pnm.spectrumAnalyzer.service import CmSpectrumAnalysisService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
@@ -24,11 +24,11 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
+
 async def main():
     parser = argparse.ArgumentParser(description="CmSpectrumAnalysisService Runner")
     parser.add_argument("--mac", "-m", required=True, help="MAC address of cable modem")
     parser.add_argument("--inet", "-i", required=True, help="IP address of cable modem")
-    parser.add_argument("--tftp-ipv4", "-t4", required=True, help="IPv4 TFTP server")
     parser.add_argument("--community-write", "-cw", default="private", help="SNMP write community string (default: private)")
 
     parser.add_argument("--first-segment-center-freq", "-fscf", default="300000000", help="First Segment Center Frequency (Hz)")
@@ -44,18 +44,21 @@ async def main():
     args = parser.parse_args()
 
     # Initialize CableModem
-    cm = CableModem(mac_address=MacAddress(args.mac), inet=Inet(args.inet), write_community=str(args.community_write))
+    cm = CableModem(
+        mac_address=MacAddress(args.mac),
+        inet=Inet(args.inet),
+        write_community=str(args.community_write)
+    )
 
     # Check modem reachability
     if not cm.is_ping_reachable():
-        logging.error(f"{cm.get_inet_address} not reachable, exiting...")
+        logging.error(f"{cm.get_inet_address()} not reachable, exiting...")
         exit(1)
 
     logging.info(f"Connected to: {await cm.getSysDescr()}")
 
-    # Create service with all parameters
-    service = CmSpectrumAnalysisService(
-        cable_modem=cm,
+    # Build SpectrumAnalyzerParameters from parsed args
+    spec_params = SpectrumAnalyzerParameters(
         inactivity_timeout=int(args.inactivity_timeout),
         first_segment_center_freq=int(args.first_segment_center_freq),
         last_segment_center_freq=int(args.last_segment_center_freq),
@@ -66,21 +69,28 @@ async def main():
         num_averages=int(args.number_of_averages),
         spectrum_retrieval_type=SpectrumRetrievalType(int(args.retrieval_type)),
     )
-    
+
+    # Create service with the parameter object
+    service = CmSpectrumAnalysisService(
+        cable_modem=cm,
+        spec_analyzer_para=spec_params,
+    )
+
     msg_rsp: MessageResponse = await service.set_and_go()
 
     if msg_rsp.status != ServiceStatusCode.SUCCESS:
-        logging.error(f'ERROR: {msg_rsp.status.name}, exiting...')
+        logging.error(f"ERROR: {msg_rsp.status.name}, exiting...")
         exit(1)
 
     cps = CommonProcessService(msg_rsp)
     msg_rsp = cps.process()
 
-    for payload in msg_rsp.payload: # type: ignore
+    for payload in msg_rsp.payload:  # type: ignore
         timestamp = Utils.time_stamp(TimeUnit.MILLISECONDS)
         file_path = f"output/spectrum-analyzer-{timestamp}.json"
         FileProcessor(file_path).write_file(payload)
         logging.info(f"Saved result to: {file_path}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
