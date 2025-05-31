@@ -24,7 +24,7 @@ logging.basicConfig(
 # --- 🚀 FastAPI App Initialization ---
 app = FastAPI(
     title="PyPNM REST API",
-    version="1.0.0",
+    version="0.1.0",
     summary="Proactive Network Maintenance API for DOCSIS devices.",
     description=(
         "Python-based RESTful API to access, analyze, and visualize DOCSIS telemetry data.\n\n"
