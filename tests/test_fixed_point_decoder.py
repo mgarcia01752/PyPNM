@@ -4,7 +4,9 @@
 
 import logging
 import unittest
+
 from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder
+
 
 # Configure logging
 logging.basicConfig(

@@ -88,6 +88,7 @@ The included `install.sh` will detect Ubuntu 22.04 vs 24.04 (or fall back to you
 ### Step 3: (If not already active) activate the virtual environment
 
 ```bash
+python3 -m venv .venv
 source .venv/bin/activate
 ```
 

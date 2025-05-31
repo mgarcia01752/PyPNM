@@ -1,5 +1,6 @@
 import unittest
 import struct
+
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 

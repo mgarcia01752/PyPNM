@@ -1,5 +1,4 @@
 import unittest
-from pypnm.pnm.lib.min_avg_max import MinAvgMax
 
 class TestMinAvgMax(unittest.TestCase):
 
