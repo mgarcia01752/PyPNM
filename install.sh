@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR=${PWD}
+
 # Detect Ubuntu version
 if [ -r /etc/os-release ]; then
   . /etc/os-release
@@ -79,6 +81,7 @@ for file in *.txt; do
   [ -e "$file" ] || continue
   echo "- [${file}](./${file})" >> index.md
 done
+cd ${ROOT_DIR}
 
 echo
 echo "✅ Generated 'mibs/index.md' with a list of all .txt files."
