@@ -52,21 +52,21 @@ This API provides endpoints for performing measurements and analysis related to 
 
 * **`mac_address`**: MAC address of the target cable modem (e.g., `aabb.ccdd.eeff`).
 * **`ip_address`**: IP address of the target cable modem (e.g., `172.20.63.12`).
+
 * **`snmp`**: Either SNMP v2c or v3 credentials:
 
   * **`snmpV2C`**:
-
     * `community`: SNMP v2c write community string.
-  * **`snmpV3`**:
 
+  * **`snmpV3`**:
     * `username`: SNMPv3 username.
     * `securityLevel`: One of `noAuthNoPriv`, `authNoPriv`, `authPriv`.
     * `authProtocol`: SNMPv3 auth protocol (e.g., `MD5`, `SHA`).
     * `authPassword`: SNMPv3 authentication password.
     * `privProtocol`: SNMPv3 privacy protocol (e.g., `DES`, `AES`).
     * `privPassword`: SNMPv3 privacy password.
-* **`parameters`**: Spectrum Analyzer settings:
 
+* **`parameters`**: Spectrum Analyzer settings:
   * `inactivity_timeout`: Timeout in seconds for inactivity (default: 100).
   * `first_segment_center_freq`: First segment center frequency in Hz (e.g., 300 MHz).
   * `last_segment_center_freq`: Last segment center frequency in Hz (e.g., 900 MHz).
@@ -76,6 +76,10 @@ This API provides endpoints for performing measurements and analysis related to 
   * `window_function`: FFT window function ID (e.g., `1` for HANN).
   * `num_averages`: Number of averages per segment (default: 1).
   * `spectrum_retrieval_type`: Retrieval method (1 = FILE via TFTP, 2 = SNMP).
+      1 = FILE -> Via TFTP PNM File
+      2 = SNMP -> Via `docsIf3CmSpectrumAnalysisMeasAmplitudeData`
+
+  Parameter details can be found in [DOCS-IF31-MIB::docsIf3CmSpectrumAnalysisCtrlCmd](https://mibs.cablelabs.com/MIBs/DOCSIS/DOCS-IF3-MIB-2025-02-20.txt)
 
 **Response Example:**
 
@@ -175,13 +179,15 @@ This API provides endpoints for performing measurements and analysis related to 
 
 When configuring spectrum analysis, the `window_function` parameter selects the DFT window applied to the time-domain samples. Each window trades off main-lobe width versus side-lobe level:
 
-| ID | Name             | Description                                                            |
-| -- | ---------------- | ---------------------------------------------------------------------- |
-| 0  | OTHER            | Unspecified or device-specific windowing.                              |
-| 1  | HANN             | Hann window – reduces side lobes, suitable for most use cases.         |
-| 2  | BLACKMAN\_HARRIS | High dynamic range window with very low spectral leakage.              |
-| 3  | RECTANGULAR      | No windowing; equivalent to raw DFT, maximum resolution, high leakage. |
-| 4  | HAMMING          | Similar to Hann but with slightly different tapering.                  |
-| 5  | FLAT\_TOP        | Flattens the top of the main lobe – good for accurate amplitude.       |
-| 6  | GAUSSIAN         | Gaussian-shaped window; parameterized by standard deviation.           |
-| 7  | CHEBYSHEV        | Minimizes main-lobe width for a given side-lobe level.                 |
+| ID | Name                                                                             | Description                                                            |
+| -- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 0  | [OTHER](https://en.wikipedia.org/wiki/Window_function)                           | Unspecified or device-specific windowing.                              |
+| 1  | [HANN](https://en.wikipedia.org/wiki/Hann_window)                                | Hann window – reduces side lobes, suitable for most use cases.         |
+| 2  | [BLACKMAN\_HARRIS](https://en.wikipedia.org/wiki/Blackman%E2%80%93Harris_window) | High dynamic range window with very low spectral leakage.              |
+| 3  | [RECTANGULAR](https://en.wikipedia.org/wiki/Rectangular_window)                  | No windowing; equivalent to raw DFT, maximum resolution, high leakage. |
+| 4  | [HAMMING](https://en.wikipedia.org/wiki/Hamming_window)                          | Similar to Hann but with slightly different tapering.                  |
+| 5  | [FLAT\_TOP](https://en.wikipedia.org/wiki/Flat_top_window)                       | Flattens the top of the main lobe – good for accurate amplitude.       |
+| 6  | [GAUSSIAN](https://en.wikipedia.org/wiki/Gaussian_window)                        | Gaussian-shaped window; parameterized by standard deviation.           |
+| 7  | [CHEBYSHEV](https://en.wikipedia.org/wiki/Chebyshev_window)                      | Minimizes main-lobe width for a given side-lobe level.                 |
+
+# End of Spectrum Analyzer API Documentation

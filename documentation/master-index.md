@@ -4,7 +4,7 @@ Welcome to the PyPNM documentation. Use this master index to navigate through al
 
 ## 📚 API Reference
 
-### Development Endpoints
+### DOCSIS Device Endpoints
 - [Event Log (dev)](api/dev/eventLog.md)
 - [Reset (dev)](api/dev/reset.md)
 
