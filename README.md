@@ -21,7 +21,6 @@
 * **FastAPI REST service** delivering clean JSON for integration into dashboards and automation
 * **Extensible architecture** for adding new measurement types and custom analytics
 
----
 
 ## 🛠 Key Features
 
@@ -33,8 +32,6 @@
 * **Capacity Margin Calculations**: Shannon-based bit-per-subcarrier limits and deltas
 * **RESTful API**: Auto-generated OpenAPI, Swagger UI, Postman collection
 * **Command-Line Examples**: standalone analysis scripts and batch processing utilities
-
----
 
 ## Prerequisites
 
@@ -55,8 +52,6 @@ Install `git` if not already present (before cloning the repo):
 sudo apt update
 sudo apt install -y git
 ```
-
----
 
 ## 🚀 Getting Started
 
@@ -88,8 +83,8 @@ The included `install.sh` will detect Ubuntu 22.04 vs 24.04 (or fall back to you
 ### Step 3: (If not already active) activate the virtual environment
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .env
+source .env/bin/activate
 ```
 
 ---
@@ -123,7 +118,10 @@ pypnm
 
 > ⚠️ Tip: Use Postman for complex or large JSON payloads—Swagger UI can struggle with deeply nested schemas.
 
----
+
+## [Python Documentation](documentation/master-index.md)
+
+Use this master index to navigate through all guides, API references, examples, and system docs.
 
 ## Python API
 
@@ -132,7 +130,6 @@ Integrate PNM telemetry end-to-end in your own Python scripts:
 * **Full Reference**: [Python API Reference →](documentation/api/python/index.md)
 * **Hands-On Examples**: [Example Scripts →](documentation/examples/index.md)
 
----
 
 ## 📦 Supported Standards & Specs
 
@@ -146,13 +143,11 @@ Integrate PNM telemetry end-to-end in your own Python scripts:
   * [CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)
   * [CM-GL-PNM-HFC & CM-GL-PNM-3.1](https://www.cablelabs.com/specifications/CM-GL-PNM-HFC)
 
----
 
 ## 📜 License
 
 Released under the **MIT License**. See [LICENSE](LICENSE)
 
----
 
 ## 👤 Maintainer
 
