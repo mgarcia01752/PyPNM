@@ -4,45 +4,19 @@ This directory contains runnable examples showing how to use the PyPNM project i
 
 ```
 examples/
-├── data              # Sample input files (databases, PNM binaries)
 ├── fast-api          # Scripts demonstrating FastAPI endpoints
 ├── pnm               # Standalone PNM‐file parsing and reporting
 ├── service           # Wrapped service‐layer calls using CableModem API
 └── snmp              # Low‐level SNMP get / walk and bulk‐set examples
 ```
 
----
-
-## Prerequisites
-
-1. **Python 3.10+** installed and on your `PATH`.
-2. **PyPNM package** installed in your environment (`pip install -e .` from project root).
-3. **SNMP connectivity** to a DOCSIS cable modem (for live runs).
-4. **Sample PNM files** in `examples/data/pnm` if you want to test offline parsing.
+[FastAPI](endpoint-fetcher.md)
 
 ---
 
-## 1. FastAPI Examples (`examples/fast-api`)
+## 1. [FastAPI](endpoint-fetcher.md) 
 
-These scripts illustrate how to launch and interact with the PyPNM FastAPI router:
-
-* **Launch the full API**:
-
-  ```bash
-  uvicorn api.main:app --reload
-  ```
-* **Run individual docs scripts** (e.g. to generate OpenAPI docs):
-
-  ```bash
-  python api-docs-if31-system-diplexer.py --mac 00:11:22:33:44:55 --inet 192.168.1.100
-  ```
-* **Batch run all endpoints**:
-
-  ```bash
-  ./api-run-all.sh --mac 00:11:22:33:44:55 --inet 192.168.1.100
-  ```
-
-Each script uses the `--mac` and `--inet` flags to target a specific cable modem.
+PyPNM FastAPI router:
 
 ---
 
@@ -120,14 +94,6 @@ Demonstrates SNMP: GET, SET, WALK
 
   ./cm-get-sysDescr.py ${CLI}
   ```
-
----
-
-## Global Utilities
-
-* **`run.sh`** in each folder can help batch‐execute all examples in that category.
-* Many examples accept `--mac` and `--inet` flags for device targeting.
-* Use sample data under `examples/data` for offline testing.
 
 ---
 

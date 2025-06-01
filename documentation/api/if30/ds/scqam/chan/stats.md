@@ -100,3 +100,18 @@ Fetches statistics for the upstream DOCSIS SC-QAM channels, including detailed m
 | ├─ docsIf3CmStatusUsT3Exceededs       | int    | Number of T3 exceeded timeouts                     |
 | ├─ docsIf3CmStatusUsIsMuted           | bool   | Whether the upstream is muted                      |
 | └─ docsIf3CmStatusUsRangingStatus     | int    | Ranging status (e.g., successful, failed)          |
+
+## Example Curl
+
+```bash
+curl -X POST http://localhost:8000/docs/if30/us/scqam/chan/stats \
+  -H "Content-Type: application/json" \
+  -d '{"mac_address": "a0:b1:c2:d3:e4:f5", "ip_address": "192.168.100.1"}'
+```
+
+## Tags
+
+* DOCSIS
+* SC-QAM
+* Upstream
+* SNMP
