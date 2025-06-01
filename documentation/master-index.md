@@ -56,7 +56,6 @@ Welcome to the PyPNM documentation. Use this master index to navigate through al
   - [SNMP V2C](api/python/snmp/snmp-v2c.md)
   - [System Config](api/python/system_config/system_config.md)
 
-
 ## 💾 DOCSIS Background
 
 - [DOCSIS Overview](docsis/index.md)
