@@ -2,13 +2,11 @@
 
 Welcome to the PyPNM documentation. Use this master index to navigate through all guides, API references, examples, and system docs.
 
----
-
 ## 📚 API Reference
 
-### Development Endpoints
-- [Event Log (dev)](api/dev/eventLog.md)
-- [Reset (dev)](api/dev/reset.md)
+### DOCSIS Device Endpoints
+- [Event Log](api/dev/eventLog.md)
+- [Reset](api/dev/reset.md)
 
 ### FastAPI Reference
 - [FastAPI Overview](api/fast-api/index.md)
@@ -58,19 +56,14 @@ Welcome to the PyPNM documentation. Use this master index to navigate through al
   - [SNMP V2C](api/python/snmp/snmp-v2c.md)
   - [System Config](api/python/system_config/system_config.md)
 
----
 
 ## 💾 DOCSIS Background
 
 - [DOCSIS Overview](docsis/index.md)
 
----
-
 ## 🛠 Examples
 
 - [Example Scripts](examples/index.md)
-
----
 
 ## ⚙️ System & Setup
 

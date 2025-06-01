@@ -77,7 +77,6 @@ source .env/bin/activate
 ### Step 4: Launch the PyPNM FastAPI service
 
 ```bash
-# View CLI options
 pypnm --help
 ```
 
