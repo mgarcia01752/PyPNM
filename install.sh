@@ -108,11 +108,11 @@ echo "✅ Generated 'mibs/index.md' with a list of all .txt files."
 # ──────────────────────────────────────────────────────────────────────────────
 echo
 echo "Setting up Python virtual environment…"
-"$PYTHON_PKG" -m venv .venv
+"$PYTHON_PKG" -m venv .env
 
 # Activate the venv in this script context
 # (for user interactive shells they'll need to `source .venv/bin/activate`)
-source .venv/bin/activate
+source .env/bin/activate
 
 echo "Upgrading pip, setuptools, and wheel in venv…"
 pip install --upgrade pip setuptools wheel
