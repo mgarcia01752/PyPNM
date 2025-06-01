@@ -10,7 +10,7 @@ import logging
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.snmp.snmp_module_class import DocsisIfType
+from pypnm.snmp.modules import DocsisIfType
 
 logging.basicConfig(
     level=logging.INFO,

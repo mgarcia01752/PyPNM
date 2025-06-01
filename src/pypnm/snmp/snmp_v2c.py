@@ -12,8 +12,9 @@ from pysnmp.hlapi.v3arch.asyncio import (
 from pysnmp.proto.rfc1902 import (OctetString)
 from pypnm.lib.inet import Inet
 from pypnm.lib.inet_utils import InetUtils
+from pypnm.snmp.modules import InetAddressType
 
-from pypnm.snmp.snmp_module_class import InetAddressType
+
 
 class Snmp_v2c:
     """
@@ -276,7 +277,6 @@ class Snmp_v2c:
 
         return extracted_indices
 
-
     @staticmethod
     def snmp_get_result_value(snmp_responses: List[ObjectType]) -> List[str]:
         """
@@ -289,6 +289,30 @@ class Snmp_v2c:
             List[str]: List of extracted result values as strings.
         """
         return [str(value[1]) for value in snmp_responses]
+
+    @staticmethod
+    def snmp_get_result_bytes(snmp_responses: List[ObjectType]) -> List[bytes]:
+        """
+        Extract raw byte values from a list of SNMP ObjectType responses.
+
+        Args:
+            snmp_responses (List[ObjectType]): List of SNMP ObjectType responses.
+
+        Returns:
+            List[bytes]: List of extracted result values as bytes.
+        """
+        result = []
+        for varbind in snmp_responses:
+            value = varbind[1]
+            # Attempt to get raw bytes directly if available
+            if hasattr(value, 'asOctets'):
+                result.append(value.asOctets())
+            elif isinstance(value, bytes):
+                result.append(value)
+            else:
+                # Fallback: try encoding string representation
+                result.append(str(value).encode())
+        return result
 
     @staticmethod
     def snmp_get_result_last_idx_value(snmp_responses: List[ObjectType]) -> List[Tuple[int, str]]:

@@ -5,7 +5,9 @@ from enum import Enum
 import logging
 import time
 from typing import List, Tuple, Union
-from pysnmp.proto.rfc1902 import OctetString, Counter32, Bits, Counter64, Gauge32, Integer, Integer32, IpAddress
+from pysnmp.proto.rfc1902 import (OctetString, Counter32, Bits, 
+                                  Counter64, Gauge32, Integer, 
+                                  Integer32, IpAddress)
 from pypnm.docsis.data_type.DocsDevEventEntry import DocsDevEventEntry
 from pypnm.docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanEntry
 from pypnm.docsis.data_type.DocsIf31CmDsOfdmProfileStatsEntry import DocsIf31CmDsOfdmProfileStatsEntry
@@ -24,11 +26,11 @@ from pypnm.pnm.data_type.DocsEqualizerData import DocsEqualizerData
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
     DocsIf3CmSpectrumAnalysisCtrlCmd, SpectrumRetrievalType)
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
+from pypnm.snmp.compiled_oids import COMPILED_OIDS
 from pypnm.snmp.snmp_v2c import Snmp_v2c
-from pypnm.snmp.snmp_compiled_oids import COMPILED_OIDS
 from typing import Optional
 
-from pypnm.snmp.snmp_module_class import DocsPnmBulkUploadControl, DocsisIfType
+from pypnm.snmp.modules import DocsPnmBulkUploadControl, DocsisIfType
 
 class DocsPnmBulkFileUploadStatus(Enum):
     """Represents the upload status of a DOCSIS PNM bulk data file."""
@@ -70,7 +72,6 @@ class DocsPnmBulkFileUploadStatus(Enum):
             return cls.HTTPS
         else:
             raise ValueError(f"Unsupported value: {value}")
-
 
 class MeasStatusType(Enum):
     """
@@ -1020,7 +1021,88 @@ class CmSnmpOperation:
             self.logger.error(f"Failed to parse sysUpTime value: {value} - {e}")
             return None
 
+    async def isAmplitudeDataPresent(self) -> bool:
+        """
+        Check if DOCSIS spectrum amplitude data is available via SNMP.
 
+        Returns:
+            bool: True if amplitude data exists; False otherwise.
+        """
+        oid = COMPILED_OIDS.get("docsIf3CmSpectrumAnalysisMeasAmplitudeData")
+        if not oid:
+            return False
+
+        try:
+            results = await self._snmp.walk(oid)
+        except Exception:
+            return False
+
+        return bool(results)
+
+    async def getSpectrumAmplitudeData(self) -> bytes:
+        """
+        Retrieve and return the raw spectrum analyzer amplitude data from the cable modem via SNMP.
+
+        This method queries the 'docsIf3CmSpectrumAnalysisMeasAmplitudeData' table, collects all
+        returned byte-chunks, and concatenates them into a single byte stream. It logs a warning
+        if no data is found, and logs the first 128 bytes of the raw result (in hex) for inspection.
+
+        Returns:
+            A bytes object containing the full amplitude data stream. If no data is returned, an
+            empty bytes object is returned.
+
+        Raises:
+            RuntimeError: If SNMP walk returns an unexpected data type or if any underlying SNMP
+                          operation fails.
+        """
+        # OID for the amplitude data (should be a ByteString/Textual convention)
+        oid = COMPILED_OIDS.get("docsIf3CmSpectrumAnalysisMeasAmplitudeData")
+        if oid is None:
+            msg = "OID 'docsIf3CmSpectrumAnalysisMeasAmplitudeData' is not defined in COMPILED_OIDS."
+            self.logger.error(msg)
+            raise RuntimeError(msg)
+
+        # Perform SNMP WALK asynchronously
+        try:
+            results = await self._snmp.walk(oid)
+        except Exception as e:
+            self.logger.error(f"SNMP walk for OID {oid} failed: {e}")
+            raise RuntimeError(f"SNMP walk failed: {e}")
+
+        # If the SNMP WALK returned no varbinds, warn and return empty bytes
+        if not results:
+            self.logger.warning(f"No results found for OID {oid}")
+            return b""
+
+        # Extract raw byte-chunks from the SNMP results
+        raw_chunks = []
+        for idx, chunk in enumerate(Snmp_v2c.snmp_get_result_bytes(results)):
+            # Ensure we got a bytes-like object
+            if not isinstance(chunk, (bytes, bytearray)):
+                self.logger.error(
+                    f"Unexpected data type for chunk #{idx}: {type(chunk).__name__}. "
+                    "Expected bytes or bytearray."
+                )
+                raise RuntimeError(f"Invalid SNMP result type: {type(chunk)}")
+
+            # Log the first 128 bytes of each chunk (hex) for debugging
+            preview = chunk[:128].hex()
+            self.logger.debug(f"Raw SNMP chunk #{idx} (first 128 bytes): {preview}")
+
+            raw_chunks.append(bytes(chunk))  # ensure immutability
+
+        # Concatenate all chunks into a single bytes object
+        varbind_bytes = b"".join(raw_chunks)
+
+        # Log total length for reference
+        total_length = len(varbind_bytes)
+        if total_length == 0:
+            self.logger.warning(f"OID {oid} returned an empty byte stream after concatenation.")
+        else:
+            self.logger.info(f"Retrieved {total_length} bytes of amplitude data for OID {oid}.")
+
+        return varbind_bytes
+    
 ######################
 # SNMP Set Operation #
 ######################
@@ -1083,7 +1165,7 @@ class CmSnmpOperation:
     async def setDocsIf3CmSpectrumAnalysisCtrlCmd(
             self,
             spec_ana_cmd: DocsIf3CmSpectrumAnalysisCtrlCmd,
-            data_retrival: SpectrumRetrievalType = SpectrumRetrievalType.FILE,
+            spectrum_retrieval_type: SpectrumRetrievalType = SpectrumRetrievalType.FILE,
             set_and_go: bool = True
         ) -> bool:
         """
@@ -1091,7 +1173,7 @@ class CmSnmpOperation:
 
         Parameters:
         - spec_ana_cmd (DocsIf3CmSpectrumAnalysisCtrlCmd): The control command object to apply.
-        - data_retrival (SpectrumRetrieval): Determines the method of spectrum retrieval.
+        - spectrum_retrieval_type (SpectrumRetrieval): Determines the method of spectrum retrieval.
             - SpectrumRetrieval.FILE: File-based retrieval, in which case `docsIf3CmSpectrumAnalysisCtrlCmdFileEnable` is set to ENABLE.
             - SpectrumRetrieval.SNMP: SNMP-based retrieval, in which case `docsIf3CmSpectrumAnalysisCtrlCmdEnable` is set to ENABLE.
         - set_and_go (bool): Whether to include the 'Enable' field in the set request.
@@ -1107,6 +1189,9 @@ class CmSnmpOperation:
         
         self.logger.debug(f'SpectrumAnalyzerPara: {spec_ana_cmd.to_dict()}')
         
+        '''
+            Custom SNMP SET for Spectrum Analyzer
+        '''
         async def __snmp_set(field_name:str, obj_value, snmp_type) -> bool:
             base_oid = COMPILED_OIDS.get(field_name)
             if not base_oid:
@@ -1157,13 +1242,49 @@ class CmSnmpOperation:
                 "docsIf3CmSpectrumAnalysisCtrlCmdFileEnable": Integer32,
             }
 
+            '''
+                Note: MUST BE THE LAST 2 AND IN THIS ORDER:
+                    docsIf3CmSpectrumAnalysisCtrlCmdEnable      <- Triggers SNMP AMPLITUDE DATA RETURN
+                    docsIf3CmSpectrumAnalysisCtrlCmdFileEnable  <- Trigger PNM FILE RETURN, OVERRIDES SNMP AMPLITUDE DATA RETURN
+            '''
+            
             # Iterating through the fields and setting their values via SNMP
             for field_name, snmp_type in field_type_map.items():
                 obj_value = getattr(spec_ana_cmd, field_name)
                 
                 self.logger.debug(f'FieldName: {field_name} -> SNMP-Type: {snmp_type}')
 
-                if field_name == "docsIf3CmSpectrumAnalysisCtrlCmdEnable":
+                ##############################################################
+                # OVERRIDE SECTION TO MAKE SURE WE FOLLOW THE SPEC-ANA RULES #
+                ##############################################################
+                
+                # Need to make sure that SpecAnaTuner is within the Diplex Bandwide Range
+                if field_name == "docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency":
+                    seg_freq_span = spec_ana_cmd.__getattribute__('docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan')
+                    obj_value = getattr(spec_ana_cmd, field_name)
+                    spec_lower_edge = (int(obj_value) - (int(seg_freq_span)/2))
+                    
+                    if spec_lower_edge < lower_edge:
+                        self.logger.error(f'SpecAnalyzer({obj_value})-LowerEdge ({spec_lower_edge}) is lower than Diplex Lower Edge: ({lower_edge})')
+                        return False
+                     
+                # Need to make sure that SpecAnaTuner is within the Diplex Bandwide Range
+                elif field_name == "docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency":
+                    seg_freq_span = spec_ana_cmd.__getattribute__('docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan')
+                    obj_value = getattr(spec_ana_cmd, field_name)
+                    spec_upper_edge = (int(obj_value) + (int(seg_freq_span)/2))
+                    
+                    if spec_upper_edge > upper_edge:
+                        self.logger.error(f'SpecAnalyzer({obj_value})-UpperEdge ({spec_lower_edge}) is larger than Diplex Upper Edge: ({lower_edge})')
+                        return False
+                                     
+                #######################################################################################
+                #                                                                                     # 
+                #                   START SPECTRUM ANALYZER MEASURING PROCESS                         #
+                #                                                                                     #
+                # This OID Triggers the start of the Spectrum Analysis for SNMP-AMPLITUDE-DATA RETURN #
+                #######################################################################################
+                elif field_name == "docsIf3CmSpectrumAnalysisCtrlCmdEnable":
                     
                     obj_value = Snmp_v2c.TRUE
                     self.logger.debug(f'FieldName: {field_name} -> SNMP-Type: {snmp_type}')
@@ -1181,28 +1302,21 @@ class CmSnmpOperation:
                                         
                     continue
 
+                ######################################################################################
+                #
+                #                   CHECK SPECTRUM ANALYZER MEASURING PROCESS
+                #                           FOR PNM FILE RETRIVAL
+                #                
+                # This OID Triggers the start of the Spectrum Analysis for PNM-FILE RETURN
+                # Override SNMP-AMPLITUDE-DATA RETURN
+                ######################################################################################    
                 elif field_name == "docsIf3CmSpectrumAnalysisCtrlCmdFileEnable":
-                    obj_value = Snmp_v2c.TRUE if data_retrival == SpectrumRetrievalType.FILE else Snmp_v2c.FALSE
+                    obj_value = Snmp_v2c.TRUE if spectrum_retrieval_type == SpectrumRetrievalType.FILE else Snmp_v2c.FALSE
                     self.logger.debug(f'Setting File Retrival, Set-And-Go({set_and_go}) -> Value: {obj_value}')
-
-                elif field_name == "docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency":
-                    seg_freq_span = spec_ana_cmd.__getattribute__('docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan')
-                    obj_value = getattr(spec_ana_cmd, field_name)
-                    spec_lower_edge = (int(obj_value) - (int(seg_freq_span)/2))
-                    
-                    if spec_lower_edge < lower_edge:
-                        self.logger.error(f'SpecAnalyzer({obj_value})-LowerEdge ({spec_lower_edge}) is lower than Diplex Lower Edge: ({lower_edge})')
-                        return False 
                 
-                elif field_name == "docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency":
-                    seg_freq_span = spec_ana_cmd.__getattribute__('docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan')
-                    obj_value = getattr(spec_ana_cmd, field_name)
-                    spec_upper_edge = (int(obj_value) + (int(seg_freq_span)/2))
-                    
-                    if spec_upper_edge > upper_edge:
-                        self.logger.error(f'SpecAnalyzer({obj_value})-UpperEdge ({spec_lower_edge}) is larger than Diplex Upper Edge: ({lower_edge})')
-                        return False                 
-                
+                ###############################################
+                # Set Field setting not change by above rules #
+                ###############################################
                 if isinstance(obj_value, Enum):
                     obj_value = str(obj_value.value)
                     self.logger.debug(f'ENUM Found: Set Value Type: {obj_value} -> {type(obj_value)}')

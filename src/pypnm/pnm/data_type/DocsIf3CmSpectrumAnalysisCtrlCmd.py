@@ -16,8 +16,10 @@ class SpectrumRetrievalType(IntEnum):
         FILE (int): Retrieve results from a file (e.g., via TFTP).
         SNMP (int): Retrieve results directly using SNMP queries.
     """
-    FILE = 1
-    SNMP = 2
+    UNKNOWN = -1
+    ERROR   = 0
+    FILE    = 1
+    SNMP    = 2
 
 class WindowFunction(IntEnum):
     """

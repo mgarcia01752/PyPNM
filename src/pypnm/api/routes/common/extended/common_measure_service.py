@@ -2,11 +2,13 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from abc import ABC
+import asyncio
 import logging
 import os
 from pathlib import Path
 import shutil
 from time import sleep
+import time
 from typing import Dict, List,  Optional, Tuple, Union
 
 from pypnm.api.routes.common.extended.common_measure_schema import (
@@ -20,10 +22,11 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType
 from pypnm.lib.inet import Inet
 from pypnm.lib.utils import Utils
-from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import DocsIf3CmSpectrumAnalysisCtrlCmd, WindowFunction
+from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
+    DocsIf3CmSpectrumAnalysisCtrlCmd, SpectrumRetrievalType, WindowFunction)
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 
-from pypnm.snmp.snmp_module_class import DocsisIfType
+from pypnm.snmp.modules import DocsisIfType
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
 class CommonMeasureService(CommonMessagingService):
@@ -124,6 +127,16 @@ class CommonMeasureService(CommonMessagingService):
             self.logger.error(f"{self.log_prefix} - Unreachable via SNMP")
             return self.build_send_msg(ServiceStatusCode.UNREACHABLE_SNMP)
 
+        #########################################################################
+        #                   Spectrum Analysis SNMP Return                       #
+        #########################################################################
+        
+        spec_rev_type = self.extra_options.get("spectrum_retrieval_type",SpectrumRetrievalType.UNKNOWN)
+            
+        if spec_rev_type == SpectrumRetrievalType.SNMP:
+            self.logger.debug(f"{self.log_prefix} - Performing Spectrum Analysis SNMP Amplitude Data")
+            return self.build_send_msg(self._check_spectrum_amplitude_data_status())
+        
         #########################################################################
         # Ensure CM Inet and TFTP server address use the same IP version
         #
@@ -526,6 +539,8 @@ class CommonMeasureService(CommonMessagingService):
                 
                 self.logger.debug(f'{self.log_prefix} - Entering into SPECTRUM_ANALYZER Mode')
                 
+                ctl_cmd_filename = Snmp_v2c.TRUE
+                
                 inactivity_timeout = self.extra_options.get('inactivity_timeout', 100)
                 first_segment_center_frequency = self.extra_options.get('first_segment_center_freq', 200_000_000)
                 last_segment_center_frequency = self.extra_options.get('last_segment_center_freq', 900_000_000)
@@ -534,7 +549,12 @@ class CommonMeasureService(CommonMessagingService):
                 equivalent_noise_bandwidth = self.extra_options.get('noise_bw', 110)
                 window_function = self.extra_options.get('window_function', WindowFunction.HANN)
                 number_of_averages = self.extra_options.get('num_averages', 1)
-
+                spectrum_retrieval_type = self.extra_options.get('spectrum_retrieval_type', SpectrumRetrievalType.FILE)
+                
+                if  spectrum_retrieval_type == SpectrumRetrievalType.SNMP:
+                        ctl_cmd_filename = Snmp_v2c.FALSE
+                        pnm_filename = ""
+                
                 # Create the DocsIf3CmSpectrumAnalysisCtrlCmd object and populate it
                 spectrum_cmd = DocsIf3CmSpectrumAnalysisCtrlCmd(
                     docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout=inactivity_timeout,
@@ -547,18 +567,44 @@ class CommonMeasureService(CommonMessagingService):
                     docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages=number_of_averages,
                     docsIf3CmSpectrumAnalysisCtrlCmdEnable=Snmp_v2c.TRUE,
                     docsIf3CmSpectrumAnalysisCtrlCmdFileName=pnm_filename,
-                    docsIf3CmSpectrumAnalysisCtrlCmdFileEnable=Snmp_v2c.TRUE,
+                    docsIf3CmSpectrumAnalysisCtrlCmdFileEnable=ctl_cmd_filename,
                 )
 
-                # For SNMP, we need to toggle the enable True -> False -> True
-                # For File...not sure yet, this will depend on he SoC vendor
+                # SNMP: -> CtrlCmdEnable -> True -> False -> True (Poll: CtrlCmdEnable till False)
+                # FILE: -> CtrlCmdEnable -> True , CtrlCmdFileEnable -> True (Poll MeasureStatue till Ready)
                 
-                if not await self.cm.setDocsIf3CmSpectrumAnalysisCtrlCmd(spectrum_cmd):
+                if not await self.cm.setDocsIf3CmSpectrumAnalysisCtrlCmd(spectrum_cmd, spectrum_retrieval_type):
                     self.logger.error(f"{self.log_prefix} - Spectrum Analyzer is Not Available")
                     return ServiceStatusCode.SPEC_ANALYZER_NOT_AVAILABLE, []
                  
         return ServiceStatusCode.SUCCESS, pnm_files
 
+    async def _check_spectrum_amplitude_data_status(self, timeout_seconds: int = 300) -> ServiceStatusCode:
+        """
+        Polls the cable modem for spectrum amplitude data availability within a timeout period.
+
+        This method repeatedly checks if `docsIf3CmSpectrumAnalysisMeasAmplitudeData` is present
+        on the modem, and returns a success or timeout status accordingly.
+
+        Args:
+            timeout_seconds (int): Maximum number of seconds to wait before timing out. Default is 300.
+
+        Returns:
+            ServiceStatusCode: 
+                - SUCCESS if data becomes available within the timeout period.
+                - SPEC_ANALYZER_AMPLITUDE_DATA_TIMEOUT if the timeout is exceeded.
+        """
+        t_start = time.time()
+
+        while True:
+            if await self.cm.isAmplitudeDataPresent():
+                return ServiceStatusCode.SUCCESS
+
+            if (time.time() - t_start) >= timeout_seconds:
+                return ServiceStatusCode.SPEC_ANALYZER_AMPLITUDE_DATA_TIMEOUT
+
+            await asyncio.sleep(1)
+           
     def _handle_local_fetch(self, pnm_file_name: str) -> bool:
         """
         Handles copying a specified PNM file from a local source directory to a configured save directory.

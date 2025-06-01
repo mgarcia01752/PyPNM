@@ -46,7 +46,8 @@ class SpectrumAnalyzerRouter:
                         message=msg
                     )                   
                 
-                service = CmSpectrumAnalysisService(cable_modem=cm, spec_analyzer_para=request.parameters)
+                service = CmSpectrumAnalysisService(cable_modem=cm, 
+                                                    spec_analyzer_para=request.parameters)
                 msg_rsp: MessageResponse = await service.set_and_go()
 
                 if msg_rsp.status != ServiceStatusCode.SUCCESS:

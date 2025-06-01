@@ -4,8 +4,9 @@
 from binascii import unhexlify
 import logging
 
+from pypnm.snmp.compiled_oids import COMPILED_OIDS
 from pypnm.snmp.snmp_v2c import Snmp_v2c
-from pypnm.snmp.snmp_compiled_oids import COMPILED_OIDS
+
 
 class DocsDevEventEntry:
 

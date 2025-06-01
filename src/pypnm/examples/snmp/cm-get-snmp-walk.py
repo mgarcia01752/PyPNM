@@ -11,7 +11,7 @@ from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 
 from pypnm.snmp.snmp_v2c import Snmp_v2c
-from pypnm.snmp.snmp_compiled_oids import COMPILED_OIDS
+from pypnm.snmp.compiled_oids import COMPILED_OIDS
 
 async def main():
     parser = argparse.ArgumentParser(description="SNMP Get Next")
