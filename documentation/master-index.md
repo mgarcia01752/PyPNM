@@ -43,6 +43,7 @@ Welcome to the PyPNM documentation. Use this master index to navigate through al
   - [Profile Stats](api/if31/ds/ofdm/profile/stats.md)
 
 ### PNM Data Parsers
+
 - [Spectrum Analyzer](api/pnm/spectrum_analyzer.md)
 - [Channel Estimation Coefficients](api/pnm/chan_est_coef.md)
 - [Constellation Display](api/pnm/const_displap.md)
@@ -52,8 +53,9 @@ Welcome to the PyPNM documentation. Use this master index to navigate through al
 - [US OFDMA Pre-EQ](api/pnm/us_ofdma_pre_eq.md)
 
 ### Python Helpers
+
 - [Python API Index](api/python/index.md)
-  - [SNMP V2C](api/python/snmp/snmp-v2c.md)
+  - [SNMPv2c](api/python/snmp/snmp-v2c.md)
   - [System Config](api/python/system_config/system_config.md)
 
 ## 💾 DOCSIS Background

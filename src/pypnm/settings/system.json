@@ -71,7 +71,7 @@
         }        
     },
     "logging": {
-        "log_level":"DEBUG",
+        "log_level":"INFO",
         "log_dir":"logs",
         "log_filename":"pnm_log_%Y%m%d_%H%M%S.log"
     }

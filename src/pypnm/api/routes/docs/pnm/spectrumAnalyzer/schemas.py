@@ -3,7 +3,7 @@
 
 from pydantic import BaseModel, Field
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import SpectrumRetrievalType, WindowFunction
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmDataResponse, PnmRequest
 
 class SpectrumAnalyzerParameters(BaseModel):
     inactivity_timeout: int = Field(
@@ -34,3 +34,6 @@ class CmSpectrumAnalyzerRequest(PnmRequest):
 class CmSpecAnaAnalysisRequest(PnmAnalysisRequest):
     parameters: SpectrumAnalyzerParameters = Field(
         ..., description="Spectrum analysis specification parameters.")
+
+class CmSpecAnaAnalysisResponse(PnmDataResponse):
+    """Generic response container for most PNM operations."""

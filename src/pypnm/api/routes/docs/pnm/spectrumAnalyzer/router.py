@@ -11,8 +11,8 @@ from pypnm.api.routes.common.classes.operation.cable_modem_precheck import Cable
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.api.routes.docs.pnm.ds.ofdm.fec_summary.schemas import PnmFecSummaryResponse
-from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import CmSpecAnaAnalysisRequest, CmSpectrumAnalyzerRequest
+from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import (
+    CmSpecAnaAnalysisRequest, CmSpecAnaAnalysisResponse, CmSpectrumAnalyzerRequest)
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.service import CmSpectrumAnalysisService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
@@ -24,17 +24,17 @@ class SpectrumAnalyzerRouter:
     """
     def __init__(self):
         prefix = "/docs/pnm/ds/ofdm"
-        tags:List[str] = ["PNM Operations - Spectrum analyzer"]
+        tags:List[str] = ["PNM Operations - Spectrum Analyzer"]
         base_endpoint = "/spectrumAnalyzer"
 
         self.base_endpoint = base_endpoint.strip("/")
         self.router = APIRouter(prefix=prefix, tags=tags)
         self.logger = logging.getLogger(f"SpectrumAnalyzerRouter.{self.base_endpoint}")
 
-        @self.router.post(f"/{self.base_endpoint}/getMeasurement", response_model=Union[PnmResponse, SnmpResponse])
+        @self.router.post(f"/{self.base_endpoint}/getMeasurement", 
+                          response_model=Union[CmSpecAnaAnalysisResponse, SnmpResponse])
         async def get_measurement(request: CmSpectrumAnalyzerRequest):
             try:
-                
                 cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
                 
                 status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
@@ -43,11 +43,9 @@ class SpectrumAnalyzerRouter:
                     return SnmpResponse(
                         mac_address=str(request.mac_address),
                         status=status,
-                        message=msg
-                    )                   
+                        message=msg)                   
                 
-                service = CmSpectrumAnalysisService(cable_modem=cm, 
-                                                    spec_analyzer_para=request.parameters)
+                service = CmSpectrumAnalysisService(cable_modem=cm, spec_analyzer_para=request.parameters)
                 msg_rsp: MessageResponse = await service.set_and_go()
 
                 if msg_rsp.status != ServiceStatusCode.SUCCESS:
@@ -57,11 +55,10 @@ class SpectrumAnalyzerRouter:
                 cps = CommonProcessService(msg_rsp)
                 msg_rsp = cps.process()
 
-                return PnmFecSummaryResponse(
+                return CmSpecAnaAnalysisResponse(
                     mac_address=request.mac_address,
                     status=msg_rsp.status,
-                    data=msg_rsp.payload_to_dict()
-                )
+                    data=msg_rsp.payload_to_dict())
 
             except HTTPException:
                 raise

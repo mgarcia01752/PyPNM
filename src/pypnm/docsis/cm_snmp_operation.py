@@ -22,6 +22,7 @@ from pypnm.docsis.lib.pnm_bulk_data import DocsPnmBulkDataGroup, DocsPnmBulkFile
 from pypnm.lib.inet import Inet
 from pypnm.lib.inet_utils import InetUtils
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.utils import Utils
 from pypnm.pnm.data_type.DocsEqualizerData import DocsEqualizerData
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
     DocsIf3CmSpectrumAnalysisCtrlCmd, SpectrumRetrievalType)
@@ -1099,7 +1100,7 @@ class CmSnmpOperation:
         if total_length == 0:
             self.logger.warning(f"OID {oid} returned an empty byte stream after concatenation.")
         else:
-            self.logger.info(f"Retrieved {total_length} bytes of amplitude data for OID {oid}.")
+            self.logger.debug(f"Retrieved {total_length} bytes of amplitude data for OID {oid}.")
 
         return varbind_bytes
     
@@ -1162,12 +1163,10 @@ class CmSnmpOperation:
             self.logger.error(f"Failed to set DocsPnmBulk parameters: {e}")
             return False
 
-    async def setDocsIf3CmSpectrumAnalysisCtrlCmd(
-            self,
-            spec_ana_cmd: DocsIf3CmSpectrumAnalysisCtrlCmd,
-            spectrum_retrieval_type: SpectrumRetrievalType = SpectrumRetrievalType.FILE,
-            set_and_go: bool = True
-        ) -> bool:
+    async def setDocsIf3CmSpectrumAnalysisCtrlCmd(self,
+                        spec_ana_cmd: DocsIf3CmSpectrumAnalysisCtrlCmd,
+                        spectrum_retrieval_type: SpectrumRetrievalType = SpectrumRetrievalType.FILE,
+                        set_and_go: bool = True) -> bool:
         """
         Sets all DocsIf3CmSpectrumAnalysisCtrlCmd parameters via SNMP using index 0.
 
@@ -1237,8 +1236,8 @@ class CmSnmpOperation:
                 "docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth": Gauge32,
                 "docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction": Integer32,
                 "docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages": Gauge32,
-                "docsIf3CmSpectrumAnalysisCtrlCmdFileName": OctetString,
                 "docsIf3CmSpectrumAnalysisCtrlCmdEnable": Integer32,
+                "docsIf3CmSpectrumAnalysisCtrlCmdFileName": OctetString,
                 "docsIf3CmSpectrumAnalysisCtrlCmdFileEnable": Integer32,
             }
 
@@ -1277,7 +1276,17 @@ class CmSnmpOperation:
                     if spec_upper_edge > upper_edge:
                         self.logger.error(f'SpecAnalyzer({obj_value})-UpperEdge ({spec_lower_edge}) is larger than Diplex Upper Edge: ({lower_edge})')
                         return False
-                                     
+                
+                elif field_name == "docsIf3CmSpectrumAnalysisCtrlCmdFileName":
+                    file_name = getattr(spec_ana_cmd, field_name)
+                    
+                    if not file_name:
+                        setattr(spec_ana_cmd, field_name,f'snmp-amplitude-get-flag-{Utils.time_stamp()}')
+                    
+                    await __snmp_set(field_name, getattr(spec_ana_cmd, field_name) , snmp_type)
+                    
+                    continue
+                 
                 #######################################################################################
                 #                                                                                     # 
                 #                   START SPECTRUM ANALYZER MEASURING PROCESS                         #
@@ -1348,7 +1357,7 @@ class CmSnmpOperation:
         """
         try:
             oid = f'{COMPILED_OIDS["docsPnmCmUsPreEqFileName"]}.{ofdma_idx}'
-            self.logger.info(f'Setting Pre-EQ filename: [{oid}] = "{filename}"')
+            self.logger.debug(f'Setting Pre-EQ filename: [{oid}] = "{filename}"')
             response = await self._snmp.set(oid, filename, OctetString)
             result = Snmp_v2c.snmp_set_result_value(response)
 
@@ -1357,7 +1366,7 @@ class CmSnmpOperation:
                 return False
 
             oid = f'{COMPILED_OIDS["docsPnmCmUsPreEqLastUpdateFileName"]}.{ofdma_idx}'
-            self.logger.info(f'Setting Last-Pre-EQ filename: [{oid}] = "{last_pre_eq_filename}"')
+            self.logger.debug(f'Setting Last-Pre-EQ filename: [{oid}] = "{last_pre_eq_filename}"')
             response = await self._snmp.set(oid, last_pre_eq_filename, OctetString)
             result = Snmp_v2c.snmp_set_result_value(response)
 
@@ -1368,7 +1377,7 @@ class CmSnmpOperation:
             if set_and_go:
                 time.sleep(1)
                 enable_oid = f'{COMPILED_OIDS["docsPnmCmUsPreEqFileEnable"]}.{ofdma_idx}'
-                self.logger.info(f'Enabling Pre-EQ capture [{enable_oid}] = {Snmp_v2c.TRUE}')
+                self.logger.debug(f'Enabling Pre-EQ capture [{enable_oid}] = {Snmp_v2c.TRUE}')
                 response = await self._snmp.set(enable_oid, Snmp_v2c.TRUE, Integer32)
                 result = Snmp_v2c.snmp_set_result_value(response)
 

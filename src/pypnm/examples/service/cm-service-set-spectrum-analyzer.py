@@ -24,12 +24,12 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-
 async def main():
     parser = argparse.ArgumentParser(description="CmSpectrumAnalysisService Runner")
     parser.add_argument("--mac", "-m", required=True, help="MAC address of cable modem")
     parser.add_argument("--inet", "-i", required=True, help="IP address of cable modem")
     parser.add_argument("--community-write", "-cw", default="private", help="SNMP write community string (default: private)")
+    parser.add_argument("--tftp-ipv4", "-t4", required=True, help="IPv4 TFTP server")
 
     parser.add_argument("--first-segment-center-freq", "-fscf", default="300000000", help="First Segment Center Frequency (Hz)")
     parser.add_argument("--last-segment-center-freq", "-lscf", default="900000000", help="Last Segment Center Frequency (Hz)")
@@ -39,7 +39,7 @@ async def main():
     parser.add_argument("--window-function", "-wf", default="1", help="Window Function (HANN=1)")
     parser.add_argument("--number-of-averages", "-noa", default="1", help="Number of averages per segment")
     parser.add_argument("--inactivity-timeout", "-ia", default="300", help="Inactivity timeout (seconds)")
-    parser.add_argument("--retrieval-type", "-rt", default="1", help="Spectrum Analyzer Retrieval Type (FILE=1)")
+    parser.add_argument("--retrieval-type", "-rt", default="2", help="Spectrum Analyzer Retrieval Type (default: FILE=1) FILE=1 | SNMP=2")
 
     args = parser.parse_args()
 
@@ -73,8 +73,7 @@ async def main():
     # Create service with the parameter object
     service = CmSpectrumAnalysisService(
         cable_modem=cm,
-        spec_analyzer_para=spec_params,
-    )
+        spec_analyzer_para=spec_params,)
 
     msg_rsp: MessageResponse = await service.set_and_go()
 
@@ -87,7 +86,7 @@ async def main():
 
     for payload in msg_rsp.payload:  # type: ignore
         timestamp = Utils.time_stamp(TimeUnit.MILLISECONDS)
-        file_path = f"output/spectrum-analyzer-{timestamp}.json"
+        file_path = f"../output/spectrum-analyzer-{timestamp}.json"
         FileProcessor(file_path).write_file(payload)
         logging.info(f"Saved result to: {file_path}")
 

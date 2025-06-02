@@ -29,6 +29,7 @@ class ServiceStatusCode(IntEnum):
     FAILURE                                 = 17
     RESET_NOW_FAILED                        = 18
     PING_FAILED                             = 19
+    MISSING_PNM_FILENAME                    = 20
     
     TRANSACTION_RECORD_GET_FAILED           = 200
     UNSUPPORTED_TEST_TYPE                   = 201
@@ -39,7 +40,8 @@ class ServiceStatusCode(IntEnum):
     SPEC_ANALYZER_NOT_AVAILABLE             = 400
     SPEC_ANALYZER_AMPLITUDE_DATA_TIMEOUT    = 401
     SPEC_ANALYZER_AMPLITUDE_DATA_NOT_FOUND  = 402
-    SPEC_ANALYZER_DATA_RETRIVAL_ERROR       = 403    
+    SPEC_ANALYZER_DATA_RETRIVAL_ERROR       = 403
+    SPEC_ANALYZER_SET_CONFIG_ERROR          = 404    
     
     DS_OFDM_MULIT_RXMER_FAILED              = 500
     MEASURE_MODE_INVALID                    = 501

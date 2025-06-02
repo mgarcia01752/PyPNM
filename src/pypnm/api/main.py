@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+import os
 import sys
 import pathlib
 import logging
@@ -8,6 +9,8 @@ from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from pypnm.api.utils.auto_load import auto_register_routers
+from pypnm.config.config_manager import ConfigManager
+from pypnm.lib.utils import Utils
 
 project_root = pathlib.Path(__file__).resolve()
 while project_root.name != "src" and project_root != project_root.parent:
@@ -16,10 +19,17 @@ while project_root.name != "src" and project_root != project_root.parent:
 if project_root.name == "src" and str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
+log_level_str: str = ConfigManager().get("logging", "log_level", fallback="INFO")
+log_dir: str = ConfigManager().get("logging", "log_dir", fallback="logs")
+log_level_str = log_level_str.upper()
+logger_level = getattr(logging, log_level_str, logging.INFO)
+
+os.makedirs(log_dir, exist_ok=True)
+
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-)
+    level=logger_level,
+    filename=os.path.join(log_dir, f"pypnm-{Utils.time_stamp()}.log"),
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 
 # --- 🚀 FastAPI App Initialization ---
 app = FastAPI(
@@ -32,16 +42,14 @@ app = FastAPI(
     ),
     openapi_url="/openapi.json",
     docs_url="/docs",
-    redoc_url="/redoc",
-)
+    redoc_url="/redoc",)
 
 app.add_middleware(GZipMiddleware, minimum_size=100_000)
 app.add_middleware(CORSMiddleware,
     allow_origins=["*"],  # In production, replace with specific origins
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
-)
+    allow_headers=["*"],)
 
 # --- 🔍 Auto-Register All Routers ---
 auto_register_routers(app)

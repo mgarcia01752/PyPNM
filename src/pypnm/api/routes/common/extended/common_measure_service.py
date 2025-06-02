@@ -4,6 +4,7 @@
 from abc import ABC
 import asyncio
 import logging
+import math
 import os
 from pathlib import Path
 import shutil
@@ -13,6 +14,7 @@ from typing import Dict, List,  Optional, Tuple, Union
 
 from pypnm.api.routes.common.extended.common_measure_schema import (
     DownstreamOfdmParameters, UpstreamOfdmaParameters)
+from pypnm.config.config_common import SystemConfigCommonSettings
 from pypnm.config.config_manager import ConfigManager
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
 from pypnm.api.routes.common.extended.common_messaging_service import CommonMessagingService, MessageResponse
@@ -20,12 +22,13 @@ from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType
+from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
 from pypnm.lib.utils import Utils
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
     DocsIf3CmSpectrumAnalysisCtrlCmd, SpectrumRetrievalType, WindowFunction)
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
-
+from pypnm.pnm.process.CmSpectrumAnalysisSnmp import CmSpectrumAnalysisSnmp
 from pypnm.snmp.modules import DocsisIfType
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
@@ -134,9 +137,36 @@ class CommonMeasureService(CommonMessagingService):
         spec_rev_type = self.extra_options.get("spectrum_retrieval_type",SpectrumRetrievalType.UNKNOWN)
             
         if spec_rev_type == SpectrumRetrievalType.SNMP:
-            self.logger.debug(f"{self.log_prefix} - Performing Spectrum Analysis SNMP Amplitude Data")
-            return self.build_send_msg(self._check_spectrum_amplitude_data_status())
-        
+            self.logger.info(f"{self.log_prefix} - Performing Spectrum Analysis SNMP Amplitude Data")
+
+            #Set Spectrum Analyzer
+            __status = await self._generic_spectrum_analyzer_operation()
+            if __status[0] != ServiceStatusCode.SUCCESS:
+               self.logger.error(f"{self.log_prefix} - Unable to set Spectrum Analyzer Settings")
+               return ServiceStatusCode.SPEC_ANALYZER_SET_CONFIG_ERROR
+            
+            # This is a blocking method, it will return SUCCESS or wait till timeout to return an ERROR
+            status = await self._check_spectrum_amplitude_data_status()
+            
+            if status == ServiceStatusCode.SUCCESS:
+                
+                amp_data: bytes = await self.cm.getSpectrumAmplitudeData()
+                
+                prefix = DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA.name.lower()
+                filename = f"{prefix}_{self.cm.get_mac_address}_{int(time.time())}.bin"
+                
+                tx_id = await PnmFileTransaction().insert(self.cm,
+                    DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA, filename)
+                
+                save_dir = SystemConfigCommonSettings.save_dir
+                fpath = f"{save_dir}/{filename}"
+                self.logger.debug(f'SpectrumAmplitudeData: - FNAME: {filename} - Length:{len(amp_data)} - TransactionID: {tx_id}')
+                
+                FileProcessor(fpath).write_file(amp_data)
+                self.build_transaction_msg(tx_id, filename)
+
+            return self.build_send_msg(status)
+
         #########################################################################
         # Ensure CM Inet and TFTP server address use the same IP version
         #
@@ -536,46 +566,10 @@ class CommonMeasureService(CommonMessagingService):
                     return ServiceStatusCode.FILE_SET_FAIL, []
                                     
             elif pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
-                
-                self.logger.debug(f'{self.log_prefix} - Entering into SPECTRUM_ANALYZER Mode')
-                
-                ctl_cmd_filename = Snmp_v2c.TRUE
-                
-                inactivity_timeout = self.extra_options.get('inactivity_timeout', 100)
-                first_segment_center_frequency = self.extra_options.get('first_segment_center_freq', 200_000_000)
-                last_segment_center_frequency = self.extra_options.get('last_segment_center_freq', 900_000_000)
-                segment_frequency_span = self.extra_options.get('segment_freq_span', 7_500_000)
-                num_bins_per_segment = self.extra_options.get('num_bins_per_segment', 256)
-                equivalent_noise_bandwidth = self.extra_options.get('noise_bw', 110)
-                window_function = self.extra_options.get('window_function', WindowFunction.HANN)
-                number_of_averages = self.extra_options.get('num_averages', 1)
-                spectrum_retrieval_type = self.extra_options.get('spectrum_retrieval_type', SpectrumRetrievalType.FILE)
-                
-                if  spectrum_retrieval_type == SpectrumRetrievalType.SNMP:
-                        ctl_cmd_filename = Snmp_v2c.FALSE
-                        pnm_filename = ""
-                
-                # Create the DocsIf3CmSpectrumAnalysisCtrlCmd object and populate it
-                spectrum_cmd = DocsIf3CmSpectrumAnalysisCtrlCmd(
-                    docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout=inactivity_timeout,
-                    docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency=first_segment_center_frequency,
-                    docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency=last_segment_center_frequency,
-                    docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan=segment_frequency_span,
-                    docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment=num_bins_per_segment,
-                    docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth=equivalent_noise_bandwidth,
-                    docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction=window_function,
-                    docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages=number_of_averages,
-                    docsIf3CmSpectrumAnalysisCtrlCmdEnable=Snmp_v2c.TRUE,
-                    docsIf3CmSpectrumAnalysisCtrlCmdFileName=pnm_filename,
-                    docsIf3CmSpectrumAnalysisCtrlCmdFileEnable=ctl_cmd_filename,
-                )
-
-                # SNMP: -> CtrlCmdEnable -> True -> False -> True (Poll: CtrlCmdEnable till False)
-                # FILE: -> CtrlCmdEnable -> True , CtrlCmdFileEnable -> True (Poll MeasureStatue till Ready)
-                
-                if not await self.cm.setDocsIf3CmSpectrumAnalysisCtrlCmd(spectrum_cmd, spectrum_retrieval_type):
-                    self.logger.error(f"{self.log_prefix} - Spectrum Analyzer is Not Available")
-                    return ServiceStatusCode.SPEC_ANALYZER_NOT_AVAILABLE, []
+                #Created generic to be used for PNM File and SNMP Return data
+                 __status = await self._generic_spectrum_analyzer_operation(filename=pnm_filename)
+                 if __status[0] != ServiceStatusCode.SUCCESS:
+                    return __status
                  
         return ServiceStatusCode.SUCCESS, pnm_files
 
@@ -599,10 +593,14 @@ class CommonMeasureService(CommonMessagingService):
         while True:
             if await self.cm.isAmplitudeDataPresent():
                 return ServiceStatusCode.SUCCESS
-
-            if (time.time() - t_start) >= timeout_seconds:
+            now:int = math.floor((time.time() - t_start))
+            
+            if now >= timeout_seconds:
+                self.logger.warning(f'{self.log_prefix} - Timeout for Amplitude Data ({now} of {timeout_seconds} seconds)')
                 return ServiceStatusCode.SPEC_ANALYZER_AMPLITUDE_DATA_TIMEOUT
 
+            self.logger.info(f'{self.log_prefix} - Waiting for Amplitude Data ({now} of {timeout_seconds})')
+            
             await asyncio.sleep(1)
            
     def _handle_local_fetch(self, pnm_file_name: str) -> bool:
@@ -704,7 +702,7 @@ class CommonMeasureService(CommonMessagingService):
 
         file_name = f"{test_prefix}_{self.cm.get_mac_address}{suffix}_{Utils.time_stamp()}{ext}"
 
-        transaction_id = await PnmFileTransaction().set(self.cm, test_type, file_name)
+        transaction_id = await PnmFileTransaction().insert(self.cm, test_type, file_name)
         
         self.logger.debug(f"Generated PNM file name: {file_name} -> TransID: {transaction_id}")
         
@@ -721,3 +719,106 @@ class CommonMeasureService(CommonMessagingService):
             if name == file_name:
                 return transaction_id
         return None
+
+    async def _generic_spectrum_analyzer_operation(self, filename:str="") -> Tuple[ServiceStatusCode, List[str]]:
+        """
+        Perform a generic spectrum-analyzer operation on the cable modem, supporting two retrieval modes:
+        1. SNMP-based amplitude data return (AmplitudeData textual convention)
+        2. PNM file return (download via TFTP once the CM writes the file)
+
+        The same set of control parameters (frequency range, bin count, windowing, etc.) is used
+        in both cases—avoiding duplicate “control-command” logic (DRY). Downstream, a separate helper
+        method is called based on `spectrum_retrieval_type`.
+
+        Extra options (from self.extra_options):
+            • inactivity_timeout             (int, default=100)
+                - Maximum seconds to wait for the CM to complete the measurement
+            • first_segment_center_freq      (int, default=300_000_000)
+                - Starting center frequency in Hz
+            • last_segment_center_freq       (int, default=900_000_000)
+                - Ending center frequency in Hz
+            • segment_freq_span              (int, default=7_500_000)
+                - Frequency span per segment in Hz
+            • num_bins_per_segment           (int, default=256)
+                - Number of bins (samples) per segment
+            • noise_bw                       (int, default=110)
+                - Equivalent noise bandwidth in Hz
+            • window_function                (WindowFunction, default=WindowFunction.HANN)
+                - Window function to apply to each segment
+            • num_averages                   (int, default=1)
+                - Number of averages to take
+            • spectrum_retrieval_type        (SpectrumRetrievalType, default=SpectrumRetrievalType.FILE)
+                - FILE: write to PNM file via TFTP (requires pnm_filename)
+                - SNMP: return amplitude data directly via SNMP (no file write)
+
+        Returns:
+            Tuple[ServiceStatusCode, List[str]]:
+                • On success: (ServiceStatusCode.SUCCESS, [<PNM filename>]) for FILE mode,
+                  or (ServiceStatusCode.SUCCESS, []) for SNMP mode.
+                • On failure: (ServiceStatusCode.SPEC_ANALYZER_NOT_AVAILABLE, []).
+
+        Raises:
+            None directly—errors are mapped to a failure status code.
+        """
+        self.logger.info(f"{self.log_prefix} - Entering into SPECTRUM-ANALYZER Mode (filename: {filename})")
+
+        # Default: only SNMP control-command, no file write
+        ctl_cmd_filename = Snmp_v2c.TRUE
+
+        # Read optional overrides from extra_options
+        inactivity_timeout = self.extra_options.get("inactivity_timeout", 100)
+
+        # Frequency range (first and last segment center frequencies)
+        first_segment_center_frequency = self.extra_options.get("first_segment_center_freq", 300_000_000)
+        last_segment_center_frequency = self.extra_options.get("last_segment_center_freq", 900_000_000)
+
+        # Per-segment configuration
+        segment_frequency_span = self.extra_options.get("segment_freq_span", 7_500_000)
+        num_bins_per_segment = self.extra_options.get("num_bins_per_segment", 256)
+        equivalent_noise_bandwidth = self.extra_options.get("noise_bw", 110)
+        window_function = self.extra_options.get("window_function", WindowFunction.HANN)
+        number_of_averages = self.extra_options.get("num_averages", 1)
+
+        # Decide retrieval mode: SNMP vs. TFTP/PNM-file
+        spectrum_retrieval_type = self.extra_options.get(
+            "spectrum_retrieval_type",
+            SpectrumRetrievalType.FILE
+        )
+
+        if spectrum_retrieval_type == SpectrumRetrievalType.SNMP:
+            # In SNMP mode, we do not enable file writing—control-cmd only
+            self.logger.info(f"{self.log_prefix} - SPECTRUM-ANALYZER - SNMP-AMPLITUDE-DATA-RETURN")
+            ctl_cmd_filename = Snmp_v2c.FALSE
+        else:
+            if not filename:
+                self.logger.error(f"{self.log_prefix} - Missing 'filename' for FILE retrieval mode")
+                return ServiceStatusCode.MISSING_PNM_FILENAME, []
+
+        # Create and populate the control-command object
+        spectrum_cmd = DocsIf3CmSpectrumAnalysisCtrlCmd(
+            docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout=inactivity_timeout,
+            docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency=first_segment_center_frequency,
+            docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency=last_segment_center_frequency,
+            docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan=segment_frequency_span,
+            docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment=num_bins_per_segment,
+            docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth=equivalent_noise_bandwidth,
+            docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction=window_function,
+            docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages=number_of_averages,
+            docsIf3CmSpectrumAnalysisCtrlCmdEnable=Snmp_v2c.TRUE,
+            docsIf3CmSpectrumAnalysisCtrlCmdFileName=filename,
+            docsIf3CmSpectrumAnalysisCtrlCmdFileEnable=ctl_cmd_filename,
+        )
+
+        # Issue the SNMP SET for the control-command. The downstream logic
+        # (not shown here) will branch to either:
+        #   • SNMP:  set FileEnable = FALSE → wait for measurement → walk AmplitudeData
+        #   • FILE:  set FileEnable = TRUE  → wait for measurement status → TFTP download
+        if not await self.cm.setDocsIf3CmSpectrumAnalysisCtrlCmd(spectrum_cmd, spectrum_retrieval_type):
+            self.logger.error(f"{self.log_prefix} - Spectrum Analyzer is Not Available")
+            return ServiceStatusCode.SPEC_ANALYZER_NOT_AVAILABLE, []
+
+        # On success, return the filename (if FILE mode) or an empty list (SNMP mode)
+        if spectrum_retrieval_type == SpectrumRetrievalType.FILE:
+            return ServiceStatusCode.SUCCESS, [filename]
+        else:
+            return ServiceStatusCode.SUCCESS, []

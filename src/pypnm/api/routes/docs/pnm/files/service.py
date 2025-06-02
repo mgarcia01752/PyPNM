@@ -88,7 +88,7 @@ class PnmFileService:
         Returns:
             FileResponse: The file served for download.
         """
-        txn_data = PnmFileTransaction().get(transaction_id)
+        txn_data = PnmFileTransaction().get_record(transaction_id)
 
         if not txn_data:
             raise HTTPException(status_code=404, detail="Transaction ID not found.")

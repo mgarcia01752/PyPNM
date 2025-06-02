@@ -5,11 +5,12 @@
 
 import argparse
 import asyncio
+import json
 import logging
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.api.routes.docs.pnm.ds.ofdm.chan_est_coeff.service import CmDsOfdmChanEstCoefService
+from pypnm.api.routes.docs.pnm.ds.ofdm.rxmer.service import CmDsOfdmRxMerService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
@@ -44,6 +45,8 @@ async def main():
     service: CmDsOfdmRxMerService = CmDsOfdmRxMerService(cm)
     msg_rsp:MessageResponse = await service.set_and_go()
 
+    print(f'MSG-RSP: {msg_rsp}')
+    
     if msg_rsp.status != ServiceStatusCode.SUCCESS:
         print(f'ERROR: {msg_rsp.status.name}')
         exit(1)
@@ -52,7 +55,7 @@ async def main():
     msg_rsp:MessageResponse = cps.process()
     
     for payload in msg_rsp.payload: # type: ignore
-        FileProcessor(f"output/rxmer-{str(Utils.time_stamp(TimeUnit.MILLISECONDS))}.json").write_file(payload)
+        FileProcessor(f"../output/rxmer-{str(Utils.time_stamp(TimeUnit.MILLISECONDS))}.json").write_file(payload)
 
 if __name__ == "__main__":
     asyncio.run(main())

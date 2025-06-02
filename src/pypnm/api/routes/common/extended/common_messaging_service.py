@@ -11,6 +11,7 @@ class MessageResponseType(Enum):
     Enumeration of message types for categorizing responses.
     """
     PNM_FILE_TRANSACTION = 1
+    SNMP_DATA_RTN_SPEC_ANALYSIS = 10
     
 class MessageResponse:
     """
@@ -97,7 +98,6 @@ class MessageResponse:
         """
         return {key: self.payload}
 
-        
 class CommonMessagingService:
     """
     Core service to manage multi-step messaging logic, aggregating statuses and data across tasks.

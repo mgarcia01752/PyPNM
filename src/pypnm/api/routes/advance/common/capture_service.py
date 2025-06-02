@@ -290,7 +290,7 @@ class AbstractCaptureService(abc.ABC):
                 continue
 
             try:
-                rec = PnmFileTransaction().get(txn_id)
+                rec = PnmFileTransaction().get_record(txn_id)
             except Exception as exc:
                 err = f"DB fetch error for txn {txn_id}: {exc}"
                 self.logger.error(err, exc_info=True)

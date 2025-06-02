@@ -72,7 +72,7 @@ class PnmFileTransaction:
         if not self.transaction_db_path.exists():
             self.transaction_db_path.write_text(json.dumps({}))
 
-    async def set(self, cable_modem: CableModem, pnm_test_type: DocsPnmCmCtlTest, filename: str) -> str:
+    async def insert(self, cable_modem: CableModem, pnm_test_type: DocsPnmCmCtlTest, filename: str) -> str:
         """
         Records a transaction initiated from an actual cable modem test.
 
@@ -85,7 +85,7 @@ class PnmFileTransaction:
             str: A unique transaction ID.
         """
         sd:SystemDescriptor = await cable_modem.getSysDescr()
-        return self._set_generic(mac_address=cable_modem.get_mac_address, 
+        return self._insert_generic(mac_address=cable_modem.get_mac_address, 
                                  pnm_test_type=pnm_test_type, 
                                  filename=filename,
                                  sys_descriptor=sd.to_dict())
@@ -104,11 +104,11 @@ class PnmFileTransaction:
             str: The generated transaction ID.
         """
         txn = PnmFileTransaction()
-        return txn._set_generic(mac_address=mac_address, 
+        return txn._insert_generic(mac_address=mac_address, 
                                 pnm_test_type=pnm_test_type, 
                                 filename=filename)
 
-    def get(self, transaction_id: str) -> Optional[dict]:
+    def get_record(self, transaction_id: str) -> Optional[dict]:
         """
         Retrieve metadata for a specified PNM file transaction.
 
@@ -175,10 +175,10 @@ class PnmFileTransaction:
         return results if results else None
 
     
-    def _set_generic(self, mac_address: MacAddress, 
-                     pnm_test_type: DocsPnmCmCtlTest, 
-                     filename: str, 
-                     sys_descriptor:Dict[str,str]=SystemDescriptor.empty()) -> str: # type: ignore
+    def _insert_generic(self, mac_address: MacAddress, 
+                        pnm_test_type: DocsPnmCmCtlTest, 
+                        filename: str, 
+                        sys_descriptor:Dict[str,str]=SystemDescriptor.empty()) -> str: # type: ignore
         """
         Common logic for creating a transaction record.
 

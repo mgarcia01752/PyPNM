@@ -58,7 +58,7 @@ class CaptureDataAggregator:
         file_bin_entries: List[Tuple[str, bytes]] = []
         file_count = 1
         for txn in txn_ids:
-            rec = PnmFileTransaction().get(txn)
+            rec = PnmFileTransaction().get_record(txn)
             if not rec:
                 self.logger.warning(f"No DB record for transaction '{txn}'")
                 continue
