@@ -26,5 +26,7 @@ htmlcov/
 *.log
 
 # PyPNM 
+.data/
 data/
 mibs
+output/*
