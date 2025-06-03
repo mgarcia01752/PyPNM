@@ -73,13 +73,11 @@ class CommonProcessService(CommonMessagingService):
 
                 self._process_pnm_measure_test(transaction_record)
    
-            elif message_type == MessageResponseType.SNMP_DATA_RTN_SPEC_ANALYSIS.name:
-                              
+            elif message_type == MessageResponseType.SNMP_DATA_RTN_SPEC_ANALYSIS.name:                             
                 transaction_id = message.get('transaction_id')
-                transaction_record = PnmFileTransaction().get_record(transaction_id)
-                
                 self.logger.info(f'process() -> Found TransactionID: {transaction_id}')
-
+                
+                transaction_record = PnmFileTransaction().get_record(transaction_id)
                 self._process_pnm_measure_test(transaction_record)
 
         return self.send_msg()
