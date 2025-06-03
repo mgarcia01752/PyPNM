@@ -61,6 +61,8 @@ class CmSpectrumAnalysisSnmp:
         # Initialize accumulators
         all_freqs: List[int] = []
         all_amplitudes: List[float] = []
+        all_amplitudes_bytes:List[bytes] = []
+        
         total_bins_count = 0
         parsed_header: Dict[str, Any] = {}
 
@@ -68,7 +70,7 @@ class CmSpectrumAnalysisSnmp:
         amp_data_header_len = 20  # 5 × 4-byte fields
         amp_data_bytes_len = 2    # each amplitude is a 16-bit (2-byte) signed int
 
-        # Iterate over each spectrum‐group in the byte_stream
+        # Iterate over each spectrum-group in the byte_stream
         while offset + amp_data_header_len <= len(byte_stream):
             header = byte_stream[offset : offset + amp_data_header_len]
             try:
@@ -82,7 +84,7 @@ class CmSpectrumAnalysisSnmp:
             group_end = offset + amp_data_header_len + amp_len
             if group_end > len(byte_stream):
                 self.logger.debug(
-                    f"[WARN] Spec‐Group {spectrum_group_idx} incomplete "
+                    f"[WARN] Spec-Group {spectrum_group_idx} incomplete "
                     f"(expected {amp_len} bytes), skipping."
                 )
                 break
@@ -105,9 +107,11 @@ class CmSpectrumAnalysisSnmp:
             # Accumulate across all groups
             all_freqs.extend(freqs)
             all_amplitudes.extend(amplitudes_dbmv)
+            all_amplitudes_bytes.extend(amp_bytes.hex())
+            
             total_bins_count += num_bins
 
-            # Save first‐group header metadata
+            # Save first-group header metadata
             if spectrum_group_idx == 1:
                 parsed_header = {
                     "channel_center_frequency": ch_center_freq,
@@ -117,7 +121,7 @@ class CmSpectrumAnalysisSnmp:
                     "resolution_bandwidth": res_bw,
                 }
 
-            self.logger.debug(f"[SPEC‐GROUP {spectrum_group_idx}] Parsed {num_bins} bins")
+            self.logger.debug(f"[SPEC-GROUP {spectrum_group_idx}] Parsed {num_bins} bins")
             offset = group_end
             spectrum_group_idx += 1
 
@@ -133,6 +137,7 @@ class CmSpectrumAnalysisSnmp:
             "total_samples": total_bins_count,
             "frequency": all_freqs,
             "amplitude": all_amplitudes,
+            "amplitude_bytes": all_amplitudes_bytes,
         }
 
     def to_dict(self) -> Dict[str, List[float]]:
