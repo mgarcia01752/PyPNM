@@ -2,6 +2,22 @@
 set -euo pipefail
 
 ROOT_DIR=${PWD}
+DEVELOPMENT=false
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Parse CLI options
+# ──────────────────────────────────────────────────────────────────────────────
+for arg in "$@"; do
+  case "$arg" in
+    --development)
+      DEVELOPMENT=true
+      shift
+      ;;
+    *)
+      # Unknown option; you can extend parsing here if needed
+      ;;
+  esac
+done
 
 # ──────────────────────────────────────────────────────────────────────────────
 # 1. Detect Ubuntu version (fallback to lsb_release if /etc/os-release missing)
@@ -54,54 +70,60 @@ echo
 echo "✅ System packages installed."
 
 # ──────────────────────────────────────────────────────────────────────────────
-# 2. Download DOCSIS MIBs ending in .txt into a 'mibs' directory
+# 2. (Optional) Download DOCSIS MIBs ending in .txt into a 'mibs' directory
+#    This section runs only if --development was provided.
 # ──────────────────────────────────────────────────────────────────────────────
-echo
-echo "Creating 'mibs' directory (if not existing)…"
-mkdir -p mibs
+if [ "$DEVELOPMENT" = true ]; then
+  echo
+  echo "Creating 'mibs' directory (if not existing)…"
+  mkdir -p mibs
 
-# Ensure wget is available
-if ! command -v wget &>/dev/null; then
-  echo "Error: wget is required but not installed. Aborting."
-  exit 1
-fi
+  # Ensure wget is available
+  if ! command -v wget &>/dev/null; then
+    echo "Error: wget is required but not installed. Aborting."
+    exit 1
+  fi
 
-echo "Downloading DOCSIS MIB files with a .txt extension into ./mibs…"
-wget -r -np -nH --cut-dirs=2 -A "*.txt" -R "index.html*" \
-     -P mibs "https://mibs.cablelabs.com/MIBs/DOCSIS/"
+  echo "Downloading DOCSIS MIB files with a .txt extension into ./mibs…"
+  wget -r -np -nH --cut-dirs=2 -A "*.txt" -R "index.html*" \
+       -P mibs "https://mibs.cablelabs.com/MIBs/DOCSIS/"
 
-# Check how many .txt files actually arrived
-count=$(ls mibs/*.txt 2>/dev/null | wc -l || echo 0)
-if [ "$count" -eq 0 ]; then
-  echo "⚠️  Warning: No .txt MIB files found in mibs/. Please verify the remote directory."
-else
-  echo "✅ Downloaded $count .txt MIB file(s)."
-fi
+  # Check how many .txt files actually arrived
+  count=$(ls mibs/*.txt 2>/dev/null | wc -l || echo 0)
+  if [ "$count" -eq 0 ]; then
+    echo "⚠️  Warning: No .txt MIB files found in mibs/. Please verify the remote directory."
+  else
+    echo "✅ Downloaded $count .txt MIB file(s)."
+  fi
 
-# ──────────────────────────────────────────────────────────────────────────────
-# 3. Create index.md listing all .txt files
-# ──────────────────────────────────────────────────────────────────────────────
-echo
-if ! cd mibs; then
-  echo "Error: Could not enter mibs directory. Exiting."
-  exit 1
-fi
+  # ────────────────────────────────────────────────────────────────────────────
+  # 3. Create index.md listing all .txt files
+  # ────────────────────────────────────────────────────────────────────────────
+  echo
+  if ! cd mibs; then
+    echo "Error: Could not enter mibs directory. Exiting."
+    exit 1
+  fi
 
-cat << 'EOF' > index.md
+  cat << 'EOF' > index.md
 # DOCSIS MIB Files Index
 
 Below is a list of all downloaded `.txt` MIB files currently in this directory:
 
 EOF
 
-for file in *.txt; do
-  [ -e "$file" ] || continue
-  echo "- [${file}](./${file})" >> index.md
-done
+  for file in *.txt; do
+    [ -e "$file" ] || continue
+    echo "- [${file}](./${file})" >> index.md
+  done
 
-# Return to the root directory
-cd "${ROOT_DIR}"
-echo "✅ Generated 'mibs/index.md' with a list of all .txt files."
+  # Return to the root directory
+  cd "${ROOT_DIR}"
+  echo "✅ Generated 'mibs/index.md' with a list of all .txt files."
+else
+  echo
+  echo "Skipping MIB download steps (run with --development to enable)."
+fi
 
 # ──────────────────────────────────────────────────────────────────────────────
 # 4. Create & activate Python virtual environment, then install PyPNM
