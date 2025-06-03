@@ -16,19 +16,21 @@
 
 **PyPNM** is a modular, Python-based toolkit for parsing, analyzing, and visualizing DOCSIS 3.0/3.1 Proactive Network Maintenance (PNM) telemetry. It provides:
 
-* **Structured SNMP integration** Real-time cable modem telemetry (RxMER, spectrum, equalization, modulation profiles, FEC, etc.)
-* **Binary capture parsing** TFTP/SNMP–triggered files (OFDM symbols, histograms, latency traces)
-* **FastAPI REST service** Delivering clean JSON for integration into dashboards and automation
+* **Structured SNMP integration** for real-time cable modem telemetry (RxMER, spectrum, equalization, modulation profiles, FEC, etc.)
+* **Binary capture parsing** via TFTP/SNMP–triggered files (OFDM symbols, histograms, latency traces)
+* **FastAPI REST service** delivering clean JSON for integration into dashboards and automation
+* **Extensible architecture** for adding new measurement types and custom analytics
 
 ## 🛠 Key Features
 
-* **Python API**: Programmatic access to core parsing, aggregation, and analysis routines
-* **SNMP v2c Support**: Telemetry acquisition
-* **OFDM Diagnostics**: RxMER, FEC Summary, Channel Estimation, Constellation Display, Modulation Rrofile
-* **Upstream Support**: ATDMA/OFDMA pre-equalization tap analysis, latency reporting
+* **PyPNM API**: programmatic access to core parsing, aggregation, and analysis routines
+* **SNMP v2c Support**: telemetry acquisition via SNMP v2c
+* **OFDM Diagnostics**: RxMER, FEC summary, spectrum analysis, channel estimation, constellation display, modulation profiles
+* **Upstream Support**: ATDMA & TDMA pre-equalization tap analysis, latency reporting
+* **Error-Correction Insights**: aggregate FEC counters over time windows
 * **Capacity Margin Calculations**: Shannon-based bit-per-subcarrier limits and deltas
-* **RESTful API**: OpenAPI, Swagger UI, Postman collection
-* **Command-Line Examples**: Standalone analysis scripts and batch processing utilities
+* **RESTful API**: Auto-generated OpenAPI, Swagger UI, Postman collection
+* **Command-Line Examples**: standalone analysis scripts and batch processing utilities
 
 ## Prerequisites
 
@@ -70,8 +72,8 @@ The included `install.sh` will detect Ubuntu 22.04 vs 24.04 (or fall back to you
 ### Step 3: (If not already active) activate the virtual environment
 
 ```bash
-python3 -m venv .env
-source .env/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
 ### Step 4: Launch the PyPNM FastAPI service
@@ -100,26 +102,25 @@ pypnm
 
 > ⚠️ Tip: Use Postman for complex or large JSON payloads—Swagger UI can struggle with deeply nested schemas.
 
-## [Python Documentation](documentation/master-index.md)
+## [PyPNM Documentation](documentation/master-index.md)
 
 Use this master index to navigate through all guides, API references, examples, and system docs.
 
-## Python API
+## PyPNM API 
 
 Integrate PNM telemetry end-to-end in your own Python scripts:
-
-* **Full Reference**: [Python API Reference →](documentation/api/python/index.md)
+<!--  -->
+* **Full Reference**: [PyPNM API Reference →](documentation/api/python/index.md)
 * **Hands-On Examples**: [Example Scripts →](documentation/examples/index.md)
 
 ## 📦 Supported Standards & Specs
 
-**DOCSIS 3.1 MIBs & PNM behavior** (CableLabs)
+* **DOCSIS 3.1 MIBs & PNM behavior** (CableLabs)
 
   * [DOCSIS 3.1 Suite](https://www.cablelabs.com/specifications/search?category=DOCSIS&subcat=DOCSIS%203.1)
   * [CM-SP-CM-OSS Iv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
   * [DOCSIS MIB Repository](https://mibs.cablelabs.com/MIBs/DOCSIS/)
-
-**PNM Architecture & Guidelines**
+* **PNM Architecture & Guidelines**
 
   * [CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)
   * [CM-GL-PNM-HFC & CM-GL-PNM-3.1](https://www.cablelabs.com/specifications/CM-GL-PNM-HFC)
