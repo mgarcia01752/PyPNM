@@ -45,7 +45,7 @@ while (( $# )); do
       usage
       ;;
     *)
-      # assume this is the root dir
+      # assume anything else is the root directory
       ROOT_DIR="$1"
       shift
       ;;
@@ -61,66 +61,85 @@ ROOT_DIR=$(realpath "$ROOT_DIR")
 echo "🔍 Cleaning in root directory: $ROOT_DIR"
 
 # -----------------------------------------------------------------------------
-# Helper: safe remove
+# Helper: safe remove (handles multiple args)
 # -----------------------------------------------------------------------------
 safe_rm() {
-  local path="$1"
-  if [[ -e $path ]]; then
-    rm -rf "$path"
-    echo "🗑️  Removed: $path"
-  fi
+  local path
+  for path in "$@"; do
+    if [[ -e $path ]]; then
+      rm -rf "$path"
+      echo "🗑️  Removed: $path"
+    fi
+  done
 }
 
 # -----------------------------------------------------------------------------
-# Perform actions
+# Individual “clean” functions
+# -----------------------------------------------------------------------------
+clean_logs() {
+  echo "🧹 Cleaning logs..."
+  safe_rm "$ROOT_DIR/logs/"*
+}
+
+clean_python() {
+  echo "🐍 Cleaning Python caches..."
+  find "$ROOT_DIR" -type d -name '__pycache__' -print -exec rm -rf {} +
+  find "$ROOT_DIR" -type f -name '*.pyc'     -print -delete
+  safe_rm "$ROOT_DIR/.pytest_cache"
+}
+
+clean_build() {
+  echo "🏗️  Cleaning build artifacts..."
+  safe_rm "$ROOT_DIR/build"
+  safe_rm "$ROOT_DIR/dist"
+  safe_rm "$ROOT_DIR"/*.egg-info
+}
+
+clean_pnm() {
+  echo "📦 Cleaning PNM data..."
+  safe_rm "$ROOT_DIR/.data/pnm/"*
+  safe_rm "$ROOT_DIR/.data/db/"*
+}
+
+clean_output() {
+  echo "📤 Cleaning output files..."
+  safe_rm "$ROOT_DIR/output/"*
+}
+
+# -----------------------------------------------------------------------------
+# Dispatch actions
 # -----------------------------------------------------------------------------
 for action in "${ACTIONS[@]}"; do
   case "$action" in
 
     --all)
       echo "🚀 Performing full cleanup..."
-      safe_rm "$ROOT_DIR/logs/"*
-      safe_rm "$ROOT_DIR/.pytest_cache"
-      find "$ROOT_DIR" -type d -name '__pycache__' -print -exec rm -rf {} +
-      find "$ROOT_DIR" -type f -name '*.pyc'     -print -delete
-      safe_rm "$ROOT_DIR/build"
-      safe_rm "$ROOT_DIR/dist"
-      safe_rm "$ROOT_DIR"/*.egg-info
-      safe_rm "$ROOT_DIR/data/pnm/"*
-      safe_rm "$ROOT_DIR/data/db/"*
-      safe_rm "$ROOT_DIR/output/"*
+      clean_logs
+      clean_python
+      clean_build
+      clean_pnm
+      clean_output
       ;;
 
     --logs)
-      echo "🧹 Cleaning logs..."
-      safe_rm "$ROOT_DIR/logs/"*
+      clean_logs
       ;;
 
     --python)
-      echo "🐍 Cleaning Python caches..."
-      find "$ROOT_DIR" -type d -name '__pycache__' -print -exec rm -rf {} +
-      find "$ROOT_DIR" -type f -name '*.pyc'     -print -delete
-      safe_rm "$ROOT_DIR/.pytest_cache"
+      clean_python
       ;;
 
     --build)
-      echo "🏗️  Cleaning build artifacts..."
-      safe_rm "$ROOT_DIR/build"
-      safe_rm "$ROOT_DIR/dist"
-      safe_rm "$ROOT_DIR"/*.egg-info
+      clean_build
       ;;
 
     --pnm)
-      echo "📦 Cleaning PNM data..."
-      safe_rm "$ROOT_DIR/data/pnm/"*
-      safe_rm "$ROOT_DIR/data/db/"*
+      clean_pnm
       ;;
 
     --output)
-      echo "📤 Cleaning output files..."
-      safe_rm "$ROOT_DIR/output/"*
+      clean_output
       ;;
-
   esac
 done
 

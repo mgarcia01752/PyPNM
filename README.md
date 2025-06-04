@@ -24,13 +24,13 @@
 ## 🛠 Key Features
 
 * **PyPNM API**: programmatic access to core parsing, aggregation, and analysis routines
-* **SNMP v2c Support**: telemetry acquisition via SNMP v2c
+* **SNMP v2c Support**: Telemetry acquisition via SNMP v2c
 * **OFDM Diagnostics**: RxMER, FEC summary, spectrum analysis, channel estimation, constellation display, modulation profiles
 * **Upstream Support**: ATDMA & TDMA pre-equalization tap analysis, latency reporting
-* **Error-Correction Insights**: aggregate FEC counters over time windows
-* **Capacity Margin Calculations**: Shannon-based bit-per-subcarrier limits and deltas
+* **Error-Correction Insights**: Aggregate FEC counters over time 
+* **Capacity Margin Calculations**: OFDM Shannon-based bit-per-subcarrier limits and deltas
 * **RESTful API**: Auto-generated OpenAPI, Swagger UI, Postman collection
-* **Command-Line Examples**: standalone analysis scripts and batch processing utilities
+* **Command-Line Examples**: Standalone analysis scripts and batch processing utilities
 
 ## Prerequisites
 
@@ -104,12 +104,12 @@ pypnm
 
 ## [PyPNM Documentation](documentation/master-index.md)
 
-Use this master index to navigate through all guides, API references, examples, and system docs.
+PyPNM Documentation to navigate through all guides, API references, examples, and system docs.
 
-## PyPNM API 
+## PyPNM API
 
 Integrate PNM telemetry end-to-end in your own Python scripts:
-<!--  -->
+
 * **Full Reference**: [PyPNM API Reference →](documentation/api/python/index.md)
 * **Hands-On Examples**: [Example Scripts →](documentation/examples/index.md)
 
@@ -120,6 +120,7 @@ Integrate PNM telemetry end-to-end in your own Python scripts:
   * [DOCSIS 3.1 Suite](https://www.cablelabs.com/specifications/search?category=DOCSIS&subcat=DOCSIS%203.1)
   * [CM-SP-CM-OSS Iv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
   * [DOCSIS MIB Repository](https://mibs.cablelabs.com/MIBs/DOCSIS/)
+
 * **PNM Architecture & Guidelines**
 
   * [CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)

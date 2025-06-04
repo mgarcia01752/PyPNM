@@ -7,14 +7,14 @@ from pypnm.api.routes.advance.common.schema.common_captuer_schema import MultiCa
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
     CommonAnalysisResponse, CommonMultiAnalysisRequest, CommonResponse)
 
-from enum import IntEnum, auto
+from enum import IntEnum
 
-class MeaureModes(IntEnum):
+class MeasureModes(IntEnum):
     CONTINUOUS          = 0   
-    OFDM_PERFORMANCE_1  = auto()
+    OFDM_PERFORMANCE_1  = 1
     
 class MeasureParameters(BaseModel):
-    mode:MeaureModes
+    mode:MeasureModes
 
 class MultiRxMerRequest(MultiCaptureRequest):
     measure:MeasureParameters

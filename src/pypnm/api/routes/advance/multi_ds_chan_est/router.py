@@ -56,9 +56,11 @@ class MultiDsChanEstRouter(AbstractService):
             summary="Start a multi-sample ChannelEstimation capture",)
         async def start_multi_ChanEstimation(request: MultiChanEstimationRequest) -> Union[MultiChanEstimationStartResponse, SnmpResponse]:
             """
-            Kick off a background task that instructs the CM to TFTP-upload ChannelEstimation
-            captures at regular intervals. Returns both a group_id and operation_id.
+                The Multi-DS Channel Estimation API allows clients to schedule periodic captures of downstream OFDM channel estimation coefficients, monitor progress, retrieve the raw PNM sample files, stop an in-progress capture, and perform post-capture analysis.               
+                
+                [Multi-DS-Chan-Estimation User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-chan-est.md)
             """
+            
             duration = request.capture.parameters.measurement_duration
             interval = request.capture.parameters.sample_interval
 
@@ -102,8 +104,8 @@ class MultiDsChanEstRouter(AbstractService):
             """
             Get the current state and sample count for a given ChannelEstimation operation.
 
-            Raises:
-                HTTPException: 404 if operation_id is not found.
+            [Multi-DS-Chan-Estimation User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-chan-est.md)
+            
             """
             try:
                 service:MultiChannelEstimationService = self.getService(operation_id) # type: ignore
@@ -138,7 +140,9 @@ class MultiDsChanEstRouter(AbstractService):
         def download_results_zip(operation_id: str) -> StreamingResponse:
             """
             Stream a ZIP file containing all captured ChannelEstimation files for this operation.
-            Raises 404 if operation not found.
+            
+            [Multi-DS-Chan-Estimation User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-chan-est.md)
+            
             """
             svc:MultiChannelEstimationService = self.getService(operation_id) # type: ignore
             samples = svc.results(operation_id)
@@ -169,9 +173,9 @@ class MultiDsChanEstRouter(AbstractService):
         def stop_capture(operation_id: str) -> MultiChanEstimationStatusResponse:
             """
             Signal capture to stop after the current iteration.
-
-            Raises:
-                HTTPException: 404 if operation_id is not found.
+           
+            [Multi-DS-Chan-Estimation User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-chan-est.md)
+            
             """
             try:
                 service:MultiChannelEstimationService = self.getService(operation_id) # type: ignore
@@ -196,19 +200,11 @@ class MultiDsChanEstRouter(AbstractService):
 
         @self.router.post("/analysis",
             response_model=MultiChanEstimationAnalysisResponse,
-            summary="Perform signal analysis on a previously executed Multi-ChannelEstimation",
-            description="""
-        **Analysis Type:**
-        
-        MIN_AVG_MAX                 = 0
-        GROUP_DELAY                 = 1
-        LTE_DETECTION_PHASE_SLOPE   = 2
-        ECHO_DETECTION_PHASE_SLOPE  = 3
-        ECHO_DETECTION_IFFT         = 4
-        """     
-        )
+            summary="Perform signal analysis on a previously executed Multi-ChannelEstimation",)
         def analysis(request: MultiChanEstimationAnalysisRequest) -> MultiChanEstimationAnalysisResponse:
-            # 1) Resolve the capture_group_id
+            """
+            [Multi-DS-Chan-Estimation User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-chan-est.md)
+            """
             try:
                 capture_group_id:str = OperationManager.get_capture_group(request.operation_id)
             except KeyError:

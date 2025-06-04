@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 import logging
 import struct
 from typing import Any, Dict, List
@@ -14,7 +17,7 @@ class CmSpectrumAnalysisSnmp:
     def __init__(self, byte_stream: bytes):
         """
         Initialize the class by parsing the byte stream into frequency and amplitude data.
-        
+
         Args:
             byte_stream (bytes): Raw bytes as returned by SNMP for the amplitude data.
         """
@@ -45,24 +48,17 @@ class CmSpectrumAnalysisSnmp:
         Returns:
             Dict[str, Any]: Parsed data with:
                 - header: metadata from the first spectrum group
-                    • channel_center_frequency (int)
-                    • frequency_span (int)
-                    • total_bins (int)         # bins in the first group
-                    • bin_spacing (int)
-                    • resolution_bandwidth (int)
-                - total_samples (int): sum of bins across all groups
-                - frequency (List[int]): concatenated frequency values
-                  for all samples
-                - amplitude (List[float]): concatenated amplitude values
-                  (in dBmV) for all samples
+                - total_samples: sum of bins across all groups
+                - frequency: list of all frequency values
+                - amplitude: list of all amplitude values (in dBmV)
+                - amplitude_bytes: all raw amplitude bytes as one hex string
         """
         offset = 0
 
-        # Initialize accumulators
         all_freqs: List[int] = []
         all_amplitudes: List[float] = []
-        all_amplitudes_bytes:List[bytes] = []
-        
+        all_amplitudes_bytes: List[bytes] = []
+
         total_bins_count = 0
         parsed_header: Dict[str, Any] = {}
 
@@ -70,12 +66,10 @@ class CmSpectrumAnalysisSnmp:
         amp_data_header_len = 20  # 5 × 4-byte fields
         amp_data_bytes_len = 2    # each amplitude is a 16-bit (2-byte) signed int
 
-        # Iterate over each spectrum-group in the byte_stream
         while offset + amp_data_header_len <= len(byte_stream):
             header = byte_stream[offset : offset + amp_data_header_len]
             try:
                 ch_center_freq, freq_span, num_bins, bin_spacing, res_bw = struct.unpack(">5I", header)
-                
             except struct.error as e:
                 self.logger.warning(f"Failed to unpack header at offset {offset}: {e}")
                 break
@@ -89,7 +83,6 @@ class CmSpectrumAnalysisSnmp:
                 )
                 break
 
-            # Extract amplitude bytes for this group
             amp_bytes = byte_stream[offset + amp_data_header_len : group_end]
             try:
                 amplitudes = struct.unpack(f">{num_bins}h", amp_bytes)
@@ -97,25 +90,21 @@ class CmSpectrumAnalysisSnmp:
                 self.logger.warning(f"Failed to unpack amplitudes at offset {offset}: {e}")
                 break
 
-            # Convert raw ints to dBmV
             amplitudes_dbmv: List[float] = [a / 100.0 for a in amplitudes]
-
-            # Calculate frequency list
             freq_start: int = ch_center_freq - (freq_span // 2)
             freqs: List[int] = [freq_start + i * bin_spacing for i in range(num_bins)]
 
-            # Accumulate across all groups
             all_freqs.extend(freqs)
             all_amplitudes.extend(amplitudes_dbmv)
-            all_amplitudes_bytes.extend(amp_bytes.hex())
-            
+            all_amplitudes_bytes.append(amp_bytes)
+
             total_bins_count += num_bins
 
-            # Save first-group header metadata
             if spectrum_group_idx == 1:
                 parsed_header = {
-                    "channel_center_frequency": ch_center_freq,
-                    "frequency_span": freq_span,
+                    "start_frequency": 0,
+                    "end_frequency": 0,
+                    "frequency_span": 0,
                     "total_bins": num_bins,
                     "bin_spacing": bin_spacing,
                     "resolution_bandwidth": res_bw,
@@ -132,33 +121,27 @@ class CmSpectrumAnalysisSnmp:
                 f"Parsed total of {total_bins_count} bins across {spectrum_group_idx - 1} groups."
             )
 
+        amplitude_bytes_hex = b"".join(all_amplitudes_bytes).hex()
+
+        parsed_header.update({
+            "start_frequency": all_freqs[0],
+            "end_frequency": all_freqs[-1],
+            "frequency_span": (all_freqs[-1] - all_freqs[0]),
+        })
+        
         return {
             "spectrum_config": parsed_header,
             "total_samples": total_bins_count,
             "frequency": all_freqs,
             "amplitude": all_amplitudes,
-            "amplitude_bytes": all_amplitudes_bytes,
+            "amplitude_bytes": amplitude_bytes_hex,
         }
 
-    def to_dict(self) -> Dict[str, List[float]]:
+    def to_dict(self) -> Dict[str, Any]:
         """
         Export the parsed frequency and amplitude data.
 
         Returns:
-            Dict[str, List[float]]: Parsed results with 'frequency' and 'amplitude' keys.
-            
-        {
-            "spectrum_config": {
-                "channel_center_frequency": int,
-                "frequency_span": int,
-                "total_bins": int,
-                "bin_spacing": int,
-                "resolution_bandwidth": int
-            },
-            "total_samples": int,
-            "frequency": [int],
-            "amplitude":[float]
-        }            
-            
+            Dict[str, Any]: Parsed results with metadata, frequencies, amplitudes, and raw bytes.
         """
         return self.data

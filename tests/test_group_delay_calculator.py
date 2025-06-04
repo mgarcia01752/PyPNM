@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
+from src.pypnm.api.routes.advance.analysis.signal_analysis.group_delay_calculator import GroupDelayCalculator
 
-from pypnm.api.routes.advance.analysis.signal_analysis.group_delay_calculator import GroupDelayCalculator
 class TestGroupDelayCalculator(unittest.TestCase):
 
     def setUp(self):

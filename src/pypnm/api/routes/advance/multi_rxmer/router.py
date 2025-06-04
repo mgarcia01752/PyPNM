@@ -18,7 +18,7 @@ from pypnm.api.routes.advance.common.operation_manager import OperationManager
 from pypnm.api.routes.advance.common.operation_state import OperationState
 from pypnm.api.routes.advance.common.pnm_collection import PnmCollection
 
-from pypnm.api.routes.advance.multi_rxmer.schemas import (MeaureModes, MultiRxMerAnalysisRequest, 
+from pypnm.api.routes.advance.multi_rxmer.schemas import (MeasureModes, MultiRxMerAnalysisRequest, 
                                                           MultiRxMerAnalysisResponse, MultiRxMerRequest, 
                                                           MultiRxMerResponseStatus, MultiRxMerStartResponse, 
                                                           MultiRxMerStatusResponse)
@@ -58,8 +58,10 @@ class MultiRxMerRouter(AbstractService):
             summary="Start a multi-sample RxMER capture",)
         async def start_multi_rxmer(request: MultiRxMerRequest) -> Union[MultiRxMerStartResponse, SnmpResponse]:
             """
-            Kick off a background task that instructs the CM to TFTP-upload RxMER
-            captures at regular intervals. Returns both a group_id and operation_id.
+            The Multi-RxMER Capture API provides a set of REST endpoints to orchestrate, monitor, and retrieve periodic downstream OFDM RxMER captures from a DOCSIS cable modem. This threaded background process supports continuous sampling or specific performance modes, enabling clients to start captures, poll status, download raw PNM data, prematurely stop operations, and run signal analysis on the collected measurements.
+            
+            [Multi-RxMER User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md)
+            
             """
             duration = request.capture.parameters.measurement_duration
             interval = request.capture.parameters.sample_interval
@@ -85,7 +87,7 @@ class MultiRxMerRouter(AbstractService):
                     message=msg
                 )   
 
-            if measure_modes == MeaureModes.CONTINUOUS:
+            if measure_modes == MeasureModes.CONTINUOUS:
                 msg=f'Starting Multi-RxMER capture for MAC={request.mac_address}'
                 self.logger.info(f'{msg}')
                 group_id, operation_id = await self.loadService(
@@ -96,7 +98,7 @@ class MultiRxMerRouter(AbstractService):
                 )
                 
                 
-            elif measure_modes == MeaureModes.OFDM_PERFORMANCE_1:
+            elif measure_modes == MeasureModes.OFDM_PERFORMANCE_1:
                 msg=f'Starting Multi-RxMER-OFDM-Performance-1 capture for MAC={request.mac_address}'
                 self.logger.info(f'{msg}')
                 group_id, operation_id = await self.loadService(
@@ -126,23 +128,23 @@ class MultiRxMerRouter(AbstractService):
             )
 
         @self.router.get("/status/{operation_id}",
-            response_model=MultiRxMerStartResponse,
+            response_model=MultiRxMerStatusResponse,
             summary="Get status of a multi-sample RxMER capture",)
         def get_status(operation_id: str) -> MultiRxMerStatusResponse:
             """
-            Get the current state and sample count for a given RxMER operation.
-
-            Raises:
-                HTTPException: 404 if operation_id is not found.
+            [Multi-RxMER User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md)
+                
             """
             try:
-                service:MultiRxMerService = self.getService(operation_id) # type: ignore
+                service:MultiRxMerService = self.getService(operation_id)
                 
             except KeyError:
                 raise HTTPException(status_code=404, detail="Operation not found")
 
             status = service.status(operation_id)
 
+            self.logger.info(f'OpId: {operation_id} - Status: {status}')
+            
             return MultiRxMerStatusResponse(
                 mac_address=str(service.cm.get_mac_address),
                 status="success",
@@ -163,12 +165,13 @@ class MultiRxMerRouter(AbstractService):
                     "content": {"application/zip": {}},
                     "description": "ZIP archive of capture files",
                 }
-            },
-        )
+            },)
         def download_results_zip(operation_id: str) -> StreamingResponse:
             """
-            Stream a ZIP file containing all captured RxMER files for this operation.
-            Raises 404 if operation not found.
+                Stream a ZIP file containing all captured RxMER files for this operation.
+            
+                [Multi-RxMER User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md)
+                
             """
             svc:MultiRxMerService = self.getService(operation_id) # type: ignore
             samples = svc.results(operation_id)
@@ -199,9 +202,9 @@ class MultiRxMerRouter(AbstractService):
         def stop_capture(operation_id: str) -> MultiRxMerStatusResponse:
             """
             Signal capture to stop after the current iteration.
-
-            Raises:
-                HTTPException: 404 if operation_id is not found.
+            
+            [Multi-RxMER User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md)
+                
             """
             try:
                 service:MultiRxMerService = self.getService(operation_id) # type: ignore
@@ -226,17 +229,11 @@ class MultiRxMerRouter(AbstractService):
 
         @self.router.post("/analysis",
             response_model=MultiRxMerAnalysisResponse,
-            summary="Perform signal analysis on a previously executed Multi-RxMER",
-            description="""
-        **Analysis Type:**
-
-        MIN_AVG_MAX  = 0
-        OFDM_PROFILE_PERFORMANCE = 1  
-        RXMER_HEAT_MAP = 2
-        """
-        )
+            summary="Perform signal analysis on a previously executed Multi-RxMER",)
         def analysis(request: MultiRxMerAnalysisRequest) -> MultiRxMerAnalysisResponse:
-            # 1) Resolve the capture_group_id
+            """
+            [Multi-RxMER User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md)
+            """
             try:
                 capture_group_id = OperationManager.get_capture_group(request.operation_id)
             except KeyError:
@@ -299,7 +296,7 @@ class MultiRxMerRouter(AbstractService):
             status = ServiceStatusCode.SUCCESS if not error else ServiceStatusCode.FAILURE
             message = error or f"Analysis {MultiRxMerAnalysisType(atype).name} completed for group {capture_group_id}"
 
-            FileProcessor(f'ofdm-prof-1-{Utils.time_stamp()}.json').write_file(json.dumps(data))
+            FileProcessor(f'output/ofdm-prof-1-{Utils.time_stamp()}.json').write_file(json.dumps(data))
             
             return MultiRxMerAnalysisResponse(
                 mac_address=request.mac_address,

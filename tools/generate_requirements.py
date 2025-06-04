@@ -1,4 +1,6 @@
-import os
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 import ast
 import importlib.util
 from pathlib import Path
