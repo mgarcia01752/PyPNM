@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Activate your Python virtual environment
-VENV_PATH="./venv"
+VENV_PATH="./env"
 
 if [ -d "$VENV_PATH" ]; then
     source "$VENV_PATH/bin/activate"
