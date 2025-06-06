@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "pypnm"
 version = "0.1.0"
@@ -28,10 +32,18 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/mgarcia01752/PyPNM"
-Repository = "https://github.com/mgarcia01752/PyPNM"
+Homepage    = "https://github.com/mgarcia01752/PyPNM"
+Repository  = "https://github.com/mgarcia01752/PyPNM"
 Bug-Tracker = "https://github.com/mgarcia01752/PyPNM/issues"
 
 [project.scripts]
 pypnm = "pypnm.cli:main"
 
+# ────────────────────────────────────────────────────────────────────────────────
+# Tell setuptools about your src/ layout
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where   = ["src"]
+include = ["pypnm*"]
