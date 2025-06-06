@@ -31,6 +31,13 @@ class ServiceStatusCode(IntEnum):
     PING_FAILED                             = 19
     MISSING_PNM_FILENAME                    = 20
     
+    SCP_PNM_FILE_FETCH_ERROR                = 30
+    TFTP_PNM_FILE_FETCH_ERROR               = 31
+    FTP_PNM_FILE_FETCH_ERROR                = 32
+    SFTP_PNM_FILE_FETCH_ERROR               = 33
+    HTTP_PNM_FILE_FETCH_ERROR               = 34
+    SHTTP_PNM_FILE_FETCH_ERROR              = 35
+    
     TRANSACTION_RECORD_GET_FAILED           = 200
     UNSUPPORTED_TEST_TYPE                   = 201
     CAPTURE_GROUP_NOT_FOUND                 = 202

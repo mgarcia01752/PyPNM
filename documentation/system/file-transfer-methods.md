@@ -1,0 +1,266 @@
+# PyPNM PNM File Retrieval Methods
+
+## System Configuration
+
+The file `system.json` (located at [src/pypnm/settings/system.json](../../src/pypnm/settings/system.json)) defines high‑level settings for where PyPNM expects to find incoming PNM files, network interfaces, and security parameters. Before choosing a retrieval method, confirm that the following keys are correctly set:
+
+```json
+    "PnmFileRetrieval": {
+        "save_dir": ".data/pnm",
+        "transaction_db": ".data/db/transactions.json",
+        "capture_group_db": ".data/db/capture_group.json",
+        "operation_db": ".data/db/operation_capture.json",
+        "retries": 5,
+        "method": "local",
+        "local": {
+            "src_dir": "/srv/tftp"
+        },
+        "tftp": {
+            "host": "localhost",
+            "port": 69,
+            "remote_dir": ""
+        },
+        "ftp": {
+            "host": "localhost",
+            "port":21,
+            "tls": false,
+            "timeout": 5,
+            "user": "user",
+            "password": "pass",
+            "remote_dir": "/files"
+        },
+        "scp": {
+            "host": "localhost",
+            "port": "22",
+            "user": "test",
+            "password": "tftp",
+            "remote_dir": "/srv/tftp"
+        },
+        "sftp": {
+            "host": "localhost",
+            "port": 22,
+            "user": "test",
+            "password": "tftp",
+            "remote_dir": "/srv/tftp"
+        }    
+    },
+```
+
+## Local Transfer
+
+### Description
+
+* PyPNM can run an **embedded TFTP server** (or watch a local directory) so that a cable modem (CM) or remote collector pushes PNM files directly into PyPNM’s data folder.
+* Alternately, a remote process can **mount an NFS/SMB share** or copy via a management LAN into a predefined “incoming” folder on the PyPNM host.
+
+### Setup Complexity
+
+* **Low** if using a local directory: just ensure `/var/pypnm/data` (or whatever `pnm.local_directory` points to) is writable by the process that drops files.
+* **Moderate** if using an embedded TFTP server: install a TFTP daemon, configure permissions, open UDP port 69 firewall rules.
+* **Low‑Moderate** for a network share (NFS/SMB), depending on existing infrastructure.
+
+### Pros
+
+* **Minimal networking overhead** — no SSH or FTP required.
+* **Immediate availability**: as soon as the file lands, PyPNM can process it (e.g. inotify watchers).
+* **Simple configuration**: just a local path or share mount point.
+* **No credentials** needed (beyond filesystem permissions).
+
+### Cons
+
+* **Less secure** if the local directory is world‑writable or exposed over a share.
+* **Requires network share infrastructure** if remote devices need to copy files without TFTP.
+* **Embedded TFTP has no authentication**: any device that can reach the host’s TFTP port can write files.
+* **No encryption**—data in transit (especially over NFS/SMB) may be unencrypted.
+
+### Security Considerations
+
+* Lock down file permissions on the “incoming” directory (e.g. `chmod 750` and appropriate UID/GID).
+* If using embedded TFTP:
+
+  * Only bind to a management interface (not public Internet).
+  * Use a firewall rule to restrict source IPs to known CMTS or collector IPs.
+* If using NFS/SMB:
+
+  * Prefer export over a management VLAN.
+  * Require client authentication (Kerberos, NTLMv2) where possible.
+
+---
+
+## Secure Copy (SCP)
+
+### Description
+
+* PyPNM can pull PNM files from a remote host (e.g. a regional collector server) via **SCP** (the OpenSSH `scp` command).
+* In practice, PyPNM’s internal `SSHConnector` (or a helper script) runs:
+
+  ```bash
+  scp -i /path/to/key remoteuser@collector:/path/to/pnmfile.bin /local/pypnm/data/
+  ```
+
+### Setup Complexity
+
+* **Moderate**:
+
+  1. Generate an SSH key pair on the PyPNM host.
+  2. Install the public key on the remote collector’s `~/.ssh/authorized_keys`.
+  3. Confirm passwordless or passphrase‑protected SSH access works.
+  4. Optionally configure `known_hosts` or allow `StrictHostKeyChecking=no`.
+* Ensure `sshpass` if relying on password auth, though key‑based is recommended.
+
+### Pros
+
+* **Simple CLI**: `scp` is ubiquitous on Unix/Linux systems.
+* **No additional server software** on the remote host beyond OpenSSH.
+* **Encrypted in transit** by default via SSH.
+* **Directory creation** can be scripted (e.g. `mkdir -p` before `scp`).
+* **Firewall-friendly**: uses only TCP port 22.
+
+### Cons
+
+* **No resume capability**: if a large PNM file is interrupted, you must restart from zero.
+* **Limited error feedback**: only exit code and stderr; no per-file detail if copying multiple files.
+* **Requires SSH key management**: public key distribution and known-hosts maintenance.
+* **Less flexible than SFTP** for directory listings or batch transfers.
+
+### Security Considerations
+
+* Use **key-based authentication** with a passphrase and restrict the key to read-only of the PNM directory (via `command="scp -f /path/to/pnm/*.bin"`, `no-agent-forwarding`, `no-port-forwarding` in `authorized_keys`).
+* Keep SSH port (22) open only to trusted collector IPs via firewall rules.
+* Optionally set `AllowUsers pypnm_user@collectorIP` in `/etc/ssh/sshd_config` on the PyPNM host to further limit who can SCP in.
+
+---
+
+## Secure File Transfer Protocol (SFTP)
+
+### Description
+
+* PyPNM can retrieve PNM files via **SFTP** (SSH File Transfer Protocol).
+* Internally, PyPNM’s `SSHConnector` instantiates a Paramiko `SFTPClient`.
+* Supports listing, directory creation, rename, and partial transfers.
+
+### Setup Complexity
+
+* **Similar to SCP**:
+
+  1. Generate SSH key pair on PyPNM host.
+  2. Add public key to `~/.ssh/authorized_keys` on remote collector.
+  3. Confirm SFTP subsystem is enabled in `sshd_config` (usually it is by default).
+  4. Optionally configure `auto_add_policy` or update `known_hosts` manually.
+
+### Pros
+
+* **Resumeable transfers**: can resume interrupted downloads programmatically.
+* **Directory operations**: list remote directory, create nested folders, check file existence before download.
+* **Fine-grained control**: can set remote file permissions, timestamps, etc.
+* **Encrypted** (via SSH) and uses the same port as SCP (22).
+
+### Cons
+
+* **Slightly more overhead** than SCP (extra protocol negotiation), but negligible for typical PNM sizes.
+* **Requires Paramiko (or another SFTP library)** in Python.
+* **Host key verification** must be managed (if `AutoAddPolicy=False`, remote key must be in `known_hosts`).
+
+### Security Considerations
+
+* Follow the same SSH key-based best practices as SCP.
+* Restrict the remote user (e.g. `pypnm_user`) to only SFTP (in `sshd_config`, `ForceCommand internal-sftp` and possibly a chroot).
+* Use `SFTPClient.chdir()` and `listdir()` to verify files before downloading.
+* Use `sftp.get(remotepath, localpath, preserve_mtime=True)` to keep timestamps intact, reducing risk of injecting stale/forged files.
+
+---
+
+## File Transfer Protocol (FTP) with TLS
+
+### Description
+
+* PyPNM can retrieve PNM files from an **FTPS** server (FTP over TLS).
+* Implements an `FTPConnector` that wraps Python’s `ftplib.FTP_TLS`.
+
+### Setup Complexity
+
+* **Moderate-High**:
+
+  1. Install and configure a TLS-enabled FTP server (e.g. vsftpd, ProFTPD with TLS).
+  2. Obtain a server certificate (self-signed or CA-signed) and configure the FTP server to present it.
+  3. Create an FTP user with permissions only on the PNM directory.
+  4. Open TCP ports 21 and a data-port range in the firewall.
+  5. Configure passive mode vs. active mode, NAT/port forwarding, firewall rules.
+
+### Pros
+
+* **Widely supported** by legacy network equipment and many automation frameworks.
+* **Encrypted data channel** (if `PROT P` is used) and encrypted control channel (`AUTH TLS`).
+* **No SSH dependency**—ideal if SSH is not available or permitted.
+* **Standard FTP commands** (`LIST`, `RETR`, etc.) make it easy to script.
+
+### Cons
+
+* **Complex firewall configuration**: FTPS requires both port 21 and a range of passive data ports.
+* **TLS certificate management**: you must manage a server certificate, renew it periodically, and distribute CA certificates if not publicly signed.
+* **FTP is historically less secure** if misconfigured (e.g. plaintext credentials if TLS is not enforced).
+* **Less integration in Python** than SFTP (requires `FTP_TLS` and careful error handling).
+
+### Security Considerations
+
+* **Always require TLS**: set `ssl_enable=YES` and `force_local_data_ssl=YES` / `force_local_logins_ssl=YES` in vsftpd or equivalent.
+* **Harden FTP user**: limit to chrooted directory (`chroot_local_user=YES`) so it cannot navigate outside `/srv/tftp`.
+* **Use strong TLS ciphers** and disable SSLv2/SSLv3.
+* **Firewall passive port range**: restrict to a small range (e.g. 10000–10100) and open only those.
+* **Regularly rotate credentials** or use a one-time token if possible.
+
+---
+
+## Trivial File Transfer Protocol (TFTP)
+
+### Description
+
+* PyPNM can host or rely on a **TFTP** server to which cable modems upload their raw PNM files.
+* TFTP is unencrypted and uses UDP port 69 by default. It supports very simple “get”/“put” operations without authentication.
+* TFTP servers can also serve files back (pull) if a client initiates a read request. This bi-directional capability can be used in development or lab environments to pull PNM files directly from PyPNM’s embedded TFTP server, but it is not recommended for production.
+
+### Setup Complexity
+
+* **Moderate**:
+
+  1. Install a TFTP daemon (e.g. `tftpd-hpa` or `atftpd`).
+  2. Configure the TFTP root directory (e.g. `/srv/tftp`).
+  3. Adjust file permissions so that the TFTP daemon can write new `.bin` files.
+  4. Open UDP port 69 and a transient high-port UDP range for data packets in the firewall.
+  5. If PyPNM runs on the same box, configure the integrated TFTP (if available) or a lightweight sidecar TFTP process.
+
+### Pros
+
+* **Nearly universal**: cable modems and CMTS often support TFTP natively for PNM uploads.
+* **Extremely low overhead**: no SSH, TLS, or FTP server required if using built-in TFTP.
+* **Simple to script**: PNM generation OID on the modem points directly to `/srv/tftp`.
+* **Bidirectional**: supports pulling files back from the TFTP server in non‑production (lab/dev) environments without credentials.
+
+### Cons
+
+* **No authentication or encryption**: anyone who can send TFTP write or read requests can drop or retrieve files.
+* **Unreliable (UDP)**: large PNM files may require retransmissions; network issues can cause timeouts.
+* **Firewall complexity**: TFTP’s ephemeral UDP ports for data (after port 69) must be allowed.
+* **File overwriting**: TFTP typically overwrites files of the same name without warning.
+
+### Security Considerations
+
+* **Bind TFTP to a dedicated management interface** (e.g. `0.0.0.0` only on a VLAN used by CMs).
+* **Firewall rules**: only allow source IPs of known CMTS or collector devices on UDP 69.
+* **Chroot the TFTP daemon** so that it cannot write outside `/srv/tftp`.
+* **Use very short time-to-live (TTL) IP ACLs** on network switches so that TFTP requests cannot transit untrusted segments.
+* **Periodically scan the PNM directory** for malicious or unexpected files (e.g. non-`.bin`) and remove them.
+
+---
+
+## Summary Comparison
+
+| Method                  | Encryption      | Auth Model         | Complexity    | Resume/Listing | Typical Port(s)        |
+| ----------------------- | --------------- | ------------------ | ------------- | -------------- | ---------------------- |
+| **Local Transfer**      | None            | Filesystem perms   | Low           | N/A            | N/A                    |
+| **SCP**                 | SSH (AES, etc.) | SSH keys/passwords | Moderate      | ❌             | TCP 22                 |
+| **SFTP**                | SSH (AES, etc.) | SSH keys/passwords | Moderate      | ✔️             | TCP 22                 |
+| **FTP with TLS (FTPS)** | TLS (SSL)       | Username/password  | Moderate–High | ✔️ (partial)   | TCP 21 + passive ports |
+| **TFTP**                | None            | None               | Moderate      | ❌             | UDP 69 + ephemeral     |
+
+Choose the method that best fits your network security policies, existing infrastructure, and desired level of automation. For most production deployments, **SFTP** strikes the best balance between security, reliability, and ease of integration. TFTP is useful when the CMTS only supports TFTP uploads, but it must be tightly firewalled and monitored. SCP is acceptable for one‑off or scripted fetches, while FTPS is appropriate if your environment already relies on TLS‑protected FTP.

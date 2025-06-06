@@ -26,47 +26,50 @@
         }         
     },
     "PnmFileRetrieval": {
-        "method": "local",
         "save_dir": ".data/pnm",
         "transaction_db": ".data/db/transactions.json",
         "capture_group_db": ".data/db/capture_group.json",
         "operation_db": ".data/db/operation_capture.json",
         "retries": 5,
+        "method": "tftp",
         "local": {
             "src_dir": "/srv/tftp"
         },
         "tftp": {
             "host": "localhost",
             "port":69,
+            "timeout": 5,
             "remote_dir": ""
         },
         "ftp": {
-            "host": "ftp.example.com",
+            "host": "localhost",
             "port":21,
+            "tls": false,
+            "timeout": 5,
             "user": "user",
             "password": "pass",
             "remote_dir": "/files"
         },
         "scp": {
-            "host": "scp.example.com",
+            "host": "localhost",
             "port": "22",
-            "user": "user",
-            "password": "pass",
-            "remote_dir": "/files"
+            "user": "test",
+            "password": "tftp",
+            "remote_dir": "/srv/tftp"
         },
         "sftp": {
-            "host": "sftp.example.com",
+            "host": "localhost",
             "port": 22,
-            "user": "user",
-            "password": "pass",
-            "remote_dir": "/files"
+            "user": "test",
+            "password": "tftp",
+            "remote_dir": "/srv/tftp"
         },
         "http": {
-            "base_url": "http://files.example.com/",
+            "base_url": "http://STUB/",
             "port":80
         },
         "https": {
-            "base_url": "https://files.example.com/",
+            "base_url": "https://STUB/",
             "port":443
         }        
     },

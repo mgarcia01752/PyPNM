@@ -38,7 +38,8 @@ class PnmFastApiRouter(ABC):
         self._add_routes()
 
     def _add_routes(self):
-        @self.router.post(f"/{self._base_endpoint}/getMeasurement", response_model=Union[PnmMeasurementResponse, SnmpResponse])
+        @self.router.post(f"/{self._base_endpoint}/getMeasurement", 
+                          response_model=Union[PnmMeasurementResponse, SnmpResponse])
         async def get_measurement(request: PnmRequest):
             try:
                 return await self.get_measurement_logic(request)
@@ -48,7 +49,9 @@ class PnmFastApiRouter(ABC):
                 self.logger.exception(f"[getMeasurement] Error for MAC {request.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}")
 
-        @self.router.post(f"/{self._base_endpoint}/getAnalysis", response_model=Union[PnmAnalysisResponse, SnmpResponse], response_model_exclude_unset=True)
+        @self.router.post(f"/{self._base_endpoint}/getAnalysis", 
+                          response_model=Union[PnmAnalysisResponse, SnmpResponse], 
+                          response_model_exclude_unset=True)
         async def get_analysis(request: PnmAnalysisRequest):
             try:
                 return await self.get_analysis_logic(request)

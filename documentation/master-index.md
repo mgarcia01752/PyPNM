@@ -70,3 +70,4 @@ Welcome to the PyPNM documentation. Use this master index to navigate through al
 
 - [Generate SSL Certificates](system/generate-ssl-certificates.md)
 - [System Configuration](system/system_config.md)
+- [PNM File Transfer Methods](system/file-transfer-methods.md)

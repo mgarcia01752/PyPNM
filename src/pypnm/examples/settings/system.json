@@ -26,7 +26,7 @@
         }         
     },
     "PnmFileRetrieval": {
-        "method": "local",
+        "method": "scp",
         "save_dir":"example/data/pnm",
         "transaction_db":"example/data/db/transactions.json",
         "capture_group_db": "example/data/db/capture_group.json",
@@ -35,6 +35,13 @@
         "local": {
             "src_dir": "/srv/tftp"
         },
+        "scp": {
+            "host": "localhost",
+            "port": "22",
+            "user": "test",
+            "password": "tftp",
+            "remote_dir": "/srv/tftp"
+        },        
         "tftp": {
             "host": "localhost",
             "port":69,
@@ -43,13 +50,6 @@
         "ftp": {
             "host": "ftp.example.com",
             "port":21,
-            "user": "user",
-            "password": "pass",
-            "remote_dir": "/files"
-        },
-        "scp": {
-            "host": "scp.example.com",
-            "port": "22",
             "user": "user",
             "password": "pass",
             "remote_dir": "/files"

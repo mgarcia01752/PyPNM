@@ -23,12 +23,14 @@ from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType
 from pypnm.lib.file_processor import FileProcessor
+from pypnm.lib.ftp.ftp_connector import FTPConnector
 from pypnm.lib.inet import Inet
+from pypnm.lib.ssh.ssh_connector import SSHConnector, SecureTransferMode
+from pypnm.lib.tftp.tftp_connector import TFTPConnector
 from pypnm.lib.utils import Utils
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
     DocsIf3CmSpectrumAnalysisCtrlCmd, SpectrumRetrievalType, WindowFunction)
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
-from pypnm.pnm.process.CmSpectrumAnalysisSnmp import CmSpectrumAnalysisSnmp
 from pypnm.snmp.modules import DocsisIfType
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
@@ -212,8 +214,7 @@ class CommonMeasureService(CommonMessagingService):
                         
         return self.build_send_msg(await self._check_ofdm_measure_status(status_index_channelId[1], max_wait_count))
     
-    def getInterfaceParameters(
-        self,
+    def getInterfaceParameters(self,
         interface_type: DocsisIfType
     ) -> Union[DownstreamOfdmParameters, UpstreamOfdmaParameters]:
         """
@@ -653,25 +654,201 @@ class CommonMeasureService(CommonMessagingService):
 
             return False
 
-    def _handle_tftp_fetch(self, pnm_file_name: str) -> bool:
-        # TODO: implement TFTP file fetch logic
-        self.logger.debug(f"{self.log_prefix} - TFTP fetch not yet implemented")
-        return False
-
-    def _handle_ftp_fetch(self, pnm_file_name: str) -> bool:
-        # TODO: implement FTP file fetch logic
-        self.logger.debug(f"{self.log_prefix} - FTP fetch not yet implemented")
-        return False
-
     def _handle_scp_fetch(self, pnm_file_name: str) -> bool:
-        # TODO: implement SCP file fetch logic
-        self.logger.debug(f"{self.log_prefix} - SCP fetch not yet implemented")
-        return False
+        """
+        Fetch a file from remote SCP server.
+        
+        Args:
+            pnm_file_name: Name of the file to fetch from remote server
+            
+        Returns:
+            bool: True if file transfer successful, False otherwise
+        """
+        sys_config = SystemConfigCommonSettings()
+        
+        self.logger.debug(f"{self.log_prefix} - SCP: Connecting to: {sys_config.scp_host}")
+        
+        scp = SSHConnector(hostname=sys_config.scp_host,
+                            username=sys_config.scp_user,
+                            port=sys_config.scp_port,
+                            transfer_mode=SecureTransferMode.SCP)
+        
+        try:
+            if not scp.connect(password=sys_config.scp_password):
+                self.logger.error(f'{self.log_prefix} - SCP Connect Failure: Host: {sys_config.scp_host}')
+                return False
+            
+            remote_file_path = f'{sys_config.scp_remote_dir}/{pnm_file_name}'
+            if not scp.receive_file(remote_path=remote_file_path,
+                                    local_path=sys_config.save_dir):
+                self.logger.error(f'{self.log_prefix} - SCP Receive File Error (SRC:{remote_file_path} DST: {sys_config.save_dir})')
+                return False
+            
+            self.logger.info(f'{self.log_prefix} - Successfully fetched file: {pnm_file_name}')
+            return True
+            
+        except Exception as e:
+            self.logger.error(f'{self.log_prefix} - SCP Fetch Exception: {e}')
+            return False
+            
+        finally:
+            scp.disconnect()
 
     def _handle_sftp_fetch(self, pnm_file_name: str) -> bool:
-        # TODO: implement SFTP file fetch logic
-        self.logger.debug(f"{self.log_prefix} - SFTP fetch not yet implemented")
-        return False
+        """
+        Fetch a file from remote SFTP server.
+        
+        Args:
+            pnm_file_name: Name of the file to fetch from remote server
+            
+        Returns:
+            bool: True if file transfer successful, False otherwise
+        """
+        sys_config = SystemConfigCommonSettings()
+        
+        self.logger.debug(f"{self.log_prefix} - SFTP: Connecting to: {sys_config.sftp_host}")
+        
+        sftp = SSHConnector(hostname=sys_config.sftp_host,
+                                username=sys_config.sftp_user,
+                                port=sys_config.sftp_port,
+                                transfer_mode=SecureTransferMode.SFTP)
+        
+        try:
+            if not sftp.connect(password=sys_config.sftp_password):
+                self.logger.error(f'{self.log_prefix} - SFTP Connect Failure: Host: {sys_config.sftp_host}')
+                return False
+            
+            remote_file_path = f'{sys_config.sftp_remote_dir}/{pnm_file_name}'
+            if not sftp.receive_file(remote_path=remote_file_path,
+                                    local_path=sys_config.save_dir):
+                self.logger.error(f'{self.log_prefix} - SFTP Receive File Error (SRC:{remote_file_path} DST: {sys_config.save_dir})')
+                return False
+            
+            self.logger.info(f'{self.log_prefix} - Successfully fetched file: {pnm_file_name}')
+            return True
+            
+        except Exception as e:
+            self.logger.error(f'{self.log_prefix} - SFTP Fetch Exception: {e}')
+            return False
+            
+        finally:
+            sftp.disconnect()
+
+    def _handle_tftp_fetch(self, pnm_file_name: str) -> bool:
+        """
+        Fetch the specified PNM file via TFTP.
+
+        Assumes the following attributes on self:
+        - self.pnm_local_dir (str)    # local directory to save the downloaded file
+        - self.log_prefix (str)       # used for consistent logging
+
+        TFTP settings are read from SystemConfigCommonSettings:
+        - tftp_host (str)
+        - tftp_port (int)
+        - tftp_timeout (int)
+        - tftp_remote_dir (str)   # remote directory where PNM files live (if applicable)
+        """
+        sys_config = SystemConfigCommonSettings()
+
+        try:
+            connector = TFTPConnector(
+                host=sys_config.tftp_host,
+                port=sys_config.tftp_port
+            )
+
+            self.logger.debug(
+                f"{self.log_prefix} - Starting TFTP download from "
+                f"{sys_config.tftp_host}:{sys_config.tftp_port}"
+            )
+
+            # Build remote filename (some tftp servers require just the basename)
+            remote_name = (
+                f"{sys_config.tftp_remote_dir.rstrip('/')}/{pnm_file_name}"
+                if sys_config.tftp_remote_dir else
+                pnm_file_name
+            )
+            local_path = os.path.join(sys_config.save_dir, pnm_file_name)
+
+            success = connector.download_file(remote_name, local_path)
+
+            if not success:
+                self.logger.error(
+                    f"{self.log_prefix} - TFTP download failed for '{remote_name}'"
+                )
+                return False
+
+            self.logger.info(
+                f"{self.log_prefix} - Successfully fetched '{pnm_file_name}' via TFTP"
+            )
+            return True
+
+        except Exception as e:
+            self.logger.error(f"{self.log_prefix} - Exception during TFTP fetch: {e}")
+            return False
+
+    def _handle_ftp_fetch(self, pnm_file_name: str) -> bool:
+        """
+        Fetch the specified PNM file via FTP.
+
+        Assumes the following attributes exist on self:
+        - self.pnm_local_dir (str)    # local directory to save the downloaded file
+        - self.log_prefix (str)       # used for consistent logging
+
+        All FTP-specific settings are read from SystemConfigCommonSettings:
+        - ftp_host (str)
+        - ftp_port (int)
+        - ftp_user (str)
+        - ftp_password (str)
+        - ftp_use_tls (bool)
+        - ftp_timeout (int)
+        - ftp_remote_dir (str)   # remote directory where PNM files live
+        """
+        sys_config = SystemConfigCommonSettings()
+
+        try:
+            connector = FTPConnector(
+                host=sys_config.ftp_host,
+                port=sys_config.ftp_port,
+                username=sys_config.ftp_user,
+                password=sys_config.ftp_password,
+                use_tls=sys_config.ftp_use_tls,
+                timeout=sys_config.ftp_timeout
+            )
+
+            self.logger.debug(
+                f"{self.log_prefix} - Connecting to FTP server "
+                f"{sys_config.ftp_host}:{sys_config.ftp_port}"
+            )
+            if not connector.connect():
+                self.logger.error(f"{self.log_prefix} - FTP connection failed")
+                return False
+
+            # Build remote and local paths
+            remote_base = sys_config.ftp_remote_dir.rstrip("/") if sys_config.ftp_remote_dir else ""
+            remote_path = f"{remote_base}/{pnm_file_name}" if remote_base else pnm_file_name
+
+            local_path = os.path.join(self.pnm_local_dir, pnm_file_name)
+
+            self.logger.debug(
+                f"{self.log_prefix} - Downloading '{remote_path}' to '{local_path}'"
+            )
+            success = connector.download_file(remote_path, local_path)
+            connector.disconnect()
+
+            if not success:
+                self.logger.error(
+                    f"{self.log_prefix} - FTP download failed for '{remote_path}'"
+                )
+                return False
+
+            self.logger.info(
+                f"{self.log_prefix} - Successfully fetched '{pnm_file_name}' via FTP"
+            )
+            return True
+
+        except Exception as e:
+            self.logger.error(f"{self.log_prefix} - Exception during FTP fetch: {e}")
+            return False
 
     def _handle_http_fetch(self, pnm_file_name: str) -> bool:
         # TODO: implement HTTP file fetch logic
