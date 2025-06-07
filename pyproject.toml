@@ -9,22 +9,23 @@ description = "DOCSIS 3.1/4.0 Proactive Network Maintenance Toolkit"
 readme = "README.md"
 requires-python = ">=3.10"
 
-# Core runtime dependencies…
 dependencies = [
-  "fastapi>=0.95.0",
-  "uvicorn[standard]>=0.22.0",
-  "numpy>=1.25.0",
-  "pysnmp>=7.1.20",
+  "fastapi==0.115.12",
+  "uvicorn[standard]==0.34.2",
+  "numpy==2.2.6",
+  "pydantic==2.11.5",
+  "pysmi==1.6.1",
+  "pysnmp==7.1.17",
   "python-dotenv>=1.0.0",
-]
-
-authors = [
-  { name = "Maurice Garcia", email = "mgarcia01752@outlook.com" }
+  "requests==2.32.3",
+  "pandas==2.2.3",
+  "paramiko==3.5.1",
+  "tftpy==0.8.5",
 ]
 
 [project.optional-dependencies]
 dev = [
-  "pytest>=7.4.0",
+  "pytest>=7.0.0",
   "pytest-cov",
   "black",
   "mypy",
@@ -40,7 +41,7 @@ pypnm = "pypnm.cli:main"
 
 
 # ────────────────────────────────────────────────────────────────────────────────
-# setuptools configuration for src/ layout and bundling JSON settings
+# setuptools configuration for src/ layout and including JSON settings
 
 [tool.setuptools]
 package-dir = { "" = "src" }
