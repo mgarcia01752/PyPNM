@@ -18,7 +18,6 @@ dependencies = [
   "python-dotenv>=1.0.0",
 ]
 
-# Authors must be an array:
 authors = [
   { name = "Maurice Garcia", email = "mgarcia01752@outlook.com" }
 ]
@@ -39,11 +38,16 @@ Bug-Tracker = "https://github.com/mgarcia01752/PyPNM/issues"
 [project.scripts]
 pypnm = "pypnm.cli:main"
 
+
 # ────────────────────────────────────────────────────────────────────────────────
-# Tell setuptools about your src/ layout
+# setuptools configuration for src/ layout and bundling JSON settings
+
 [tool.setuptools]
 package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where   = ["src"]
 include = ["pypnm*"]
+
+[tool.setuptools.package-data]
+"pypnm" = ["settings/*.json"]
