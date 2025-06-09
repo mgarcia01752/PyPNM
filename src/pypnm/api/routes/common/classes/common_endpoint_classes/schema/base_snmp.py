@@ -9,7 +9,7 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field, ConfigDict, field_validator, model_validator
 from pydantic.alias_generators import to_camel
 
-from pypnm.config.config_common import SystemConfigCommonSettings as SCSC
+from pypnm.config.system_config_settings import SystemConfigSettings as SCSC
 
 class SNMPv2c(BaseModel):
     """
@@ -19,8 +19,8 @@ class SNMPv2c(BaseModel):
         community (str): Write community string. Must not be blank.
     """
     community: str = Field(
-        default=SCSC.snmp_v2_write_comm,
-        description=f"Write community string (default: {SCSC.snmp_v2_write_comm})"
+        default=SCSC.snmp_write_community,
+        description=f"Write community string (default: {SCSC.snmp_write_community})"
     )
 
     @field_validator("community")

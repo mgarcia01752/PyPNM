@@ -4,56 +4,86 @@
 import importlib
 import pathlib
 import sys
+import traceback
+import logging
 from fastapi import FastAPI
 
-def auto_register_routers(app: FastAPI):
+
+class RouterRegistrar:
     """
-    Auto-discovers and registers FastAPI routers by looking for 'router.py' files
-    under src/pypnm/api/routes. Skips files explicitly marked as non-routable.
+    Auto-discovers and registers FastAPI routers by scanning for 'router.py' files
+    under src/pypnm/api/routes. Skips modules marked as non-routable and collects
+    import/registration errors for summary reporting.
+
+    Uses structured logging: debug for normal flow, error for failures.
     """
-    print("🔧 Starting auto_register_routers()")
 
-    # Find project root (up to 'pypnm')
-    project_root = pathlib.Path(__file__).resolve()
-    while project_root.name != "pypnm":
-        if project_root == project_root.parent:
-            print("❌ Could not find 'pypnm' directory.")
-            return
-        project_root = project_root.parent
+    def __init__(self, base_dir: pathlib.Path = None):
+        self.logger = logging.getLogger(__name__)
+        # Locate project root (up to 'pypnm')
+        self.project_root = (base_dir or pathlib.Path(__file__).resolve())
+        while self.project_root.name != "pypnm":
+            if self.project_root == self.project_root.parent:
+                msg = "Could not find 'pypnm' directory in path."
+                self.logger.error(msg)
+                raise RuntimeError(msg)
+            self.project_root = self.project_root.parent
 
-    routes_path = project_root / "api" / "routes"
-    if not routes_path.exists():
-        print(f"❌ Path not found: {routes_path}")
-        return
+        # Determine routes directory
+        self.routes_path = self.project_root / "api" / "routes"
+        if not self.routes_path.exists():
+            msg = f"Path not found: {self.routes_path}"
+            self.logger.error(msg)
+            raise RuntimeError(msg)
 
-    if str(project_root) not in sys.path:
-        sys.path.insert(0, str(project_root))
-        print(f"📦 Added to sys.path: {project_root}")
+        # Ensure project_root on sys.path
+        if str(self.project_root) not in sys.path:
+            sys.path.insert(0, str(self.project_root))
+            self.logger.debug(f"Added project root to sys.path: {self.project_root}")
 
-    print(f"🔍 Scanning for router.py files under: {routes_path}\n")
+        self.errors = []
 
-    for router_file in routes_path.rglob("router.py"):
-        print(f"📄 Found: {router_file}")
-        try:
-            relative_path = router_file.relative_to(project_root).with_suffix("")
-            module_path = ".".join(relative_path.parts)
-            print(f"🔗 Importing module: {module_path}")
+    def register(self, app: FastAPI) -> None:
+        """
+        Scan for 'router.py' under routes_path and register each router
+        with the provided FastAPI app.
+        """
+        self.logger.debug("Starting router registration")
+        self.logger.debug(f"Scanning directory for routers: {self.routes_path}")
 
-            module = importlib.import_module(module_path)
+        for router_file in self.routes_path.rglob("router.py"):
+            self.logger.debug(f"Discovered router file: {router_file}")
+            try:
+                relative = router_file.relative_to(self.project_root).with_suffix("")
+                module_path = ".".join(relative.parts)
+                self.logger.debug(f"Importing module '{module_path}'")
 
-            if getattr(module, "__skip_autoregister__", False):
-                print(f"⏭️  Skipped (marked non-routable): {module_path}")
-                continue
+                module = importlib.import_module(module_path)
+                if getattr(module, "__skip_autoregister__", False):
+                    self.logger.debug(f"Skipping non-routable module: {module_path}")
+                    continue
 
-            router = getattr(module, "router", None)
-            if router is None:
-                print(f"⚠️  No 'router' found in module: {module_path}")
-                continue
+                router = getattr(module, "router", None)
+                if not router:
+                    self.logger.debug(f"No 'router' attribute in module: {module_path}")
+                    continue
 
-            app.include_router(router)
-            print(f"✅ Registered router from: {module_path}")
+                app.include_router(router)
+                self.logger.debug(f"Registered router from module: {module_path}")
 
-        except Exception as e:
-            print(f"❌ Failed to import or register: {router_file}\n   ↪ {e}")
+            except Exception:
+                error_tb = traceback.format_exc()
+                self.logger.error(f"Failed to register router from '{router_file}':\n{error_tb}")
+                self.errors.append((module_path if 'module_path' in locals() else str(router_file), error_tb))
 
-    print("\n✅ Finished auto_register_routers()\n")
+        self._report_summary()
+
+    def _report_summary(self) -> None:
+        """
+        Log a summary of any errors encountered during registration.
+        """
+        if self.errors:
+            for module, tb in self.errors:
+                self.logger.error(f"Error in module '{module}':\n{tb}")
+        else:
+            self.logger.debug("Router registration completed without errors.")

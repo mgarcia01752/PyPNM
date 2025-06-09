@@ -25,7 +25,7 @@ from pypnm.api.routes.advance.multi_ds_chan_est.service import MultiChannelEstim
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.config.config_manager import ConfigManager
+from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -147,7 +147,7 @@ class MultiDsChanEstRouter(AbstractService):
             svc:MultiChannelEstimationService = self.getService(operation_id) # type: ignore
             samples = svc.results(operation_id)
 
-            save_dir = ConfigManager().get("PnmFileRetrieval","save_dir")
+            save_dir = SystemConfigSettings.save_dir
             mac = str(svc.cm.get_mac_address).replace(":", "")
             
             buf = io.BytesIO()

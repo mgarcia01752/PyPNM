@@ -14,7 +14,7 @@ from typing import Dict, List,  Optional, Tuple, Union
 
 from pypnm.api.routes.common.extended.common_measure_schema import (
     DownstreamOfdmParameters, UpstreamOfdmaParameters)
-from pypnm.config.config_common import SystemConfigCommonSettings
+from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.config.config_manager import ConfigManager
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
 from pypnm.api.routes.common.extended.common_messaging_service import CommonMessagingService, MessageResponse
@@ -160,7 +160,7 @@ class CommonMeasureService(CommonMessagingService):
                 tx_id = await PnmFileTransaction().insert(self.cm,
                     DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA, filename)
                 
-                save_dir = SystemConfigCommonSettings.save_dir
+                save_dir = SystemConfigSettings.save_dir
                 fpath = f"{save_dir}/{filename}"
                 self.logger.debug(f'SpectrumAmplitudeData: - FNAME: {filename} - Length:{len(amp_data)} - TransactionID: {tx_id}')
                 
@@ -283,9 +283,8 @@ class CommonMeasureService(CommonMessagingService):
         Returns:
             bool: True if the file was successfully retrieved and moved; False otherwise.
         """
-        method = self.config_mgr.get("PnmFileRetrieval", "method")
-        retries = self.config_mgr.get("PnmFileRetrieval", "retries", fallback=3)
-        self.logger.debug(f"{self.log_prefix} - Retrieval method: {method}")
+        method = SystemConfigSettings.retrieval_method
+        self.logger.info(f"{self.log_prefix} - Retrieval method: {method}")
 
         try:
             if method == "local":
@@ -664,7 +663,7 @@ class CommonMeasureService(CommonMessagingService):
         Returns:
             bool: True if file transfer successful, False otherwise
         """
-        sys_config = SystemConfigCommonSettings()
+        sys_config = SystemConfigSettings()
         
         self.logger.debug(f"{self.log_prefix} - SCP: Connecting to: {sys_config.scp_host}")
         
@@ -704,7 +703,7 @@ class CommonMeasureService(CommonMessagingService):
         Returns:
             bool: True if file transfer successful, False otherwise
         """
-        sys_config = SystemConfigCommonSettings()
+        sys_config = SystemConfigSettings()
         
         self.logger.debug(f"{self.log_prefix} - SFTP: Connecting to: {sys_config.sftp_host}")
         
@@ -748,26 +747,29 @@ class CommonMeasureService(CommonMessagingService):
         - tftp_timeout (int)
         - tftp_remote_dir (str)   # remote directory where PNM files live (if applicable)
         """
-        sys_config = SystemConfigCommonSettings()
-
         try:
             connector = TFTPConnector(
-                host=sys_config.tftp_host,
-                port=sys_config.tftp_port
-            )
+                host=SystemConfigSettings.tftp_host,
+                port=int(SystemConfigSettings.tftp_port))
 
-            self.logger.debug(
+        except Exception as e:
+            self.logger.error(f"{self.log_prefix} - Exception during TFTP connecting: {e}")
+            return False
+
+        try:
+            
+            self.logger.info(
                 f"{self.log_prefix} - Starting TFTP download from "
-                f"{sys_config.tftp_host}:{sys_config.tftp_port}"
+                f"{SystemConfigSettings.tftp_host}:{SystemConfigSettings.tftp_port}"
             )
 
             # Build remote filename (some tftp servers require just the basename)
             remote_name = (
-                f"{sys_config.tftp_remote_dir.rstrip('/')}/{pnm_file_name}"
-                if sys_config.tftp_remote_dir else
+                f"{SystemConfigSettings.tftp_remote_dir.rstrip('/')}/{pnm_file_name}"
+                if SystemConfigSettings.tftp_remote_dir else
                 pnm_file_name
             )
-            local_path = os.path.join(sys_config.save_dir, pnm_file_name)
+            local_path = os.path.join(SystemConfigSettings.save_dir, pnm_file_name)
 
             success = connector.download_file(remote_name, local_path)
 
@@ -783,7 +785,7 @@ class CommonMeasureService(CommonMessagingService):
             return True
 
         except Exception as e:
-            self.logger.error(f"{self.log_prefix} - Exception during TFTP fetch: {e}")
+            self.logger.error(f"{self.log_prefix} - Exception during TFTP downloading: {e}")
             return False
 
     def _handle_ftp_fetch(self, pnm_file_name: str) -> bool:
@@ -803,7 +805,7 @@ class CommonMeasureService(CommonMessagingService):
         - ftp_timeout (int)
         - ftp_remote_dir (str)   # remote directory where PNM files live
         """
-        sys_config = SystemConfigCommonSettings()
+        sys_config = SystemConfigSettings()
 
         try:
             connector = FTPConnector(

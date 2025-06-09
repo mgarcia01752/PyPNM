@@ -4,7 +4,7 @@
 from ipaddress import ip_address
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_snmp import SNMPConfig
-from pypnm.config.config_common import SystemConfigCommonSettings as SCSC
+from pypnm.config.system_config_settings import SystemConfigSettings as SCSC
 from pypnm.lib.mac_address import MacAddress
 
 

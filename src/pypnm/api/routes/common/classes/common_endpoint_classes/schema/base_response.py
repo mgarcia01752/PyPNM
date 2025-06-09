@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from pypnm.api.routes.advance.common.operation_state import OperationState
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.config.config_common import SystemConfigCommonSettings as SCSC
+from pypnm.config.system_config_settings import SystemConfigSettings as SCSC
 from pypnm.lib.mac_address import MacAddress
 
 

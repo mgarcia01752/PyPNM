@@ -2,6 +2,8 @@ import os
 import logging
 from tftpy import TftpClient
 
+from pypnm.lib.inet import Inet
+
 class TFTPConnector:
     """
     A basic TFTP client wrapper around tftpy.TftpClient.
@@ -11,12 +13,10 @@ class TFTPConnector:
     - Upload (put) files to a TFTP server
     """
 
-    def __init__(
-        self,
-        host: str,
+    def __init__(self,
+        host: Inet,
         port: int = 69,
-        timeout: int = 5
-    ):
+        timeout: int = 5):
         """
         Args:
             host:    TFTP server hostname or IP.
@@ -27,7 +27,6 @@ class TFTPConnector:
         self.host = host
         self.port = port
         self.timeout = timeout
-        # client is stateless, we'll create per-operation
 
     def download_file(self, remote_filename: str, local_path: str) -> bool:
         """
@@ -40,13 +39,15 @@ class TFTPConnector:
         Returns:
             True on success, False on any error.
         """
+        self.logger.info(f"Starting TFTP download: {remote_filename} → {local_path}")
+        
         try:
             os.makedirs(os.path.dirname(local_path) or '.', exist_ok=True)
             client = TftpClient(self.host, self.port)
-            self.logger.debug(f"Starting TFTP download: {remote_filename} → {local_path}")
             client.download(remote_filename, local_path)
-            self.logger.debug(f"TFTP download complete: {local_path}")
+            self.logger.info(f"TFTP download complete: {local_path}")
             return True
+        
         except Exception as e:
             self.logger.error(f"TFTP download failed: {e}")
             return False
@@ -68,9 +69,9 @@ class TFTPConnector:
 
         try:
             client = TftpClient(self.host, self.port)
-            self.logger.debug(f"Starting TFTP upload: {local_path} → {remote_filename}")
+            self.logger.info(f"Starting TFTP upload: {local_path} → {remote_filename}")
             client.upload(remote_filename, local_path)
-            self.logger.debug(f"TFTP upload complete: {remote_filename}")
+            self.logger.info(f"TFTP upload complete: {remote_filename}")
             return True
         except Exception as e:
             self.logger.error(f"TFTP upload failed: {e}")

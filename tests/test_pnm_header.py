@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 import unittest
 import struct
 from pypnm.pnm.process.pnm_file_type import PnmFileType

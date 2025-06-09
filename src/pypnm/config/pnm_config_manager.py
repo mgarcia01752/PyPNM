@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from typing import Tuple
-from pypnm.config.config_manager import ConfigManager
+from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.inet import Inet
 
 class PnmConfigManager:
@@ -11,12 +11,11 @@ class PnmConfigManager:
     Provides access to TFTP server addresses, SNMP community strings, and file paths.
     """
 
-    _config = ConfigManager()
-    _tftp_v4 = _config.get("PnmBulkDataTransfer", "tftp", "ip_v4")
-    _tftp_v6 = _config.get("PnmBulkDataTransfer", "tftp", "ip_v6")
-    _write_community = _config.get("SNMP", "write_community")
-    _tftp_path = _config.get("PnmBulkDataTransfer", "tftp", "remote_dir")
-    _save_dir = _config.get("PnmFileRetrieval", "save_dir")
+    _tftp_v4 = SystemConfigSettings.bulk_tftp_ip_v4
+    _tftp_v6 = SystemConfigSettings.bulk_tftp_ip_v6
+    _write_community = SystemConfigSettings.snmp_write_community
+    _tftp_path = SystemConfigSettings.tftp_remote_dir
+    _save_dir = SystemConfigSettings.save_dir
 
     @classmethod
     def reload(cls):
@@ -24,12 +23,11 @@ class PnmConfigManager:
         Reloads all configuration values from the source configuration.
         Call this if the underlying configuration file changes and you want updated values.
         """
-        cls._config.reload()
-        cls._tftp_v4 = cls._config.get("PnmBulkDataTransfer", "tftp", "ip_v4")
-        cls._tftp_v6 = cls._config.get("PnmBulkDataTransfer", "tftp", "ip_v6")
-        cls._write_community = cls._config.get("SNMP", "write_community")
-        cls._tftp_path = cls._config.get("PnmBulkDataTransfer", "tftp", "remote_dir")
-        cls._save_dir = cls._config.get("PnmFileRetrieval", "save_dir")
+        cls._tftp_v4 = SystemConfigSettings.bulk_tftp_ip_v4
+        cls._tftp_v6 = SystemConfigSettings.bulk_tftp_ip_v6
+        cls._write_community = SystemConfigSettings.snmp_write_community
+        cls._tftp_path = SystemConfigSettings.snmp_write_community
+        cls._save_dir = SystemConfigSettings.save_dir
 
     @staticmethod
     def get_save_dir() -> str:

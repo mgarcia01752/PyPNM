@@ -7,12 +7,11 @@ from pydantic import BaseModel, Field, field_validator
 from pypnm.api.routes.advance.common.operation_state import OperationState
 from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_snmp import SNMPConfig
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.config.config_manager import ConfigManager
+from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.mac_address import MacAddress
 
-config = ConfigManager()
-default_mac = config.get("FastApiRequestDefault", "mac_address")
-default_ip = config.get("FastApiRequestDefault", "ip_address")
+default_mac = SystemConfigSettings.default_mac_address
+default_ip = SystemConfigSettings.default_ip_address
 
 class CommonFileRequest(BaseModel):
     """

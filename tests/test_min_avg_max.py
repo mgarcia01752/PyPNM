@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 import unittest
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
 

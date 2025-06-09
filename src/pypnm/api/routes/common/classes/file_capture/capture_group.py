@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 from json import JSONDecodeError
 
-from pypnm.config.config_manager import ConfigManager
+from pypnm.config.system_config_settings import SystemConfigSettings
 
 class CaptureGroup:
     """
@@ -61,8 +61,8 @@ class CaptureGroup:
         if db_path:
             self.db_path = Path(db_path)
         else:
-            cfg_path = ConfigManager().get("PnmFileRetrieval", "capture_group_db")
-            self.db_path = Path(cfg_path)
+            cfg_db_path = SystemConfigSettings.capture_group_db
+            self.db_path = Path(cfg_db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Create empty DB if missing

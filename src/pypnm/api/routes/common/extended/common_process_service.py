@@ -9,7 +9,7 @@ from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import Pn
 from pypnm.api.routes.common.extended.common_messaging_service import (
     CommonMessagingService, MessageResponse, MessageResponseType)
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.config.config_manager import ConfigManager
+from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.utils import Utils
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
@@ -27,7 +27,7 @@ class CommonProcessService(CommonMessagingService):
     def __init__(self, message_response:MessageResponse, **extra_options):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.pnm_file_dir = self.config_mgr = ConfigManager().get("PnmFileRetrieval", "save_dir")
+        self.pnm_file_dir = self.config_mgr = SystemConfigSettings.save_dir
         self._msg_rsp = message_response
         self.logger.info(f'CommonProcessService: {self._msg_rsp}')
 

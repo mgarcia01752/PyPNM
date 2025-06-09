@@ -1,16 +1,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-# src/pypnm/cli.py
-
 import argparse
 import os
 import uvicorn
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Launch the PyPNM FastAPI service with optional HTTPS support."
-    )
+        description="Launch the PyPNM FastAPI service with optional HTTPS support.")
 
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind (default: 127.0.0.1)")
     parser.add_argument("--port", default=8000, type=int, help="Port to bind (default: 8000)")
@@ -20,7 +17,6 @@ def main():
 
     args = parser.parse_args()
 
-    # Debug info
     if args.ssl:
         print(f"🔒 Launching FastAPI with HTTPS on https://{args.host}:{args.port}")
     else:

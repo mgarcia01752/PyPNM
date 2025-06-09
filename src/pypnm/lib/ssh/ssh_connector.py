@@ -1,26 +1,31 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 import enum
 import os
 import subprocess
-import shlex
+import shutil
 import logging
 import paramiko
 from typing import Optional, Tuple, List
 
 
 class SecureTransferMode(enum.Enum):
+    """Supported secure file transfer modes."""
     SCP = 0
     SFTP = 1
 
 
 class SSHConnector:
     """
-    A class to handle SSH/SFTP or SCP file transfers and key exchange between hosts.
+    Handles secure file transfers (SFTP/SCP) and SSH key management.
 
     Features:
-    - Send and receive files via SFTP or SCP (configurable)
-    - SSH key generation and exchange
-    - Support for password and key-based authentication, with agent/default-key fallback
-    - Automatic host key verification options
+      - Password or key-based authentication
+      - SFTP transfers via Paramiko
+      - SCP fallback using system scp or sshpass if available
+      - SSH key pair generation and remote installation
+      - Remote command execution
     """
 
     def __init__(
@@ -28,26 +33,24 @@ class SSHConnector:
         hostname: str,
         username: str,
         port: int = 22,
-        transfer_mode: SecureTransferMode = SecureTransferMode.SCP
+        transfer_mode: SecureTransferMode = SecureTransferMode.SCP,
     ):
         """
-        Initialize SSH connection parameters.
+        Initialize connection parameters.
 
         Args:
-            hostname: Remote host IP or hostname.
-            username: Username for SSH connection.
-            port: SSH port (default 22).
-            transfer_mode: SecureTransferMode.SCP or SecureTransferMode.SFTP.
+            hostname: Host or IP of the remote machine.
+            username: SSH login user.
+            port: SSH port, default 22.
+            transfer_mode: SCP or SFTP mode.
         """
         self.logger = logging.getLogger(__name__)
         self.hostname = hostname
         self.username = username
         self.port = port
-
         if not isinstance(transfer_mode, SecureTransferMode):
             raise ValueError("transfer_mode must be a SecureTransferMode enum")
         self.transfer_mode = transfer_mode
-
         self.ssh_client: Optional[paramiko.SSHClient] = None
         self.sftp_client: Optional[paramiko.SFTPClient] = None
         self.private_key_path: Optional[str] = None
@@ -57,73 +60,55 @@ class SSHConnector:
         self,
         password: Optional[str] = None,
         private_key_path: Optional[str] = None,
-        auto_add_policy: bool = True
+        auto_add_policy: bool = True,
     ) -> bool:
         """
-        Establish SSH connection (Paramiko) for SFTP or to prepare for SCP.
+        Establish SSH session for SFTP or to enable SCP fallback.
+
+        Always initializes an SFTP client for fallback, regardless of mode.
 
         Args:
-            password: Password for authentication.
-            private_key_path: Path to private key file.
-            auto_add_policy: If True, automatically accept unknown host keys.
+            password: Optional SSH password.
+            private_key_path: Path to a private key file.
+            auto_add_policy: If True, unknown host keys are accepted.
 
         Returns:
-            bool: True if connection successful.
+            True on success, False otherwise.
         """
         self.password = password
         self.private_key_path = private_key_path
-
         try:
-            # Even for SCP, establish a Paramiko connection to verify credentials
-            self.ssh_client = paramiko.SSHClient()
-            self.ssh_client.load_system_host_keys()
-
-            if auto_add_policy:
-                self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            else:
-                self.ssh_client.set_missing_host_key_policy(paramiko.RejectPolicy())
-
+            client = paramiko.SSHClient()
+            client.load_system_host_keys()
+            policy = paramiko.AutoAddPolicy() if auto_add_policy else paramiko.RejectPolicy()
+            client.set_missing_host_key_policy(policy)
+            connect_kwargs = dict(
+                hostname=self.hostname,
+                port=self.port,
+                username=self.username,
+                timeout=10,
+            )
             if private_key_path and os.path.exists(private_key_path):
-                pkey = paramiko.RSAKey.from_private_key_file(private_key_path)
-                self.ssh_client.connect(
-                    hostname=self.hostname,
-                    port=self.port,
-                    username=self.username,
-                    pkey=pkey,
-                    timeout=10,
-                )
+                key = paramiko.RSAKey.from_private_key_file(private_key_path)
+                connect_kwargs['pkey'] = key
             elif password:
-                self.ssh_client.connect(
-                    hostname=self.hostname,
-                    port=self.port,
-                    username=self.username,
-                    password=password,
-                    timeout=10,
-                )
-            else:
-                # Fallback to SSH agent or default key files (~/.ssh/id_rsa, etc.)
-                self.ssh_client.connect(
-                    hostname=self.hostname,
-                    port=self.port,
-                    username=self.username,
-                    timeout=10,
-                )
+                connect_kwargs['password'] = password
+            client.connect(**connect_kwargs)
+            self.ssh_client = client
 
-            if self.transfer_mode == SecureTransferMode.SFTP:
-                transport = self.ssh_client.get_transport()
-                if transport is None or not transport.is_active():
-                    raise RuntimeError("SSH transport is not active after connect()")
+            # Always create SFTP client for fallback
+            transport = client.get_transport()
+            if transport and transport.is_active():
                 self.sftp_client = paramiko.SFTPClient.from_transport(transport)
 
             self.logger.debug(f"Connected to {self.hostname}:{self.port} via {self.transfer_mode.name}")
             return True
-
         except Exception as e:
             self.logger.error(f"Connection failed: {e}")
             return False
 
     def disconnect(self):
-        """Close SFTP (if open) and SSH connections."""
+        """Close any active SFTP and SSH sessions."""
         if self.sftp_client:
             try:
                 self.sftp_client.close()
@@ -134,307 +119,215 @@ class SSHConnector:
                 self.ssh_client.close()
             except Exception:
                 pass
-        self.logger.debug("Disconnected")
+        self.logger.debug("Disconnected from remote host")
 
     def send_file(self, local_path: str, remote_path: str) -> bool:
         """
-        Send a file to the remote host, using either SFTP or SCP.
+        Transfer a local file to the remote host.
 
-        Args:
-            local_path: Path to the local file.
-            remote_path: Full path on the remote host (including filename).
-
-        Returns:
-            bool: True if transfer successful.
+        Uses SFTP if configured; otherwise attempts SCP via system,
+        with SFTP fallback if SCP is unavailable.
         """
         if not self.ssh_client:
-            raise ConnectionError("Not connected. Call connect() first.")
-
+            raise ConnectionError("Not connected - call connect() first")
         if not os.path.isfile(local_path):
             self.logger.error(f"Local file not found: {local_path}")
             return False
 
-        if self.transfer_mode == SecureTransferMode.SFTP:
-            if not self.sftp_client:
-                raise ConnectionError("SFTP client not initialized. Did you call connect()?")
-
+        # SFTP primary when requested
+        if self.transfer_mode is SecureTransferMode.SFTP and self.sftp_client:
             try:
-                remote_dir = os.path.dirname(remote_path)
-                if remote_dir:
-                    self._ensure_remote_dir(remote_dir)
-
+                self._ensure_remote_dir(os.path.dirname(remote_path))
                 self.sftp_client.put(local_path, remote_path)
-                self.logger.debug(f"SFTP: Sent {local_path} -> {remote_path}")
+                self.logger.debug(f"SFTP: {local_path} -> {remote_path}")
                 return True
-
             except Exception as e:
                 self.logger.error(f"SFTP send failed: {e}")
                 return False
 
-        else:  # SCP
+        # SCP fallback
+        cmd = self._build_scp_command(local_src=local_path, remote_dest=f"{self.username}@{self.hostname}:{remote_path}")
+        if cmd:
             try:
-                remote_dir = os.path.dirname(remote_path)
-                if remote_dir:
-                    mkdir_cmd = f'mkdir -p "{remote_dir}"'
-                    _, stderr, code = self.execute_command(mkdir_cmd)
-                    if code != 0:
-                        self.logger.error(f"Remote mkdir failed: {stderr.strip()}")
-
-                scp_cmd = self._build_scp_command(
-                    local_src=local_path,
-                    remote_dest=f"{self.username}@{self.hostname}:{remote_path}"
-                )
-                self.logger.debug(f"SCP send cmd: {scp_cmd}")
-                result = subprocess.run(shlex.split(scp_cmd), capture_output=True)
+                result = subprocess.run(cmd, capture_output=True)
                 if result.returncode != 0:
-                    self.logger.error(f"SCP send failed: {result.stderr.decode().strip()}")
-                    return False
+                    self.logger.error(result.stderr.decode().strip())
+                else:
+                    self.logger.debug(f"SCP: {local_path} -> {remote_path}")
+                    return True
+            except FileNotFoundError:
+                self.logger.warning("scp or sshpass not found; using SFTP fallback")
 
-                self.logger.debug(f"SCP: Sent {local_path} -> {remote_path}")
+        # SFTP fallback
+        if self.sftp_client:
+            try:
+                self._ensure_remote_dir(os.path.dirname(remote_path))
+                self.sftp_client.put(local_path, remote_path)
+                self.logger.debug(f"Fallback SFTP: {local_path} -> {remote_path}")
                 return True
-
             except Exception as e:
-                self.logger.error(f"SCP send exception: {e}")
-                return False
+                self.logger.error(f"Fallback SFTP send failed: {e}")
+
+        self.logger.error("No transfer method available for send_file")
+        return False
 
     def receive_file(self, remote_path: str, local_path: str) -> bool:
         """
-        Receive a file from the remote host, using either SFTP or SCP.
+        Fetch a remote file to the local filesystem.
 
-        Args:
-            remote_path: Full path on the remote host (including filename).
-            local_path: Local destination (directory or full file path).
-
-        Returns:
-            bool: True if transfer successful.
+        Uses SFTP if configured; otherwise attempts SCP via system,
+        with SFTP fallback if SCP is unavailable.
         """
         if not self.ssh_client:
-            raise ConnectionError("Not connected. Call connect() first.")
+            raise ConnectionError("Not connected - call connect() first")
 
-        # Determine final local file path
+        # Determine local file path
         if os.path.isdir(local_path):
-            remote_filename = os.path.basename(remote_path)
-            local_file_path = os.path.join(local_path, remote_filename)
+            fname = os.path.basename(remote_path)
+            local_file = os.path.join(local_path, fname)
         else:
-            local_file_path = local_path
+            local_file = local_path
+        os.makedirs(os.path.dirname(local_file), exist_ok=True)
 
-        local_dir = os.path.dirname(local_file_path)
-        if local_dir:
-            os.makedirs(local_dir, exist_ok=True)
-
-        if self.transfer_mode == SecureTransferMode.SFTP:
-            if not self.sftp_client:
-                raise ConnectionError("SFTP client not initialized. Did you call connect()?")
-
+        # SFTP primary when requested
+        if self.transfer_mode is SecureTransferMode.SFTP and self.sftp_client:
             try:
-                self.sftp_client.get(remote_path, local_file_path)
-                self.logger.debug(f"SFTP: Received {remote_path} -> {local_file_path}")
+                self.sftp_client.get(remote_path, local_file)
+                self.logger.debug(f"SFTP: {remote_path} -> {local_file}")
                 return True
-
             except Exception as e:
                 self.logger.error(f"SFTP receive failed: {e}")
                 return False
 
-        else:  # SCP
+        # SCP fallback
+        cmd = self._build_scp_command(remote_src=f"{self.username}@{self.hostname}:{remote_path}", local_dest=local_file)
+        if cmd:
             try:
-                scp_cmd = self._build_scp_command(
-                    remote_src=f"{self.username}@{self.hostname}:{remote_path}",
-                    local_dest=local_file_path
-                )
-                self.logger.debug(f"SCP receive cmd: {scp_cmd}")
-                result = subprocess.run(shlex.split(scp_cmd), capture_output=True)
+                result = subprocess.run(cmd, capture_output=True)
                 if result.returncode != 0:
-                    self.logger.error(f"SCP receive failed: {result.stderr.decode().strip()}")
-                    return False
+                    self.logger.error(result.stderr.decode().strip())
+                else:
+                    self.logger.debug(f"SCP: {remote_path} -> {local_file}")
+                    return True
+            except FileNotFoundError:
+                self.logger.warning("scp or sshpass not found; using SFTP fallback")
 
-                self.logger.debug(f"SCP: Received {remote_path} -> {local_file_path}")
+        # SFTP fallback
+        if self.sftp_client:
+            try:
+                self.sftp_client.get(remote_path, local_file)
+                self.logger.debug(f"Fallback SFTP: {remote_path} -> {local_file}")
                 return True
-
             except Exception as e:
-                self.logger.error(f"SCP receive exception: {e}")
-                return False
+                self.logger.error(f"Fallback SFTP receive failed: {e}")
+
+        self.logger.error("No transfer method available for receive_file")
+        return False
 
     def _build_scp_command(
         self,
         local_src: Optional[str] = None,
         remote_src: Optional[str] = None,
         remote_dest: Optional[str] = None,
-        local_dest: Optional[str] = None
-    ) -> str:
+        local_dest: Optional[str] = None,
+    ) -> Optional[List[str]]:
         """
-        Construct an scp command string based on provided source/destination.
-
-        Args:
-            local_src: Local path to send.
-            remote_src: Remote path to fetch (username@host:/path).
-            remote_dest: Remote destination path (username@host:/path).
-            local_dest: Local destination path.
-
-        Returns:
-            str: A fully formed scp command.
+        Constructs a safe SCP command list or returns None if unavailable.
         """
         if local_src and remote_dest:
-            src = local_src
-            dest = remote_dest
+            src, dest = local_src, remote_dest
         elif remote_src and local_dest:
-            src = remote_src
-            dest = local_dest
+            src, dest = remote_src, local_dest
         else:
-            raise ValueError("Provide either (local_src and remote_dest) or (remote_src and local_dest).")
-
-        parts = ["scp", "-o", "StrictHostKeyChecking=no", "-P", str(self.port)]
-
+            raise ValueError("Provide either (local_src and remote_dest) or (remote_src and local_dest)")
+        parts: List[str] = []
         if self.private_key_path:
-            parts += ["-i", shlex.quote(self.private_key_path)]
-        elif self.password:
-            parts = [
-                "sshpass", "-p", shlex.quote(self.password),
-                "scp", "-o", "StrictHostKeyChecking=no", "-P", str(self.port)
-            ]
-
-        parts += [shlex.quote(src), shlex.quote(dest)]
-        return " ".join(parts)
+            parts = ["scp", "-o", "StrictHostKeyChecking=no", "-i", self.private_key_path, "-P", str(self.port)]
+        elif self.password and shutil.which("sshpass"):
+            parts = ["sshpass", "-p", self.password, "scp", "-o", "StrictHostKeyChecking=no", "-P", str(self.port)]
+        else:
+            return None
+        parts += [src, dest]
+        return parts
 
     def execute_command(self, command: str) -> Tuple[str, str, int]:
         """
-        Execute a shell command on the remote host.
-
-        Args:
-            command: Command to execute (e.g., "ls -la /tmp").
-
-        Returns:
-            tuple: (stdout, stderr, exit_code)
+        Runs a remote shell command via Paramiko.
         """
         if not self.ssh_client:
-            raise ConnectionError("Not connected. Call connect() first.")
-
+            raise ConnectionError("Not connected - call connect() first")
         try:
             stdin, stdout, stderr = self.ssh_client.exec_command(command)
-            exit_code = stdout.channel.recv_exit_status()
-            stdout_data = stdout.read().decode()
-            stderr_data = stderr.read().decode()
-            return stdout_data, stderr_data, exit_code
-
+            code = stdout.channel.recv_exit_status()
+            out = stdout.read().decode()
+            err = stderr.read().decode()
+            return out, err, code
         except Exception as e:
-            self.logger.error(f"Command execution failed: {e}")
+            self.logger.error(f"Command failed: {e}")
             return "", str(e), -1
 
     @staticmethod
-    def generate_ssh_key_pair(
-        key_path: str = "~/.ssh/id_rsa",
-        key_size: int = 2048
-    ) -> bool:
+    def generate_ssh_key_pair(key_path: str = "~/.ssh/id_rsa", key_size: int = 2048) -> bool:
         """
-        Generate an SSH key pair (RSA) locally.
-
-        Args:
-            key_path: Path for private key (public key will be key_path + ".pub").
-            key_size: Key size in bits (e.g., 2048, 4096).
-
-        Returns:
-            bool: True if generation successful.
+        Generates an RSA key pair locally.
         """
         try:
-            key_path = os.path.expanduser(key_path)
-            ssh_dir = os.path.dirname(key_path)
-            os.makedirs(ssh_dir, exist_ok=True)
-            os.chmod(ssh_dir, 0o700)
-
+            path = os.path.expanduser(key_path)
+            os.makedirs(os.path.dirname(path), exist_ok=True)
             key = paramiko.RSAKey.generate(bits=key_size)
-            key.write_private_key_file(key_path)
-            os.chmod(key_path, 0o600)
-
-            pub_key_path = f"{key_path}.pub"
-            with open(pub_key_path, "w") as f:
-                f.write(f"ssh-rsa {key.get_base64()} {os.getenv('USER', 'unknown')}@{os.uname().nodename}\n")
-            os.chmod(pub_key_path, 0o644)
-
-            logging.getLogger(__name__).debug(f"SSH key pair generated: {key_path}")
+            key.write_private_key_file(path)
+            pub = f"{path}.pub"
+            with open(pub, "w") as f:
+                f.write(f"ssh-rsa {key.get_base64()} {os.getenv('USER')}@{os.uname().nodename}\n")
             return True
-
         except Exception as e:
-            logging.getLogger(__name__).error(f"Key generation failed: {e}")
+            logging.getLogger(__name__).error(f"Key gen failed: {e}")
             return False
 
     def install_public_key(self, public_key_path: str) -> bool:
         """
-        Install a public key into the remote host's ~/.ssh/authorized_keys, if not already present.
-
-        Args:
-            public_key_path: Local path to the public key file.
-
-        Returns:
-            bool: True if installation successful or key already exists.
+        Installs a public key in remote ~/.ssh/authorized_keys.
         """
         if not self.ssh_client:
-            raise ConnectionError("Not connected. Call connect() first.")
-
-        try:
-            if not os.path.exists(public_key_path):
-                raise FileNotFoundError(f"Public key not found: {public_key_path}")
-
-            with open(public_key_path, "r") as f:
-                public_key = f.read().strip()
-
-            self.execute_command("mkdir -p ~/.ssh && chmod 700 ~/.ssh")
-
-            check_cmd = (
-                f'grep -qxF "{public_key}" ~/.ssh/authorized_keys '
-                f'|| echo "{public_key}" >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys'
-            )
-            stdout, stderr, exit_code = self.execute_command(check_cmd)
-
-            if exit_code == 0:
-                self.logger.debug("Public key installed (or already present) on remote host.")
-                return True
-            else:
-                self.logger.error(f"Key installation command failed: {stderr}")
-                return False
-
-        except Exception as e:
-            self.logger.error(f"Key installation failed: {e}")
-            return False
+            raise ConnectionError("Not connected - call connect() first")
+        if not os.path.isfile(public_key_path):
+            raise FileNotFoundError(f"Public key not found: {public_key_path}")
+        with open(public_key_path) as f:
+            key = f.read().strip()
+        cmd = (
+            f'grep -qxF "{key}" ~/.ssh/authorized_keys || '
+            f'echo "{key}" >> ~/.ssh/authorized_keys'
+        )
+        out, err, code = self.execute_command(cmd)
+        if code == 0:
+            self.logger.debug("Public key installed or already present")
+            return True
+        self.logger.error(f"Key install failed: {err}")
+        return False
 
     def list_remote_directory(self, remote_path: str = ".") -> List[str]:
         """
-        List files in a remote directory via SFTP.
-
-        Args:
-            remote_path: Remote directory path.
-
-        Returns:
-            list[str]: List of filenames (empty list on failure).
+        Lists a directory via SFTP.
         """
-        if self.transfer_mode != SecureTransferMode.SFTP:
-            raise RuntimeError("Directory listing requires SFTP mode")
-
-        if not self.ssh_client or not self.sftp_client:
-            raise ConnectionError("Not connected. Call connect() first.")
-
+        if not self.sftp_client:
+            raise ConnectionError("Not connected - call connect() first")
         try:
             return self.sftp_client.listdir(remote_path)
         except Exception as e:
-            self.logger.error(f"Directory listing failed: {e}")
+            self.logger.error(f"Listing failed: {e}")
             return []
 
-    def _ensure_remote_dir(self, remote_directory: str):
+    def _ensure_remote_dir(self, remote_dir: str):
         """
-        Create nested directories on the remote host via SFTP (mkdir -p style).
-
-        Args:
-            remote_directory: Absolute remote directory path.
-
-        Raises:
-            ConnectionError if not connected or IOError if creation fails.
+        Recursively creates remote directories via SFTP.
         """
-        if not self.ssh_client or not self.sftp_client:
-            raise ConnectionError("Not connected. Call connect() first.")
-
-        parts = remote_directory.strip("/").split("/")
-        path_so_far = ""
+        if not self.sftp_client:
+            raise ConnectionError("Not connected - call connect() first")
+        parts = remote_dir.strip("/").split("/")
+        path = ""
         for part in parts:
-            path_so_far = f"{path_so_far}/{part}"
+            path += f"/{part}"
             try:
-                self.sftp_client.stat(path_so_far)
+                self.sftp_client.stat(path)
             except IOError:
-                self.sftp_client.mkdir(path_so_far)
+                self.sftp_client.mkdir(path)

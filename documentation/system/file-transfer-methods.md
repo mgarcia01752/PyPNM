@@ -7,40 +7,51 @@ PyPNM supports multiple methods for retrieving Proactive Network Maintenance (PN
 The file `system.json` (located at [src/pypnm/settings/system.json](../../src/pypnm/settings/system.json)) defines high‑level settings for where PyPNM expects to find incoming PNM files, network interfaces, and security parameters. Before choosing a retrieval method, confirm that the following keys are correctly set:
 
 ```json
-    "PnmFileRetrieval": {
-        "method": "local",
-        "local": {
-            "src_dir": "/srv/tftp"
-        },
-        "tftp": {
-            "host": "localhost",
-            "port": 69,
-            "remote_dir": ""
-        },
-        "ftp": {
-            "host": "localhost",
-            "port":21,
-            "tls": false,
-            "timeout": 5,
-            "user": "test",
-            "password": "tftp",
-            "remote_dir": "/srv/tftp"
-        },
-        "scp": {
-            "host": "localhost",
-            "port": "22",
-            "user": "test",
-            "password": "tftp",
-            "remote_dir": "/srv/tftp"
-        },
-        "sftp": {
-            "host": "localhost",
-            "port": 22,
-            "user": "test",
-            "password": "tftp",
-            "remote_dir": "/srv/tftp"
-        }    
-    },
+        "retrival_method": {
+            "method": "local",
+            "methods":{
+                "local": {
+                    "src_dir": "/srv/tftp"
+                },
+                "tftp": {
+                    "host": "localhost",
+                    "port":69,
+                    "timeout": 5,
+                    "remote_dir": ""
+                },
+                "ftp": {
+                    "host": "localhost",
+                    "port":21,
+                    "tls": false,
+                    "timeout": 5,
+                    "user": "test",
+                    "password": "tftp",
+                    "remote_dir": "/srv/tftp"
+                },
+                "scp": {
+                    "host": "localhost",
+                    "port": "22",
+                    "user": "test",
+                    "password": "tftp",
+                    "remote_dir": "/srv/tftp"
+                },
+                "sftp": {
+                    "host": "localhost",
+                    "port": 22,
+                    "user": "test",
+                    "password": "tftp",
+                    "remote_dir": "/srv/tftp"
+                },
+                "http": {
+                    "base_url": "http://STUB/",
+                    "port":80
+                },
+                "https": {
+                    "base_url": "https://STUB/",
+                    "port":443
+                }
+            }
+        }
 ```
 
 ## Local Transfer

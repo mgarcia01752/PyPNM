@@ -8,8 +8,7 @@ import logging
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
-from pypnm.config.config_manager import ConfigManager
-
+from pypnm.config.system_config_settings import SystemConfigSettings
 
 class OperationManager:
     """
@@ -51,7 +50,7 @@ class OperationManager:
         if db_path:
             self.db_path = db_path
         else:
-            db_str = ConfigManager().get("PnmFileRetrieval", "operation_db")
+            db_str = SystemConfigSettings.operation_db
             self.db_path = Path(db_str)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -140,7 +139,7 @@ class OperationManager:
             Exception thrown
         """
         if not db_path:
-            db_str = ConfigManager().get("PnmFileRetrieval", "operation_db")
+            db_str = SystemConfigSettings.operation_db
             db_path = Path(db_str)
         try:
             with db_path.open("r", encoding="utf-8") as f:
@@ -167,7 +166,7 @@ class OperationManager:
             List of operation_id strings.
         """
         if not db_path:
-            db_str = ConfigManager().get("PnmFileRetrieval", "operation_db")
+            db_str = SystemConfigSettings.operation_db
             db_path = Path(db_str)
         try:
             with db_path.open("r", encoding="utf-8") as f:

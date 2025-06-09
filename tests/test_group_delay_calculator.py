@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 import unittest
 import numpy as np
 from src.pypnm.api.routes.advance.analysis.signal_analysis.group_delay_calculator import GroupDelayCalculator

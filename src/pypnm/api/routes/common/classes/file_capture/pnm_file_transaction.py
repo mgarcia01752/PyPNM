@@ -8,7 +8,7 @@ import time
 from typing import Dict, Optional
 from pathlib import Path
 
-from pypnm.config.config_manager import ConfigManager
+from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.lib.mac_address import MacAddress
@@ -67,7 +67,7 @@ class PnmFileTransaction:
 
     def __init__(self):
         """Initializes the transaction manager and prepares the transaction database path."""
-        self.transaction_db_path = Path(ConfigManager().get("PnmFileRetrieval", "transaction_db"))
+        self.transaction_db_path = Path(SystemConfigSettings.transaction_db)
         self.transaction_db_path.parent.mkdir(parents=True, exist_ok=True)
         if not self.transaction_db_path.exists():
             self.transaction_db_path.write_text(json.dumps({}))

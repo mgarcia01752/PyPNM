@@ -6,7 +6,7 @@ from typing import List, Tuple
 import logging
 
 from pypnm.api.routes.advance.common.pnm_collection import PnmCollection
-from pypnm.config.config_manager import ConfigManager
+from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.api.routes.common.classes.file_capture.capture_group import CaptureGroup
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
 
@@ -37,9 +37,7 @@ class CaptureDataAggregator:
         """
         self.logger = logging.getLogger(self.__class__.__name__)
         self.capture_group_id = capture_group_id
-        self.save_dir = Path(
-            ConfigManager().get("PnmFileRetrieval", "save_dir")
-        )
+        self.save_dir = Path(SystemConfigSettings.save_dir)
 
     def collect(self) -> List[Tuple[str, bytes]]:
         """

@@ -26,57 +26,61 @@
         }         
     },
     "PnmFileRetrieval": {
-        "save_dir": ".data/pnm",
+        "pnm_dir": ".data/pnm",
         "transaction_db": ".data/db/transactions.json",
         "capture_group_db": ".data/db/capture_group.json",
         "operation_db": ".data/db/operation_capture.json",
         "retries": 5,
-        "method": "tftp",
-        "local": {
-            "src_dir": "/srv/tftp"
-        },
-        "tftp": {
-            "host": "localhost",
-            "port":69,
-            "timeout": 5,
-            "remote_dir": ""
-        },
-        "ftp": {
-            "host": "localhost",
-            "port":21,
-            "tls": false,
-            "timeout": 5,
-            "user": "user",
-            "password": "pass",
-            "remote_dir": "/files"
-        },
-        "scp": {
-            "host": "localhost",
-            "port": "22",
-            "user": "test",
-            "password": "tftp",
-            "remote_dir": "/srv/tftp"
-        },
-        "sftp": {
-            "host": "localhost",
-            "port": 22,
-            "user": "test",
-            "password": "tftp",
-            "remote_dir": "/srv/tftp"
-        },
-        "http": {
-            "base_url": "http://STUB/",
-            "port":80
-        },
-        "https": {
-            "base_url": "https://STUB/",
-            "port":443
+        "retrival_method": {
+            "method": "sftp",
+            "methods":{
+                "local": {
+                    "src_dir": "/srv/tftp"
+                },
+                "tftp": {
+                    "host": "localhost",
+                    "port":69,
+                    "timeout": 5,
+                    "remote_dir": ""
+                },
+                "ftp": {
+                    "host": "localhost",
+                    "port":21,
+                    "tls": false,
+                    "timeout": 5,
+                    "user": "test",
+                    "password": "tftp",
+                    "remote_dir": "/srv/tftp"
+                },
+                "scp": {
+                    "host": "localhost",
+                    "port": "22",
+                    "user": "test",
+                    "password": "tftp",
+                    "remote_dir": "/srv/tftp"
+                },
+                "sftp": {
+                    "host": "localhost",
+                    "port": 22,
+                    "user": "test",
+                    "password": "tftp",
+                    "remote_dir": "/srv/tftp"
+                },
+                "http": {
+                    "base_url": "http://STUB/",
+                    "port":80
+                },
+                "https": {
+                    "base_url": "https://STUB/",
+                    "port":443
+                }
+            }
         }        
     },
     "logging": {
         "log_level":"INFO",
         "log_dir":"logs",
-        "log_filename":"pnm_log_%Y%m%d_%H%M%S.log"
+        "log_filename":"pypnm.log"
     }
     
 }
