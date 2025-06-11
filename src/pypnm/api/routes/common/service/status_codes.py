@@ -30,6 +30,7 @@ class ServiceStatusCode(IntEnum):
     RESET_NOW_FAILED                        = 18
     PING_FAILED                             = 19
     MISSING_PNM_FILENAME                    = 20
+    TFTP_PNM_FILE_UPLOAD_FAILURE            = 21
     
     SCP_PNM_FILE_FETCH_ERROR                = 30
     TFTP_PNM_FILE_FETCH_ERROR               = 31
