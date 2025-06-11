@@ -3,11 +3,15 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pypnm"
-version = "0.1.0"
-description = "DOCSIS 3.1/4.0 Proactive Network Maintenance Toolkit"
-readme = "README.md"
-requires-python = ">=3.10"
+name             = "pypnm"
+version          = "0.1.0"
+description      = "DOCSIS 3.1/4.0 Proactive Network Maintenance Toolkit"
+readme           = "README.md"
+requires-python  = ">=3.10"
+license          = { file = "LICENSE.md" }
+authors          = [
+  { name = "Maurice Garcia", email = "mgarcia01752@example.com" }
+]
 
 dependencies = [
   "fastapi==0.115.12",
@@ -38,10 +42,6 @@ Bug-Tracker = "https://github.com/mgarcia01752/PyPNM/issues"
 
 [project.scripts]
 pypnm = "pypnm.cli:main"
-
-
-# ────────────────────────────────────────────────────────────────────────────────
-# setuptools configuration for src/ layout and including JSON settings
 
 [tool.setuptools]
 package-dir = { "" = "src" }
