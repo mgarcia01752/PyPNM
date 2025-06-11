@@ -102,164 +102,138 @@ class SystemConfigSettings:
     @classproperty
     def local_src_dir(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "local", "src_dir"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "local", "src_dir")
 
     # TFTP method
     @classproperty
     def tftp_host(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "host"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "host")
 
     @classproperty
     def tftp_port(cls) -> int:
         return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "port"
-        ))
+            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "port"))
 
     @classproperty
     def tftp_timeout(cls) -> int:
         return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "timeout"
-        ))
+            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "timeout"))
 
     @classproperty
     def tftp_remote_dir(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "remote_dir"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "remote_dir")
 
     # FTP method
     @classproperty
     def ftp_host(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "host"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "host")
 
     @classproperty
     def ftp_port(cls) -> int:
         return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "port"
-        ))
+            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "port"))
 
     @classproperty
     def ftp_use_tls(cls) -> bool:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "tls"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "tls")
 
     @classproperty
     def ftp_timeout(cls) -> int:
         return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "timeout"
-        ))
+            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "timeout"))
 
     @classproperty
     def ftp_user(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "user"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "user")
 
     @classproperty
     def ftp_password(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "password"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "password")
 
     @classproperty
     def ftp_remote_dir(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "remote_dir"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "remote_dir")
 
     # SCP method
     @classproperty
     def scp_host(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "scp", "host"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "scp", "host")
 
     @classproperty
     def scp_port(cls) -> int:
         return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "scp", "port"
-        ))
+            "PnmFileRetrieval", "retrival_method", "methods", "scp", "port"))
 
     @classproperty
     def scp_user(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "scp", "user"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "scp", "user")
 
     @classproperty
     def scp_password(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "scp", "password"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "scp", "password")
 
     @classproperty
     def scp_remote_dir(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "scp", "remote_dir"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "scp", "remote_dir")
 
     # SFTP method
     @classproperty
     def sftp_host(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "host"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "host")
 
     @classproperty
     def sftp_port(cls) -> int:
         return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "port"
-        ))
+            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "port"))
 
     @classproperty
     def sftp_user(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "user"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "user")
 
     @classproperty
     def sftp_password(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "password"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "password")
 
     @classproperty
     def sftp_remote_dir(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "remote_dir"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "remote_dir")
 
     # HTTP method
     @classproperty
     def http_base_url(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "http", "base_url"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "http", "base_url")
 
     @classproperty
     def http_port(cls) -> int:
         return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "http", "port"
-        ))
+            "PnmFileRetrieval", "retrival_method", "methods", "http", "port"))
 
     # HTTPS method
     @classproperty
     def https_base_url(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "https", "base_url"
-        )
+            "PnmFileRetrieval", "retrival_method", "methods", "https", "base_url")
 
     @classproperty
     def https_port(cls) -> int:
         return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "https", "port"
-        ))
+            "PnmFileRetrieval", "retrival_method", "methods", "https", "port"))
 
     # Logging
     @classproperty
