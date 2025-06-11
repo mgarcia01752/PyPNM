@@ -21,7 +21,7 @@ from pypnm.api.routes.common.extended.common_messaging_service import CommonMess
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType
+from pypnm.docsis.cm_snmp_operation import DocsPnmBulkFileUploadStatus, DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.ftp.ftp_connector import FTPConnector
 from pypnm.lib.inet import Inet
@@ -213,6 +213,10 @@ class CommonMeasureService(CommonMessagingService):
         ##############################################################################################
                         
         return self.build_send_msg(await self._check_ofdm_measure_status(status_index_channelId[1], max_wait_count))
+    
+        ##############################################################################################
+        # This section runs through all the indexes, build PNM file, run measurement and check status
+        ##############################################################################################    
     
     def getInterfaceParameters(self,
         interface_type: DocsisIfType
@@ -454,6 +458,12 @@ class CommonMeasureService(CommonMessagingService):
             #Multiple PNM files for special cases
             for pnm_fname in pnm_filenames:
                 
+                status:ServiceStatusCode = await self._check_and_wait_for_tftp_upload(pnm_fname)
+                
+                if status != ServiceStatusCode.SUCCESS:
+                    self.logger.error(f"{self.log_prefix} - Unable to Upload PNM File to TFTP({status})")
+                    return status
+                
                 # Get and copy PNM file to local data directory
                 if not self._get_and_move_pnm_file(pnm_fname):
                     self.logger.error(f"{self.log_prefix} - Uanble to copy PNM file to local {self.save_dir} dir")
@@ -465,6 +475,42 @@ class CommonMeasureService(CommonMessagingService):
                 self.build_transaction_msg(trans_id, pnm_fname)        
             
         return ServiceStatusCode.SUCCESS
+    
+    async def _check_and_wait_for_tftp_upload(self, filename:str, max_wait_count:int=5) -> ServiceStatusCode:
+
+            wait_count = 0
+            while True:
+                try:
+                    status = await self.cm.getBulkFileUploadStatus(filename)
+                except Exception as e:
+                    self.logger.error(f"{self.log_prefix} - Error checking upload status for '{filename}': {e}")
+                    return ServiceStatusCode.TFTP_PNM_FILE_UPLOAD_FAILURE
+
+                # Completed!
+                if status == DocsPnmBulkFileUploadStatus.UPLOAD_COMPLETED:
+                    self.logger.info(f"{self.log_prefix} - File '{filename}' uploaded successfully.")
+                    return ServiceStatusCode.SUCCESS
+
+                # Immediate fail if the device reports an error
+                if status == DocsPnmBulkFileUploadStatus.ERROR:
+                    self.logger.error(f"{self.log_prefix} - Device reported ERROR for file upload '{filename}'.")
+                    return ServiceStatusCode.TFTP_PNM_FILE_UPLOAD_FAILURE
+
+                # Timeout?
+                if wait_count >= max_wait_count:
+                    self.logger.error(f"{self.log_prefix} - TFTP File '{filename}' upload timed out after {wait_count} seconds.")
+                    return ServiceStatusCode.TFTP_PNM_FILE_UPLOAD_FAILURE
+
+                # Otherwise keep waiting
+                self.logger.debug(
+                    f"{self.log_prefix} - Waiting for file '{filename}' to upload "
+                    f"(status={status.name}, count={wait_count})"
+                )
+                await asyncio.sleep(1)
+                wait_count += 1
+                
+                return ServiceStatusCode.TFTP_PNM_FILE_UPLOAD_FAILURE
+                        
         
     async def _setDocsPnmCmMeasureTest(self, pnm_test_type:DocsPnmCmCtlTest, 
                                        interface_index:int, channel_id:int) -> Tuple[ServiceStatusCode, List[str]]:
