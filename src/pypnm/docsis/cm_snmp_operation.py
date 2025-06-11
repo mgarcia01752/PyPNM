@@ -1103,6 +1103,72 @@ class CmSnmpOperation:
             self.logger.debug(f"Retrieved {total_length} bytes of amplitude data for OID {oid}.")
 
         return varbind_bytes
+ 
+    async def getBulkFileUploadStatus(self, filename: str) -> DocsPnmBulkFileUploadStatus:
+        """
+        Retrieve the upload‐status enum of a bulk data file by its filename.
+
+        Args:
+            filename: The exact file name to search for in the BulkDataFile table.
+
+        Returns:
+            DocsPnmBulkFileUploadStatus:  
+            - The actual upload status if found  
+            - DocsPnmBulkFileUploadStatus.ERROR if the filename is not present or any SNMP error occurs  
+        """
+        self.logger.debug(f"Starting getBulkFileUploadStatus for filename: {filename}")
+
+        name_oid = COMPILED_OIDS["docsPnmBulkFileName"]
+        status_oid = COMPILED_OIDS["docsPnmBulkFileUploadStatus"]
+
+        # 1) Walk file‐name column
+        try:
+            name_rows = await self._snmp.walk(name_oid)
+        except Exception as e:
+            self.logger.error(f"SNMP walk failed for BulkFileName: {e}")
+            return DocsPnmBulkFileUploadStatus.ERROR
+
+        if not name_rows:
+            self.logger.warning("BulkFileName table is empty.")
+            return None
+
+        # 2) Loop through (index, name) pairs
+        for idx, current_name in Snmp_v2c.snmp_get_result_last_idx_value(name_rows):
+            if current_name != filename:
+                continue
+
+            # 3) Fetch the status OID for this index
+            full_oid = f"{status_oid}.{idx}"
+            try:
+                resp = await self._snmp.get(full_oid)
+            except Exception as e:
+                self.logger.error(f"SNMP get failed for {full_oid}: {e}")
+                return DocsPnmBulkFileUploadStatus.ERROR
+
+            if not resp:
+                self.logger.warning(f"No response for status OID {full_oid}")
+                return DocsPnmBulkFileUploadStatus.ERROR
+
+            # 4) Parse and convert to enum
+            try:
+                _, val = resp[0]
+                status_int = int(val)
+                status_enum = DocsPnmBulkFileUploadStatus(status_int)
+            except ValueError as ve:
+                self.logger.error(f"Invalid status value {val}: {ve}")
+                return DocsPnmBulkFileUploadStatus.ERROR
+            except Exception as e:
+                self.logger.error(f"Unexpected error parsing status: {e}")
+                return DocsPnmBulkFileUploadStatus.ERROR
+
+            self.logger.debug(f"Bulk file '{filename}' upload status: {status_enum.name}")
+            return status_enum
+
+        # not found
+        self.logger.warning(f"Filename '{filename}' not found in BulkDataFile table.")
+        return DocsPnmBulkFileUploadStatus.ERROR
+
+
     
 ######################
 # SNMP Set Operation #
@@ -1812,5 +1878,3 @@ class CmSnmpOperation:
             )
 
         return ded
-
-             
