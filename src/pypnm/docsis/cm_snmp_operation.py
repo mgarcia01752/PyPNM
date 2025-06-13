@@ -1254,6 +1254,9 @@ class CmSnmpOperation:
         
         self.logger.debug(f'SpectrumAnalyzerPara: {spec_ana_cmd.to_dict()}')
         
+        if spec_ana_cmd.precheck_spectrum_analyzer_settings():
+            self.logger.debug(f'SpectrumAnalyzerPara-PreCheck-Changed: {spec_ana_cmd.to_dict()}')
+        
         '''
             Custom SNMP SET for Spectrum Analyzer
         '''
@@ -1317,33 +1320,13 @@ class CmSnmpOperation:
             for field_name, snmp_type in field_type_map.items():
                 obj_value = getattr(spec_ana_cmd, field_name)
                 
-                self.logger.debug(f'FieldName: {field_name} -> SNMP-Type: {snmp_type}')
+                self.logger.debug(f'Field-Name: {field_name} -> SNMP-Type: {snmp_type}')
 
                 ##############################################################
                 # OVERRIDE SECTION TO MAKE SURE WE FOLLOW THE SPEC-ANA RULES #
                 ##############################################################
-                
-                # Need to make sure that SpecAnaTuner is within the Diplex Bandwide Range
-                if field_name == "docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency":
-                    seg_freq_span = spec_ana_cmd.__getattribute__('docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan')
-                    obj_value = getattr(spec_ana_cmd, field_name)
-                    spec_lower_edge = (int(obj_value) - (int(seg_freq_span)/2))
-                    
-                    if spec_lower_edge < lower_edge:
-                        self.logger.error(f'SpecAnalyzer({obj_value})-LowerEdge ({spec_lower_edge}) is lower than Diplex Lower Edge: ({lower_edge})')
-                        return False
-                     
-                # Need to make sure that SpecAnaTuner is within the Diplex Bandwide Range
-                elif field_name == "docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency":
-                    seg_freq_span = spec_ana_cmd.__getattribute__('docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan')
-                    obj_value = getattr(spec_ana_cmd, field_name)
-                    spec_upper_edge = (int(obj_value) + (int(seg_freq_span)/2))
-                    
-                    if spec_upper_edge > upper_edge:
-                        self.logger.error(f'SpecAnalyzer({obj_value})-UpperEdge ({spec_lower_edge}) is larger than Diplex Upper Edge: ({lower_edge})')
-                        return False
-                
-                elif field_name == "docsIf3CmSpectrumAnalysisCtrlCmdFileName":
+
+                if field_name == "docsIf3CmSpectrumAnalysisCtrlCmdFileName":
                     file_name = getattr(spec_ana_cmd, field_name)
                     
                     if not file_name:
@@ -1362,7 +1345,7 @@ class CmSnmpOperation:
                 elif field_name == "docsIf3CmSpectrumAnalysisCtrlCmdEnable":
                     
                     obj_value = Snmp_v2c.TRUE
-                    self.logger.debug(f'FieldName: {field_name} -> SNMP-Type: {snmp_type}')
+                    self.logger.debug(f'Field-Name: {field_name} -> SNMP-Type: {snmp_type}')
                     
                     # Need to toggle ? -> FALSE -> TRUE
                     if not await __snmp_set(field_name, Snmp_v2c.FALSE, snmp_type):
@@ -1615,8 +1598,7 @@ class CmSnmpOperation:
         const_disp_name: str,
         modulation_order_offset: int = CmDsConstellationDisplayConst.MODULATION_OFFSET.value,
         number_sample_symbol: int = CmDsConstellationDisplayConst.NUM_SAMPLE_SYMBOL.value,
-        set_and_go: bool = True
-    ) -> bool:
+        set_and_go: bool = True ) -> bool:
         """
         Configures SNMP parameters for the OFDM Downstream Constellation Display.
 
@@ -1878,3 +1860,5 @@ class CmSnmpOperation:
             )
 
         return ded
+
+             

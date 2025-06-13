@@ -80,8 +80,8 @@ class SpectrumAnalysisDefaults(IntEnum):
     FILE_ENABLE = SpectrumRetrievalType.FILE
     INACTIVITY_TIMEOUT = 100
     FIRST_SEGMENT_CENTER_FREQ = 108_000_000
-    LAST_SEGMENT_CENTER_FREQ = 900_000_000
-    SEGMENT_FREQ_SPAN = 7_500_00
+    LAST_SEGMENT_CENTER_FREQ = 993_000_000
+    SEGMENT_FREQ_SPAN = 1_000_000
     NUM_BINS_PER_SEGMENT = 256
     NOISE_BW = 110
     WINDOW_FUNCTION = WindowFunction.HANN
@@ -176,6 +176,48 @@ class DocsIf3CmSpectrumAnalysisCtrlCmd:
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
             self.logger.setLevel(logging.INFO)
+
+    def precheck_spectrum_analyzer_settings(self) -> bool:
+        """
+        Validate that the spectrum analyzer's first/last segment center frequencies
+        and the per-segment frequency span divide evenly into whole segments.
+        
+        If the total frequency range (last_center - first_center) isn't an exact multiple
+        of the segment span, this method will **increase** the start segment center frequency
+        to the nearest value that yields an integer number of segments.
+
+        Returns:
+            bool
+                False if settings were already valid (no adjustment needed);
+                True if the First segment center frequency was adjusted.
+
+        Raises:
+            ValueError
+                If the configured last segment center frequency is lower than the first.
+        """
+        # Read and convert settings
+        first_center = float(self.docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency)
+        last_center = float(self.docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency)
+        seg_freq_span = float(self.docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan)
+
+        # Compute total range and sanity‐check
+        total_range = last_center - first_center
+        if total_range < 0:
+            raise ValueError(
+                "docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency "
+                "must be >= docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency")
+
+        # Check for exact divisibility
+        remainder = total_range % seg_freq_span
+        if remainder == 0:
+            self.logger.info(f'No changes to SpectrumAnalysisCtrlCmd due to SegmentCenterFrequency({seg_freq_span}) divisible: ({total_range})')
+            return False
+
+        # Adjust the last center downward to the nearest whole‐segment boundary
+        adjusted_first = int(first_center + remainder)
+        self.logger.info(f'New Start Center Frequency: {adjusted_first}')
+        self.docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency = adjusted_first
+        return True
 
     def set_enable(self, value: int):
         if value not in (1, 2):

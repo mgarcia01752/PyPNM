@@ -124,8 +124,7 @@ class CmSpectrumAnalysis(PnmHeader):
             'Spectrum Analysis Data Length': self.spectrum_analysis_data_length,
             'Spectrum Analysis Data': self.spectrum_analysis_data.hex() if self.spectrum_analysis_data else None,
             'Number of Bin Segments': self.num_bins_per_segment,
-            'Amplitude Bin Segments Float': self.amplitude_bin_segments_float
-        }
+            'Amplitude Bin Segments Float': self.amplitude_bin_segments_float}
 
     def to_dict(self) -> Optional[Dict[str, Optional[float]]]:
         """

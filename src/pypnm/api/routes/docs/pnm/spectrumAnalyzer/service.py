@@ -40,16 +40,13 @@ class CmSpectrumAnalysisService(CommonMeasureService):
             Passed internally; not typically set manually.
     """
 
-    def __init__(
-        self,
+    def __init__(self,
         cable_modem: CableModem,
         tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
-        tftp_path: str = PnmConfigManager.get_tftp_path(),
-        *,
-        spec_analyzer_para: SpectrumAnalyzerParameters,
-    ):
-        # Initialize logger
+        tftp_path: str = PnmConfigManager.get_tftp_path(),*,
+        spec_analyzer_para: SpectrumAnalyzerParameters,):
         self.logger = logging.getLogger(self.__class__.__name__)
+        
         if not self.logger.handlers:
             handler = logging.StreamHandler()
             formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
@@ -57,7 +54,6 @@ class CmSpectrumAnalysisService(CommonMeasureService):
             self.logger.addHandler(handler)
             self.logger.setLevel(logging.INFO)
 
-        # Extract parameters from the Pydantic schema
         inactivity_timeout = spec_analyzer_para.inactivity_timeout
         first_segment_center_freq = spec_analyzer_para.first_segment_center_freq
         last_segment_center_freq = spec_analyzer_para.last_segment_center_freq
@@ -68,7 +64,6 @@ class CmSpectrumAnalysisService(CommonMeasureService):
         num_averages = spec_analyzer_para.num_averages
         spectrum_retrieval_type = spec_analyzer_para.spectrum_retrieval_type
 
-        # Call the base class constructor with all required arguments
         super().__init__(
             DocsPnmCmCtlTest.SPECTRUM_ANALYZER,
             cable_modem,
@@ -83,5 +78,4 @@ class CmSpectrumAnalysisService(CommonMeasureService):
             noise_bw=noise_bw,
             window_function=window_function,
             num_averages=num_averages,
-            spectrum_retrieval_type=spectrum_retrieval_type,
-        )
+            spectrum_retrieval_type=spectrum_retrieval_type,)

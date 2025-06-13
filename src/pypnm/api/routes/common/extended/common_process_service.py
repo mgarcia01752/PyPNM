@@ -29,7 +29,7 @@ class CommonProcessService(CommonMessagingService):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.pnm_file_dir = self.config_mgr = SystemConfigSettings.save_dir
         self._msg_rsp = message_response
-        self.logger.info(f'CommonProcessService: {self._msg_rsp}')
+        self.logger.debug(f'CommonProcessService: {self._msg_rsp}')
 
     def process(self) -> MessageResponse:
         """
@@ -57,7 +57,7 @@ class CommonProcessService(CommonMessagingService):
         for payload in self._msg_rsp.payload: 
             status, message_type, message = MessageResponse.get_payload_msg(payload)
 
-            self.logger.info(f'CommonProcessService.MessageResponse: MSG-TYPE: {message_type}')
+            self.logger.debug(f'CommonProcessService.MessageResponse: MSG-TYPE: {message_type}')
             
             if status != ServiceStatusCode.SUCCESS.name:
                 self.logger.error(f"Status Error: {status}")
@@ -75,7 +75,7 @@ class CommonProcessService(CommonMessagingService):
    
             elif message_type == MessageResponseType.SNMP_DATA_RTN_SPEC_ANALYSIS.name:                             
                 transaction_id = message.get('transaction_id')
-                self.logger.info(f'process() -> Found TransactionID: {transaction_id}')
+                self.logger.debug(f'process() -> Found TransactionID: {transaction_id}')
                 
                 transaction_record = PnmFileTransaction().get_record(transaction_id)
                 self._process_pnm_measure_test(transaction_record)
@@ -95,7 +95,7 @@ class CommonProcessService(CommonMessagingService):
         pnm_test_type = transaction_record[PnmFileTransaction().PNM_TEST_TYPE]
 
         if pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR.name:
-            self.logger.info(f"Processing {pnm_test_type} PNM data")
+            self.logger.debug(f"Processing {pnm_test_type} PNM data")
             
             file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
             data = FileProcessor(file_name_dst).read_file()
@@ -103,7 +103,7 @@ class CommonProcessService(CommonMessagingService):
             self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())
             
         elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CODEWORD_ERROR_RATE.name:
-            self.logger.info(f"Processing {pnm_test_type} PNM data")
+            self.logger.debug(f"Processing {pnm_test_type} PNM data")
             
             file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
             data = FileProcessor(file_name_dst).read_file()
@@ -111,7 +111,7 @@ class CommonProcessService(CommonMessagingService):
             self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())
             
         elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF.name:
-            self.logger.info(f"Processing {pnm_test_type} PNM data")
+            self.logger.debug(f"Processing {pnm_test_type} PNM data")
             
             file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
             data = FileProcessor(file_name_dst).read_file()
@@ -119,7 +119,7 @@ class CommonProcessService(CommonMessagingService):
             self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())
             
         elif pnm_test_type == DocsPnmCmCtlTest.DS_CONSTELLATION_DISP.name:
-            self.logger.info(f"Processing {pnm_test_type} PNM data")
+            self.logger.debug(f"Processing {pnm_test_type} PNM data")
             
             file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
             data = FileProcessor(file_name_dst).read_file()
@@ -127,7 +127,7 @@ class CommonProcessService(CommonMessagingService):
             self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())
             
         elif pnm_test_type == DocsPnmCmCtlTest.DS_HISTOGRAM.name:
-            self.logger.info(f"Processing {pnm_test_type} PNM data")
+            self.logger.debug(f"Processing {pnm_test_type} PNM data")
             
             file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
             data = FileProcessor(file_name_dst).read_file()
@@ -135,7 +135,7 @@ class CommonProcessService(CommonMessagingService):
             self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())
             
         elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_MODULATION_PROFILE.name:
-            self.logger.info(f"Processing {pnm_test_type} PNM data")
+            self.logger.debug(f"Processing {pnm_test_type} PNM data")
             
             file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
             data = FileProcessor(file_name_dst).read_file()
@@ -143,7 +143,7 @@ class CommonProcessService(CommonMessagingService):
             self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())
             
         elif pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER.name:
-            self.logger.info("Processing DS_SPECTRUM_ANALYZER PNM data")
+            self.logger.debug("Processing DS_SPECTRUM_ANALYZER PNM data")
 
             file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
             data = FileProcessor(file_name_dst).read_file()
@@ -151,7 +151,7 @@ class CommonProcessService(CommonMessagingService):
             self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())            
             
         elif pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF.name:
-            self.logger.info(f"Processing {pnm_test_type} PNM data")
+            self.logger.debug(f"Processing {pnm_test_type} PNM data")
             
             file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
             data = FileProcessor(file_name_dst).read_file()
@@ -159,13 +159,13 @@ class CommonProcessService(CommonMessagingService):
             self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())
         
         elif pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA.name:
-            self.logger.info(f"Processing {pnm_test_type} PNM data")
+            self.logger.debug(f"Processing {pnm_test_type} PNM data")
 
             file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
             data = FileProcessor(file_name_dst).read_file()
             pnm_obj = CmSpectrumAnalysisSnmp(data)
             FileProcessor(f'output/spec-ana-{Utils.time_stamp()}.json').write_file(json.dumps(pnm_obj.to_dict()))
-            self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())
+            self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict(include_raw=False))
             
         else:
             self.logger.error(f"Unsupported PNM test type: {pnm_test_type}")

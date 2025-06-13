@@ -137,11 +137,34 @@ class CmSpectrumAnalysisSnmp:
             "amplitude_bytes": amplitude_bytes_hex,
         }
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self, include_raw: bool = True, include_processed: bool = True) -> Dict[str, Any]:
         """
-        Export the parsed frequency and amplitude data.
+        Serialize the spectrum analysis data to a dictionary, optionally
+        omitting raw bytes or the processed frequency/amplitude arrays.
+
+        Args:
+            include_raw (bool): 
+                If True, include the raw amplitude byte stream under the key
+                `"amplitude_bytes"`. If False, that key will be omitted.
+            include_processed (bool): 
+                If True, include the processed `"frequency"` and `"amplitude"`
+                lists. If False, those keys will be omitted.
 
         Returns:
-            Dict[str, Any]: Parsed results with metadata, frequencies, amplitudes, and raw bytes.
+            Dict[str, Any]: A new dict containing all metadata fields (e.g.
+            `"start_frequency"`, `"end_frequency"`, etc.) plus whichever of:
+                - `"amplitude_bytes"`
+                - `"frequency"` and `"amplitude"`
         """
-        return self.data
+
+        result = self.data.copy()
+
+        if not include_raw:
+            result.pop("amplitude_bytes", None)
+
+        if not include_processed:
+            result.pop("frequency", None)
+            result.pop("amplitude", None)
+
+        return result
+

@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from abc import ABC
 import asyncio
 import logging
 import math
@@ -21,7 +20,8 @@ from pypnm.api.routes.common.extended.common_messaging_service import CommonMess
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.docsis.cm_snmp_operation import DocsPnmBulkFileUploadStatus, DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType
+from pypnm.docsis.cm_snmp_operation import (
+    DocsPnmBulkFileUploadStatus, DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType)
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.ftp.ftp_connector import FTPConnector
 from pypnm.lib.inet import Inet
@@ -995,10 +995,10 @@ class CommonMeasureService(CommonMessagingService):
 
         # Frequency range (first and last segment center frequencies)
         first_segment_center_frequency = self.extra_options.get("first_segment_center_freq", 300_000_000)
-        last_segment_center_frequency = self.extra_options.get("last_segment_center_freq", 900_000_000)
+        last_segment_center_frequency = self.extra_options.get("last_segment_center_freq", 993_000_000)
 
         # Per-segment configuration
-        segment_frequency_span = self.extra_options.get("segment_freq_span", 7_500_000)
+        segment_frequency_span = self.extra_options.get("segment_freq_span", 1_000_000)
         num_bins_per_segment = self.extra_options.get("num_bins_per_segment", 256)
         equivalent_noise_bandwidth = self.extra_options.get("noise_bw", 110)
         window_function = self.extra_options.get("window_function", WindowFunction.HANN)
@@ -1011,9 +1011,9 @@ class CommonMeasureService(CommonMessagingService):
         )
 
         if spectrum_retrieval_type == SpectrumRetrievalType.SNMP:
-            # In SNMP mode, we do not enable file writing—control-cmd only
             self.logger.info(f"{self.log_prefix} - SPECTRUM-ANALYZER - SNMP-AMPLITUDE-DATA-RETURN")
             ctl_cmd_filename = Snmp_v2c.FALSE
+        
         else:
             if not filename:
                 self.logger.error(f"{self.log_prefix} - Missing 'filename' for FILE retrieval mode")
@@ -1031,8 +1031,7 @@ class CommonMeasureService(CommonMessagingService):
             docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages=number_of_averages,
             docsIf3CmSpectrumAnalysisCtrlCmdEnable=Snmp_v2c.TRUE,
             docsIf3CmSpectrumAnalysisCtrlCmdFileName=filename,
-            docsIf3CmSpectrumAnalysisCtrlCmdFileEnable=ctl_cmd_filename,
-        )
+            docsIf3CmSpectrumAnalysisCtrlCmdFileEnable=ctl_cmd_filename,)
 
         # Issue the SNMP SET for the control-command. The downstream logic
         # (not shown here) will branch to either:
