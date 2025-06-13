@@ -1,7 +1,7 @@
 {
     "FastApiRequestDefault": {
-        "mac_address": "0050.f112.d85c",
-        "ip_address": "172.20.63.12"
+        "mac_address": "aabb.ccdd.eeff",
+        "ip_address": "192.168.100.1"
     },   
     "SNMP": {
         "version": "2",
@@ -12,8 +12,8 @@
     "PnmBulkDataTransfer": {
         "method": "tftp",
         "tftp": {
-            "ip_v4": "172.20.10.153",
-            "ip_v6": "2001:10::153",
+            "ip_v4": "192.168.100.2",
+            "ip_v6": "2001:192::1",
             "remote_dir": ""
         },
         "http": {
@@ -32,7 +32,7 @@
         "operation_db": ".data/db/operation_capture.json",
         "retries": 5,
         "retrival_method": {
-            "method": "sftp",
+            "method": "local",
             "methods":{
                 "local": {
                     "src_dir": "/srv/tftp"
@@ -82,5 +82,4 @@
         "log_dir":"logs",
         "log_filename":"pypnm.log"
     }
-    
 }
