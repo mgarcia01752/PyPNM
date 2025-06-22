@@ -1,12 +1,9 @@
 
 ### 📄 `pnm_us_ofdma_preEqualization.md`
 
-````markdown
 # 📡 Proactive Network Maintenance (PNM) – Upstream OFDMA Pre-Equalization
 
 These endpoints provide visibility into the cable modem's upstream OFDMA pre-equalization data. The pre-equalization coefficients and derived metrics are vital for diagnosing impairments like group delay, micro-reflections, and in-channel frequency response issues.
-
----
 
 ## 🔁 Endpoint Summary
 
@@ -15,8 +12,6 @@ These endpoints provide visibility into the cable modem's upstream OFDMA pre-equ
 | `POST /docs/pnm/us/ofdma/preEqualization/getMeasurement`                | Retrieves raw complex pre-equalization tap data for upstream OFDMA channels |
 | `POST /docs/pnm/us/ofdma/preEqualization/getAnalysis`                   | Computes derived metrics such as magnitude, phase, and group delay          |
 | `POST /docs/pnm/us/ofdma/preEqualization/getFiles`                      | Downloads raw pre-equalization data files (e.g., from TFTP/SFTP)            |
-
----
 
 ## 📥 `POST /docs/pnm/us/ofdma/preEqualization/getMeasurement`
 
@@ -62,8 +57,6 @@ Fetches raw complex pre-equalization coefficients for upstream OFDMA channels. T
 }
 ```
 
----
-
 ## 📊 `POST /docs/pnm/us/ofdma/preEqualization/getAnalysis`
 
 ### Description
@@ -99,8 +92,6 @@ Returns derived metrics from the raw pre-equalization data, including magnitude,
 }
 ```
 
----
-
 ## 📁 `POST /docs/pnm/us/ofdma/preEqualization/getFiles`
 
 ### Description
@@ -135,8 +126,6 @@ Retrieves raw data files generated during measurement (such as binary coefficien
 }
 ```
 
----
-
 ## ⚙️ Notes
 
 * All endpoints are `POST` and require both `ip_address` and `mac_address`.
@@ -144,8 +133,6 @@ Retrieves raw data files generated during measurement (such as binary coefficien
 * The `getAnalysis` endpoint is optional but recommended for visualization dashboards.
 * The `getFiles` endpoint supports integration with external file processing or long-term storage.
 * For accurate results, ensure the modem is online and reachable via SNMP.
-
----
 
 ## 🧪 Example Usage
 
