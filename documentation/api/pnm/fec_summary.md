@@ -3,13 +3,9 @@
 
 This API retrieves Forward Error Correction (FEC) summary data for downstream OFDM channels from a cable modem using SNMP and TFTP mechanisms.
 
----
-
 ## 🔗 Endpoint
 
 **POST** `/docs/pnm/ds/ofdm/fecSummary/getMeasurement`
-
----
 
 ## 📥 Request Body
 
@@ -28,8 +24,6 @@ This API retrieves Forward Error Correction (FEC) summary data for downstream OF
 | mac_address    | string | MAC address of the cable modem              |
 | ip_address     | string | IP address of the cable modem               |
 | fec_summary_type | int  | Type of summary: `2` (10-min), `3` (24-hr)  |
-
----
 
 ## 📤 Response
 
@@ -80,8 +74,6 @@ This API retrieves Forward Error Correction (FEC) summary data for downstream OF
 }
 ````
 
----
-
 ## 🔍 Field Descriptions
 
 ### Top-Level
@@ -92,8 +84,6 @@ This API retrieves Forward Error Correction (FEC) summary data for downstream OF
 | status       | int    | Status code from service execution |
 | message      | string | Optional message or error text     |
 | data         | object | Contains FEC measurement results   |
-
----
 
 ### `data.data[]` (per channel result)
 
@@ -106,8 +96,6 @@ This API retrieves Forward Error Correction (FEC) summary data for downstream OF
 | num\_profiles      | int    | Number of modulation profiles present |
 | fec\_summary\_data | array  | List of FEC summaries per profile     |
 
----
-
 ### `fec_summary_data[]` (per profile)
 
 | Field             | Type  | Description                                |
@@ -115,8 +103,6 @@ This API retrieves Forward Error Correction (FEC) summary data for downstream OF
 | profile\_id       | int   | Profile ID (e.g., 255 for unknown/default) |
 | number\_of\_sets  | int   | Number of measurement sets (600 or 1440)   |
 | codeword\_entries | array | Codeword stats per measurement timestamp   |
-
----
 
 ### `codeword_entries[]`
 
@@ -126,8 +112,6 @@ This API retrieves Forward Error Correction (FEC) summary data for downstream OF
 | total\_codewords         | int  | Total number of codewords                    |
 | corrected\_codewords     | int  | Number of codewords corrected by FEC         |
 | uncorrectable\_codewords | int  | Codewords uncorrectable even after FEC       |
-
----
 
 ## ✅ Notes
 
