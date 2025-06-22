@@ -2,8 +2,6 @@
 
 This API provides endpoints for performing measurements and analysis related to downstream OFDM channel estimation coefficients for cable modems in a DOCSIS network.
 
----
-
 ### Endpoints Overview
 
 | Endpoint                                                       | Description                                                 |
@@ -11,8 +9,6 @@ This API provides endpoints for performing measurements and analysis related to 
 | `POST /docs/pnm/ds/ofdm/channelEstCoeff/getMeasurement`        | Initiate and retrieve raw channel estimation coefficient data for a specified cable modem.  |
 | `POST /docs/pnm/ds/ofdm/channelEstCoeff/getAnalysis`           | Perform detailed analysis of channel estimation data, including magnitude and group delay calculations. |
 | `POST /docs/pnm/ds/ofdm/channelEstCoeff/getFiles`              | Retrieve related raw output files from TFTP server for offline inspection.                  |
-
----
 
 ## 1. POST `/docs/pnm/ds/ofdm/channelEstCoeff/getMeasurement`
 
@@ -50,8 +46,6 @@ This API provides endpoints for performing measurements and analysis related to 
   }
 }
 ```
-
----
 
 ## 2. POST `/docs/pnm/ds/ofdm/channelEstCoeff/getAnalysis`
 
@@ -98,8 +92,6 @@ Performs detailed analysis of downstream OFDM channel estimation data for a give
   }
 }
 ```
-
----
 
 ### Analysis Method Details
 
@@ -148,8 +140,6 @@ Performs detailed analysis of downstream OFDM channel estimation data for a give
 **Description:**
 
 Fetches raw output files related to the channel estimation coefficients test from the configured TFTP server for offline or detailed inspection.
-
----
 
 # Notes
 
