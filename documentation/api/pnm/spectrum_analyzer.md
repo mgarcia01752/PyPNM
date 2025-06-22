@@ -4,16 +4,12 @@
 
 This API provides endpoints for performing measurements and analysis related to spectrum analysis for cable modems in a DOCSIS network.
 
----
-
 ### Endpoints Overview
 
 | Endpoint                                                 | Description                                                                                   |
 | -------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | `POST /docs/pnm/ds/ofdm/spectrumAnalyzer/getMeasurement` | Initiate and retrieve raw spectrum analysis data for a specified cable modem.                 |
 | `POST /docs/pnm/ds/ofdm/spectrumAnalyzer/getAnalysis`    | Perform detailed analysis of spectrum data, including magnitude and group delay calculations. |
-
----
 
 ## 1. POST `/docs/pnm/ds/ofdm/spectrumAnalyzer/getMeasurement`
 
@@ -108,8 +104,6 @@ This API provides endpoints for performing measurements and analysis related to 
 * **`frequency_bins`**: Array of objects each containing frequency (Hz), magnitude in dB, and group delay (seconds).
 * **`metadata`**: Additional test parameters and settings used.
 
----
-
 ## 2. POST `/docs/pnm/ds/ofdm/spectrumAnalyzer/getAnalysis`
 
 **Request Payload:**
@@ -172,8 +166,6 @@ This API provides endpoints for performing measurements and analysis related to 
 * **`analysis_header`**: String providing context or metadata about the analysis.
 * **`summary`**: Aggregate metrics calculated over all bins.
 * **`detailed_bins`**: Same structure as in `getMeasurement` response, with frequency, magnitude, and group delay.
-
----
 
 ## 3. Window Function Types
 
