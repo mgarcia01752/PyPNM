@@ -1,8 +1,6 @@
 ## 🛰️ DOCSIS Constellation Display API
 
-This document outlines the usage of the Constellation Display endpoints under the `/docs/pnm/ds/ofdm/constDisplay` path. These endpoints allow retrieving, analyzing, and managing soft-decision constellation data captured from DOCSIS 3.1 cable modems.
-
----
+This document outlines the usage of the Constellation Display endpoints under the `/docs/pnm/ds/ofdm/constDisplay` path. These endpoints enable the retrieval, analysis, and management of soft-decision constellation data captured from DOCSIS 3.1 cable modems.
 
 ## 🔧 Endpoints
 
@@ -11,8 +9,6 @@ This document outlines the usage of the Constellation Display endpoints under th
 | `POST /docs/pnm/ds/ofdm/constDisplay/getMeasurement` | Captures a raw constellation measurement using the modem's current profile. |
 | `POST /docs/pnm/ds/ofdm/constDisplay/getAnalysis`    | Analyzes the captured constellation data for diagnostics or visualization.  |
 | `POST /docs/pnm/ds/ofdm/constDisplay/getFiles`       | Lists or retrieves saved constellation files for a target cable modem.      |
-
----
 
 ## 📍 `POST /docs/pnm/ds/ofdm/constDisplay/getMeasurement`
 
@@ -37,8 +33,6 @@ Captures OFDM constellation samples from the target modem's downstream subcarrie
 | `ip_address`              | string  | IPv4 address of the modem to which the request is sent.                                                                                                  |
 | `modulation_order_offset` | integer | Offset from the **lowest modulation order** in the OFDM profile. A value of 0 targets the lowest QAM order; higher values step through available orders. |
 | `number_sample_symbol`    | integer | Number of OFDM symbols to capture (commonly 8192).                                                                                                       |
-
----
 
 ### Response Example
 
@@ -75,8 +69,6 @@ Captures OFDM constellation samples from the target modem's downstream subcarrie
   }
 }
 ```
-
----
 
 ### Notes
 
