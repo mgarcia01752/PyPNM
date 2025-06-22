@@ -2,16 +2,12 @@
 
 This API initiates and retrieves DOCSIS Downstream Histogram measurements from a cable modem. The histogram provides insights into nonlinear channel effects such as amplifier compression and laser clipping.
 
----
-
 ## Endpoint
 
 **POST** `/docs/pnm/ds/histogram/getMeasurement`
 
 ### Tags
 - `PNM Operations - Downstream Histogram`
-
----
 
 ## Purpose
 
@@ -32,8 +28,6 @@ Each histogram run accumulates samples over time, terminating upon:
 - Timeout
 - Histogram disable command
 - 32-bit overflow of the dwell counter
-
----
 
 ## Request
 
@@ -65,15 +59,11 @@ Each histogram run accumulates samples over time, terminating upon:
 | ip\_address      | string  | IP address (IPv4/IPv6) of the cable modem.          |
 | sample\_duration | integer | Duration (in seconds) for which the histogram runs. |
 
----
-
 ## Response
 
 ### Response Body: `PnmHistogramResponse`
 
 Thanks! Based on your provided response snippet, I’ve updated the **Response** section of the markdown to better reflect the real-world structure of the `PnmHistogramResponse`. Here's the revised section of the `.md` file:
-
----
 
 ### ✅ Response Body: `PnmHistogramResponse`
 
@@ -116,18 +106,15 @@ Thanks! Based on your provided response snippet, I’ve updated the **Response**
 | `data[].dwell_count` | integer          | Number of samples observed per bin (usually uniform across bins).           |
 | `data[].hit_counts`  | list of integers | List of counts per histogram bin (255 or 256 values depending on bin size). |
 
-
 ## Error Responses
 
 ### HTTP 500
 
 * **Downstream Histogram SNMP execution failed**
-  The modem failed to begin measurement or complete it properly.
+  The modem was unable to initiate or complete the measurement properly.
 
 * **Measurement retrieval failed: \[error message]**
   Generic failure, including file retrieval or processing issues.
-
----
 
 ## Behavior and Timing Notes
 
@@ -146,14 +133,10 @@ Thanks! Based on your provided response snippet, I’ve updated the **Response**
 * **SNMP Access** to `docsPnmCmDsHist*` MIB entries
 * **TFTP Server** for retrieving measurement data files
 
----
-
 ## Logging
 
 * Logs MAC, IP, duration, and internal processing status
 * Exceptions are logged with detailed stack traces for troubleshooting
-
----
 
 ## Related Components
 
@@ -161,11 +144,9 @@ Thanks! Based on your provided response snippet, I’ve updated the **Response**
 * **Service Class**: `CmDsHistogramService`
 * **Schema Classes**: `PnmHistogramRequest`, `PnmHistogramResponse`
 
----
-
 ## Example Use Case
 
-A CMTS operator notices increased downstream packet loss and distortion. By running this histogram API, they identify a clipped histogram tail — likely caused by laser clipping — and can take corrective action (e.g., adjusting optical power levels or replacing faulty hardware).
+A CMTS operator notices an increase in downstream packet loss and distortion. By running this histogram API, they identify a clipped histogram tail — likely caused by laser clipping — and can take corrective action (e.g., adjusting optical power levels or replacing faulty hardware).
 
 ---
 
