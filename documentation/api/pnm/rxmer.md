@@ -2,8 +2,6 @@
 
 This document outlines the usage of the RxMER (Receive Modulation Error Ratio) endpoints under the `/docs/pnm/ds/ofdm/rxMer` path. These endpoints allow for retrieving, analyzing, and managing RxMER measurement data from DOCSIS cable modems.
 
----
-
 ## 🔧 Endpoints
 
 | Endpoint                                      | Description                                                                                        |
@@ -11,8 +9,6 @@ This document outlines the usage of the RxMER (Receive Modulation Error Ratio) e
 | `POST /docs/pnm/ds/ofdm/rxMer/getMeasurement` | Retrieves the most recent RxMER subcarrier measurement from the cable modem.                       |
 | `POST /docs/pnm/ds/ofdm/rxMer/getAnalysis`    | Generates and returns an analysis of RxMER values per subcarrier for visualization or diagnostics. |
 | `POST /docs/pnm/ds/ofdm/rxMer/getFiles`       | Lists or fetches saved RxMER measurement files for a given cable modem.                            |
-
----
 
 ## 🔍 `POST /docs/pnm/ds/ofdm/rxMer/getMeasurement`
 
@@ -44,8 +40,6 @@ Fetches the latest RxMER subcarrier data from a target cable modem.
   }
 }
 ```
-
----
 
 ## 📈 `POST /docs/pnm/ds/ofdm/rxMer/getAnalysis`
 
@@ -98,8 +92,6 @@ Generates analysis output based on the measurement and requested `analysis_type`
 }
 ```
 
----
-
 ## 🗂️ `POST /docs/pnm/ds/ofdm/rxMer/getFiles`
 
 ### Description
@@ -132,8 +124,6 @@ Retrieves a list of saved RxMER measurement files for the target modem or fetche
   }
 }
 ```
-
----
 
 ## 📘 Notes
 
