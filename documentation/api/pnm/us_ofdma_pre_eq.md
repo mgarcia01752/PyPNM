@@ -1,6 +1,3 @@
-
-### 📄 `pnm_us_ofdma_preEqualization.md`
-
 # 📡 Proactive Network Maintenance (PNM) – Upstream OFDMA Pre-Equalization
 
 These endpoints provide visibility into the cable modem's upstream OFDMA pre-equalization data. The pre-equalization coefficients and derived metrics are vital for diagnosing impairments like group delay, micro-reflections, and in-channel frequency response issues.
