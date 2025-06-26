@@ -667,8 +667,8 @@ class CommonMeasureService(CommonMessagingService):
         Returns:
             bool: True if the file was successfully copied; False otherwise.
         """
-        local_conf = self.config_mgr.get("PnmFileRetrieval", "local")
-        src_dir = local_conf["src_dir"]
+                
+        src_dir = SystemConfigSettings.local_src_dir
 
         self.logger.info(
             f'{self.log_prefix} - Local Copy - SRC: {src_dir} - SAVE: {self.save_dir} - FN: {pnm_file_name}'

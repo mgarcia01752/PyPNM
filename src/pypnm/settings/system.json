@@ -1,19 +1,19 @@
 {
     "FastApiRequestDefault": {
-        "mac_address": "0050.f112.d85c",
-        "ip_address": "172.20.63.12"
+        "mac_address": "206a.94d0.4e1e",
+        "ip_address": "172.19.32.72"
     },   
     "SNMP": {
         "version": "2",
         "retries": "5",
-        "read_community": "public",
+        "read_community": "private",
         "write_community": "private"
     },
     "PnmBulkDataTransfer": {
         "method": "tftp",
         "tftp": {
-            "ip_v4": "172.20.10.153",
-            "ip_v6": "2001:10::153",
+            "ip_v4": "172.19.0.56",
+            "ip_v6": "2001:428:3800:100:283f:2967:938a:bd68",
             "remote_dir": ""
         },
         "http": {
