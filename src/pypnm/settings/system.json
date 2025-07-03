@@ -1,7 +1,7 @@
 {
     "FastApiRequestDefault": {
         "mac_address": "206a.94d0.4e1e",
-        "ip_address": "172.19.32.72"
+        "ip_address": "172.19.19.6"
     },   
     "SNMP": {
         "version": "2",
@@ -27,8 +27,12 @@
     },
     "PnmFileRetrieval": {
         "pnm_dir": ".data/pnm",
+        "csv_dir": ".data/csv",
+        "json_dir": ".data/json",
+        "xlsx_dir": ".data/xlsx",
         "transaction_db": ".data/db/transactions.json",
         "capture_group_db": ".data/db/capture_group.json",
+        "session_group_db": ".data/db/session_group.json",
         "operation_db": ".data/db/operation_capture.json",
         "retries": 5,
         "retrival_method": {
@@ -82,5 +86,4 @@
         "log_dir":"logs",
         "log_filename":"pypnm.log"
     }
-    
 }

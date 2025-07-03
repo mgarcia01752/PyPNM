@@ -5,7 +5,6 @@ import json
 import os
 from typing import Any, Optional
 
-
 class ConfigManager:
     """
     Manages application configuration stored in JSON format.

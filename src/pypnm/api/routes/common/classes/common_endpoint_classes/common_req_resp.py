@@ -54,7 +54,6 @@ class CommonRequest(BaseModel):
         except Exception as e:
             raise ValueError(f"Invalid MAC address: {v} ({e})")
 
-
 class CommonResponse(BaseModel):
     """
     Standard response model for PNM FastAPI endpoints.
@@ -93,7 +92,18 @@ class CommonResponse(BaseModel):
             raise ValueError(f"Invalid MAC address: {v} ({e})")
 
 class CommonAnalysisType(BaseModel):
-    analysis_type:int = Field(description="Analysis to perform")
+    type:int = Field(description="Analysis to perform")
+
+class CommonOutput(BaseModel):
+    """
+    Args:
+    
+    Field:
+        type:
+            0 : JSON
+            1 : CSV FILE 
+    """
+    type:int = Field(default=0, description="Report Output Type")
 
 class CommonMultiAnalysisRequest(BaseModel):
     mac_address: str = Field(default_mac, description="MAC address of the cable modem")
@@ -127,6 +137,7 @@ class CommonAnalysisRequest(BaseModel):
     ip_address: str = Field(default_ip, description="IP address of the cable modem")
     snmp:SNMPConfig = Field(description="SNMP (Default: v2c)")
     analysis: CommonAnalysisType
+    output:CommonOutput = Field(description="Output Type REST or File")
 
     @field_validator("mac_address")
     def validate_mac(cls, v: str) -> str:

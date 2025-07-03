@@ -50,14 +50,13 @@ class PnmFileManager:
             result = PnmFileService().search_files(request)
             return JSONResponse(content=result.model_dump())
 
-
-        @self.router.get("/download/{transaction_id}", response_class=FileResponse, summary="Download a PNM file by transaction ID")
+        @self.router.get("/download/{transaction_id}", 
+                         response_class=FileResponse, summary="Download a PNM file by transaction ID")
         def download_file(transaction_id: str = Path(..., description="Transaction ID of the file")):
             """
             Downloads the original binary file associated with a given transaction ID.
             """
             return PnmFileService().get_file_by_transaction_id(transaction_id)
-
 
         @self.router.post("/upload", response_model=PushFileResponse, summary="Upload a PNM File")
         def push_file(request: PushFileRequest):

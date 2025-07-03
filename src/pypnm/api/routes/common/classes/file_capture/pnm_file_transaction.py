@@ -145,7 +145,6 @@ class PnmFileTransaction:
         db = self._load_db()
         return db.get(transaction_id)
 
-
     def get_file_info_via_macaddress(self, mac_address: MacAddress) -> Optional[list[dict]]:
         """
         Searches the transaction database for all entries matching the given MAC address.
@@ -173,8 +172,7 @@ class PnmFileTransaction:
                 })
 
         return results if results else None
-
-    
+   
     def _insert_generic(self, mac_address: MacAddress, 
                         pnm_test_type: DocsPnmCmCtlTest, 
                         filename: str, 

@@ -66,7 +66,7 @@ class ModulationProfileRouter(PnmFastApiRouter):
         """
         Implement Modulation Profile plotting data retrieval.
         """
-        self.logger.info(f"Generating Modulation Profile plot type: {request.analysis.analysis_type} for MAC {request.mac_address}")
+        self.logger.info(f"Generating Modulation Profile plot type: {request.analysis.type} for MAC {request.mac_address}")
         
         cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
 

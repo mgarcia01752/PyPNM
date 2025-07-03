@@ -8,8 +8,9 @@ from pathlib import Path
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 
+from pypnm.api.routes.common.classes.file_capture.file_type import FileType
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
-from pypnm.config.config_manager import ConfigManager
+from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlTest
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.file_processor import FileProcessor
@@ -27,7 +28,6 @@ from .schemas import (
     AnalysisResponse
 )
 
-
 class PnmFileService:
     """
     Handles file storage, metadata registration, and high-level analysis
@@ -40,7 +40,7 @@ class PnmFileService:
     """
 
     def __init__(self):
-        self.save_dir = ConfigManager().get("PnmFileRetrieval", "save_dir")
+        self.save_dir = SystemConfigSettings.save_dir
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def search_files(self, req: FileQueryRequest) -> FileQueryResponse:
@@ -159,4 +159,53 @@ class PnmFileService:
             analysis_type=req.analysis_type or "auto",
             plot_url=f"/static/plots/{req.filename}.png",
             summary="Auto analysis complete"
+        )
+
+    def get_file(self, file_type: FileType, filename: str) -> FileResponse:
+        """
+        Serve a generated file from its configured directory.
+
+        Supported types:
+          - CSV: returns text/csv from SystemConfigSettings.csv_dir
+          - JSON: returns application/json from SystemConfigSettings.json_dir
+          - XLSX: returns Excel OpenXML from SystemConfigSettings.xlsx_dir
+
+        Raises:
+          - HTTPException 400 if the file_type is unsupported
+          - HTTPException 404 if the file does not exist on disk
+        """
+        # Prevent directory traversal
+        safe_name = Path(filename).name
+
+        # Choose directory and media type per FileType
+        if file_type == FileType.CSV:
+            base_dir = SystemConfigSettings.csv_dir
+            media_type = "text/csv"
+
+        elif file_type == FileType.JSON:
+            base_dir = SystemConfigSettings.json_dir
+            media_type = "application/json"
+
+        elif file_type == FileType.XLSX:
+            base_dir = SystemConfigSettings.xlsx_dir
+            media_type = (
+                "application/vnd.openxmlformats-officedocument."
+                "spreadsheetml.sheet")
+
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported file type: {file_type.name}")
+
+        # Build full path and check existence
+        file_path = Path(base_dir) / safe_name
+        if not file_path.is_file():
+            raise HTTPException(
+                status_code=404,
+                detail="File not found on disk.")
+
+        return FileResponse(
+            path=str(file_path),
+            filename=safe_name,
+            media_type=media_type
         )

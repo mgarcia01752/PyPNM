@@ -152,6 +152,7 @@ class Analysis:
         
         result = {
             "pnm_header": measurement.get("pnm_header"),
+            "mac_address": measurement.get("mac_address"),
             "channel_id": measurement.get("channel_id"),
             "magnitude_unit": "dB",
             "frequency_unit": "Hz",            
@@ -209,6 +210,7 @@ class Analysis:
         
         result = {
             "pnm_header": measurement.get("pnm_header"),
+            "mac_address": measurement.get("mac_address"),
             "channel_id": measurement.get("channel_id"),
             "frequency_unit": "Hz",
             "magnitude_unit": "dB",
@@ -233,8 +235,7 @@ class Analysis:
     def basic_analysis_ds_modulation_profile(
         cls,
         measurement: Dict[str, Any],
-        split_carriers: bool = True
-    ) -> Dict[str, Any]:
+        split_carriers: bool = True) -> Dict[str, Any]:
         """
         Analyze the downstream OFDM modulation profile.
 
@@ -267,6 +268,7 @@ class Analysis:
 
         result: Dict[str, Any] = {
             "pnm_header": measurement.get("pnm_header"),
+            "mac_address": measurement.get("mac_address"),
             "channel_id": measurement.get("channel_id"),
             "frequency_unit": "Hz",
             "shannon_limit_unit": "dB",
@@ -365,6 +367,7 @@ class Analysis:
 
         result = {
             "pnm_header": measurement.get("pnm_header"),
+            "mac_address": measurement.get("mac_address"),
             "channel_id": measurement.get("channel_id"),
             "frequency_unit": "Hz",
             "magnitude_unit": "dB",
@@ -386,3 +389,5 @@ class Analysis:
         Returns the list of processed analysis results.
         """
         return {"analysis": self.analysis}
+    
+    

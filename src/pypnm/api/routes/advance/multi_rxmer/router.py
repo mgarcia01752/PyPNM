@@ -256,7 +256,7 @@ class MultiRxMerRouter(AbstractService):
                 )
 
             # 3) Dispatch based on requested analysis_type
-            atype = MultiRxMerAnalysisType(request.analysis.analysis_type)
+            atype = MultiRxMerAnalysisType(request.analysis.type)
             
             if atype == MultiRxMerAnalysisType.MIN_AVG_MAX:
                 engine = MultiRxMerSignalAnalysis(pcollect, MultiRxMerAnalysisType.MIN_AVG_MAX)

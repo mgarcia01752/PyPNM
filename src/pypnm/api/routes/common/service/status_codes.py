@@ -43,6 +43,8 @@ class ServiceStatusCode(IntEnum):
     UNSUPPORTED_TEST_TYPE                   = 201
     CAPTURE_GROUP_NOT_FOUND                 = 202
     
+    INVALID_OUTPUT_TYPE                     = 220
+    
     DS_OFDM_RXMER_NOT_AVAILABLE             = 300
     
     SPEC_ANALYZER_NOT_AVAILABLE             = 400

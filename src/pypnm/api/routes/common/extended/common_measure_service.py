@@ -212,12 +212,9 @@ class CommonMeasureService(CommonMessagingService):
         # This section runs through all the indexes, build PNM file, run measurement and check status
         ##############################################################################################
                         
-        return self.build_send_msg(await self._check_ofdm_measure_status(status_index_channelId[1], max_wait_count))
+        return self.build_send_msg(await self._pnm_measure_status_and_pnm_file_transfer(status_index_channelId[1], max_wait_count))
     
-        ##############################################################################################
-        # This section runs through all the indexes, build PNM file, run measurement and check status
-        ##############################################################################################    
-    
+
     def getInterfaceParameters(self,
         interface_type: DocsisIfType
     ) -> Union[DownstreamOfdmParameters, UpstreamOfdmaParameters]:
@@ -389,7 +386,7 @@ class CommonMeasureService(CommonMessagingService):
 
         return ServiceStatusCode.SUCCESS, idx_channelId
        
-    async def _check_ofdm_measure_status(self, idx_channelId:List[Tuple[int,int]], max_wait_count:int) -> ServiceStatusCode:
+    async def _pnm_measure_status_and_pnm_file_transfer(self, idx_channelId:List[Tuple[int,int]], max_wait_count:int) -> ServiceStatusCode:
         """
         Set and monitor the OFDM measurement test for specified (index, PLC) tuples.
 
@@ -510,8 +507,7 @@ class CommonMeasureService(CommonMessagingService):
                 wait_count += 1
                 
                 return ServiceStatusCode.TFTP_PNM_FILE_UPLOAD_FAILURE
-                        
-        
+                             
     async def _setDocsPnmCmMeasureTest(self, pnm_test_type:DocsPnmCmCtlTest, 
                                        interface_index:int, channel_id:int) -> Tuple[ServiceStatusCode, List[str]]:
         """

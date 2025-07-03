@@ -2,20 +2,30 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
+from pathlib import Path
 from typing import Union
 
+from fastapi.responses import FileResponse
+
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
+from pypnm.api.routes.common.classes.common_endpoint_classes.common.common_enum import PnmCommonOutputType
 from pypnm.api.routes.common.classes.common_endpoint_classes.router import PnmFastApiRouter
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmAnalysisResponse, PnmMeasurementResponse, PnmRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
+    PnmAnalysisRequest, PnmAnalysisResponse, PnmMeasurementResponse, PnmRequest)
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+from pypnm.api.routes.common.classes.file_capture.file_type import FileType
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
+from pypnm.api.routes.common.report.excel.basic.rxmer_excel_basic import RxMerExcelBasic
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.ds.ofdm.rxmer.service import CmDsOfdmRxMerService
+from pypnm.api.routes.docs.pnm.files.service import PnmFileService
+from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.utils import Utils
 
 
 class RxMerRouter(PnmFastApiRouter):
@@ -26,8 +36,7 @@ class RxMerRouter(PnmFastApiRouter):
         super().__init__(
             prefix="/docs/pnm/ds/ofdm",
             tags=["PNM Operations - Downstream OFDM RxMER"],
-            base_endpoint="/rxMer"
-        )
+            base_endpoint="/rxMer")
         self.logger = logging.getLogger("RxMerRouter")
 
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:
@@ -66,11 +75,11 @@ class RxMerRouter(PnmFastApiRouter):
             measurement=msg_rsp.payload  # type: ignore
         )
 
-    async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, SnmpResponse]:
+    async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, FileResponse, SnmpResponse]:
         """
         Implement RxMER plotting data retrieval.
         """
-        self.logger.info(f"Generating RxMER plot type: {request.analysis.analysis_type} for MAC {request.mac_address}")
+        self.logger.info(f"Generating RxMER plot type: {request.analysis.type} for MAC {request.mac_address}")
         
         cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
 
@@ -90,13 +99,29 @@ class RxMerRouter(PnmFastApiRouter):
         msg_rsp: MessageResponse = cps.process()
         
         analysis = Analysis(AnalysisType.BASIC, msg_rsp)
+        
+        if request.output.type == FileType.JSON.value:
                 
-        return PnmAnalysisResponse(
-            mac_address=request.mac_address,
-            status=ServiceStatusCode.SUCCESS,
-            data=analysis.get_results()
-        )
+            return PnmAnalysisResponse(
+                mac_address=request.mac_address,
+                status=ServiceStatusCode.SUCCESS,
+                data=analysis.get_results())
 
+        elif request.output.type == FileType.CSV.value:
+            
+            xlsx_dir = SystemConfigSettings.xlsx_dir
+            self.logger.info(f'Excel Dir: {xlsx_dir}')
+            
+            excel = RxMerExcelBasic(analysis, Path(xlsx_dir))
+            excel.build()
+            
+            return PnmFileService().get_file(FileType.CSV, excel.get_filename())
+        
+        else:
+            return PnmAnalysisResponse(
+                mac_address=request.mac_address,
+                status=ServiceStatusCode.INVALID_OUTPUT_TYPE,
+                data=None)            
 
 # ✅ Required for dynamic auto-registration
 router = RxMerRouter().router

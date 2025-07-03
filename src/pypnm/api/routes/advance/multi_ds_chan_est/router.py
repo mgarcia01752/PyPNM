@@ -227,7 +227,7 @@ class MultiDsChanEstRouter(AbstractService):
                 )
 
             # 3) Dispatch based on requested analysis_type
-            atype = MultiChanEstimationAnalysisType(request.analysis.analysis_type)
+            atype = MultiChanEstimationAnalysisType(request.analysis.type)
             
             if atype == MultiChanEstimationAnalysisType.MIN_AVG_MAX:
                 engine = MultiChanEstimationSignalAnalysis(pcollect, MultiChanEstimationAnalysisType.MIN_AVG_MAX)

@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from typing import Optional
-from docsis.cm_snmp_operation import DocsPnmCmCtlTest
+from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 
 

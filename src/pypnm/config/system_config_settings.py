@@ -77,6 +77,18 @@ class SystemConfigSettings:
     @classproperty
     def save_dir(cls) -> str:
         return cls._cfg.get("PnmFileRetrieval", "pnm_dir")
+    
+    @classproperty
+    def csv_dir(cls) -> str:
+        return cls._cfg.get("PnmFileRetrieval", "csv_dir")    
+
+    @classproperty
+    def json_dir(cls) -> str:
+        return cls._cfg.get("PnmFileRetrieval", "json_dir") 
+
+    @classproperty
+    def xlsx_dir(cls) -> str:
+        return cls._cfg.get("PnmFileRetrieval", "xlsx_dir") 
 
     @classproperty
     def transaction_db(cls) -> str:
@@ -85,6 +97,10 @@ class SystemConfigSettings:
     @classproperty
     def capture_group_db(cls) -> str:
         return cls._cfg.get("PnmFileRetrieval", "capture_group_db")
+
+    @classproperty
+    def session_group_db(cls) -> str:
+        return cls._cfg.get("PnmFileRetrieval", "session_group_db")
 
     @classproperty
     def operation_db(cls) -> str:

@@ -70,7 +70,7 @@ class UsOfdmaPreEqualizationRouter(PnmFastApiRouter):
         """
         Implement RxMER plotting data retrieval.
         """
-        self.logger.info(f"Generating Upstream OFDMA Pre-Equalization Analysis Type: {request.analysis.analysis_type} for MAC {request.mac_address}")
+        self.logger.info(f"Generating Upstream OFDMA Pre-Equalization Analysis Type: {request.analysis.type} for MAC {request.mac_address}")
         
         cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
 

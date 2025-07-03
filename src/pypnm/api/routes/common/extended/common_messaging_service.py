@@ -10,7 +10,8 @@ class MessageResponseType(Enum):
     """
     Enumeration of message types for categorizing responses.
     """
-    PNM_FILE_TRANSACTION = 1
+    PNM_FILE_TRANSACTION        = 1
+    PNM_FILE_SESSION            = 2
     SNMP_DATA_RTN_SPEC_ANALYSIS = 10
     
 class MessageResponse:
@@ -195,6 +196,28 @@ class CommonMessagingService:
                 "filename": filename
             }
         })
+
+    def build_session_msg( self,session_id: str,transaction_ids: List[str],
+        status: ServiceStatusCode = ServiceStatusCode.SUCCESS):
+        """
+        Enqueue a PNM file transaction session message.
+
+        Args:
+            session_id: Unique identifier for this session.
+            transaction_ids: List of transaction IDs to include in the message.
+            status: Message status (defaults to SUCCESS).
+
+        """
+        self.build_msg(
+            status,
+            {
+                "message_type": MessageResponseType.PNM_FILE_TRANSACTION.name,
+                "message": {
+                    "session_id": session_id,
+                    "transaction_id_list": transaction_ids,
+                },
+            },
+        )
 
     def get_first_of_type(self, msg_type: MessageResponseType) -> Optional[Dict[str, Any]]:
         """
