@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 from typing import Union
 
+from fastapi import HTTPException
 from fastapi.responses import FileResponse
 
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
@@ -111,7 +112,6 @@ class RxMerRouter(PnmFastApiRouter):
 
         elif request.output.type == FileType.XLSX.value:
             xlsx_dir = SystemConfigSettings.xlsx_dir
-            self.logger.info(f'Excel Dir: {xlsx_dir}')
             
             # Check if the XLSX directory exists
             if not Path(xlsx_dir).exists():
@@ -135,7 +135,6 @@ class RxMerRouter(PnmFastApiRouter):
                 status=ServiceStatusCode.INVALID_OUTPUT_TYPE,
                 data=None
             )
-
 
 # ✅ Required for dynamic auto-registration
 router = RxMerRouter().router
