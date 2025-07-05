@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 from typing import Optional, Dict, Any
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
 

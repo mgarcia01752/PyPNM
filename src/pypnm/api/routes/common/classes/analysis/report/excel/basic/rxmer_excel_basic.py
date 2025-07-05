@@ -1,6 +1,8 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 import logging
 from pathlib import Path
-from datetime import datetime
 from typing import List, Dict, Optional, Tuple, Union
 import json
 
@@ -10,6 +12,7 @@ from openpyxl.chart.axis import NumericAxis
 from openpyxl.utils import get_column_letter
 
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
+from pypnm.lib.mac_address import MacAddress
 
 
 # Constants for chart positioning
@@ -29,16 +32,15 @@ class RxMerExcelBasic:
         analysis: Analysis object or list of dicts representing analysis instances.
         output_dir: Path where the XLSX file will be saved.
     """
-
-    def __init__(
-        self,
+    
+    def __init__(self,
         analysis: Union[Analysis, List[Dict]],
-        output_dir: Path
-    ):
-        self.logger = logging.getLogger(self.__class__.__name__)
+        output_dir: Path):
+        
+        self.logger = logging.getLogger("RxMerExcelBasic")
         self.analysis = analysis
         self.output_dir = output_dir
-        self.mac_address:str = None
+        self.mac_address:MacAddress = None
 
     def build(self, filename: Optional[str] = None) -> Tuple[Path, List[str]]:
         """
@@ -64,24 +66,27 @@ class RxMerExcelBasic:
             raw_instances = self.analysis
 
         for item in raw_instances:
-            # Parse JSON strings
             inst = None
+
             if isinstance(item, str):
+
                 try:
                     inst = json.loads(item)
                 except json.JSONDecodeError:
                     self.logger.error("Could not parse analysis JSON", exc_info=True)
                     continue
+                
             elif isinstance(item, dict):
                 inst = item
+                
             else:
                 self.logger.error(f"Unexpected item type: {type(item)}")
                 continue
             
             if not self.mac_address:
-                self.mac_address = inst.get("mac_address", "00:00:00:00:00:00")
-                self.capture_time = inst.get("capture_time", "0")
-            
+                self.mac_address = MacAddress(inst.get("mac_address", "00:00:00:00:00:00"))
+                self.capture_time = inst.get("pnm_header",{}).get("capture_time", "0")
+                            
             # Create sheet
             channel_id = inst.get("channel_id", "unknown")
             name = str(channel_id)
@@ -124,11 +129,13 @@ class RxMerExcelBasic:
 
         # Ensure output directory
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        if not filename:
-            dev_id = f'{self.mac_address}_{self.capture_time}'
+        
+        if not self.filename:
+            dev_id = f'{self.mac_address.to_flat()}_{self.capture_time}'
             self.filename = f"rxmer_basic_{dev_id}.xlsx"
             
-        out_path = self.output_dir / filename
+        out_path = self.output_dir / self.filename
+        
         workbook.save(out_path)
         return out_path, sheet_names
 

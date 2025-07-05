@@ -72,3 +72,4 @@ class Format:
                 return value.encode('utf-8').hex()
         else:
             return str(value)
+

@@ -166,43 +166,44 @@ class PnmFileService:
         Serve a generated file from its configured directory.
 
         Supported types:
-          - CSV: returns text/csv from SystemConfigSettings.csv_dir
-          - JSON: returns application/json from SystemConfigSettings.json_dir
-          - XLSX: returns Excel OpenXML from SystemConfigSettings.xlsx_dir
+        - CSV: returns text/csv from SystemConfigSettings.csv_dir
+        - JSON: returns application/json from SystemConfigSettings.json_dir
+        - XLSX: returns Excel OpenXML from SystemConfigSettings.xlsx_dir
 
         Raises:
-          - HTTPException 400 if the file_type is unsupported
-          - HTTPException 404 if the file does not exist on disk
+        - HTTPException 400 if the file_type is unsupported
+        - HTTPException 404 if the file does not exist on disk
         """
         # Prevent directory traversal
         safe_name = Path(filename).name
 
+        # Optional: Further sanitize the filename, ensure it's safe and has a valid extension.
+        valid_extensions = ['.csv', '.json', '.xlsx']
+        if not any(safe_name.endswith(ext) for ext in valid_extensions):
+            raise HTTPException(status_code=400, detail="Invalid file extension.")
+        
         # Choose directory and media type per FileType
         if file_type == FileType.CSV:
             base_dir = SystemConfigSettings.csv_dir
             media_type = "text/csv"
-
         elif file_type == FileType.JSON:
             base_dir = SystemConfigSettings.json_dir
             media_type = "application/json"
-
         elif file_type == FileType.XLSX:
             base_dir = SystemConfigSettings.xlsx_dir
             media_type = (
                 "application/vnd.openxmlformats-officedocument."
-                "spreadsheetml.sheet")
-
+                "spreadsheetml.sheet"
+            )
         else:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Unsupported file type: {file_type.name}")
+            self.logger.error(f"Unsupported file type requested: {file_type.name}")
+            raise HTTPException(status_code=400, detail=f"Unsupported file type: {file_type.name}")
 
         # Build full path and check existence
         file_path = Path(base_dir) / safe_name
         if not file_path.is_file():
-            raise HTTPException(
-                status_code=404,
-                detail="File not found on disk.")
+            self.logger.warning(f"File not found: {file_path}")
+            raise HTTPException(status_code=404, detail="File not found on disk.")
 
         return FileResponse(
             path=str(file_path),

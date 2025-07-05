@@ -39,7 +39,7 @@ class MessageResponse:
         }
     
     """
-
+    
     def __init__(self, status: ServiceStatusCode, payload: Optional[Any] = None):
         """
         Initializes a MessageResponse instance.

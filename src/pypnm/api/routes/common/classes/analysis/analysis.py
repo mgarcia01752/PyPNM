@@ -28,6 +28,7 @@ class AnalysisType(Enum):
     BASIC = 0
 
 class Analysis:
+        
     def __init__(self, analysis_type: AnalysisType, msg_response: MessageResponse):
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self.analysis_type = analysis_type

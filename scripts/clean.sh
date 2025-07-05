@@ -101,6 +101,14 @@ clean_pnm() {
   safe_rm "$ROOT_DIR/.data/db/"*
 }
 
+clean_excel() {
+  echo "📦 Cleaning excel data..."
+  safe_rm "$ROOT_DIR/.data/xlsx/"*
+  safe_rm "$ROOT_DIR/.data/csv/"*
+}
+
+safe_rm "$ROOT_DIR/.data/db/"*
+
 clean_output() {
   echo "📤 Cleaning output files..."
   safe_rm "$ROOT_DIR/output/"*
@@ -118,6 +126,7 @@ for action in "${ACTIONS[@]}"; do
       clean_python
       clean_build
       clean_pnm
+      clean_excel
       clean_output
       ;;
 
@@ -135,6 +144,10 @@ for action in "${ACTIONS[@]}"; do
 
     --pnm)
       clean_pnm
+      ;;
+
+    --excel)
+      clean_excel
       ;;
 
     --output)

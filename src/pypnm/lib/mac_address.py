@@ -81,6 +81,9 @@ class MacAddress:
         """
         return int(self.mac_address[0:2], 16) & 1 == 1
 
+    def to_flat(self) -> str:
+        return self.__str__().lower().replace(':','')
+    
     @staticmethod
     def is_valid(mac_address: Union[str, bytes, bytearray, 'OctetString']) -> bool:
         """
@@ -97,3 +100,4 @@ class MacAddress:
             return True
         except (ValueError, TypeError):
             return False
+
