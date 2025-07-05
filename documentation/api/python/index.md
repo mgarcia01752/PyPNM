@@ -68,7 +68,7 @@ Use `json.dumps(parser_output)` to emit JSON, or access fields via standard dict
 | **Constellation Display**     | [CmDsConstDispMeas](../../../src/pypnm/pnm/process/CmDsConstDispMeas.py)           | Provides IQ scatter data for symbol constellation visualization.                      | ✅     |
 | **Downstream Histogram**      | [CmDsHist](../../../src/pypnm/pnm/process/CmDsHist.py)                             | Outputs ADC histograms for detecting compression, clipping, or noise characteristics. | ✅     |
 | **Upstream Pre-Equalization** | [CmUsPreEq](../../../src/pypnm/pnm/process/CmUsPreEq.py)                           | Parses pre-equalizer tap data for upstream OFDMA carriers.                            | ✅     |
-| **ATDMA Pre-Equalization**    | [DocsEqualizerData](../../../src/pypnm/pnm/process/DocsEqualizerData.py)           | Parses legacy ATDMA equalizer taps for upstream DOCSIS channels.                      | ✅     |
+| **ATDMA Pre-Equalization**    | [DocsEqualizerData](../../../src/pypnm/pnm/data_type/DocsEqualizerData.py)           | Parses legacy ATDMA equalizer taps for upstream DOCSIS channels.                      | ✅     |
 | **Latency Reporting**         | [CmLatencyRpt](../../../src/pypnm/pnm/process/CmLatencyRpt.py)                     | Reports one-way delay and jitter statistics from PNM captures.                        | TBD    |
 
 ---
