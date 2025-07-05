@@ -145,6 +145,19 @@ Most endpoints follow this JSON structure:
 {
   "mac_address": "a0:b1:c2:d3:e4:f5",
   "ip_address": "192.168.100.1"
+  "snmp": {
+    "snmpV2C": {
+      "community": "private"
+    },
+    "snmpV3": {
+      "username": "string",
+      "securityLevel": "noAuthNoPriv",
+      "authProtocol": "MD5",
+      "authPassword": "string",
+      "privProtocol": "DES",
+      "privPassword": "string"
+    }
+  }
 }
 ````
 
