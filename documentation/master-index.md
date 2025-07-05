@@ -4,12 +4,12 @@ Welcome to the PyPNM documentation. Use this master index to navigate through al
 
 ## 📚 API Reference
 
+### FastAPI Reference
+- [FastAPI Overview](api/fast-api/index.md)
+
 ### DOCSIS Device Endpoints
 - [Event Log](api/dev/eventLog.md)
 - [Reset](api/dev/reset.md)
-
-### FastAPI Reference
-- [FastAPI Overview](api/fast-api/index.md)
 
 #### • Multi-Snapshot Analysis
 - [Overview](api/fast-api/multi/index.md)
