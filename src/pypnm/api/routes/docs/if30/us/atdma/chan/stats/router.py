@@ -33,14 +33,12 @@ class UsScQamChannelRouter:
 
             Retrieves DOCSIS 3.0 upstream SC-QAM (ATDMA) channel configuration and operational statistics.
 
-            The response includes modulation settings: 
-            - frequency parameters
-            - pre-equalization status
-            - transmit power
-            - ranging behavior
+            **The response includes modulation settings:**
+            - Frequency parameters
+            - Pre-equalization status
+            - Transmit power
+            - Ranging behavior
             
-            [DOCSIS-IF3-MIB](https://mibs.cablelabs.com/MIBs/DOCSIS/DOCS-IF3-MIB-2025-02-20.txt)
-
             🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/stats.md)
 
             """
