@@ -25,9 +25,33 @@ class ChannelEstimationCoefficentRouter(PnmFastApiRouter):
     """
     def __init__(self):
         
-        measurement_description = """"""
-        analysis_description = """"""
-        
+        measurement_description = """
+**Capture Downstream OFDM Channel Estimation Coefficients**
+
+This API retrieves complex per-subcarrier channel estimation taps from a DOCSIS 3.1 cable modem.
+These coefficients represent the channel’s frequency response and are vital for diagnostics and impulse
+response analysis.
+
+Includes:
+- Real/Imaginary values for each subcarrier
+- Channel ID and frequency metadata
+- Raw coefficient buffer size and count
+
+📘 [API Guide – Get Measurement](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/channel-estimation.md#get-measurement)
+"""
+
+        analysis_description = """
+**Analyze Downstream OFDM Channel Estimation Data**
+
+Performs signal-domain analysis of DOCSIS 3.1 channel estimation coefficients. Output includes:
+- Frequency-mapped magnitude and group delay
+- Complex tap representation
+- Statistical breakdown (mean, skewness, crest factor, etc.)
+
+⚠️ Due to payload size, it is recommended to use Postman or CURL instead of Swagger UI.
+
+📘 [API Guide – Get Analysis](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/channel-estimation.md#get-analysis)
+"""
         super().__init__(
             prefix="/docs/pnm/ds/ofdm",
             tags=["PNM Operations - Downstream OFDM Channel Estimation"],
