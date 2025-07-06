@@ -1,12 +1,16 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+import os
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 
 from pypnm.api.routes.pypmn.system.config.schemas import SystemConfigModel
 from pypnm.config.config_manager import ConfigManager
 from pypnm.config.pnm_config_manager import PnmConfigManager
+from pypnm.config.system_config_settings import SystemConfigSettings
+from fastapi.responses import FileResponse
+from fastapi import HTTPException
 
 class PyPnmSystemConfigAPI:
     """
@@ -22,18 +26,13 @@ class PyPnmSystemConfigAPI:
         """
         self.router = APIRouter(
             prefix="/pypnm/system/config",
-            tags=["PyPNM System Configuration"]
-        )
+            tags=["PyPNM System Configuration"])
         self.router.post("/get", summary="Get PyPNM System Config")(self.get_system_config)
         self.router.post("/update", summary="Update PyPNM System Config")(self.update_system_config)
+        self.router.post("/fetch/log", summary="Download PyPNM Log File")(self.get_pypnm_log)
 
     async def get_system_config(self):
         """
-        Retrieves the entire PyPNM System Configuration.
-
-        Returns:
-            
-            JSONResponse: A success response containing the full configuration dictionary
         """
         try:
             cm = ConfigManager()
@@ -44,15 +43,6 @@ class PyPnmSystemConfigAPI:
 
     async def update_system_config(self, config_update: SystemConfigModel):
         """
-        Updates the PyPNM System Configuration with the Provided Values.
-
-        Args:
-        
-            config_update (SystemConfigModel): The new configuration to be saved.
-
-        Returns:
-        
-            JSONResponse: A success response if the config was saved and reloaded successfully
         """
         try:
             cm = ConfigManager()
@@ -61,6 +51,5 @@ class PyPnmSystemConfigAPI:
             return JSONResponse(content={"status": "success", "message": "Configuration updated"})
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to update config: {e}")
-
 
 router = PyPnmSystemConfigAPI().router
