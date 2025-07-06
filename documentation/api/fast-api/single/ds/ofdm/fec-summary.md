@@ -6,8 +6,6 @@
 
 Retrieves the Forward Error Correction (FEC) summary data from DOCSIS 3.1 downstream OFDM channels.
 
----
-
 ## 📥 Request Body (JSON)
 
 ```json
@@ -39,8 +37,6 @@ Retrieves the Forward Error Correction (FEC) summary data from DOCSIS 3.1 downst
 | ip\_address        | string | IP address of the cable modem                                    |
 | snmp               | object | SNMPv2c or SNMPv3 credentials                                    |
 | fec\_summary\_type | int    | 2 = 10-minute (1 record/sec), 3 = 24-hour summary (1 record/min) |
-
----
 
 ## 📦 Response Body
 
@@ -117,8 +113,6 @@ Retrieves the Forward Error Correction (FEC) summary data from DOCSIS 3.1 downst
 | └└→ total\_codewords         | int         | Total number of received codewords             |
 | └└→ corrected\_codewords     | int         | Count of FEC-corrected codewords               |
 | └└→ uncorrectable\_codewords | int         | Count of codewords that could not be corrected |
-
----
 
 ## 📑 Notes
 
