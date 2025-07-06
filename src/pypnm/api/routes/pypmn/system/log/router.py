@@ -40,8 +40,7 @@ class PyPnmSystemLog:
             return FileResponse(
                 path=log_path,
                 filename=SystemConfigSettings.log_filename,
-                media_type="text/plain"
-            )
+                media_type="text/plain")
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to retrieve log: {e}")
