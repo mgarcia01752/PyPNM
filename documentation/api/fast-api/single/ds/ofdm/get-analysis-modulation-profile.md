@@ -1,23 +1,19 @@
 # PNM Operations – Downstream OFDM Modulation Profile Analysis
 
-## 📊 Endpoint
+## 📡 Endpoint
 
 **POST** `/docs/pnm/ds/ofdm/modulationProfile/getAnalysis`
 
-This endpoint performs an analysis on the modulation profile retrieved from a DOCSIS 3.1 downstream OFDM channel. It returns calculated modulation data, per-subcarrier values, and estimated Shannon limits. This basic analysis helps visualize per-subcarrier modulation density and theoretical channel capacity.
+Performs analysis of the downstream OFDM modulation profile for DOCSIS 3.1, calculating per‑subcarrier modulation and Shannon capacity estimates. Supports JSON or XLSX output for easy visualization and processing.
 
-> ⚡ Supports optional XLSX output for offline inspection and visualization.
-
-## 📅 Request Body (JSON)
+## 📥 Request Body (JSON)
 
 ```json
 {
   "mac_address": "aa:bb:cc:dd:ee:ff",
   "ip_address": "192.168.0.100",
   "snmp": {
-    "snmpV2C": {
-      "community": "private"
-    },
+    "snmpV2C": { "community": "private" },
     "snmpV3": {
       "username": "string",
       "securityLevel": "noAuthNoPriv",
@@ -27,26 +23,24 @@ This endpoint performs an analysis on the modulation profile retrieved from a DO
       "privPassword": "string"
     }
   },
-  "analysis": {
-    "type": 0
-  },
-  "output": {
-    "type": 0
-  }
+  "analysis": { "type": 0 },
+  "output": { "type": 0 }
 }
 ```
 
-### 🔑 Fields
+### 🔑 Request Fields
 
-| Field         | Type   | Description                           |
-| ------------- | ------ | ------------------------------------- |
-| mac\_address  | string | MAC address of the cable modem        |
-| ip\_address   | string | IP address of the cable modem         |
-| snmp          | object | SNMPv2c or SNMPv3 configuration       |
-| analysis.type | int    | Analysis type (0 = Basic)             |
-| output.type   | int    | 0 = JSON <br>1 = XLSX file |
+| Field           | Type   | Description                                            |
+| --------------- | ------ | ------------------------------------------------------ |
+| `mac_address`   | string | Cable modem MAC address                                |
+| `ip_address`    | string | Cable modem IP address                                 |
+| `snmp`          | object | SNMPv2c or SNMPv3 configuration object                 |
+| └ `snmpV2C`     | object | SNMPv2c config (requires `community`)                  |
+| └ `snmpV3`      | object | SNMPv3 config (username, passwords, protocols, levels) |
+| `analysis.type` | int    | Analysis type (0 = basic modulation analysis)          |
+| `output.type`   | int    | Output format 0 = JSON <br> 1 = XLSX                   |
 
-## 📄 JSON Response Example (Output Type 0)
+## 📤 JSON Response (Output Type 0)
 
 ```json
 {
@@ -82,27 +76,43 @@ This endpoint performs an analysis on the modulation profile retrieved from a DO
 }
 ```
 
-## 📈 Field Breakdown
+## 📊 Response Field Breakdown
 
-| Field              | Type          | Description                                                           |
-| ------------------ | ------------- | --------------------------------------------------------------------- |
-| mac\_address       | string        | MAC of the modem analyzed                                             |
-| channel\_id        | int           | OFDM channel ID used for modulation analysis                          |
-| profiles           | array         | List of modulation profiles (per OFDM profile ID)                     |
-| └─ profile\_id     | int           | Identifier for the modulation profile                                 |
-| └─ carrier\_values | object        | Contains per-subcarrier frequency, modulation, and theoretical limits |
-| ├─ frequency       | array\[int]   | Frequency of each subcarrier                                          |
-| ├─ modulation      | array\[str]   | Modulation type per subcarrier (e.g., qam\_4096)                      |
-| └─ shannon\_limit  | array\[float] | Shannon capacity estimate (in dB)                                     |
+| Field                  | Type          | Description                                                            |
+| ---------------------- | ------------- | ---------------------------------------------------------------------- |
+| `mac_address`          | string        | MAC address of the cable modem                                         |
+| `status`               | int           | 0 for success, non-zero for failure                                    |
+| `data.analysis[]`      | array         | List of analysis entries (typically one per file/channel)              |
+| └ `pnm_header`         | object        | Metadata describing the source/capture info of the PNM file            |
+| └└ `file_type`         | string        | Identifier of the file type (e.g., PNN)                                |
+| └└ `file_type_version` | int           | File format version                                                    |
+| └└ `major_version`     | int           | Major version of the capture format                                    |
+| └└ `minor_version`     | int           | Minor version of the capture format                                    |
+| └└ `capture_time`      | int           | UNIX timestamp when capture occurred                                   |
+| └ `mac_address`        | string        | MAC address of the modem in the capture                                |
+| └ `channel_id`         | int           | DOCSIS OFDM downstream channel ID                                      |
+| └ `frequency_unit`     | string        | Unit for the carrier frequencies (typically Hz)                        |
+| └ `shannon_limit_unit` | string        | Unit for calculated Shannon limit (typically dB)                       |
+| └ `profiles[]`         | array         | List of per-profile modulation breakdowns                              |
+| └└ `profile_id`        | int           | OFDM profile ID                                                        |
+| └└ `carrier_values`    | object        | Detailed values for each subcarrier                                    |
+| └└└ `frequency`        | array\[int]   | Subcarrier center frequencies                                          |
+| └└└ `modulation`       | array\[str]   | Modulation format (e.g., qam\_256, qam\_4096) for each subcarrier      |
+| └└└ `shannon_limit`    | array\[float] | Shannon capacity limit for each subcarrier (based on modulation order) |
 
-## 📆 XLSX Output (Output Type 1)
+## 📦 XLSX Output (Output Type 1)
 
-If `"output.type": 1`, the response will return a downloadable Excel file. This file includes:
+When `output.type` is set to 1, the response is an Excel file with columns:
 
-* Per-profile subcarrier modulation breakdown
-* Shannon limit per subcarrier
-* Statistical summaries
+* Frequency (Hz)
+* Modulation Order (e.g., QAM-256)
+* Shannon Limit (dB)
+* Profile ID
 
-Useful for offline analytics, charting, and advanced PNM diagnostics.
+Useful for data visualization, graphing, and statistical modeling.
 
-> 📊 For advanced visualization or automation, refer to: `src/pnm/analysis/analysis_modulation_profile.py`
+## 📝 Notes
+
+* Analysis type 0 performs static profile decoding with theoretical performance estimates.
+* Future analysis types may incorporate live BER/SNR overlays or delta-detection.
+* See `src/pnm/analysis/analysis_modulation_profile.py` for implementation.
