@@ -24,11 +24,17 @@ class ChannelEstimationCoefficentRouter(PnmFastApiRouter):
     Concrete implementation of PnmFastApiRouter for handling Channel-Estimation-Coefficent related requests.
     """
     def __init__(self):
+        
+        measurement_description = """"""
+        analysis_description = """"""
+        
         super().__init__(
             prefix="/docs/pnm/ds/ofdm",
             tags=["PNM Operations - Downstream OFDM Channel Estimation"],
-            base_endpoint="/channelEstCoeff")
-        self.logger = logging.getLogger("ChannelEstCoeff")
+            base_endpoint="/channelEstCoeff",
+            set_measurement_description = measurement_description,
+            set_analysis_description = analysis_description)
+        self.logger = logging.getLogger("ChannelEstimationCoefficentRouter")
 
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:
         """
