@@ -50,8 +50,6 @@ Includes:
 
 📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-analysis)
 """
-
-  
         super().__init__(
             prefix="/docs/pnm/ds/ofdm",
             tags=["PNM Operations - Downstream OFDM Modulation Profile"],
