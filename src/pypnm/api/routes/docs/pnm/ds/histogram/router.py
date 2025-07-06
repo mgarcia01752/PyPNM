@@ -17,7 +17,6 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 
-
 class DsHistogramRouter:
     """
     Router for handling DOCSIS Downstream Histogram PNM (Proactive Network Maintenance) operations.
