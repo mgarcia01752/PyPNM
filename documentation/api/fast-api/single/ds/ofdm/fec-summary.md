@@ -36,7 +36,7 @@ Retrieves the Forward Error Correction (FEC) summary data from DOCSIS 3.1 downst
 | mac\_address       | string | MAC address of the cable modem                                   |
 | ip\_address        | string | IP address of the cable modem                                    |
 | snmp               | object | SNMPv2c or SNMPv3 credentials                                    |
-| fec\_summary\_type | int    | 2 = 10-minute (1 record/sec), 3 = 24-hour summary (1 record/min) |
+| fec\_summary\_type | int    | 2 = 10-minute (1 record/sec), <br> 3 = 24-hour summary (1 record/min) |
 
 ## 📦 Response Body
 
