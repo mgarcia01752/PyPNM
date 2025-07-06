@@ -102,7 +102,8 @@ class ConstellationDisplayRouter:
                 self.logger.exception(f"[getMeasurement] Error for MAC {request.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}")
 
-        @self.router.post(f"/{self.base_endpoint}/getAnalysis", response_model=Union[PnmAnalysisResponse, SnmpResponse])
+        @self.router.post(f"/{self.base_endpoint}/getAnalysis", 
+                          response_model=Union[PnmAnalysisResponse, SnmpResponse])
         async def get_analysis(request: PnmAnalysisRequest):
             
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address, 
