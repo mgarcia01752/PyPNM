@@ -51,19 +51,7 @@ class DsHistogramRouter:
         @self.router.post(f"/{self.base_endpoint}/getMeasurement", response_model=Union[PnmHistogramResponse, SnmpResponse])
         async def get_measurement(request: PnmHistogramRequest):
             """
-            Initiates a downstream histogram measurement on a target cable modem.
 
-            Uses SNMP to trigger a measurement and TFTP to retrieve the result file.
-            Processes the output and returns it in structured format.
-
-            Args:
-                request (PnmHistogramRequest): Contains MAC address, IP address, and sample duration.
-
-            Returns:
-                PnmHistogramResponse: Status and processed measurement results.
-
-            Raises:
-                HTTPException: If SNMP or processing fails.
             """
             try:
                 self.logger.info(

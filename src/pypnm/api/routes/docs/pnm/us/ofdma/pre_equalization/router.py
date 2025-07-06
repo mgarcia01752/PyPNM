@@ -7,11 +7,7 @@ from typing import Union
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
 from pypnm.api.routes.common.classes.common_endpoint_classes.router import PnmFastApiRouter
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
-    PnmMeasurementResponse,
-    PnmAnalysisRequest,
-    PnmAnalysisResponse,
-    PnmRequest,
-)
+    PnmMeasurementResponse, PnmAnalysisRequest, PnmAnalysisResponse, PnmRequest)
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
@@ -30,8 +26,7 @@ class UsOfdmaPreEqualizationRouter(PnmFastApiRouter):
         super().__init__(
             prefix="/docs/pnm/us/ofdma",
             tags=["PNM Operations - Upstream OFDMA Pre-Equalization"],
-            base_endpoint="/preEqualization"
-        )
+            base_endpoint="/preEqualization")
         self.logger = logging.getLogger("UsOfdmaPreEqualization")
 
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:
@@ -82,7 +77,18 @@ class UsOfdmaPreEqualizationRouter(PnmFastApiRouter):
 
     async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, SnmpResponse]:
         """
-        Implement RxMER plotting data retrieval.
+        Perform OFDMA pre-equalization analysis on upstream coefficients (DOCSIS 3.1).
+
+        This endpoint analyzes upstream OFDMA complex coefficients retrieved via SNMP
+        and returns structured per-subcarrier data including magnitude, group delay,
+        and complex tap values.
+
+        🔗 [Full API Guide – OFDMA Pre-Equalization Analysis](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/get-analysis-pre-equalization.md)
+
+        Output Type:
+        - 0: Structured JSON (frequency, magnitude, delay, complex)
+        - 1:
+        - 2: 
         """
         self.logger.info(f"Generating Upstream OFDMA Pre-Equalization Analysis Type: {request.analysis.type} for MAC {request.mac_address}")
         
