@@ -42,7 +42,7 @@ class ModulationProfileRouter(PnmFastApiRouter):
         required to generate full per-subcarrier bit-loading visualizations or modulation maps.
 
         - **POST**: `/docs/pnm/ds/ofdm/modulationProfile/getMeasurement`
-        - 📄 [Modulation Profile Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md)
+        - 📄 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-measurement)
 
         Returns:
             - PnmMeasurementResponse: Measurement data containing one or more OFDM channel modulation profiles.
@@ -89,7 +89,7 @@ class ModulationProfileRouter(PnmFastApiRouter):
         - 0: JSON with modulation and Shannon analysis
         - 1: XLSX formatted report for offline visualization
 
-        [📘 Full Docs](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/get-analysis-modulation-profile.md)
+        📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-analysis)
 
         """
         self.logger.info(f"Generating Modulation Profile plot type: {request.analysis.type} for MAC {request.mac_address}")
