@@ -23,7 +23,7 @@ class PyPnmSystemLog:
             prefix="/pypnm/system/log",
             tags=["PyPNM System Log"]
         )
-        self.router.post("/download/log", summary="Download PyPNM Log File")(self.get_pypnm_log)
+        self.router.post("/download", summary="Download PyPNM Log File")(self.get_pypnm_log)
 
     async def get_pypnm_log(self):
         """

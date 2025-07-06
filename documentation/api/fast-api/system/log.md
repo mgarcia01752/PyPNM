@@ -2,7 +2,7 @@
 
 ## 📡 Endpoint
 
-**POST** `/pypnm/system/log/download/log`
+**POST** `/pypnm/system/log/download`
 
 This endpoint allows clients to download the current PyPNM backend system log file for debugging or historical record purposes.
 
@@ -24,7 +24,7 @@ Content-Type: text/plain
 ### 🔹 Example: Curl Usage
 
 ```bash
-curl -X POST http://localhost:8000/pypnm/system/log/download/log -o pypnm.log
+curl -X POST http://localhost:8000/pypnm/system/log/download -o pypnm.log
 ```
 
 ## 🖊️ Notes
