@@ -220,12 +220,11 @@ Returns statistical analysis of decoded upstream OFDMA pre-equalization coeffici
 | Value | Description                              |
 | ----- | ---------------------------------------- |
 | `0`   | Basic Magnitude and Group Delay Analysis |
-| `1`   | Group Delay-Only View (TBD)              |
 
 ### `output.type`
 
 | Value | Format  | Description                                           |
 | ----- | ------- | ----------------------------------------------------- |
 | `0`   | JSON    | Structured data for dashboards or raw API consumption |
-| `1`   | Graph   | (Planned) Graphical output for preview and overlay    |
-| `2`   | Overlay | (Planned) Taps overlay and echo/impulse view          |
+| `1`   | CSV     | Not Supported   |
+| `2`   | XLSX    | (Planned) Taps overlay and echo/impulse view          |
