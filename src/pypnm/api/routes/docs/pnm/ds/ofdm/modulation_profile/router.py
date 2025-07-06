@@ -34,7 +34,7 @@ assigned to subcarrier groups.
 ⚠️ Note: This output reflects a direct conversion from the modem’s internal profile encoding.
 Additional decoding is required for full per-subcarrier modulation mapping or bit-loading visualizations.
 
-📄 [API Guide – Get Measurement](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-measurement)
+📄 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-measurement)
 """
   
         analysis_description = """
@@ -48,7 +48,7 @@ Includes:
 - Subcarrier frequency map
 - Shannon limit estimates based on modulation order
 
-📘 [API Guide – Get Analysis](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-analysis)
+📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-analysis)
 """
 
   
