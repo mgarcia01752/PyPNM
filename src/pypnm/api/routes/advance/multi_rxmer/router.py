@@ -226,6 +226,9 @@ class MultiRxMerRouter(AbstractService):
         def analysis(request: MultiRxMerAnalysisRequest) -> MultiRxMerAnalysisResponse:
             """ 
             [Multi-RxMER (Analysis Guide)](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#5-analysis)
+            [MinMaxAvg]()
+            [OFDM Performace 1]()
+            [HeatMap]()
             """
             try:
                 capture_group_id = OperationManager.get_capture_group(request.operation_id)
