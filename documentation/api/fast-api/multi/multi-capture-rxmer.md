@@ -1,14 +1,14 @@
-## 📑 Table of Contents
+## 📁 Table of Contents
 
 * [Workflow Overview](#workflow-overview)
 * [Endpoint Stubs](#endpoint-stubs)
 
   * [1. Start Capture](#1-start-capture)
   * [2. Status Check](#2-status-check)
-  * [3. Download Measurements](#3-download-results)
+  * [3. Download Measurements](#3-download-measurements)
   * [4. Stop Capture Early](#4-stop-capture-early)
   * [5. Analysis](#5-analysis)
-* [⏱️ Timing Details](#️-timing-details)
+* [Timing Details](#timing-details)
 
 ## Workflow Overview
 
@@ -100,7 +100,7 @@
   * `group_id` (string): Unique identifier for this capture group.
   * `operation_id` (string): Unique identifier for this specific capture operation.
 
-*See the [Timing Details](#️-timing-details) for how `measurement_duration` and `sample_interval` affect workflow timing.*
+*See the [Timing Details](#timing-details) for how `measurement_duration` and `sample_interval` affect workflow timing.*
 
 ### 2. Status Check
 
@@ -136,7 +136,7 @@ GET /advance/multiRxMer/status/{operation_id}
   * `operation.time_remaining` (integer, seconds): Approximate seconds left in this capture.
   * `operation.message` (string | null): Additional status info (e.g., partial failures).
 
-*Refer to [Timing Details](#️-timing-details) for recommended polling intervals.*
+*Refer to [Timing Details](#timing-details) for recommended polling intervals.*
 
 ### 3. Download Measurements
 
@@ -154,8 +154,8 @@ GET /advance/multiRxMer/results/{operation_id}
 
 * A ZIP archive containing:
 
-  Zip Filename: multiRxMer_<mac_address>_<operation_id>.zip
-  PNM Measurement File Example: ds_ofdm_rxmer_per_subcar_<mac_address>_<channel_id>_<ephoc>.bin
+  Zip Filename: multiRxMer\_\<mac\_address>*\<operation\_id>.zip
+  PNM Measurement File Example: ds\_ofdm\_rxmer\_per\_subcar*\<mac\_address>*\<channel\_id>*<ephoc>.bin
 
   ```
   ds_ofdm_rxmer_per_subcar_aabbccddeeff_193_1751762613.bin
@@ -267,7 +267,7 @@ DELETE /advance/multiRxMer/stop/{operation_id}
 
 > **Note:** Always use the schema definitions under `api/routes/advance/multi_rxmer/schemas.py` for precise field names, types, and allowed values.
 
-## ⏱️ Timing Details
+## Timing Details
 
 ### 1. Start Capture Timing
 
@@ -320,4 +320,3 @@ DELETE /advance/multiRxMer/stop/{operation_id}
   * Typical delay: under 200 ms for moderate sample counts (<100) and standard channel widths.
 * These are rough estimates—actual latency depends on server load and I/O.
 * Clients should expect analysis responses to be nearly instantaneous (sub-second) for typical downstream-ofdm captures.
-
