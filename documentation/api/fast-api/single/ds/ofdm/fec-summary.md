@@ -1,5 +1,11 @@
 # PNM Operations – Downstream OFDM FEC Summary API
 
+This API enables proactive monitoring of DOCSIS 3.1 cable modems by retrieving Forward Error Correction (FEC) summary statistics for downstream OFDM channels. FEC summaries are crucial for evaluating the health of the RF link, identifying packet loss trends, and assessing the effectiveness of error correction mechanisms over time.
+
+Operators can select between a 10-minute high-resolution view or a 24-hour long-term overview using the fec_summary_type parameter. The results are organized by modulation profile and include timestamps with raw codeword counts—total, corrected, and uncorrectable—offering clear insights into persistent versus transient issues.
+
+This API supports secure SNMP-based collection and is often used in automation pipelines or integrated into network performance dashboards.
+
 ## 📰 Endpoint
 
 **POST** `/docs/pnm/ds/ofdm/fecSummary/getMeasurement`
