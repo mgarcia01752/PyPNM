@@ -29,17 +29,20 @@ class UsScQamChannelRouter:
         @self.router.post("/stats", response_model=List[PnmChannelEntryResponse])
         async def get_us_scqam_upstream_channels(request: SnmpRequest):
             """
-            📶 DOCSIS 3.0 Upstream ATDMA Channel Stats
+            📶 **DOCSIS 3.0 Upstream ATDMA Channel Stats**
 
             Retrieves DOCSIS 3.0 upstream SC-QAM (ATDMA) channel configuration and operational statistics.
 
-            The response includes modulation settings, frequency parameters, pre-equalization status, transmit power, ranging behavior, and other DOCSIS-IF3-MIB fields used to diagnose upstream performance.
+            The response includes modulation settings: 
+            - frequency parameters
+            - pre-equalization status
+            - transmit power
+            - ranging behavior
+            
+            [DOCSIS-IF3-MIB](https://mibs.cablelabs.com/MIBs/DOCSIS/DOCS-IF3-MIB-2025-02-20.txt)
 
             🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/stats.md)
 
-            ---
-            **Request Body:** `SnmpRequest`  
-            **Response:** List of `DocsIfUpstreamChannelEntry`-like structures with enriched statistics
             """
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                     ip_address=request.ip_address).run_precheck()
@@ -61,7 +64,7 @@ class UsScQamChannelRouter:
         @self.router.post("/preEqualization", response_model=List[PnmChannelEntryResponse])
         async def get_us_scqam_pre_equalizations(request: SnmpRequest):
             """
-            📐 DOCSIS 3.0 Upstream Pre-Equalization Coefficients
+            📐 **DOCSIS 3.0 Upstream Pre-Equalization Coefficients**
 
             Retrieves forward and reverse pre-equalization tap coefficients from a DOCSIS 3.0 SC-QAM upstream channel.
 
@@ -74,9 +77,6 @@ class UsScQamChannelRouter:
 
             🔗 [Pre-Equalization API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/pre-equalization.md)
 
-            ---
-            **Request:** `SnmpRequest`  
-            **Response:** Dictionary of channel IDs with tap coefficient details
             """
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                     ip_address=request.ip_address).run_precheck()
