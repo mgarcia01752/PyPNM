@@ -29,8 +29,18 @@ class DsOfdmChannelStatsRouter:
         @self.router.post("/stats", response_model=List[PnmChannelEntryResponse])
         async def get_ds_ofdm_channels(request: SnmpRequest):
             """
-            POST /docs/if31/ds/ofdm/channel/stats
-            Returns OFDM channel statistics from the modem.
+            **Downstream OFDM Modulation Profile Statistics (DOCSIS 3.1)**
+
+            Gathers per-profile traffic and FEC correction metrics from each active downstream OFDM channel.
+            Profiles typically include IDs 0-4 and always include profile `255` (NCP).
+
+            **Outputs include:**
+            - Total, corrected, and uncorrectable codewords
+            - Frame counts (unicast/multicast) and CRC errors
+            - Octet counters segmented by profile
+            - Support for multiple OFDM channels per modem
+
+            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/stats.md)
             """
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                     ip_address=request.ip_address).run_precheck()
