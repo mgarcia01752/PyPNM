@@ -237,7 +237,8 @@ Supports multiple output formats (`JSON`, `xlsx`) with `type=0` currently for `B
 | Value | Format | Description                                                                              |
 | ----- | ------ | ---------------------------------------------------------------------------------------- |
 | `0`   | JSON   | Standard structured JSON suitable for API responses and dashboards.                      |
-| `1`   | XLSX   | Excel-compatible output for offline review, reporting, or spreadsheet use. (coming soon) |
+| `0`   | CSV    | Not Supported                                                                            |
+| `2`   | XLSX   | Excel-compatible output for offline review, reporting, or spreadsheet use.               |
 
 ## Differences Between Measurement and Analysis
 

@@ -46,12 +46,23 @@ from a DOCSIS cable modem. The response includes:
 
 Each entry corresponds to an active OFDM downstream channel found on the device.
 
-📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/rxmer.md)
+📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/rxmer.md#get-measurement)
 """
 
-        analysis_description = """ 
+        analysis_description = """
+**Analyze Downstream OFDM RxMER Per-Subcarrier Values**
+
+This endpoint performs post-processing on RxMER measurement data retrieved from the cable modem.
+It extracts subcarrier-level details such as:
+- Per-carrier MER magnitude (in dB)
+- Frequency mapping for each subcarrier
+- Carrier status classification (Exclusion, Clipped, Normal)
+- Shannon-based bits-per-symbol and modulation support
+
+Supports multiple output types (`JSON`, `XLSX`) and future advanced analysis modes.
+
+📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/rxmer.md#get-analysis)
 """
-        
         super().__init__(
             prefix="/docs/pnm/ds/ofdm",
             tags=["PNM Operations - Downstream OFDM RxMER"],
