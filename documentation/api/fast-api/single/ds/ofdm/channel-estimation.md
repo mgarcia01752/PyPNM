@@ -1,5 +1,18 @@
 # PNM Operations – Downstream OFDM Channel Estimation
 
+This API provides critical visibility into the downstream physical layer of DOCSIS 3.1 OFDM channels by retrieving and analyzing channel estimation coefficients. These complex values—captured per subcarrier—represent the modem's internal estimation of the channel response, allowing operators to assess signal fidelity, detect multipath, and quantify in-channel distortion.
+
+The `/getMeasurement` endpoint returns raw complex coefficients (real/imaginary pairs), while the `/getAnalysis` endpoint derives key physical characteristics including:
+
+* **Magnitude response** (signal attenuation across frequency)
+* **Group delay** (timing variation due to multipath)
+* **Per-subcarrier complex response**
+* **Echo detection** (early/late reflection signatures using phase slope or time-domain analysis)
+
+Echo detection is particularly important in identifying micro-reflections and impedance mismatches in the coaxial plant, which often lead to burst errors, degraded MER, and overall link instability.
+
+Engineers can use this data for detailed spectral diagnostics, plant maintenance planning, and troubleshooting elusive performance issues. The structured output also includes summary signal statistics and supports export to JSON or Excel for visualization and offline analysis.
+
 ## 📚 Table of Contents
 
 * [Get Measurement](#get-measurement)
