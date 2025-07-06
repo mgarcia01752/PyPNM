@@ -1,5 +1,15 @@
 # PNM Operations – Spectrum Analyzer
 
+This API enables remote spectrum capture and signal inspection from a DOCSIS modem. It is designed for proactive diagnostics and RF analysis of the downstream OFDM path.
+
+📌 **Important:** You must choose a start and end frequency that lie within the modem's configured diplexer band. Use the diplexer configuration endpoint to verify allowed frequency boundaries:
+
+**POST:** `/docs/if31/system/diplexer`
+
+👉 [API Guide – Diplexer Configuration](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/diplexer-configuration.md)
+
+⚠️ **Notice:** A modem can only scan one direction at a time — either downstream or upstream. Attempting to scan both directions simultaneously is not supported.
+
 ## 📡 Endpoint
 
 **POST** `/docs/pnm/ds/ofdm/spectrumAnalyzer/getMeasurement`
@@ -107,10 +117,10 @@ Performs a downstream OFDM spectrum capture from a DOCSIS cable modem. This oper
 | `Number of Bin Segments`         | int    | Number of segments included in the spectrum capture |
 | `Amplitude Bin Segments Float`   | array  | List of floating-point amplitude values per segment |
 
----
-
 ## 📝 Notes
 
 * Raw spectrum data is preserved in `Spectrum Analysis Data` for future decoding.
 * `Amplitude Bin Segments Float` is pre-processed for visualization and signal quality inspection.
 * This data can be used to detect notches, roll-off, ingress noise, and other RF anomalies.
+* Make sure the requested frequency range is within the modem’s diplexer capability using `/docs/if31/system/diplexer`.
+* Modems cannot perform both upstream and downstream spectrum scans simultaneously.

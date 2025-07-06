@@ -100,6 +100,5 @@ class SpectrumAnalyzerRouter:
                 self.logger.exception(f"[getPlot] Error for MAC {request.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Plot retrieval failed: {str(e)}")
             
-
 # Required for dynamic auto-registration
 router = SpectrumAnalyzerRouter().router
