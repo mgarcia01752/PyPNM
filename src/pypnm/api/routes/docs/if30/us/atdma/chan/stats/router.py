@@ -61,16 +61,22 @@ class UsScQamChannelRouter:
         @self.router.post("/preEqualization", response_model=List[PnmChannelEntryResponse])
         async def get_us_scqam_pre_equalizations(request: SnmpRequest):
             """
-            POST /docs/if30/us/scqam/chan/stats
+            📐 DOCSIS 3.0 Upstream Pre-Equalization Coefficients
 
-            Retrieves DOCSIS 3.0 upstream ATDMA SC-QAM channel statistics from a cable modem.
+            Retrieves forward and reverse pre-equalization tap coefficients from a DOCSIS 3.0 SC-QAM upstream channel.
 
-            Parameters:
-            - `request.mac_address` (str): MAC address of the cable modem.
-            - `request.ip_address` (str): IP address of the cable modem.
+            The output includes:
+            - Main tap location
+            - Number of forward and reverse taps
+            - Complex tap coefficients with real/imag/magnitude/magnitude_dB
 
-            Returns:
-            - List[PnmChannelEntryResponse]: List of upstream channel statistics.
+            Used to analyze echo cancellation behavior and upstream plant quality.
+
+            🔗 [Pre-Equalization API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/pre-equalization.md)
+
+            ---
+            **Request:** `SnmpRequest`  
+            **Response:** Dictionary of channel IDs with tap coefficient details
             """
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                     ip_address=request.ip_address).run_precheck()
