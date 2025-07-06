@@ -78,7 +78,19 @@ class ModulationProfileRouter(PnmFastApiRouter):
 
     async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, SnmpResponse]:
         """
-        Implement Modulation Profile plotting data retrieval.
+        Retrieve and analyze the downstream OFDM modulation profile from the cable modem.
+
+        This analysis includes:
+        - Per-subcarrier modulation type (e.g., QAM-16, QAM-4096)
+        - Frequency mapping
+        - Shannon limit estimation per subcarrier
+
+        Supports output types:
+        - 0: JSON with modulation and Shannon analysis
+        - 1: XLSX formatted report for offline visualization
+
+        [📘 Full Docs](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/get-analysis-modulation-profile.md)
+
         """
         self.logger.info(f"Generating Modulation Profile plot type: {request.analysis.type} for MAC {request.mac_address}")
         
@@ -104,7 +116,6 @@ class ModulationProfileRouter(PnmFastApiRouter):
         return PnmAnalysisResponse(mac_address=request.mac_address,
                                       status=ServiceStatusCode.SUCCESS,
                                       data=analysis.get_results()) 
-
 
 # Required for dynamic auto-registration
 router = ModulationProfileRouter().router
