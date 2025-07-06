@@ -34,6 +34,18 @@ class SpectrumAnalyzerRouter:
         @self.router.post(f"/{self.base_endpoint}/getMeasurement", 
                           response_model=Union[CmSpecAnaAnalysisResponse, SnmpResponse])
         async def get_measurement(request: CmSpectrumAnalyzerRequest):
+            """
+            **Perform Downstream OFDM Spectrum Capture**
+
+            This endpoint performs a full-bandwidth spectrum capture from a DOCSIS cable modem.
+            It returns both the decoded amplitude bin segments as floating-point values and the
+            raw spectrum data in hexadecimal format for advanced signal anomaly analysis.
+
+            ⚠️ **Note**: Ensure the configured start and end frequencies do not cross the diplexer boundary.
+            Spectrum capture settings must respect diplexer constraints for DOCSIS 3.x and DOCSIS 4.0 (FDD).
+
+            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/spectrum-analyzer.md)
+            """
             try:
                 cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
                 
@@ -74,13 +86,13 @@ class SpectrumAnalyzerRouter:
                 
                 status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                                 ip_address=request.ip_address).run_precheck()
+                
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
                         mac_address=str(request.mac_address),
                         status=status,
-                        message=msg
-                    )
+                        message=msg)
                          
             except HTTPException:
                 raise
