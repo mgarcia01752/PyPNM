@@ -60,7 +60,7 @@ class MultiRxMerRouter(AbstractService):
             """
             The Multi-RxMER Capture API provides a set of REST endpoints to orchestrate, monitor, and retrieve periodic downstream OFDM RxMER captures from a DOCSIS cable modem. This threaded background process supports continuous sampling or specific performance modes, enabling clients to start captures, poll status, download raw PNM data, prematurely stop operations, and run signal analysis on the collected measurements.
             
-            [Multi-RxMER User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md)
+            [Multi-RxMER (Start Capture Guide)](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#1-start-capture)
             
             """
             duration = request.capture.parameters.measurement_duration
@@ -132,7 +132,7 @@ class MultiRxMerRouter(AbstractService):
             summary="Get status of a multi-sample RxMER capture",)
         def get_status(operation_id: str) -> MultiRxMerStatusResponse:
             """
-            [Multi-RxMER User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md)
+            [Multi-RxMER (Check Status Guide)}](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#2-status-check)
                 
             """
             try:
@@ -166,9 +166,9 @@ class MultiRxMerRouter(AbstractService):
                     "description": "ZIP archive of capture files",
                 }
             },)
-        def download_results_zip(operation_id: str) -> StreamingResponse:
+        def download_measurements_zip(operation_id: str) -> StreamingResponse:
             """
-                Stream a ZIP file containing all captured RxMER files for this operation.
+                Stream a ZIP file containing all captured RxMER measurements for this operation.
             
                 [Multi-RxMER User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md)
                 
@@ -231,8 +231,8 @@ class MultiRxMerRouter(AbstractService):
             response_model=MultiRxMerAnalysisResponse,
             summary="Perform signal analysis on a previously executed Multi-RxMER",)
         def analysis(request: MultiRxMerAnalysisRequest) -> MultiRxMerAnalysisResponse:
-            """
-            [Multi-RxMER User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md)
+            """ 
+            [Multi-RxMER - Start Capture](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#1-start-capture)
             """
             try:
                 capture_group_id = OperationManager.get_capture_group(request.operation_id)

@@ -5,7 +5,7 @@
 
   * [1. Start Capture](#1-start-capture)
   * [2. Status Check](#2-status-check)
-  * [3. Download Results](#3-download-results)
+  * [3. Download Measurements](#3-download-results)
   * [4. Stop Capture Early](#4-stop-capture-early)
   * [5. Analysis](#5-analysis)
 * [⏱️ Timing Details](#️-timing-details)
@@ -146,7 +146,7 @@ GET /advance/multiRxMer/status/{operation_id}
 
 ---
 
-### 3. Download Results
+### 3. Download Measurements
 
 **Request**:
 
