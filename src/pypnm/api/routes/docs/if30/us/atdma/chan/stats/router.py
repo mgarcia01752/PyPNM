@@ -49,13 +49,12 @@ class UsScQamChannelRouter:
                 return PnmChannelEntryResponse(
                     mac_address=str(request.mac_address),
                     status=status,
-                    message=msg
-                )                  
+                    message=msg)                  
             
             service = UsScQamChannelService(
                 mac_address=request.mac_address,
-                ip_address=request.ip_address
-            )
+                ip_address=request.ip_address)
+            
             data = await service.get_upstream_entries()
             return JSONResponse(content=data)
         
@@ -87,8 +86,8 @@ class UsScQamChannelRouter:
                 )                  
             service = UsScQamChannelService(
                 mac_address=request.mac_address,
-                ip_address=request.ip_address
-            )
+                ip_address=request.ip_address)
+            
             data = await service.get_upstream_pre_equalizations()
             return JSONResponse(content=data)        
 
