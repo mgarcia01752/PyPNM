@@ -40,19 +40,26 @@ class ConstellationDisplayRouter:
         
     def _add_routes(self):
 
-        @self.router.post(f"/{self.base_endpoint}/getMeasurement", response_model=Union[PnmConstellationDisplayResponse,SnmpResponse])
+        @self.router.post(f"/{self.base_endpoint}/getMeasurement", 
+                          response_model=Union[PnmConstellationDisplayResponse,SnmpResponse])
         async def get_measurement(request: PnmConstellationDisplayRequest) -> Union[PnmConstellationDisplayResponse, SnmpResponse]:
             """
-            Trigger constellation display measurement for a specific cable modem.
+            **Capture Downstream OFDM Constellation Symbols**
 
-            Parameters:
-                request (ConstDispRequest): Contains MAC address, IP address, and other test params.
+            This endpoint retrieves complex I/Q sample data from a DOCSIS cable modem for visualizing
+            downstream OFDM constellation displays. Ideal for modulation quality analysis and signal
+            impairment diagnostics. Each response includes metadata and I/Q values per OFDM channel.
 
-            Returns:
-                ConstDispResponse: SNMP test status and decoded constellation display results.
+            ⚠️ Due to large payloads, it is recommended to use Postman or CLI tools (e.g., `curl`) rather than SwaggerUI.
 
-            Raises:
-                HTTPException: If SNMP execution or post-processing fails.
+            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/constellation-display.md)
+
+            ---
+            - **Modulation Orders:** Supports QAM-16, QAM-64, QAM-1024, QAM-4096
+            - **Units:** `[Real(I), Imaginary(Q)]`
+            - **Usage:** Suitable for scatter plots to evaluate demodulation clarity
+
+            Returns a list of I/Q samples per OFDM channel, including all relevant metadata.
             """
             try:
                 cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
@@ -63,8 +70,7 @@ class ConstellationDisplayRouter:
                     return SnmpResponse(
                         mac_address=str(request.mac_address),
                         status=status,
-                        message=msg
-                    )                    
+                        message=msg)                    
                 
                 modulation_order_offset = request.modulation_order_offset
                 number_sample_symbol = request.number_sample_symbol
@@ -72,8 +78,8 @@ class ConstellationDisplayRouter:
                 service = CmDsOfdmConstDisplayService(
                     cable_modem=cm,
                     modulation_order_offset=modulation_order_offset,
-                    number_sample_symbol=number_sample_symbol,
-                )
+                    number_sample_symbol=number_sample_symbol,)
+                
                 msg_rsp: MessageResponse = await service.set_and_go()
 
                 if msg_rsp.status != ServiceStatusCode.SUCCESS:
@@ -88,8 +94,7 @@ class ConstellationDisplayRouter:
                 return PnmConstellationDisplayResponse(
                     mac_address=request.mac_address,
                     status=msg_rsp.status,
-                    data=msg_rsp.payload_to_dict(),
-                )
+                    data=msg_rsp.payload_to_dict(),)
 
             except HTTPException:
                 raise
