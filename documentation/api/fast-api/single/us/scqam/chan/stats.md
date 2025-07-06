@@ -6,7 +6,6 @@
 
 Retrieves statistics for upstream SC-QAM (ATDMA) channels on a DOCSIS 3.0 cable modem.
 
----
 
 ## 📥 Request Body (JSON)
 
@@ -33,12 +32,10 @@ Retrieves statistics for upstream SC-QAM (ATDMA) channels on a DOCSIS 3.0 cable 
 ### 🔑 Fields
 
 | Field        | Type   | Description                    |
-| ------------ | ------ | ------------------------------ |
+|  |  |  |
 | mac\_address | string | MAC address of the cable modem |
 | ip\_address  | string | IP address of the cable modem  |
 | snmp         | object | SNMPv2c or SNMPv3 credentials  |
-
----
 
 ## 📤 Response Body (Array of Objects)
 
@@ -83,7 +80,7 @@ Each object in the response represents one upstream ATDMA channel.
 ### 📊 Key Response Fields
 
 | Field                                  | Type    | Description                             |
-| -------------------------------------- | ------- | --------------------------------------- |
+| -- | - |  |
 | index                                  | integer | SNMP index of the upstream channel      |
 | channel\_id                            | integer | Logical channel ID                      |
 | entry.docsIfUpChannelFrequency         | integer | Center frequency in Hz                  |
@@ -100,14 +97,10 @@ Each object in the response represents one upstream ATDMA channel.
 
 > ℹ️ Other fields follow DOCSIS-IF3-MIB conventions.
 
----
-
 ## 📝 Notes
 
 * The response is an array and may contain multiple upstream ATDMA channels.
 * The `docsIf3CmStatusUsEqData` field is a binary string and may be parsed for tap coefficient analysis.
 * This endpoint is used for troubleshooting upstream channel performance on DOCSIS 3.0 modems.
-
----
 
 > 📂 For OID definitions and structure, refer to: `DOCS-IF-MIB` and `DOCS-IF3-MIB`
