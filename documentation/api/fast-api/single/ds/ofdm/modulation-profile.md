@@ -7,8 +7,6 @@
 * [Analysis and Output Types](#analysis-and-output-types)
 * [Differences Between Measurement and Analysis](#differences-between-measurement-and-analysis)
 
----
-
 ## Get Measurement
 
 ### 📊 Endpoint
@@ -117,8 +115,6 @@ This endpoint retrieves the modulation profile used in DOCSIS 3.1 OFDM downstrea
 | →→ modulation\_order             | string   | Modulation type (e.g., qam\_16, qam\_4096)                            |
 | →→ num\_subcarriers              | int      | Number of subcarriers using this modulation scheme                    |
 
----
-
 ## Get Analysis
 
 ### 🛁 Endpoint
@@ -196,8 +192,6 @@ When `output.type` is set to 2, the response is an Excel file with columns:
 
 Useful for data visualization, graphing, and statistical modeling.
 
----
-
 ## Analysis and Output Types
 
 ### `analysis.type`
@@ -213,8 +207,6 @@ Useful for data visualization, graphing, and statistical modeling.
 | `0`   | JSON   | Standard structured JSON suitable for API responses and dashboards        |
 | `1`   | CSV    | Not supported                                                             |
 | `2`   | XLSX   | Excel-compatible output for offline review, reporting, or spreadsheet use |
-
----
 
 ## Differences Between Measurement and Analysis
 
