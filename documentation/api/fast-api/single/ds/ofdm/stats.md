@@ -14,8 +14,6 @@ Retrieves statistics per modulation profile for each DOCSIS 3.1 downstream OFDM 
 
 This data is useful for evaluating traffic utilization, identifying profile transitions, and monitoring FEC correction rates per modulation profile.
 
----
-
 ## 📥 Request Body (JSON)
 
 ```json
@@ -46,7 +44,6 @@ This data is useful for evaluating traffic utilization, identifying profile tran
 | ip\_address  | string | IP address of the cable modem               |
 | snmp         | object | SNMPv2c or SNMPv3 configuration credentials |
 
----
 
 ## 📤 Response Format (Abbreviated Example)
 
