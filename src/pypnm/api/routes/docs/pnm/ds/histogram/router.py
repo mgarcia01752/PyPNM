@@ -51,7 +51,7 @@ class DsHistogramRouter:
         @self.router.post(f"/{self.base_endpoint}/getMeasurement", response_model=Union[PnmHistogramResponse, SnmpResponse])
         async def get_measurement(request: PnmHistogramRequest):
             """
-            **Capture a DOCSIS Downstream Histogram Sample from Cable Modem**
+            **Capture a DOCSIS Downstream Histogram**
 
             This endpoint triggers a downstream histogram capture on the cable modem
             using SNMP and collects hit count data over a user-defined sample duration.
@@ -59,7 +59,7 @@ class DsHistogramRouter:
             - Returns per-bin hit counts representing downstream signal distribution
             - Includes total dwell time and histogram symmetry metadata
 
-            🔗 [PNM Downstream Histogram Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/histogram.md)
+            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/histogram.md)
             """
             try:
                 self.logger.info(
