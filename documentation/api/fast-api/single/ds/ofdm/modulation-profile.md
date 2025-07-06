@@ -1,5 +1,11 @@
 # PNM Operations – Downstream OFDM Modulation Profile
 
+This API gives operators visibility into how subcarriers are modulated within DOCSIS 3.1 OFDM downstream channels. Each OFDM channel can carry multiple modulation profiles (e.g., QAM-16 to QAM-4096), each tailored to the SNR conditions across frequency ranges. This endpoint retrieves the raw profile data and maps which modulation scheme is used across subcarrier groups.
+
+By pairing the /getMeasurement and /getAnalysis endpoints, operators can transform raw schema data into a meaningful per-subcarrier view, including estimated Shannon limits. These insights are crucial for validating profile assignments, identifying potential overmodulation or underutilization, and assessing channel capacity performance under real-world conditions.
+
+The analysis output is suitable for both automation and visualization, supporting export to Excel for offline diagnostics and engineering reports.
+
 ## 📂 Table of Contents
 
 * [Get Measurement](#get-measurement)
