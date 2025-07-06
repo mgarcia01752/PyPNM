@@ -1,5 +1,11 @@
 # PNM Operations - Downstream OFDM RxMER
 
+This API provides deep visibility into the signal quality of DOCSIS 3.1+ downstream OFDM channels by retrieving and analyzing Receive Modulation Error Ratio (RxMER) at the subcarrier level. RxMER is one of the most powerful indicators of downstream plant health, capable of exposing narrowband interference, ingress, micro-reflections, and other impairments that traditional metrics may overlook.
+
+The /getMeasurement endpoint captures real-time RxMER values, while /getAnalysis transforms that data into a structured format with frequency mappings, carrier status classification, and inferred modulation capabilities. Combined, these endpoints enable operators to localize RF impairments with high precision and assess modem channel performance using Shannon-theoretic analysis.
+
+These insights are instrumental in PNM workflows and can be correlated with constellation diagrams, modulation profiles, and equalizer tap data for full-spectrum diagnostics.
+
 ## 📚 Table of Contents
 
 * [Get Measurement](#get-measurement)
