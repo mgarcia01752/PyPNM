@@ -27,13 +27,7 @@ class PyPnmSystemLog:
 
     async def get_pypnm_log(self):
         """
-        Returns the PyPNM log file as a downloadable plain-text file.
 
-        Returns:
-            FileResponse: FastAPI response containing the log file.
-
-        Raises:
-            HTTPException: If the log file does not exist or cannot be accessed.
         """
         try:
             log_path = os.path.join(SystemConfigSettings.log_dir, SystemConfigSettings.log_filename)
