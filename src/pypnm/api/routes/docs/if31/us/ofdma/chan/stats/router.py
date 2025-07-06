@@ -30,7 +30,18 @@ class UsOfdmaChannelRouter:
         @self.router.post("/stats", response_model=Union[List[PnmChannelEntryResponse], SnmpResponse])
         async def get_us_ofdma_channels(request: PnmRequest):
             """
+            **Upstream OFDMA Channel Statistics (DOCSIS 3.1)**
 
+            Queries a cable modem for active upstream OFDMA channel configuration and health status.
+            This includes subcarrier layout, transmission parameters, and timeout counters related to ranging.
+
+            **Outputs include:**
+            - Channel ID, subcarrier count, and frequency range
+            - Transmit power and pre-equalization enablement
+            - Cyclic prefix, roll-off period, and symbols per frame
+            - Ranging timeouts and mute status indicators
+
+            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/stats.md)
             """
         
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
