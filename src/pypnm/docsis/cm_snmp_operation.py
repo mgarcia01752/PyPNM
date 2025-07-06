@@ -19,6 +19,7 @@ from pypnm.docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChan
 from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.docsis.lib.pnm_bulk_data import DocsPnmBulkDataGroup, DocsPnmBulkFileEntry
+from pypnm.lib.format_string import Format
 from pypnm.lib.inet import Inet
 from pypnm.lib.inet_utils import InetUtils
 from pypnm.lib.mac_address import MacAddress

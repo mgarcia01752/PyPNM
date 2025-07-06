@@ -29,16 +29,17 @@ class UsScQamChannelRouter:
         @self.router.post("/stats", response_model=List[PnmChannelEntryResponse])
         async def get_us_scqam_upstream_channels(request: SnmpRequest):
             """
-            POST /docs/if30/us/scqam/chan/stats
+            📶 DOCSIS 3.0 Upstream ATDMA Channel Stats
 
-            Retrieves DOCSIS 3.0 upstream ATDMA SC-QAM channel statistics from a cable modem.
+            Retrieves DOCSIS 3.0 upstream SC-QAM (ATDMA) channel configuration and operational statistics.
 
-            Parameters:
-            - `request.mac_address` (str): MAC address of the cable modem.
-            - `request.ip_address` (str): IP address of the cable modem.
+            The response includes modulation settings, frequency parameters, pre-equalization status, transmit power, ranging behavior, and other DOCSIS-IF3-MIB fields used to diagnose upstream performance.
 
-            Returns:
-            - List[PnmChannelEntryResponse]: List of upstream channel statistics.
+            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/stats.md)
+
+            ---
+            **Request Body:** `SnmpRequest`  
+            **Response:** List of `DocsIfUpstreamChannelEntry`-like structures with enriched statistics
             """
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                     ip_address=request.ip_address).run_precheck()
