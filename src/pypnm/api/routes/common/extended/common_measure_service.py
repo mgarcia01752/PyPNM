@@ -921,7 +921,7 @@ class CommonMeasureService(CommonMessagingService):
         if suffix:
             suffix = f'_{suffix}'
 
-        file_name = f"{test_prefix}_{self.cm.get_mac_address}{suffix}_{Utils.time_stamp()}{ext}"
+        file_name = f"{test_prefix}_{self.cm.get_mac_address.to_mac_format()}{suffix}_{Utils.time_stamp()}{ext}"
 
         transaction_id = await PnmFileTransaction().insert(self.cm, test_type, file_name)
         

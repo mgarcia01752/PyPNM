@@ -163,8 +163,8 @@ GET /advance/multiRxMer/results/{operation_id}
 * A ZIP archive containing:
 
   ```
-  4aca137c1e9d4eb6/sample_0001.pnm
-  4aca137c1e9d4eb6/sample_0002.pnm
+  Zip Filename: multiRxMer_<mac_address>_<operation_id>.zip
+  ds_ofdm_rxmer_per_subcar_<mac_address>_<channel_id>_<ephoc>.bin
   ...
   ```
 

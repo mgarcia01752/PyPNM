@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+from enum import Enum, auto
 import logging
 import re
 from typing import Union
@@ -10,6 +11,11 @@ try:
     
 except ImportError:
     OctetString = None
+class MacAddressFormat(Enum):
+    FLAT = auto()      # e.g., '001a2b3c4d5e'
+    CISCO = auto()     # e.g., '001a.2b3c.4d5e'
+    COLON = auto()     # e.g., '00:1a:2b:3c:4d:5e'
+    HYPHEN = auto()    # e.g., '00-1a-2b-3c-4d-5e'
 
 class MacAddress:
     def __init__(self, mac_address: Union[str, bytes, bytearray, 'OctetString']) -> None:
@@ -81,8 +87,28 @@ class MacAddress:
         """
         return int(self.mac_address[0:2], 16) & 1 == 1
 
-    def to_flat(self) -> str:
-        return self.__str__().lower().replace(':','')
+    def to_mac_format(self, fmt: MacAddressFormat = MacAddressFormat.FLAT) -> str:
+        """
+        Convert the MAC address to a specific string format.
+
+        Args:
+            fmt (MacAddressFormat): Desired output format.
+
+        Returns:
+            str: Formatted MAC address.
+        """
+        hex_str = self.mac_address
+
+        if fmt == MacAddressFormat.FLAT:
+            return hex_str
+        elif fmt == MacAddressFormat.COLON:
+            return ':'.join(hex_str[i:i+2] for i in range(0, 12, 2))
+        elif fmt == MacAddressFormat.HYPHEN:
+            return '-'.join(hex_str[i:i+2] for i in range(0, 12, 2))
+        elif fmt == MacAddressFormat.CISCO:
+            return f"{hex_str[:4]}.{hex_str[4:8]}.{hex_str[8:]}"
+        else:
+            raise ValueError(f"Unsupported MAC address format: {fmt}")
     
     @staticmethod
     def is_valid(mac_address: Union[str, bytes, bytearray, 'OctetString']) -> bool:

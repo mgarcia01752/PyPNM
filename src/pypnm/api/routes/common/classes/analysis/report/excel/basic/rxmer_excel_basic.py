@@ -131,7 +131,7 @@ class RxMerExcelBasic:
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
         if not self.filename:
-            dev_id = f'{self.mac_address.to_flat()}_{self.capture_time}'
+            dev_id = f'{self.mac_address.to_mac_format()}_{self.capture_time}'
             self.filename = f"rxmer_basic_{dev_id}.xlsx"
             
         out_path = self.output_dir / self.filename

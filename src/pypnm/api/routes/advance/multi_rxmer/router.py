@@ -75,8 +75,7 @@ class MultiRxMerRouter(AbstractService):
 
             cable_modem = CableModem(
                 mac_address=MacAddress(request.mac_address),
-                inet=Inet(request.ip_address),
-            )
+                inet=Inet(request.ip_address),)
 
             status, msg = await CableModemServicePreCheck(cable_modem=cable_modem).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
@@ -84,8 +83,7 @@ class MultiRxMerRouter(AbstractService):
                 return SnmpResponse(
                     mac_address=str(request.mac_address),
                     status=status,
-                    message=msg
-                )   
+                    message=msg)   
 
             if measure_modes == MeasureModes.CONTINUOUS:
                 msg=f'Starting Multi-RxMER capture for MAC={request.mac_address}'
@@ -94,9 +92,7 @@ class MultiRxMerRouter(AbstractService):
                     MultiRxMerService,
                     cable_modem,
                     duration=duration,
-                    interval=interval,
-                )
-                
+                    interval=interval,)
                 
             elif measure_modes == MeasureModes.OFDM_PERFORMANCE_1:
                 msg=f'Starting Multi-RxMER-OFDM-Performance-1 capture for MAC={request.mac_address}'
@@ -105,10 +101,8 @@ class MultiRxMerRouter(AbstractService):
                     MultiRxMer_Ofdm_Performance_1_Service,
                     cable_modem,
                     duration=duration,
-                    interval=interval,
-                )
-                
-                
+                    interval=interval,)
+
             else:
                 self.logger.error(f'Invalid Measure Mode Selected: ({measure_modes})')
                 return MultiRxMerStartResponse(
@@ -170,7 +164,7 @@ class MultiRxMerRouter(AbstractService):
             """
                 Stream a ZIP file containing all captured RxMER measurements for this operation.
             
-                [Multi-RxMER User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md)
+                [Multi-RxMER (Download Measurement Guide))](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#3-download-measurements)
                 
             """
             svc:MultiRxMerService = self.getService(operation_id) # type: ignore

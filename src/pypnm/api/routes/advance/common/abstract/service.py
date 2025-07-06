@@ -32,8 +32,7 @@ class AbstractService(abc.ABC):
         self,
         service_cls: Type[T],
         *args: Any,
-        **kwargs: Any
-    ) -> Tuple[str, str]:
+        **kwargs: Any) -> Tuple[str, str]:
         """
         Instantiate, start, and register a capture service.
 
