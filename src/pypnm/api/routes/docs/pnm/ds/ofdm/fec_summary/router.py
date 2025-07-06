@@ -43,7 +43,7 @@ class FecSummaryRouter:
             - **Summary Types**:
                 - `2`: 10-Minute Summary (1 entry per second for 10 minutes)
                 - `3`: 24-Hour Summary (1 entry per minute for 10 hours)
-            - Up to 5 profiles can be reported (e.g., Profile ID `0`, `4`, `255`, ...)
+            - Up to 5 profiles can be reported (e.g., Profile ID `0:N`, `NCP:255`)
 
             Returns per-channel breakdown with timestamps and codeword counters.
             """
