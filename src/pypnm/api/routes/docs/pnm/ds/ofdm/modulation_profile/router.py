@@ -23,31 +23,45 @@ class ModulationProfileRouter(PnmFastApiRouter):
     Concrete implementation of PnmFastApiRouter for handling Modulation Profile-related requests.
     """
     def __init__(self):
+        
+        measurement_description = """
+**Retrieve DOCSIS 3.1 Downstream OFDM Modulation Profile**
+
+Captures the raw modulation profile from a DOCSIS 3.1 cable modem’s downstream OFDM channel.
+Includes metadata about profile ID, subcarrier spacing, and modulation schemes (e.g., QAM-16 to QAM-4096)
+assigned to subcarrier groups.
+
+⚠️ Note: This output reflects a direct conversion from the modem’s internal profile encoding.
+Additional decoding is required for full per-subcarrier modulation mapping or bit-loading visualizations.
+
+📄 [API Guide – Get Measurement](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-measurement)
+"""
+  
+        analysis_description = """
+**Analyze Downstream OFDM Modulation Profile**
+
+Performs post-processing of the downstream OFDM modulation profile,
+providing a per-subcarrier breakdown of modulation types and frequency layout.
+
+Includes:
+- Subcarrier modulation type (e.g., QAM-256, QAM-4096)
+- Subcarrier frequency map
+- Shannon limit estimates based on modulation order
+
+📘 [API Guide – Get Analysis](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-analysis)
+"""
+
+  
         super().__init__(
             prefix="/docs/pnm/ds/ofdm",
             tags=["PNM Operations - Downstream OFDM Modulation Profile"],
-            base_endpoint="/modulationProfile")
+            base_endpoint="/modulationProfile",
+            set_measurement_description = measurement_description,
+            set_analysis_description = analysis_description)
         self.logger = logging.getLogger("ModulationProfileRouter")
 
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:
-        """
-        Retrieve DOCSIS 3.1 Downstream OFDM Modulation Profile
 
-        This API captures and returns the modulation profile data for downstream OFDM channels 
-        from a DOCSIS 3.1 cable modem. It reports profile metadata including modulation schemes 
-        (e.g., QAM-16, QAM-4096) used per subcarrier group, along with carrier frequency layout 
-        and subcarrier spacing.
-
-        ⚠️ Note: This is a raw conversion of modulation profile entries. Further processing is 
-        required to generate full per-subcarrier bit-loading visualizations or modulation maps.
-
-        - **POST**: `/docs/pnm/ds/ofdm/modulationProfile/getMeasurement`
-        - 📄 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-measurement)
-
-        Returns:
-            - PnmMeasurementResponse: Measurement data containing one or more OFDM channel modulation profiles.
-            - SnmpResponse: SNMP error or fallback message.
-        """ 
         self.logger.info(f"Retrieving Modulation Profile measurement for MAC {request.mac_address}")
 
         cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))

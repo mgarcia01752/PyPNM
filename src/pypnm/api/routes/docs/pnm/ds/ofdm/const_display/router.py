@@ -115,13 +115,12 @@ class ConstellationDisplayRouter:
                     status=status,
                     message=msg
                 )               
-            
             try:
                 pass
             except HTTPException:
                 raise
             except Exception as e:
-                self.logger.exception(f"[getPlot] Error for MAC {request.mac_address}")
+                self.logger.exception(f"[getAnalysis] Error for MAC {request.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Plot retrieval failed: {str(e)}")
 
 # ✅ Required for dynamic auto-registration
