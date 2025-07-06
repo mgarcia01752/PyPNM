@@ -150,8 +150,8 @@ Returns statistical analysis of decoded upstream OFDMA pre-equalization coeffici
 | mac\_address  | string | MAC address of the cable modem                         |
 | ip\_address   | string | IP address of the cable modem                          |
 | snmp          | object | SNMPv2c or SNMPv3 credentials                          |
-| analysis.type | int    | Type of analysis to perform (0 = magnitude, 1 = delay) |
-| output.type   | int    | Output format (0 = structured, 1 = graph, 2 = overlay) |
+| analysis.type | int    | 0 = basic                                              |
+| output.type   | int    | 0 = json <br> 2 = xlsx                                 |
 
 ### 📄 Response Body – Output Type `0`
 
