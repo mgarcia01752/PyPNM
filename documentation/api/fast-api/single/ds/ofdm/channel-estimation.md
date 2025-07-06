@@ -6,8 +6,6 @@
 * [Get Analysis](#get-analysis)
 * [Analysis and Output Types](#analysis-and-output-types)
 
----
-
 ## Get Measurement
 
 ### 🛁 Endpoint
@@ -75,7 +73,7 @@ Retrieves complex channel estimation coefficients from a DOCSIS 3.1 cable modem 
 ### 📘️ Response Field Breakdown
 
 | Field                           | Type     | Description                                                      |
-| ------------------------------- | -------- | ---------------------------------------------------------------- |
+| - | -- | - |
 | `pnm_header`                    | object   | Metadata from the capture file                                   |
 | `channel_id`                    | int      | Downstream OFDM channel ID                                       |
 | `mac_address`                   | string   | MAC address of the modem                                         |
@@ -88,7 +86,6 @@ Retrieves complex channel estimation coefficients from a DOCSIS 3.1 cable modem 
 | `value_units`                   | string   | Format of the data, e.g. `[Real, Imaginary]`                     |
 | `values`                        | list     | List of complex coefficients (length = number\_of\_coefficients) |
 
----
 
 ## Get Analysis
 
@@ -180,20 +177,18 @@ Performs structured analysis of the channel estimation coefficients, including m
 }
 ```
 
----
-
 ## Analysis and Output Types
 
 ### `analysis.type`
 
 | Value | Type  | Description                                         |
-| ----- | ----- | --------------------------------------------------- |
+| -- | -- |  |
 | `0`   | BASIC | Magnitude, group delay, complex taps per subcarrier |
 
 ### `output.type`
 
 | Value | Format | Description                                                                  |
-| ----- | ------ | ---------------------------------------------------------------------------- |
+| -- |  | - |
 | `0`   | JSON   | Structured JSON for dashboards and offline processing                        |
 | `1`   | CSV    | Not Supported                                                                |
 | `2`   | XLSX   | Excel-compatible output for visualization or detailed statistical breakdowns |
