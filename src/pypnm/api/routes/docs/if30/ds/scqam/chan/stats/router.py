@@ -29,16 +29,20 @@ class DsScQamChannelRouter:
         @self.router.post("/stats", response_model=Union[List[PnmChannelEntryResponse], SnmpResponse])
         async def get_scqam_channels(request: PnmRequest):
             """
-            POST /docs/if30/ds/scqam/chan/stats
+            📡 **DOCSIS 3.0 Downstream SC-QAM Channel Stats**
 
-            Retrieves DOCSIS 3.0 SC-QAM downstream channel statistics from a cable modem.
+            Retrieves downstream SC-QAM channel configuration and signal quality metrics
+            for a DOCSIS 3.0 modem, including modulation type, frequency, RxMER, power,
+            and error counters.
 
-            Parameters:
-            - `req.mac_address` (str): MAC address of the target modem.
-            - `req.ip_address` (str): IP address of the target modem.
+            This endpoint is used for monitoring downstream health and identifying RF impairments
+            such high uncorrectable error rates.
 
-            Returns:
-            - List[PnmChannelEntryResponse]: List of channel statistics entries.
+            🔗 [API Documentation](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/scqam/stats.md)
+
+            ---
+            **Request:** `PnmRequest`  
+            **Response:** List of downstream channel entries with extended signal quality stats
             """
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                     ip_address=request.ip_address).run_precheck()
