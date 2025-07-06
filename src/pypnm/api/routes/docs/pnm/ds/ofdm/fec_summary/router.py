@@ -37,7 +37,7 @@ class FecSummaryRouter:
             This endpoint fetches FEC summary counters for each active OFDM downstream profile,
             including corrected and uncorrectable codewords over a defined interval.
 
-            📘 [View Full API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/fec-summary.md)
+            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/fec-summary.md)
 
             ---
             - **Summary Types**:
