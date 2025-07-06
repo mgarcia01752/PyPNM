@@ -164,7 +164,7 @@ class MultiRxMerRouter(AbstractService):
             """
                 Stream a ZIP file containing all captured RxMER measurements for this operation.
             
-                [Multi-RxMER (Download Measurement Guide))](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#3-download-measurements)
+                [Multi-RxMER (Download Measurement Guide)](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#3-download-measurements)
                 
             """
             svc:MultiRxMerService = self.getService(operation_id) # type: ignore
@@ -195,10 +195,9 @@ class MultiRxMerRouter(AbstractService):
             summary="Stop a running Multi-RxMER capture early",)
         def stop_capture(operation_id: str) -> MultiRxMerStatusResponse:
             """
-            Signal capture to stop after the current iteration.
+            Stop a Multi-Capture Operation
             
-            [Multi-RxMER User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md)
-                
+            [Multi-RxMER (Stop Capture Guide)](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#4-stop-capture-early) 
             """
             try:
                 service:MultiRxMerService = self.getService(operation_id) # type: ignore
@@ -226,7 +225,7 @@ class MultiRxMerRouter(AbstractService):
             summary="Perform signal analysis on a previously executed Multi-RxMER",)
         def analysis(request: MultiRxMerAnalysisRequest) -> MultiRxMerAnalysisResponse:
             """ 
-            [Multi-RxMER - Start Capture](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#1-start-capture)
+            [Multi-RxMER (Analysis Guide)](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#5-analysis)
             """
             try:
                 capture_group_id = OperationManager.get_capture_group(request.operation_id)
