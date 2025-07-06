@@ -21,8 +21,7 @@ class DsScQamChannelRouter:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.router = APIRouter(
             prefix="/docs/if30/ds/scqam/chan",
-            tags=["DOCSIS 3.0 Downstream SC-QAM Channel Stats"]
-        )
+            tags=["DOCSIS 3.0 Downstream SC-QAM Channel Stats"])
         self._add_routes()
 
     def _add_routes(self):
@@ -38,26 +37,24 @@ class DsScQamChannelRouter:
             This endpoint is used for monitoring downstream health and identifying RF impairments
             such high uncorrectable error rates.
 
-            🔗 [API Documentation](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/scqam/stats.md)
+            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/scqam/stats.md)
 
-            ---
-            **Request:** `PnmRequest`  
-            **Response:** List of downstream channel entries with extended signal quality stats
             """
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                     ip_address=request.ip_address).run_precheck()
+            
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
                     mac_address=str(request.mac_address),
                     status=status,
-                    message=msg
-                )              
+                    message=msg)              
             
             service = DsScQamChannelService(
                 mac_address=request.mac_address,
                 ip_address=request.ip_address
             )
+            
             data = await service.get_scqam_chan_entries()
             return JSONResponse(content=data)
 
