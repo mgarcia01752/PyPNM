@@ -58,16 +58,16 @@ class MultiRxMerRouter(AbstractService):
             summary="Start a multi-sample RxMER capture",)
         async def start_multi_rxmer(request: MultiRxMerRequest) -> Union[MultiRxMerStartResponse, SnmpResponse]:
             """
-            🚀 Start Multi-RxMER Capture
+            🚀 **Start Multi-RxMER Capture**
 
             Initiates a threaded background RxMER capture session from a DOCSIS cable modem.
 
-            This API supports:
+            **This API supports:**
             - Continuous sampling for statistical analysis
             - Performance-specific modes for OFDM channel insight
             - Asynchronous operation with polling and raw data download
 
-            Once started, clients can:
+            **Once started, clients can:**
             - Monitor status
             - Download raw PNM `.bin` files
             - Stop the session early
@@ -75,8 +75,6 @@ class MultiRxMerRouter(AbstractService):
 
             🔗 [Start Capture Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#1-start-capture)
 
-            ---
-            Returns a `MultiRxMerStartResponse` with `operation_id` and `group_id` if successful, or an `SnmpResponse` on failure.
             """
             duration = request.capture.parameters.measurement_duration
             interval = request.capture.parameters.sample_interval
@@ -141,7 +139,7 @@ class MultiRxMerRouter(AbstractService):
             summary="Get status of a multi-sample RxMER capture",)
         def get_status(operation_id: str) -> MultiRxMerStatusResponse:
             """
-            📡 Check Multi-RxMER Capture Status
+            📡 **Check Multi-RxMER Capture Status**
 
             Poll the status of an ongoing or completed Multi-RxMER capture session using the provided `operation_id`.
 
@@ -149,8 +147,6 @@ class MultiRxMerRouter(AbstractService):
 
             🔗 [Check Status Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#2-status-check)
 
-            ---
-            Returns a `MultiRxMerStatusResponse` with live session metrics.
             """
             try:
                 service:MultiRxMerService = self.getService(operation_id)
@@ -185,7 +181,7 @@ class MultiRxMerRouter(AbstractService):
             },)
         def download_measurements_zip(operation_id: str) -> StreamingResponse:
             """
-            📥 Download Captured RxMER Measurements (ZIP)
+            📥 **Download Captured RxMER Measurements (ZIP)**
 
             Streams a ZIP archive containing all RxMER `.bin` files collected during the specified capture session (`operation_id`).
 
@@ -224,16 +220,14 @@ class MultiRxMerRouter(AbstractService):
             summary="Stop a running Multi-RxMER capture early",)
         def stop_capture(operation_id: str) -> MultiRxMerStatusResponse:
             """
-            🛑 Stop a Multi-RxMER Capture Operation
+            🛑 **Stop a Multi-RxMER Capture Operation**
 
             Gracefully ends an ongoing Multi-RxMER background capture session for the specified `operation_id`.
 
             This request signals the capture process to stop after the current sampling iteration completes.
 
             🔗 [Stop Capture Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#4-stop-capture-early)
-
-            ---
-            Returns a `MultiRxMerStatusResponse` containing the final sample count, state, and time remaining.
+            
             """
             try:
                 service:MultiRxMerService = self.getService(operation_id) # type: ignore
@@ -278,8 +272,6 @@ class MultiRxMerRouter(AbstractService):
             - **2 – RxMER Heat Map**  
             *(Documentation link pending)*
 
-            ---
-            Accepts a `MultiRxMerAnalysisRequest` containing the `operation_id` and desired `analysis_type`, and returns a structured `MultiRxMerAnalysisResponse`.
             """
             try:
                 capture_group_id = OperationManager.get_capture_group(request.operation_id)
