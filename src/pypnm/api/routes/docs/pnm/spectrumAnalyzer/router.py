@@ -44,7 +44,7 @@ class SpectrumAnalyzerRouter:
             ⚠️ **Note**: Ensure the configured start and end frequencies do not cross the diplexer boundary.
             Spectrum capture settings must respect diplexer constraints for DOCSIS 3.x and DOCSIS 4.0 (FDD).
 
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/spectrum-analyzer.md)
+            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/spectrum-analyzer.md)
             """
             try:
                 cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
