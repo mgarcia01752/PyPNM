@@ -30,8 +30,14 @@ class DocsDevRouter:
                           response_model=EventLogResponse)
         async def get_event_log(request: BaseDeviceConnectRequest):
             """
-            POST /docs/dev/eventLog
-            Retrieves DOCSIS event log entries from a cable modem by IP and MAC address.
+            **Retrieve DOCSIS Cable Modem Event Log**
+
+            This endpoint fetches the device event log from a DOCSIS cable modem using SNMP. 
+            Entries typically include system-level events such as T3/T4 timeouts, partial service alerts, 
+            reboots, and other diagnostic messages useful for proactive network maintenance.
+
+            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/event-log.md)
+
             """
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                     ip_address=request.ip_address).run_precheck()
