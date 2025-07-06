@@ -25,22 +25,35 @@ class UsOfdmaPreEqualizationRouter(PnmFastApiRouter):
     def __init__(self):
         
         measurement_description = """
-🔍 Upstream OFDMA Pre-Equalization Measurement
+**Upstream OFDMA Pre-Equalization Measurement**
 
-Retrieves complex subcarrier coefficients for a DOCSIS 3.1 cable modem’s upstream OFDMA channel.
-Used in PNM analysis to identify in-channel reflections, group delay, and frequency-domain distortions.
+Captures raw complex tap coefficients from a DOCSIS 3.1 cable modem’s upstream OFDMA channel.
 
-The result includes:
-- Complex coefficient pairs (Real, Imaginary)
-- Subcarrier spacing and frequency details
-- PNM capture metadata (e.g., timestamp, channel ID)
+This measurement provides the foundational data used for Proactive Network Maintenance (PNM),
+including detection of group delay, in-channel reflections, and frequency-dependent impairments.
 
-🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/get-measurement-pre-equalization.md)
-     
+**Included in the response:**
+- Real/Imaginary coefficient pairs per subcarrier
+- Subcarrier frequency spacing and zero-index frequency
+- Full PNM file metadata (timestamp, channel ID, file format)
+
+🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/pre-equalization.md#get-measurement)
 """
 
-        analysis_description = """"""
-        
+        analysis_description = """
+**Analyze OFDMA Pre-Equalization Coefficients (DOCSIS 3.1)**
+
+Processes upstream complex coefficients into structured per-subcarrier analysis.
+This endpoint enables advanced insight into upstream channel quality using statistical and signal-domain metrics.
+
+**Outputs include:**
+- Subcarrier magnitudes (dB)
+- Group delay (µs) inferred from phase slopes
+- Reconstructed complex values (Real/Imaginary)
+- Frequency mapping per subcarrier
+
+🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/pre-equalization.md#get-analysis)
+"""
         super().__init__(
             prefix="/docs/pnm/us/ofdma",
             tags=["PNM Operations - Upstream OFDMA Pre-Equalization"],
