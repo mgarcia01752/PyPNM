@@ -1,5 +1,11 @@
 # PNM Operations – Downstream OFDM Constellation Display
 
+This API provides access to raw constellation symbols captured from DOCSIS 3.1 downstream OFDM channels, enabling visual inspection of I/Q (in-phase and quadrature) data. The constellation display is a cornerstone of RF diagnostics—it reveals the actual symbol behavior at the demodulator and can highlight impairments such as phase noise, amplitude distortion, ingress, or burst noise.
+
+By capturing and plotting these samples as a scatter plot, network operators can immediately assess modulation clarity, clustering, and the presence of impairments. This is particularly valuable when diagnosing subtle or transient RF issues that might not manifest in standard metrics like RxMER or FEC.
+
+Due to the volume of data returned, this endpoint is best consumed via Postman, CLI tools, or automation scripts rather than SwaggerUI. The capture supports per-channel modulation information, subcarrier mapping, and sampling configuration for precise control and reproducibility.
+
 ## 🔊 Endpoint
 
 **POST** `/docs/pnm/ds/ofdm/constellationDisplay/getMeasurement`
