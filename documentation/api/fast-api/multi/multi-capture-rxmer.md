@@ -10,8 +10,6 @@
   * [5. Analysis](#5-analysis)
 * [⏱️ Timing Details](#️-timing-details)
 
----
-
 ## Workflow Overview
 
 1. **Start Capture** (`POST /advance/multiRxMer/start`)
@@ -36,8 +34,6 @@
 
    * Submits an `operation_id` and desired `analysis_type` to perform post-capture analytics.
    * Returns processed metrics (e.g., min/avg/max RxMER, heatmaps, or profile performance).
-
----
 
 ## Endpoint Stubs
 
@@ -106,8 +102,6 @@
 
 *See the [Timing Details](#️-timing-details) for how `measurement_duration` and `sample_interval` affect workflow timing.*
 
----
-
 ### 2. Status Check
 
 **Request**:
@@ -144,8 +138,6 @@ GET /advance/multiRxMer/status/{operation_id}
 
 *Refer to [Timing Details](#️-timing-details) for recommended polling intervals.*
 
----
-
 ### 3. Download Measurements
 
 **Request**:
@@ -162,9 +154,14 @@ GET /advance/multiRxMer/results/{operation_id}
 
 * A ZIP archive containing:
 
-  ```
   Zip Filename: multiRxMer_<mac_address>_<operation_id>.zip
-  ds_ofdm_rxmer_per_subcar_<mac_address>_<channel_id>_<ephoc>.bin
+  PNM Measurement File Example: ds_ofdm_rxmer_per_subcar_<mac_address>_<channel_id>_<ephoc>.bin
+
+  ```
+  ds_ofdm_rxmer_per_subcar_aabbccddeeff_193_1751762613.bin
+  ds_ofdm_rxmer_per_subcar_aabbccddeeff_194_1751762613.bin
+  ds_ofdm_rxmer_per_subcar_aabbccddeeff_193_1751762613.bin
+  ds_ofdm_rxmer_per_subcar_aabbccddeeff_194_1751762613.bin
   ...
   ```
 
@@ -172,8 +169,6 @@ GET /advance/multiRxMer/results/{operation_id}
 
   * Each `.pnm` file corresponds to a snapshot captured at `sample_interval` increments.
   * The total number of files equals the number of samples (`operation.collected`).
-
----
 
 ### 4. Stop Capture Early
 
@@ -207,8 +202,6 @@ DELETE /advance/multiRxMer/stop/{operation_id}
   * `status`: Always `"stopped"` when the request is accepted.
   * `operation.collected`: Final count of captured samples.
   * `operation.time_remaining`: Remaining seconds at the time of stopping (may be nonzero if stopped mid-capture).
-
----
 
 ### 5. Analysis
 
@@ -273,8 +266,6 @@ DELETE /advance/multiRxMer/stop/{operation_id}
     * For `RXMER_HEAT_MAP`: `{ "timestamps": [<int>, ...], "frequencies": [<int>, ...], "heatmap": [[<float>, ...], ...] }`
 
 > **Note:** Always use the schema definitions under `api/routes/advance/multi_rxmer/schemas.py` for precise field names, types, and allowed values.
-
----
 
 ## ⏱️ Timing Details
 
