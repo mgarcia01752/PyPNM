@@ -32,7 +32,21 @@ class RxMerRouter(PnmFastApiRouter):
     """
     def __init__(self):
         
-        measurement_description= """
+        measurement_description = """
+**Capture Downstream OFDM RxMER Per-Subcarrier Values**
+
+This endpoint retrieves per-subcarrier RxMER (Receive Modulation Error Ratio) data
+from a DOCSIS cable modem. The response includes:
+
+- MER values in dB
+- Channel ID and zero subcarrier frequency
+- Subcarrier spacing and data length
+- Shannon-derived bits per symbol and modulation estimation
+- Statistical metrics: mean, standard deviation, skewness, peak-to-peak, etc.
+
+Each entry corresponds to an active OFDM downstream channel found on the device.
+
+📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/rxmer.md)
 """
 
         analysis_description = """ 
