@@ -43,11 +43,9 @@ class FecSummaryRouter:
                     return SnmpResponse(
                         mac_address=str(request.mac_address),
                         status=status,
-                        message=msg
-                    )               
+                        message=msg)               
             
                 fec_type = FecSummaryType.from_value(int(request.fec_summary_type))
-
                 service = CmDsOfdmFecSummaryService(cable_modem=cm, fec_summary_type=fec_type)
                 msg_rsp: MessageResponse = await service.set_and_go()
 
@@ -61,15 +59,13 @@ class FecSummaryRouter:
                 return PnmFecSummaryResponse(
                     mac_address=request.mac_address,
                     status=msg_rsp.status,
-                    data=msg_rsp.payload_to_dict()
-                )
+                    data=msg_rsp.payload_to_dict())
 
             except HTTPException:
                 raise
             except Exception as e:
                 self.logger.exception(f"[getMeasurement] Error for MAC {request.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}")
-
 
 # ✅ Required for dynamic auto-registration
 router = FecSummaryRouter().router

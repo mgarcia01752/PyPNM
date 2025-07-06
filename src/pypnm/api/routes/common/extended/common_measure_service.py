@@ -143,6 +143,7 @@ class CommonMeasureService(CommonMessagingService):
 
             #Set Spectrum Analyzer
             __status = await self._generic_spectrum_analyzer_operation()
+            
             if __status[0] != ServiceStatusCode.SUCCESS:
                self.logger.error(f"{self.log_prefix} - Unable to set Spectrum Analyzer Settings")
                return ServiceStatusCode.SPEC_ANALYZER_SET_CONFIG_ERROR
@@ -210,14 +211,11 @@ class CommonMeasureService(CommonMessagingService):
 
         ##############################################################################################
         # This section runs through all the indexes, build PNM file, run measurement and check status
-        ##############################################################################################
-                        
+        ##############################################################################################                   
         return self.build_send_msg(await self._pnm_measure_status_and_pnm_file_transfer(status_index_channelId[1], max_wait_count))
     
-
     def getInterfaceParameters(self,
-        interface_type: DocsisIfType
-    ) -> Union[DownstreamOfdmParameters, UpstreamOfdmaParameters]:
+        interface_type: DocsisIfType) -> Union[DownstreamOfdmParameters, UpstreamOfdmaParameters]:
         """
         Instantiate and return the PNM test parameters for the specified DOCSIS interface.
 
@@ -440,6 +438,7 @@ class CommonMeasureService(CommonMessagingService):
             
             wait_count = 0
             extract_idx = lambda idx: idx[0] if isinstance(idx, list) and idx else idx
+            
             while wait_count < max_wait_count:
                 meas_status = await self.cm.getPnmMeasurementStatus(self.pnm_test_type, extract_idx(idx))
                 self.logger.info(f"{self.log_prefix} - MeasureStatus: {meas_status.name}")
@@ -473,41 +472,45 @@ class CommonMeasureService(CommonMessagingService):
             
         return ServiceStatusCode.SUCCESS
     
-    async def _check_and_wait_for_tftp_upload(self, filename:str, max_wait_count:int=5) -> ServiceStatusCode:
+    async def _check_and_wait_for_tftp_upload(self, filename: str, max_wait_count: int = 5) -> ServiceStatusCode:
+        """
+        Waits for a PNM file to be uploaded via TFTP by polling the upload status.
 
-            wait_count = 0
-            while True:
-                try:
-                    status = await self.cm.getBulkFileUploadStatus(filename)
-                except Exception as e:
-                    self.logger.error(f"{self.log_prefix} - Error checking upload status for '{filename}': {e}")
-                    return ServiceStatusCode.TFTP_PNM_FILE_UPLOAD_FAILURE
+        Args:
+            filename (str): The name of the file being uploaded.
+            max_wait_count (int): Maximum number of seconds to wait before timing out.
 
-                # Completed!
-                if status == DocsPnmBulkFileUploadStatus.UPLOAD_COMPLETED:
-                    self.logger.info(f"{self.log_prefix} - File '{filename}' uploaded successfully.")
-                    return ServiceStatusCode.SUCCESS
+        Returns:
+            ServiceStatusCode: SUCCESS if upload completed, failure code otherwise.
+        """
+        wait_count = 0
 
-                # Immediate fail if the device reports an error
-                if status == DocsPnmBulkFileUploadStatus.ERROR:
-                    self.logger.error(f"{self.log_prefix} - Device reported ERROR for file upload '{filename}'.")
-                    return ServiceStatusCode.TFTP_PNM_FILE_UPLOAD_FAILURE
-
-                # Timeout?
-                if wait_count >= max_wait_count:
-                    self.logger.error(f"{self.log_prefix} - TFTP File '{filename}' upload timed out after {wait_count} seconds.")
-                    return ServiceStatusCode.TFTP_PNM_FILE_UPLOAD_FAILURE
-
-                # Otherwise keep waiting
-                self.logger.debug(
-                    f"{self.log_prefix} - Waiting for file '{filename}' to upload "
-                    f"(status={status.name}, count={wait_count})"
-                )
-                await asyncio.sleep(1)
-                wait_count += 1
-                
+        while wait_count < max_wait_count:
+            try:
+                status = await self.cm.getBulkFileUploadStatus(filename)
+            except Exception as e:
+                self.logger.error(f"{self.log_prefix} - Error checking upload status for '{filename}': {e}")
                 return ServiceStatusCode.TFTP_PNM_FILE_UPLOAD_FAILURE
-                             
+
+            if status == DocsPnmBulkFileUploadStatus.UPLOAD_COMPLETED:
+                self.logger.info(f"{self.log_prefix} - File '{filename}' uploaded successfully.")
+                return ServiceStatusCode.SUCCESS
+
+            if status == DocsPnmBulkFileUploadStatus.ERROR:
+                self.logger.error(f"{self.log_prefix} - Device reported ERROR for file upload '{filename}'.")
+                return ServiceStatusCode.TFTP_PNM_FILE_UPLOAD_FAILURE
+
+            self.logger.debug(
+                f"{self.log_prefix} - Waiting for file '{filename}' to upload "
+                f"(status={status.name}, wait_count={wait_count})"
+            )
+
+            await asyncio.sleep(1)
+            wait_count += 1
+
+        self.logger.error(f"{self.log_prefix} - TFTP file '{filename}' upload timed out after {max_wait_count} seconds.")
+        return ServiceStatusCode.TFTP_PNM_FILE_UPLOAD_FAILURE
+                            
     async def _setDocsPnmCmMeasureTest(self, pnm_test_type:DocsPnmCmCtlTest, 
                                        interface_index:int, channel_id:int) -> Tuple[ServiceStatusCode, List[str]]:
         """
