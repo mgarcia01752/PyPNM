@@ -69,7 +69,24 @@ class DocsDevRouter:
 
         @self.router.post("/reset", response_model=SnmpResponse)
         async def reset_cable_modem(request: BaseDeviceConnectRequest):
-            
+            """
+            **Reset a DOCSIS Cable Modem**
+
+            Sends a remote SNMP reset command to the target cable modem, instructing it to reboot.
+
+            This is typically used for maintenance, recovery from fault states, or in automated diagnostics
+            workflows to bring the device back to an operational state.
+
+            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/reset-cm.md)
+
+            ---
+            - Requires valid SNMPv2c or SNMPv3 credentials.
+            - Returns success status once the reset command has been sent.
+            - The actual modem reboot time will vary based on hardware and firmware.
+
+            🔐 SNMP Write Access Required
+            """
+
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
                                                     ip_address=request.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
