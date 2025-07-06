@@ -35,7 +35,7 @@ class SpectrumAnalyzerRouter:
                           response_model=Union[CmSpecAnaAnalysisResponse, SnmpResponse])
         async def get_measurement(request: CmSpectrumAnalyzerRequest):
             """
-            **Perform Downstream OFDM Spectrum Capture**
+            **Perform Spectrum Capture**
 
             This endpoint performs a full-bandwidth spectrum capture from a DOCSIS cable modem.
             It returns both the decoded amplitude bin segments as floating-point values and the
