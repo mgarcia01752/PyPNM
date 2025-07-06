@@ -32,15 +32,23 @@ class PnmFastApiRouter(ABC):
     - get_analysis_logic
     """
 
-    def __init__(self, prefix: str, tags: List[str|Enum], base_endpoint: str):
+    def __init__(self, prefix: str, tags: List[str|Enum], base_endpoint: str,
+                 set_measurement_description:str=None,
+                 set_analysis_description:str=None):
+        
         self.router = APIRouter(prefix=prefix, tags=tags)
         self.logger = logging.getLogger(f"{self.__class__.__name__}.{base_endpoint}")
         self._base_endpoint = base_endpoint.strip("/")
+        self.set_measurement_description = set_measurement_description
+        self.set_analysis_description = set_analysis_description
+        
         self._add_routes()
 
     def _add_routes(self):
+        
         @self.router.post(f"/{self._base_endpoint}/getMeasurement", 
-                          response_model=Union[PnmMeasurementResponse, SnmpResponse])
+                          response_model=Union[PnmMeasurementResponse, SnmpResponse],
+                          description=self.set_measurement_description)
         async def get_measurement(request: PnmRequest):
             try:
                 return await self.get_measurement_logic(request)
@@ -52,14 +60,15 @@ class PnmFastApiRouter(ABC):
 
         @self.router.post(f"/{self._base_endpoint}/getAnalysis", 
                           response_model=Union[PnmAnalysisResponse, SnmpResponse], 
-                          response_model_exclude_unset=True)
+                          response_model_exclude_unset=True,
+                          description=self.set_measurement_description)
         async def get_analysis(request: PnmAnalysisRequest):
             try:
                 return await self.get_analysis_logic(request)
             except HTTPException:
                 raise
             except Exception as e:
-                self.logger.exception(f"[getPlot] Error for MAC {request.mac_address}")
+                self.logger.exception(f"[getAnalysis] Error for MAC {request.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Plot retrieval failed: {str(e)}")
 
     @abstractmethod

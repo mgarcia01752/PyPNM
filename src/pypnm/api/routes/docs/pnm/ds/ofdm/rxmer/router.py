@@ -31,16 +31,23 @@ class RxMerRouter(PnmFastApiRouter):
     Concrete implementation of PnmFastApiRouter for handling RxMER-related requests.
     """
     def __init__(self):
+        
+        measurement_description= """
+"""
+
+        analysis_description = """ 
+"""
+        
         super().__init__(
             prefix="/docs/pnm/ds/ofdm",
             tags=["PNM Operations - Downstream OFDM RxMER"],
-            base_endpoint="/rxMer")
+            base_endpoint="/rxMer",
+            set_measurement_description=measurement_description,
+            set_analysis_description=analysis_description)
         self.logger = logging.getLogger("RxMerRouter")
 
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:
-        """
-        Implement RxMER measurement retrieval logic.
-        """    
+   
         self.logger.info(f"Retrieving RxMER measurement for MAC {request.mac_address}")
 
         cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
