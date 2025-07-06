@@ -65,7 +65,13 @@ class SystemRouter:
         @self.router.post("/upTime", response_model=Union[SysUpTimeResponse, SnmpResponse])
         async def get_uptime(request: SnmpRequest) -> Union[SysUpTimeResponse, SnmpResponse] :
             """
-            Handle POST /system/upTime
+            **Fetch DOCSIS Device System Uptime**
+
+            Retrieves the SNMP system uptime from a DOCSIS cable modem, expressed as a human-readable
+            duration (`hh:mm:ss.microseconds`). Useful for identifying recent reboots or uptime trends.
+
+            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/up-time.md)
+
             """
             try:
                 status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
