@@ -195,13 +195,13 @@ Performs structured analysis of the channel estimation coefficients, including m
 ### `analysis.type`
 
 | Value | Type  | Description                                         |
-| -- | -- |  |
+| ----- | ----- | --------------------------------------------------- |
 | `0`   | BASIC | Magnitude, group delay, complex taps per subcarrier |
 
 ### `output.type`
 
 | Value | Format | Description                                                                  |
-| -- |  | - |
+| ----- | ------ | ---------------------------------------------------------------------------- |
 | `0`   | JSON   | Structured JSON for dashboards and offline processing                        |
-| `1`   | CSV    | Not Supported                                                                |
+| `1`   | CSV    | Not supported                                                                |
 | `2`   | XLSX   | Excel-compatible output for visualization or detailed statistical breakdowns |
