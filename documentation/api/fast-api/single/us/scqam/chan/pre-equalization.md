@@ -1,5 +1,7 @@
 # DOCSIS 3.0 Upstream ATDMA Pre-Equalization API
 
+This endpoint provides access to DOCSIS 3.0 upstream pre-equalization tap data for SC-QAM (ATDMA) channels. The tap coefficients allow engineers to analyze cable plant conditions such as in-channel reflections, group delay, and pre-echo distortion. These insights are essential for proactive maintenance and plant alignment in legacy upstream environments.
+
 ## 📡 Endpoint
 
 **POST** `/docs/if30/us/scqam/chan/preEqualization`
