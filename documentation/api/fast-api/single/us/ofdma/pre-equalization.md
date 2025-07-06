@@ -1,11 +1,14 @@
 # PNM Operations – Upstream OFDMA Pre-Equalization
 
+This API allows retrieval and analysis of DOCSIS 3.1 upstream OFDMA pre-equalization data, which is crucial for identifying plant impairments like group delay, micro-reflections, and impedance mismatch. It captures and decodes the in-channel frequency response of a modem's upstream OFDMA transmission.
+
+Use this interface for proactive diagnostics and signal integrity assessments across active upstream channels.
+
 ## 📛 Table of Contents
 
 * [Get Measurement](#get-measurement)
 * [Get Analysis](#get-analysis)
 * [Analysis and Output Types](#analysis-and-output-types)
-
 
 ## Get Measurement
 
