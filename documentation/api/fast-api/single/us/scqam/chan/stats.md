@@ -1,5 +1,8 @@
 # DOCSIS 3.0 Upstream ATDMA Channel Stats API
 
+This endpoint provides detailed telemetry on DOCSIS 3.0 upstream SC-QAM (ATDMA) channels from cable modems. It includes modulation, frequency, bandwidth, timing offsets, transmit power, timeout counters, and equalizer data—critical for evaluating upstream performance and identifying plant impairments.
+
+
 ## 📡 Endpoint
 
 **POST** `/docs/if30/us/scqam/chan/stats`
