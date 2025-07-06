@@ -227,11 +227,13 @@ class MultiRxMerRouter(AbstractService):
             """ 
             [Multi-RxMER (Analysis Guide)](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#5-analysis)
             
-            [MinMaxAvg]()
+            Analysis Type:
             
-            [OFDM Performace 1]()
-            
-            [HeatMap]()
+                0: [MinMaxAvg](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/rest/multi-rxmer-min-avg-max.md)
+                
+                1: [OFDM Performace 1]()
+                
+                2: [HeatMap]()
             
             """
             try:
