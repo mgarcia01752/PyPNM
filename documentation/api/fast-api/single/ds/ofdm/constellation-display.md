@@ -6,8 +6,6 @@
 
 Captures downstream OFDM constellation symbols from a DOCSIS cable modem for visualization as a scatter plot (I/Q points). Due to the volume of data returned, **Postman or CLI tools are recommended** over SwaggerUI.
 
----
-
 ## 📅 Request Body (JSON)
 
 ```json
@@ -40,8 +38,6 @@ Captures downstream OFDM constellation symbols from a DOCSIS cable modem for vis
 | `snmp.snmpV3.*`           | string | SNMPv3 credentials and security options            |
 | `modulation_order_offset` | int    | Modulation offset (profile-based modulation shift) |
 | `number_sample_symbol`    | int    | Number of I/Q samples to retrieve (e.g., 8192)     |
-
----
 
 ## 📤 JSON Response
 
@@ -80,8 +76,6 @@ Captures downstream OFDM constellation symbols from a DOCSIS cable modem for vis
 }
 ```
 
----
-
 ## 📊 Response Field Breakdown
 
 | Field                       | Type   | Description                                                |
@@ -98,14 +92,10 @@ Captures downstream OFDM constellation symbols from a DOCSIS cable modem for vis
 | `value_units`               | string | Units of the sample values (I/Q format)                    |
 | `values`                    | array  | List of I/Q sample pairs representing constellation points |
 
----
-
 ## 📈 Visualization
 
 * Data from `values` can be plotted as I (x-axis) vs Q (y-axis) for a **scatter plot**.
 * Ideal clusters represent good modulation; noise and spread may indicate impairment.
-
----
 
 ## 📃 Notes
 
