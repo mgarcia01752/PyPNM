@@ -154,9 +154,9 @@ GET /advance/multiRxMer/results/{operation_id}
 
 * A ZIP archive containing:
 
-  Zip Filename: multiRxMer\_\<mac\_address>*\<operation\_id>.zip
+  Zip Filename: `multiRxMer\_\<mac\_address>*\<operation\_id>.zip`
   
-  PNM Measurement File Example: ds\_ofdm\_rxmer\_per\_subcar*\<mac\_address>*\<channel\_id>*<ephoc>.bin
+  PNM Measurement File Example: `ds\_ofdm\_rxmer\_per\_subcar*\<mac\_address>*\<channel\_id>*<ephoc>.bin`
 
   ```
   ds_ofdm_rxmer_per_subcar_aabbccddeeff_193_1751762613.bin
