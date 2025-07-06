@@ -26,14 +26,28 @@ class ModulationProfileRouter(PnmFastApiRouter):
         super().__init__(
             prefix="/docs/pnm/ds/ofdm",
             tags=["PNM Operations - Downstream OFDM Modulation Profile"],
-            base_endpoint="/modulationProfile"
-        )
-        self.logger = logging.getLogger("RxMerRouter")
+            base_endpoint="/modulationProfile")
+        self.logger = logging.getLogger("ModulationProfileRouter")
 
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:
         """
-        Implement Modulation Profile measurement retrieval logic.
-        """    
+        Retrieve DOCSIS 3.1 Downstream OFDM Modulation Profile
+
+        This API captures and returns the modulation profile data for downstream OFDM channels 
+        from a DOCSIS 3.1 cable modem. It reports profile metadata including modulation schemes 
+        (e.g., QAM-16, QAM-4096) used per subcarrier group, along with carrier frequency layout 
+        and subcarrier spacing.
+
+        ⚠️ Note: This is a raw conversion of modulation profile entries. Further processing is 
+        required to generate full per-subcarrier bit-loading visualizations or modulation maps.
+
+        - **POST**: `/docs/pnm/ds/ofdm/modulationProfile/getMeasurement`
+        - 📄 [Modulation Profile Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md)
+
+        Returns:
+            - PnmMeasurementResponse: Measurement data containing one or more OFDM channel modulation profiles.
+            - SnmpResponse: SNMP error or fallback message.
+        """ 
         self.logger.info(f"Retrieving Modulation Profile measurement for MAC {request.mac_address}")
 
         cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
