@@ -1,5 +1,11 @@
 # DOCSIS 3.1 System Diplexer API
 
+This API provides insight into the diplexer configuration of a DOCSIS 3.1 cable modem. Diplexers define the frequency split between upstream and downstream communication paths, and understanding these boundaries is essential for validating modem operation within network spectrum plans.
+
+The endpoint returns both capability indicators (hardware support) and configured frequency band edges for upstream and downstream paths. This is particularly useful for network provisioning, troubleshooting misconfigured splits, and aligning cable modem profiles with CMTS expectations.
+
+Use this API to audit modem band plans and ensure compatibility with mid-split and high-split deployments.
+
 ## 📡 Endpoint
 
 **POST** `/docs/if31/system/diplexer`
