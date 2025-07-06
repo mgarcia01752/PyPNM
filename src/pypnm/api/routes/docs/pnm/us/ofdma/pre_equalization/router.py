@@ -36,8 +36,22 @@ class UsOfdmaPreEqualizationRouter(PnmFastApiRouter):
 
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:
         """
-        Implement Upstream OFDMA Pre-Equalization measurement retrieval logic.
-        """    
+        🔍 Upstream OFDMA Pre-Equalization Measurement
+
+        Retrieves complex subcarrier coefficients for a DOCSIS 3.1 cable modem’s upstream OFDMA channel.
+        Used in PNM analysis to identify in-channel reflections, group delay, and frequency-domain distortions.
+
+        The result includes:
+        - Complex coefficient pairs (Real, Imaginary)
+        - Subcarrier spacing and frequency details
+        - PNM capture metadata (e.g., timestamp, channel ID)
+
+        🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/get-measurement-pre-equalization.md)
+
+        ---
+        **Request:** `PnmRequest`  
+        **Response:** Pre-equalization `values[]` for OFDMA subcarriers + metadata
+        """   
         self.logger.info(f"Retrieving Upstream OFDMA Pre-Equalization measurement for MAC {request.mac_address}")
 
         cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))

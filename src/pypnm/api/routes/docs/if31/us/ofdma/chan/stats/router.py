@@ -30,7 +30,21 @@ class UsOfdmaChannelRouter:
         @self.router.post("/stats", response_model=Union[List[PnmChannelEntryResponse], SnmpResponse])
         async def get_us_ofdma_channels(request: PnmRequest):
             """
-            Retrieve DOCSIS 3.1 Upstream OFDMA Channel Statistics.
+            🔍 Upstream OFDMA Pre-Equalization Measurement
+
+            Retrieves complex subcarrier coefficients for a DOCSIS 3.1 cable modem’s upstream OFDMA channel.
+            Used in PNM analysis to identify in-channel reflections, group delay, and frequency-domain distortions.
+
+            The result includes:
+            - Complex coefficient pairs (Real, Imaginary)
+            - Subcarrier spacing and frequency details
+            - PNM capture metadata (e.g., timestamp, channel ID)
+
+            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/get-measurement-pre-equalization.md)
+
+            ---
+            **Request:** `PnmRequest`  
+            **Response:** Pre-equalization `values[]` for OFDMA subcarriers + metadata
             """
         
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
