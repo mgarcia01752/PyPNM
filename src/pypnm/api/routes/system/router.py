@@ -28,14 +28,20 @@ class SystemRouter:
         self._register_routes()
 
     def _register_routes(self) -> None:
-        @self.router.post(
-            "/sysDescr",
-            response_model=Union[SysDescrResponse, SnmpResponse],
-            summary="Get SNMP sysDescr",
-            description="Retrieve the SNMP system description from the target device.")
+        @self.router.post("/sysDescr",response_model=Union[SysDescrResponse, SnmpResponse])
         async def get_sysdescr(request: SnmpRequest) -> Union[SysDescrResponse, SnmpResponse]:
             """
-            Handle POST /system/sysDescr
+            **Retrieve DOCSIS System Description**
+
+            This endpoint performs an SNMP query to fetch the system description (`sysDescr`) string
+            from a DOCSIS modem, then parses it to extract hardware, software, bootloader, vendor, and model details.
+
+            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/system-description.md)
+
+            ---
+            - Uses standard SNMP OID: `1.3.6.1.2.1.1.1.0`
+            - Field parsing is vendor-specific (e.g., Hitron, Technicolor, ARRIS)
+            - Returns structured metadata fields and `is_empty` flag if parsing fails
             """
             try:
                 status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
@@ -45,8 +51,7 @@ class SystemRouter:
                     return SnmpResponse(
                         mac_address=str(request.mac_address),
                         status=status,
-                        message=msg,
-                    )                     
+                        message=msg,)                     
                 
                 return await SystemSnmpService.get_sysdescr(request)
             
@@ -55,13 +60,9 @@ class SystemRouter:
                 # You can return more detailed errors based on exception type if you like
                 raise HTTPException(
                     status_code=500,
-                    detail="Failed to retrieve sysDescr"
-                )
+                    detail="Failed to retrieve sysDescr")
 
-        @self.router.post("/upTime",
-            response_model=Union[SysUpTimeResponse, SnmpResponse] ,
-            summary="Get SNMP sysUpTime",
-            description="Retrieve the SNMP system uptime (in centiseconds) and format it.")
+        @self.router.post("/upTime", response_model=Union[SysUpTimeResponse, SnmpResponse])
         async def get_uptime(request: SnmpRequest) -> Union[SysUpTimeResponse, SnmpResponse] :
             """
             Handle POST /system/upTime
