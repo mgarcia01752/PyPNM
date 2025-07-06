@@ -32,20 +32,12 @@ class FecSummaryRouter:
         @self.router.post(f"/{self.base_endpoint}/getMeasurement", response_model=Union[PnmFecSummaryResponse, SnmpResponse])
         async def get_measurement(request: PnmFecSummaryRequest):
             """
-            **Retrieve OFDM FEC Summary Statistics for Downstream Channels**
+            **OFDM FEC Summary Statistics for Downstream Channels**
 
             This endpoint fetches FEC summary counters for each active OFDM downstream profile,
             including corrected and uncorrectable codewords over a defined interval.
 
             📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/fec-summary.md)
-
-            ---
-            - **Summary Types**:
-                - `2`: 10-Minute Summary (1 entry per second for 10 minutes)
-                - `3`: 24-Hour Summary (1 entry per minute for 10 hours)
-            - Up to 5 profiles can be reported (e.g., Profile ID `0:N`, `NCP:255`)
-
-            Returns per-channel breakdown with timestamps and codeword counters.
             """
             try:
                 self.logger.info(f'Mac: {request.mac_address}, Inet: {request.ip_address}, FEC Summary: {request.fec_summary_type}')
