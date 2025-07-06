@@ -68,14 +68,14 @@ class UsScQamChannelRouter:
 
             Retrieves forward and reverse pre-equalization tap coefficients from a DOCSIS 3.0 SC-QAM upstream channel.
 
-            The output includes:
+            **The output includes:**
             - Main tap location
             - Number of forward and reverse taps
             - Complex tap coefficients with real/imag/magnitude/magnitude_dB
 
             Used to analyze echo cancellation behavior and upstream plant quality.
 
-            🔗 [Pre-Equalization API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/pre-equalization.md)
+            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/pre-equalization.md)
 
             """
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
