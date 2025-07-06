@@ -24,12 +24,21 @@ class DiplexerConfigResult:
 
     def _register_routes(self) -> None:
         @self.router.post("/diplexer",
-            response_model=Union[DiplexerResponse, SnmpResponse],
-            summary="Get Diplexer Configuration",
-            description=(
-                "Retrieve diplexer configuration parameters "  
-                "(e.g. split frequencies, filter settings) from a DOCSIS 3.1 cable modem."))
+            response_model=Union[DiplexerResponse, SnmpResponse])
         async def diplexer_config(request: PnmRequest) -> Union[DiplexerResponse, SnmpResponse]:
+            """
+            **Retrieve DOCSIS 3.1 System Diplexer Configuration**
+
+            Queries the modem for upstream/downstream diplexer frequency band configurations
+            and hardware capability settings.
+
+            Returns configuration values including:
+            - Band edge frequencies
+            - Diplexer capability codes
+            - Configured and supported downstream frequency ranges
+
+            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/diplexer-configuration.md)
+            """
             try:
 
                 status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
