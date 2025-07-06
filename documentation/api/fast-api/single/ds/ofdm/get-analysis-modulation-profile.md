@@ -38,7 +38,7 @@ Performs analysis of the downstream OFDM modulation profile for DOCSIS 3.1, calc
 | └ `snmpV2C`     | object | SNMPv2c config (requires `community`)                  |
 | └ `snmpV3`      | object | SNMPv3 config (username, passwords, protocols, levels) |
 | `analysis.type` | int    | Analysis type (0 = basic modulation analysis)          |
-| `output.type`   | int    | Output format 0 = JSON <br> 1 = XLSX                   |
+| `output.type`   | int    | 0 = JSON <br> 1 = XLSX                   |
 
 ## 📤 JSON Response (Output Type 0)
 
