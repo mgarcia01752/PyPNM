@@ -47,8 +47,7 @@ class DocsDevRouter:
                     mac_address=str(request.mac_address),
                     status=status,
                     message=msg,
-                    logs=[]
-                )                
+                    logs=[])                
             
             try:
                 service = CmDocsDevService(
@@ -78,8 +77,7 @@ class DocsDevRouter:
                 return SnmpResponse(
                     mac_address=str(request.mac_address),
                     status=status,
-                    message=msg
-                )               
+                    message=msg)               
             
             try:
                 service = CmDocsDevService(
