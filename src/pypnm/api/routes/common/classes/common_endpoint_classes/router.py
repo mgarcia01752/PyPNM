@@ -61,7 +61,7 @@ class PnmFastApiRouter(ABC):
         @self.router.post(f"/{self._base_endpoint}/getAnalysis", 
                           response_model=Union[PnmAnalysisResponse, SnmpResponse], 
                           response_model_exclude_unset=True,
-                          description=self.set_measurement_description)
+                          description=self.set_analysis_description)
         async def get_analysis(request: PnmAnalysisRequest):
             try:
                 return await self.get_analysis_logic(request)
