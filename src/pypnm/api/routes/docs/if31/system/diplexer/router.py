@@ -17,14 +17,13 @@ class DiplexerConfigResult:
     
     def __init__(self) -> None:
         self.router = APIRouter(prefix="/docs/if31/system",
-            tags=["DOCSIS 3.1 System"])
+                                tags=["DOCSIS 3.1 System"])
         self.logger = logging.getLogger(self.__class__.__name__)
         
         self._register_routes()
 
     def _register_routes(self) -> None:
-        @self.router.post("/diplexer",
-            response_model=Union[DiplexerResponse, SnmpResponse])
+        @self.router.post("/diplexer", response_model=Union[DiplexerResponse, SnmpResponse])
         async def diplexer_config(request: PnmRequest) -> Union[DiplexerResponse, SnmpResponse]:
             """
             **Retrieve DOCSIS 3.1 System Diplexer Configuration**
