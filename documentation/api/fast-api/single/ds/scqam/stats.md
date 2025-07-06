@@ -1,12 +1,14 @@
 # DOCSIS 3.0 Downstream SC-QAM Channel Stats API
 
+This API provides diagnostic access to DOCSIS 3.0 downstream SC-QAM channel statistics. It includes essential RF metrics like signal power, RxMER, and codeword error counters. These statistics help identify impairments such as micro-reflections, low MER, or excessive uncorrectables that can degrade customer experience.
+
+Use this endpoint to assess downstream signal health and modulation performance on legacy DOCSIS 3.0 modems.
+
 ## 📡 Endpoint
 
 **POST** `/docs/if30/ds/scqam/chan/stats`
 
 Retrieves DOCSIS 3.0 downstream SC-QAM channel configuration and signal quality statistics.
-
----
 
 ## 📥 Request Body (JSON)
 
@@ -33,7 +35,7 @@ Retrieves DOCSIS 3.0 downstream SC-QAM channel configuration and signal quality 
 ### 🔑 Fields
 
 | Field        | Type   | Description                    |
-| ------------ | ------ | ------------------------------ |
+|  |  |  |
 | mac\_address | string | MAC address of the cable modem |
 | ip\_address  | string | IP address of the cable modem  |
 | snmp         | object | SNMPv2c or SNMPv3 credentials  |
@@ -71,7 +73,7 @@ Each object in the response represents one downstream SC-QAM channel.
 ### 📊 Key Response Fields
 
 | Field                              | Type    | Description                                               |
-| ---------------------------------- | ------- | --------------------------------------------------------- |
+| - | - |  |
 | index                              | integer | SNMP index of the downstream channel                      |
 | channel\_id                        | integer | Logical channel ID                                        |
 | entry.docsIfDownChannelFrequency   | integer | Center frequency in Hz                                    |
