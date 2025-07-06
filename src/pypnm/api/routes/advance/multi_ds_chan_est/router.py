@@ -238,7 +238,17 @@ class MultiDsChanEstRouter(AbstractService):
             summary="Perform signal analysis on a previously executed Multi-ChannelEstimation",)
         def analysis(request: MultiChanEstimationAnalysisRequest) -> MultiChanEstimationAnalysisResponse:
             """
-            [Multi-DS-Chan-Estimation User Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-chan-est.md)
+            **Perform Post-Capture Analysis on Multi-DS Channel Estimation Data**
+
+            Executes structured analysis on previously captured downstream OFDM Channel Estimation files.
+            Computes and returns per-channel statistics such as group delay, tap energy profiles, 
+            equalization effectiveness, and visualization summaries (if applicable).
+
+            ---
+            - Requires a completed capture operation ID.
+            - Returns results as structured JSON; Excel or plot output optional via extended request.
+
+            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-chan-est.md)
             """
             try:
                 capture_group_id:str = OperationManager.get_capture_group(request.operation_id)
