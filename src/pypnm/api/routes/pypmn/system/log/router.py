@@ -27,7 +27,12 @@ class PyPnmSystemLog:
 
     async def get_pypnm_log(self):
         """
+        **Download PyPNM System Log**
 
+        This endpoint retrieves the current PyPNM system log as a downloadable text file.
+        Useful for debugging, system monitoring, and auditing.
+
+        📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/system/log.md)
         """
         try:
             log_path = os.path.join(SystemConfigSettings.log_dir, SystemConfigSettings.log_filename)
