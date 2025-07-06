@@ -6,7 +6,6 @@
 
 Retrieves statistics for upstream SC-QAM (ATDMA) channels on a DOCSIS 3.0 cable modem.
 
-
 ## 📥 Request Body (JSON)
 
 ```json
