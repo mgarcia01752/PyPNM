@@ -63,23 +63,7 @@ This endpoint enables advanced insight into upstream channel quality using stati
         self.logger = logging.getLogger("UsOfdmaPreEqualization")
 
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:
-        """
-        🔍 Upstream OFDMA Pre-Equalization Measurement
-
-        Retrieves complex subcarrier coefficients for a DOCSIS 3.1 cable modem’s upstream OFDMA channel.
-        Used in PNM analysis to identify in-channel reflections, group delay, and frequency-domain distortions.
-
-        The result includes:
-        - Complex coefficient pairs (Real, Imaginary)
-        - Subcarrier spacing and frequency details
-        - PNM capture metadata (e.g., timestamp, channel ID)
-
-        🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/get-measurement-pre-equalization.md)
-
-        ---
-        **Request:** `PnmRequest`  
-        **Response:** Pre-equalization `values[]` for OFDMA subcarriers + metadata
-        """   
+  
         self.logger.info(f"Retrieving Upstream OFDMA Pre-Equalization measurement for MAC {request.mac_address}")
 
         cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
@@ -109,20 +93,7 @@ This endpoint enables advanced insight into upstream channel quality using stati
                                       measurement=msg_rsp.payload) # type: ignore
 
     async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, SnmpResponse]:
-        """
-        Perform OFDMA pre-equalization analysis on upstream coefficients (DOCSIS 3.1).
 
-        This endpoint analyzes upstream OFDMA complex coefficients retrieved via SNMP
-        and returns structured per-subcarrier data including magnitude, group delay,
-        and complex tap values.
-
-        🔗 [Full API Guide – OFDMA Pre-Equalization Analysis](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/get-analysis-pre-equalization.md)
-
-        Output Type:
-        - 0: Structured JSON (frequency, magnitude, delay, complex)
-        - 1:
-        - 2: 
-        """
         self.logger.info(f"Generating Upstream OFDMA Pre-Equalization Analysis Type: {request.analysis.type} for MAC {request.mac_address}")
         
         cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
