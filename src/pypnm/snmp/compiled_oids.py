@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 # Auto-generated OID dictionary from snmptranslate -Tz
 # Do not modify manually. Generated on: 2025-07-07T04:02:52.915604
 
