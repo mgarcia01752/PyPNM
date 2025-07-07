@@ -6,41 +6,40 @@ This guide describes a pipeline for detecting and localizing anomalous regions i
 
 ## Mathematical Formulation
 
-Given an $M	imes N$ array of values $X_{i,j}$:
+Given an `M x N` array of values `X[i,j]`:
 
 1. **Global Mean**:
 
-   $$
-   \mu = \frac{1}{MN} \sum_{i=1}^M\sum_{j=1}^N X_{i,j}
-   $$
+   ```
+   μ = (1 / (M * N)) * Σ(i=1 to M) Σ(j=1 to N) X[i,j]
+   ```
 
 2. **Global Standard Deviation**:
 
-   $$
-   \sigma = \sqrt{\frac{1}{MN} \sum_{i=1}^M\sum_{j=1}^N (X_{i,j} - \mu)^2}
-   $$
+   ```
+   σ = sqrt((1 / (M * N)) * Σ(i=1 to M) Σ(j=1 to N) (X[i,j] - μ)^2)
+   ```
 
 3. **Z-Score Map**:
 
-   $$
-   z_{i,j} = \frac{X_{i,j} - \mu}{\sigma}
-   $$
+   ```
+   z[i,j] = (X[i,j] - μ) / σ
+   ```
 
-4. **Anomaly Mask** (threshold $T$):
+4. **Anomaly Mask** (for threshold `T`):
 
-   $$
-   \text{mask}_{i,j} = \begin{cases}
-     1, & \text{if } |z_{i,j}| > T, \\
-     0, & \text{otherwise.}
-   \end{cases}
-   $$
+   ```
+   mask[i,j] = 1 if |z[i,j]| > T, else 0
+   ```
 
-5. **Bounding Box Extraction** for each connected component (4‑connectivity) in the binary mask:
+5. **Bounding Box Extraction** for each connected component (4‑connectivity):
 
-   * **row\_min** = $\min\{i: \text{mask}_{i,j}=1\}$
-   * **row\_max** = $\max\{i: \text{mask}_{i,j}=1\}$
-   * **col\_min** = $\min\{j: \text{mask}_{i,j}=1\}$
-   * **col\_max** = $\max\{j: \text{mask}_{i,j}=1\}$
+   ```
+   row_min = min{i where mask[i,j] = 1}
+   row_max = max{i where mask[i,j] = 1}
+   col_min = min{j where mask[i,j] = 1}
+   col_max = max{j where mask[i,j] = 1}
+   ```
 
 ---
 
@@ -58,8 +57,8 @@ The detection function returns a JSON object with the threshold and a list of bo
 }
 ```
 
-* **threshold**: z-score cutoff $T$.
-* **boxes**: array of detected regions, each with top-left $(row_	ext{min},col_	ext{min})$ and bottom-right $(row_	ext{max},col_	ext{max})$ coordinates.
+* `threshold`: z-score cutoff `T`
+* `boxes`: array of detected regions with top-left `(row_min, col_min)` and bottom-right `(row_max, col_max)` coordinates
 
 ---
 
@@ -67,24 +66,24 @@ The detection function returns a JSON object with the threshold and a list of bo
 
 1. **Compute statistics**
 
-   * Calculate global mean $\mu$ and standard deviation $\sigma$.
+   * Calculate global mean `μ` and standard deviation `σ`.
 
 2. **Create anomaly mask**
 
-   * Compute z-score map and threshold at $T$ to form a binary mask.
+   * Compute z-score map and apply threshold `T`.
 
 3. **Connected-component labeling**
 
-   * Identify distinct anomaly clusters using 4‑connectivity on the mask.
+   * Identify distinct anomaly clusters using 4‑connectivity.
 
 4. **Extract bounding boxes**
 
-   * For each cluster, compute min/max row and column indices.
+   * For each cluster, compute `min`/`max` row and column indices.
 
 5. **Return results**
 
-   * Package the threshold and all bounding boxes into the JSON response.
+   * Return `threshold` and all bounding boxes in JSON.
 
 ---
 
-> **Tip:** Choose the threshold $T$ based on the expected noise distribution (e.g., 3–4 standard deviations) and adjust connectivity rules (4‑ vs. 8‑connectivity) based on anomaly shape requirements.
+> 💡 **Tip:** Choose the threshold `T` based on expected noise (e.g., 3–4 standard deviations). Use 8‑connectivity if you want diagonally-connected anomalies grouped together.
