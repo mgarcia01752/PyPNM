@@ -1,0 +1,3311 @@
+SNMPv2-MIB::sysDescr.0 = STRING: PacketCable 1.5 EMTA <<HW_REV: 0A; VENDOR: Hitron Technologies; BOOTR: 2022.01-MXL-v-4.0.350; SW_REV: 8.4.0.0.2b1; MODEL: CODA60V>>
+SNMPv2-MIB::sysObjectID.0 = OID: HITRON-MIB::hitronMib.0.0.65.8.4.0.0.2
+DISMAN-EVENT-MIB::sysUpTimeInstance = Timeticks: (9277817) 1 day, 1:46:18.17
+SNMPv2-MIB::sysContact.0 = STRING: Hitron Technologies, Inc.
+SNMPv2-MIB::sysName.0 = STRING: CODA60V
+SNMPv2-MIB::sysLocation.0 = STRING: No.1-8, Lihsin 1st Rd., HsinChu Science Park, HsinChu, Taiwan 300, R.O.C.
+SNMPv2-MIB::sysServices.0 = INTEGER: 2
+SNMPv2-MIB::sysORLastChange.0 = Timeticks: (0) 0:00:00.00
+SNMPv2-MIB::sysORID.1 = OID: SNMPv2-SMI::zeroDotZero
+SNMPv2-MIB::sysORDescr.1 = STRING: 
+SNMPv2-MIB::sysORUpTime.1 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifNumber.0 = INTEGER: 44
+IF-MIB::ifIndex.1 = INTEGER: 1
+IF-MIB::ifIndex.2 = INTEGER: 2
+IF-MIB::ifIndex.3 = INTEGER: 3
+IF-MIB::ifIndex.4 = INTEGER: 4
+IF-MIB::ifIndex.16 = INTEGER: 16
+IF-MIB::ifIndex.48 = INTEGER: 48
+IF-MIB::ifIndex.49 = INTEGER: 49
+IF-MIB::ifIndex.50 = INTEGER: 50
+IF-MIB::ifIndex.51 = INTEGER: 51
+IF-MIB::ifIndex.52 = INTEGER: 52
+IF-MIB::ifIndex.53 = INTEGER: 53
+IF-MIB::ifIndex.54 = INTEGER: 54
+IF-MIB::ifIndex.55 = INTEGER: 55
+IF-MIB::ifIndex.56 = INTEGER: 56
+IF-MIB::ifIndex.57 = INTEGER: 57
+IF-MIB::ifIndex.58 = INTEGER: 58
+IF-MIB::ifIndex.59 = INTEGER: 59
+IF-MIB::ifIndex.60 = INTEGER: 60
+IF-MIB::ifIndex.61 = INTEGER: 61
+IF-MIB::ifIndex.62 = INTEGER: 62
+IF-MIB::ifIndex.63 = INTEGER: 63
+IF-MIB::ifIndex.64 = INTEGER: 64
+IF-MIB::ifIndex.65 = INTEGER: 65
+IF-MIB::ifIndex.66 = INTEGER: 66
+IF-MIB::ifIndex.67 = INTEGER: 67
+IF-MIB::ifIndex.68 = INTEGER: 68
+IF-MIB::ifIndex.69 = INTEGER: 69
+IF-MIB::ifIndex.70 = INTEGER: 70
+IF-MIB::ifIndex.71 = INTEGER: 71
+IF-MIB::ifIndex.72 = INTEGER: 72
+IF-MIB::ifIndex.73 = INTEGER: 73
+IF-MIB::ifIndex.74 = INTEGER: 74
+IF-MIB::ifIndex.75 = INTEGER: 75
+IF-MIB::ifIndex.76 = INTEGER: 76
+IF-MIB::ifIndex.77 = INTEGER: 77
+IF-MIB::ifIndex.78 = INTEGER: 78
+IF-MIB::ifIndex.79 = INTEGER: 79
+IF-MIB::ifIndex.80 = INTEGER: 80
+IF-MIB::ifIndex.81 = INTEGER: 81
+IF-MIB::ifIndex.82 = INTEGER: 82
+IF-MIB::ifIndex.112 = INTEGER: 112
+IF-MIB::ifIndex.113 = INTEGER: 113
+IF-MIB::ifIndex.114 = INTEGER: 114
+IF-MIB::ifIndex.115 = INTEGER: 115
+IF-MIB::ifDescr.1 = STRING: Ethernet CPE Interface
+IF-MIB::ifDescr.2 = STRING: RF MAC Interface
+IF-MIB::ifDescr.3 = STRING: RF Downstream Interface
+IF-MIB::ifDescr.4 = STRING: RF Upstream Interface
+IF-MIB::ifDescr.16 = STRING: PacketCable Embedded Interface
+IF-MIB::ifDescr.48 = STRING: RF Downstream Interface 1
+IF-MIB::ifDescr.49 = STRING: RF Downstream Interface 2
+IF-MIB::ifDescr.50 = STRING: RF Downstream Interface 3
+IF-MIB::ifDescr.51 = STRING: RF Downstream Interface 4
+IF-MIB::ifDescr.52 = STRING: RF Downstream Interface 5
+IF-MIB::ifDescr.53 = STRING: RF Downstream Interface 6
+IF-MIB::ifDescr.54 = STRING: RF Downstream Interface 7
+IF-MIB::ifDescr.55 = STRING: RF Downstream Interface 8
+IF-MIB::ifDescr.56 = STRING: RF Downstream Interface 9
+IF-MIB::ifDescr.57 = STRING: RF Downstream Interface 10
+IF-MIB::ifDescr.58 = STRING: RF Downstream Interface 11
+IF-MIB::ifDescr.59 = STRING: RF Downstream Interface 12
+IF-MIB::ifDescr.60 = STRING: RF Downstream Interface 13
+IF-MIB::ifDescr.61 = STRING: RF Downstream Interface 14
+IF-MIB::ifDescr.62 = STRING: RF Downstream Interface 15
+IF-MIB::ifDescr.63 = STRING: RF Downstream Interface 16
+IF-MIB::ifDescr.64 = STRING: RF Downstream Interface 17
+IF-MIB::ifDescr.65 = STRING: RF Downstream Interface 18
+IF-MIB::ifDescr.66 = STRING: RF Downstream Interface 19
+IF-MIB::ifDescr.67 = STRING: RF Downstream Interface 20
+IF-MIB::ifDescr.68 = STRING: RF Downstream Interface 21
+IF-MIB::ifDescr.69 = STRING: RF Downstream Interface 22
+IF-MIB::ifDescr.70 = STRING: RF Downstream Interface 23
+IF-MIB::ifDescr.71 = STRING: RF Downstream Interface 24
+IF-MIB::ifDescr.72 = STRING: RF Downstream Interface 25
+IF-MIB::ifDescr.73 = STRING: RF Downstream Interface 26
+IF-MIB::ifDescr.74 = STRING: RF Downstream Interface 27
+IF-MIB::ifDescr.75 = STRING: RF Downstream Interface 28
+IF-MIB::ifDescr.76 = STRING: RF Downstream Interface 29
+IF-MIB::ifDescr.77 = STRING: RF Downstream Interface 30
+IF-MIB::ifDescr.78 = STRING: RF Downstream Interface 31
+IF-MIB::ifDescr.79 = STRING: RF Downstream Interface 32
+IF-MIB::ifDescr.80 = STRING: RF Upstream Interface 1
+IF-MIB::ifDescr.81 = STRING: RF Upstream Interface 2
+IF-MIB::ifDescr.82 = STRING: RF Upstream Interface 3
+IF-MIB::ifDescr.112 = STRING: RF Downstream Interface 33
+IF-MIB::ifDescr.113 = STRING: RF Downstream Interface 34
+IF-MIB::ifDescr.114 = STRING: RF Downstream Interface 35
+IF-MIB::ifDescr.115 = STRING: RF Downstream Interface 36
+IF-MIB::ifType.1 = INTEGER: ethernetCsmacd(6)
+IF-MIB::ifType.2 = INTEGER: docsCableMaclayer(127)
+IF-MIB::ifType.3 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.4 = INTEGER: docsOfdmaUpstream(278)
+IF-MIB::ifType.16 = INTEGER: other(1)
+IF-MIB::ifType.48 = INTEGER: docsOfdmDownstream(277)
+IF-MIB::ifType.49 = INTEGER: docsOfdmDownstream(277)
+IF-MIB::ifType.50 = INTEGER: docsOfdmDownstream(277)
+IF-MIB::ifType.51 = INTEGER: docsOfdmDownstream(277)
+IF-MIB::ifType.52 = INTEGER: docsOfdmDownstream(277)
+IF-MIB::ifType.53 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.54 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.55 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.56 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.57 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.58 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.59 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.60 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.61 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.62 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.63 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.64 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.65 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.66 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.67 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.68 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.69 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.70 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.71 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.72 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.73 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.74 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.75 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.76 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.77 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.78 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.79 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.80 = INTEGER: docsCableUpstream(129)
+IF-MIB::ifType.81 = INTEGER: docsCableUpstream(129)
+IF-MIB::ifType.82 = INTEGER: docsOfdmaUpstream(278)
+IF-MIB::ifType.112 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.113 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.114 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifType.115 = INTEGER: docsCableDownstream(128)
+IF-MIB::ifMtu.1 = INTEGER: 1500
+IF-MIB::ifMtu.2 = INTEGER: 1522
+IF-MIB::ifMtu.3 = INTEGER: 1764
+IF-MIB::ifMtu.4 = INTEGER: 1764
+IF-MIB::ifMtu.16 = INTEGER: 0
+IF-MIB::ifMtu.48 = INTEGER: 1764
+IF-MIB::ifMtu.49 = INTEGER: 1764
+IF-MIB::ifMtu.50 = INTEGER: 1764
+IF-MIB::ifMtu.51 = INTEGER: 1764
+IF-MIB::ifMtu.52 = INTEGER: 1764
+IF-MIB::ifMtu.53 = INTEGER: 1764
+IF-MIB::ifMtu.54 = INTEGER: 1764
+IF-MIB::ifMtu.55 = INTEGER: 1764
+IF-MIB::ifMtu.56 = INTEGER: 1764
+IF-MIB::ifMtu.57 = INTEGER: 1764
+IF-MIB::ifMtu.58 = INTEGER: 1764
+IF-MIB::ifMtu.59 = INTEGER: 1764
+IF-MIB::ifMtu.60 = INTEGER: 1764
+IF-MIB::ifMtu.61 = INTEGER: 1764
+IF-MIB::ifMtu.62 = INTEGER: 1764
+IF-MIB::ifMtu.63 = INTEGER: 1764
+IF-MIB::ifMtu.64 = INTEGER: 1764
+IF-MIB::ifMtu.65 = INTEGER: 1764
+IF-MIB::ifMtu.66 = INTEGER: 1764
+IF-MIB::ifMtu.67 = INTEGER: 1764
+IF-MIB::ifMtu.68 = INTEGER: 1764
+IF-MIB::ifMtu.69 = INTEGER: 1764
+IF-MIB::ifMtu.70 = INTEGER: 1764
+IF-MIB::ifMtu.71 = INTEGER: 1764
+IF-MIB::ifMtu.72 = INTEGER: 1764
+IF-MIB::ifMtu.73 = INTEGER: 1764
+IF-MIB::ifMtu.74 = INTEGER: 1764
+IF-MIB::ifMtu.75 = INTEGER: 1764
+IF-MIB::ifMtu.76 = INTEGER: 1764
+IF-MIB::ifMtu.77 = INTEGER: 1764
+IF-MIB::ifMtu.78 = INTEGER: 1764
+IF-MIB::ifMtu.79 = INTEGER: 1764
+IF-MIB::ifMtu.80 = INTEGER: 1764
+IF-MIB::ifMtu.81 = INTEGER: 1764
+IF-MIB::ifMtu.82 = INTEGER: 1764
+IF-MIB::ifMtu.112 = INTEGER: 1764
+IF-MIB::ifMtu.113 = INTEGER: 1764
+IF-MIB::ifMtu.114 = INTEGER: 1764
+IF-MIB::ifMtu.115 = INTEGER: 1764
+IF-MIB::ifSpeed.1 = Gauge32: 4294967295
+IF-MIB::ifSpeed.2 = Gauge32: 0
+IF-MIB::ifSpeed.3 = Gauge32: 42884296
+IF-MIB::ifSpeed.4 = Gauge32: 1034937288
+IF-MIB::ifSpeed.16 = Gauge32: 0
+IF-MIB::ifSpeed.48 = Gauge32: 2093258880
+IF-MIB::ifSpeed.49 = Gauge32: 2093258880
+IF-MIB::ifSpeed.50 = Gauge32: 2093258880
+IF-MIB::ifSpeed.51 = Gauge32: 2093258880
+IF-MIB::ifSpeed.52 = Gauge32: 1744382336
+IF-MIB::ifSpeed.53 = Gauge32: 42884296
+IF-MIB::ifSpeed.54 = Gauge32: 42884296
+IF-MIB::ifSpeed.55 = Gauge32: 42884296
+IF-MIB::ifSpeed.56 = Gauge32: 42884296
+IF-MIB::ifSpeed.57 = Gauge32: 42884296
+IF-MIB::ifSpeed.58 = Gauge32: 42884296
+IF-MIB::ifSpeed.59 = Gauge32: 42884296
+IF-MIB::ifSpeed.60 = Gauge32: 42884296
+IF-MIB::ifSpeed.61 = Gauge32: 42884296
+IF-MIB::ifSpeed.62 = Gauge32: 42884296
+IF-MIB::ifSpeed.63 = Gauge32: 42884296
+IF-MIB::ifSpeed.64 = Gauge32: 42884296
+IF-MIB::ifSpeed.65 = Gauge32: 42884296
+IF-MIB::ifSpeed.66 = Gauge32: 42884296
+IF-MIB::ifSpeed.67 = Gauge32: 42884296
+IF-MIB::ifSpeed.68 = Gauge32: 42884296
+IF-MIB::ifSpeed.69 = Gauge32: 42884296
+IF-MIB::ifSpeed.70 = Gauge32: 42884296
+IF-MIB::ifSpeed.71 = Gauge32: 42884296
+IF-MIB::ifSpeed.72 = Gauge32: 42884296
+IF-MIB::ifSpeed.73 = Gauge32: 42884296
+IF-MIB::ifSpeed.74 = Gauge32: 42884296
+IF-MIB::ifSpeed.75 = Gauge32: 42884296
+IF-MIB::ifSpeed.76 = Gauge32: 42884296
+IF-MIB::ifSpeed.77 = Gauge32: 42884296
+IF-MIB::ifSpeed.78 = Gauge32: 42884296
+IF-MIB::ifSpeed.79 = Gauge32: 42884296
+IF-MIB::ifSpeed.80 = Gauge32: 30720000
+IF-MIB::ifSpeed.81 = Gauge32: 30720000
+IF-MIB::ifSpeed.82 = Gauge32: 587980008
+IF-MIB::ifSpeed.112 = Gauge32: 42884296
+IF-MIB::ifSpeed.113 = Gauge32: 42884296
+IF-MIB::ifSpeed.114 = Gauge32: 42884296
+IF-MIB::ifSpeed.115 = Gauge32: 42884296
+IF-MIB::ifPhysAddress.1 = STRING: 2:e0:92:0:1:40
+IF-MIB::ifPhysAddress.2 = STRING: 38:ad:2b:12:49:4c
+IF-MIB::ifPhysAddress.3 = STRING: 
+IF-MIB::ifPhysAddress.4 = STRING: 
+IF-MIB::ifPhysAddress.16 = STRING: 
+IF-MIB::ifPhysAddress.48 = STRING: 
+IF-MIB::ifPhysAddress.49 = STRING: 
+IF-MIB::ifPhysAddress.50 = STRING: 
+IF-MIB::ifPhysAddress.51 = STRING: 
+IF-MIB::ifPhysAddress.52 = STRING: 
+IF-MIB::ifPhysAddress.53 = STRING: 
+IF-MIB::ifPhysAddress.54 = STRING: 
+IF-MIB::ifPhysAddress.55 = STRING: 
+IF-MIB::ifPhysAddress.56 = STRING: 
+IF-MIB::ifPhysAddress.57 = STRING: 
+IF-MIB::ifPhysAddress.58 = STRING: 
+IF-MIB::ifPhysAddress.59 = STRING: 
+IF-MIB::ifPhysAddress.60 = STRING: 
+IF-MIB::ifPhysAddress.61 = STRING: 
+IF-MIB::ifPhysAddress.62 = STRING: 
+IF-MIB::ifPhysAddress.63 = STRING: 
+IF-MIB::ifPhysAddress.64 = STRING: 
+IF-MIB::ifPhysAddress.65 = STRING: 
+IF-MIB::ifPhysAddress.66 = STRING: 
+IF-MIB::ifPhysAddress.67 = STRING: 
+IF-MIB::ifPhysAddress.68 = STRING: 
+IF-MIB::ifPhysAddress.69 = STRING: 
+IF-MIB::ifPhysAddress.70 = STRING: 
+IF-MIB::ifPhysAddress.71 = STRING: 
+IF-MIB::ifPhysAddress.72 = STRING: 
+IF-MIB::ifPhysAddress.73 = STRING: 
+IF-MIB::ifPhysAddress.74 = STRING: 
+IF-MIB::ifPhysAddress.75 = STRING: 
+IF-MIB::ifPhysAddress.76 = STRING: 
+IF-MIB::ifPhysAddress.77 = STRING: 
+IF-MIB::ifPhysAddress.78 = STRING: 
+IF-MIB::ifPhysAddress.79 = STRING: 
+IF-MIB::ifPhysAddress.80 = STRING: 
+IF-MIB::ifPhysAddress.81 = STRING: 
+IF-MIB::ifPhysAddress.82 = STRING: 
+IF-MIB::ifPhysAddress.112 = STRING: 
+IF-MIB::ifPhysAddress.113 = STRING: 
+IF-MIB::ifPhysAddress.114 = STRING: 
+IF-MIB::ifPhysAddress.115 = STRING: 
+IF-MIB::ifAdminStatus.1 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.2 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.3 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.4 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.16 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.48 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.49 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.50 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.51 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.52 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.53 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.54 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.55 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.56 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.57 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.58 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.59 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.60 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.61 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.62 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.63 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.64 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.65 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.66 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.67 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.68 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.69 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.70 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.71 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.72 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.73 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.74 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.75 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.76 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.77 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.78 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.79 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.80 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.81 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.82 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.112 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.113 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.114 = INTEGER: up(1)
+IF-MIB::ifAdminStatus.115 = INTEGER: up(1)
+IF-MIB::ifOperStatus.1 = INTEGER: up(1)
+IF-MIB::ifOperStatus.2 = INTEGER: up(1)
+IF-MIB::ifOperStatus.3 = INTEGER: up(1)
+IF-MIB::ifOperStatus.4 = INTEGER: up(1)
+IF-MIB::ifOperStatus.16 = INTEGER: up(1)
+IF-MIB::ifOperStatus.48 = INTEGER: up(1)
+IF-MIB::ifOperStatus.49 = INTEGER: up(1)
+IF-MIB::ifOperStatus.50 = INTEGER: up(1)
+IF-MIB::ifOperStatus.51 = INTEGER: up(1)
+IF-MIB::ifOperStatus.52 = INTEGER: up(1)
+IF-MIB::ifOperStatus.53 = INTEGER: up(1)
+IF-MIB::ifOperStatus.54 = INTEGER: up(1)
+IF-MIB::ifOperStatus.55 = INTEGER: up(1)
+IF-MIB::ifOperStatus.56 = INTEGER: up(1)
+IF-MIB::ifOperStatus.57 = INTEGER: up(1)
+IF-MIB::ifOperStatus.58 = INTEGER: up(1)
+IF-MIB::ifOperStatus.59 = INTEGER: up(1)
+IF-MIB::ifOperStatus.60 = INTEGER: up(1)
+IF-MIB::ifOperStatus.61 = INTEGER: up(1)
+IF-MIB::ifOperStatus.62 = INTEGER: up(1)
+IF-MIB::ifOperStatus.63 = INTEGER: up(1)
+IF-MIB::ifOperStatus.64 = INTEGER: up(1)
+IF-MIB::ifOperStatus.65 = INTEGER: up(1)
+IF-MIB::ifOperStatus.66 = INTEGER: up(1)
+IF-MIB::ifOperStatus.67 = INTEGER: up(1)
+IF-MIB::ifOperStatus.68 = INTEGER: up(1)
+IF-MIB::ifOperStatus.69 = INTEGER: up(1)
+IF-MIB::ifOperStatus.70 = INTEGER: up(1)
+IF-MIB::ifOperStatus.71 = INTEGER: up(1)
+IF-MIB::ifOperStatus.72 = INTEGER: up(1)
+IF-MIB::ifOperStatus.73 = INTEGER: up(1)
+IF-MIB::ifOperStatus.74 = INTEGER: up(1)
+IF-MIB::ifOperStatus.75 = INTEGER: up(1)
+IF-MIB::ifOperStatus.76 = INTEGER: up(1)
+IF-MIB::ifOperStatus.77 = INTEGER: up(1)
+IF-MIB::ifOperStatus.78 = INTEGER: up(1)
+IF-MIB::ifOperStatus.79 = INTEGER: up(1)
+IF-MIB::ifOperStatus.80 = INTEGER: up(1)
+IF-MIB::ifOperStatus.81 = INTEGER: up(1)
+IF-MIB::ifOperStatus.82 = INTEGER: up(1)
+IF-MIB::ifOperStatus.112 = INTEGER: up(1)
+IF-MIB::ifOperStatus.113 = INTEGER: up(1)
+IF-MIB::ifOperStatus.114 = INTEGER: up(1)
+IF-MIB::ifOperStatus.115 = INTEGER: up(1)
+IF-MIB::ifLastChange.1 = Timeticks: (4381) 0:00:43.81
+IF-MIB::ifLastChange.2 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.3 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.4 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.16 = Timeticks: (3375) 0:00:33.75
+IF-MIB::ifLastChange.48 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.49 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.50 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.51 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.52 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.53 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.54 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.55 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.56 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.57 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.58 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.59 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.60 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.61 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.62 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.63 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.64 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.65 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.66 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.67 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.68 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.69 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.70 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.71 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.72 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.73 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.74 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.75 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.76 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.77 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.78 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.79 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.80 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.81 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.82 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.112 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.113 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.114 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifLastChange.115 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifInOctets.1 = Counter32: 3678362
+IF-MIB::ifInOctets.2 = Counter32: 48692565
+IF-MIB::ifInOctets.3 = Counter32: 102326634
+IF-MIB::ifInOctets.4 = Counter32: 0
+IF-MIB::ifInOctets.16 = Counter32: 31180
+IF-MIB::ifInOctets.48 = Counter32: 52495594
+IF-MIB::ifInOctets.49 = Counter32: 52633085
+IF-MIB::ifInOctets.50 = Counter32: 38537457
+IF-MIB::ifInOctets.51 = Counter32: 38582614
+IF-MIB::ifInOctets.52 = Counter32: 38549297
+IF-MIB::ifInOctets.53 = Counter32: 236652
+IF-MIB::ifInOctets.54 = Counter32: 219638
+IF-MIB::ifInOctets.55 = Counter32: 220966
+IF-MIB::ifInOctets.56 = Counter32: 231352
+IF-MIB::ifInOctets.57 = Counter32: 238933
+IF-MIB::ifInOctets.58 = Counter32: 226797
+IF-MIB::ifInOctets.59 = Counter32: 225545
+IF-MIB::ifInOctets.60 = Counter32: 224393
+IF-MIB::ifInOctets.61 = Counter32: 227293
+IF-MIB::ifInOctets.62 = Counter32: 224090
+IF-MIB::ifInOctets.63 = Counter32: 214675
+IF-MIB::ifInOctets.64 = Counter32: 224109
+IF-MIB::ifInOctets.65 = Counter32: 225570
+IF-MIB::ifInOctets.66 = Counter32: 222880
+IF-MIB::ifInOctets.67 = Counter32: 220331
+IF-MIB::ifInOctets.68 = Counter32: 220010
+IF-MIB::ifInOctets.69 = Counter32: 220913
+IF-MIB::ifInOctets.70 = Counter32: 225482
+IF-MIB::ifInOctets.71 = Counter32: 219573
+IF-MIB::ifInOctets.72 = Counter32: 221014
+IF-MIB::ifInOctets.73 = Counter32: 221347
+IF-MIB::ifInOctets.74 = Counter32: 224222
+IF-MIB::ifInOctets.75 = Counter32: 229036
+IF-MIB::ifInOctets.76 = Counter32: 227631
+IF-MIB::ifInOctets.77 = Counter32: 217590
+IF-MIB::ifInOctets.78 = Counter32: 229732
+IF-MIB::ifInOctets.79 = Counter32: 229066
+IF-MIB::ifInOctets.80 = Counter32: 0
+IF-MIB::ifInOctets.81 = Counter32: 0
+IF-MIB::ifInOctets.82 = Counter32: 0
+IF-MIB::ifInOctets.112 = Counter32: 235707
+IF-MIB::ifInOctets.113 = Counter32: 236832
+IF-MIB::ifInOctets.114 = Counter32: 220368
+IF-MIB::ifInOctets.115 = Counter32: 223096
+IF-MIB::ifInUcastPkts.1 = Counter32: 18777
+IF-MIB::ifInUcastPkts.2 = Counter32: 246069
+IF-MIB::ifInUcastPkts.3 = Counter32: 0
+IF-MIB::ifInUcastPkts.4 = Counter32: 0
+IF-MIB::ifInUcastPkts.16 = Counter32: 214
+IF-MIB::ifInUcastPkts.48 = Counter32: 0
+IF-MIB::ifInUcastPkts.49 = Counter32: 0
+IF-MIB::ifInUcastPkts.50 = Counter32: 0
+IF-MIB::ifInUcastPkts.51 = Counter32: 0
+IF-MIB::ifInUcastPkts.52 = Counter32: 0
+IF-MIB::ifInUcastPkts.53 = Counter32: 0
+IF-MIB::ifInUcastPkts.54 = Counter32: 0
+IF-MIB::ifInUcastPkts.55 = Counter32: 0
+IF-MIB::ifInUcastPkts.56 = Counter32: 0
+IF-MIB::ifInUcastPkts.57 = Counter32: 0
+IF-MIB::ifInUcastPkts.58 = Counter32: 0
+IF-MIB::ifInUcastPkts.59 = Counter32: 0
+IF-MIB::ifInUcastPkts.60 = Counter32: 0
+IF-MIB::ifInUcastPkts.61 = Counter32: 0
+IF-MIB::ifInUcastPkts.62 = Counter32: 0
+IF-MIB::ifInUcastPkts.63 = Counter32: 0
+IF-MIB::ifInUcastPkts.64 = Counter32: 0
+IF-MIB::ifInUcastPkts.65 = Counter32: 0
+IF-MIB::ifInUcastPkts.66 = Counter32: 0
+IF-MIB::ifInUcastPkts.67 = Counter32: 0
+IF-MIB::ifInUcastPkts.68 = Counter32: 0
+IF-MIB::ifInUcastPkts.69 = Counter32: 0
+IF-MIB::ifInUcastPkts.70 = Counter32: 0
+IF-MIB::ifInUcastPkts.71 = Counter32: 0
+IF-MIB::ifInUcastPkts.72 = Counter32: 0
+IF-MIB::ifInUcastPkts.73 = Counter32: 0
+IF-MIB::ifInUcastPkts.74 = Counter32: 0
+IF-MIB::ifInUcastPkts.75 = Counter32: 0
+IF-MIB::ifInUcastPkts.76 = Counter32: 0
+IF-MIB::ifInUcastPkts.77 = Counter32: 0
+IF-MIB::ifInUcastPkts.78 = Counter32: 0
+IF-MIB::ifInUcastPkts.79 = Counter32: 0
+IF-MIB::ifInUcastPkts.80 = Counter32: 0
+IF-MIB::ifInUcastPkts.81 = Counter32: 0
+IF-MIB::ifInUcastPkts.82 = Counter32: 0
+IF-MIB::ifInUcastPkts.112 = Counter32: 0
+IF-MIB::ifInUcastPkts.113 = Counter32: 0
+IF-MIB::ifInUcastPkts.114 = Counter32: 0
+IF-MIB::ifInUcastPkts.115 = Counter32: 0
+IF-MIB::ifInDiscards.1 = Counter32: 3093
+IF-MIB::ifInDiscards.2 = Counter32: 0
+IF-MIB::ifInDiscards.3 = Counter32: 0
+IF-MIB::ifInDiscards.4 = Counter32: 0
+IF-MIB::ifInDiscards.16 = Counter32: 0
+IF-MIB::ifInDiscards.48 = Counter32: 0
+IF-MIB::ifInDiscards.49 = Counter32: 0
+IF-MIB::ifInDiscards.50 = Counter32: 0
+IF-MIB::ifInDiscards.51 = Counter32: 0
+IF-MIB::ifInDiscards.52 = Counter32: 0
+IF-MIB::ifInDiscards.53 = Counter32: 0
+IF-MIB::ifInDiscards.54 = Counter32: 0
+IF-MIB::ifInDiscards.55 = Counter32: 0
+IF-MIB::ifInDiscards.56 = Counter32: 0
+IF-MIB::ifInDiscards.57 = Counter32: 0
+IF-MIB::ifInDiscards.58 = Counter32: 0
+IF-MIB::ifInDiscards.59 = Counter32: 0
+IF-MIB::ifInDiscards.60 = Counter32: 0
+IF-MIB::ifInDiscards.61 = Counter32: 0
+IF-MIB::ifInDiscards.62 = Counter32: 0
+IF-MIB::ifInDiscards.63 = Counter32: 0
+IF-MIB::ifInDiscards.64 = Counter32: 0
+IF-MIB::ifInDiscards.65 = Counter32: 0
+IF-MIB::ifInDiscards.66 = Counter32: 0
+IF-MIB::ifInDiscards.67 = Counter32: 0
+IF-MIB::ifInDiscards.68 = Counter32: 0
+IF-MIB::ifInDiscards.69 = Counter32: 0
+IF-MIB::ifInDiscards.70 = Counter32: 0
+IF-MIB::ifInDiscards.71 = Counter32: 0
+IF-MIB::ifInDiscards.72 = Counter32: 0
+IF-MIB::ifInDiscards.73 = Counter32: 0
+IF-MIB::ifInDiscards.74 = Counter32: 0
+IF-MIB::ifInDiscards.75 = Counter32: 0
+IF-MIB::ifInDiscards.76 = Counter32: 0
+IF-MIB::ifInDiscards.77 = Counter32: 0
+IF-MIB::ifInDiscards.78 = Counter32: 0
+IF-MIB::ifInDiscards.79 = Counter32: 0
+IF-MIB::ifInDiscards.80 = Counter32: 0
+IF-MIB::ifInDiscards.81 = Counter32: 0
+IF-MIB::ifInDiscards.82 = Counter32: 0
+IF-MIB::ifInDiscards.112 = Counter32: 0
+IF-MIB::ifInDiscards.113 = Counter32: 0
+IF-MIB::ifInDiscards.114 = Counter32: 0
+IF-MIB::ifInDiscards.115 = Counter32: 0
+IF-MIB::ifInErrors.1 = Counter32: 0
+IF-MIB::ifInErrors.2 = Counter32: 0
+IF-MIB::ifInErrors.3 = Counter32: 0
+IF-MIB::ifInErrors.4 = Counter32: 0
+IF-MIB::ifInErrors.16 = Counter32: 0
+IF-MIB::ifInErrors.48 = Counter32: 0
+IF-MIB::ifInErrors.49 = Counter32: 0
+IF-MIB::ifInErrors.50 = Counter32: 0
+IF-MIB::ifInErrors.51 = Counter32: 0
+IF-MIB::ifInErrors.52 = Counter32: 0
+IF-MIB::ifInErrors.53 = Counter32: 0
+IF-MIB::ifInErrors.54 = Counter32: 0
+IF-MIB::ifInErrors.55 = Counter32: 0
+IF-MIB::ifInErrors.56 = Counter32: 0
+IF-MIB::ifInErrors.57 = Counter32: 0
+IF-MIB::ifInErrors.58 = Counter32: 0
+IF-MIB::ifInErrors.59 = Counter32: 0
+IF-MIB::ifInErrors.60 = Counter32: 0
+IF-MIB::ifInErrors.61 = Counter32: 0
+IF-MIB::ifInErrors.62 = Counter32: 0
+IF-MIB::ifInErrors.63 = Counter32: 0
+IF-MIB::ifInErrors.64 = Counter32: 0
+IF-MIB::ifInErrors.65 = Counter32: 0
+IF-MIB::ifInErrors.66 = Counter32: 0
+IF-MIB::ifInErrors.67 = Counter32: 0
+IF-MIB::ifInErrors.68 = Counter32: 0
+IF-MIB::ifInErrors.69 = Counter32: 0
+IF-MIB::ifInErrors.70 = Counter32: 0
+IF-MIB::ifInErrors.71 = Counter32: 0
+IF-MIB::ifInErrors.72 = Counter32: 0
+IF-MIB::ifInErrors.73 = Counter32: 0
+IF-MIB::ifInErrors.74 = Counter32: 0
+IF-MIB::ifInErrors.75 = Counter32: 0
+IF-MIB::ifInErrors.76 = Counter32: 0
+IF-MIB::ifInErrors.77 = Counter32: 0
+IF-MIB::ifInErrors.78 = Counter32: 0
+IF-MIB::ifInErrors.79 = Counter32: 0
+IF-MIB::ifInErrors.80 = Counter32: 0
+IF-MIB::ifInErrors.81 = Counter32: 0
+IF-MIB::ifInErrors.82 = Counter32: 0
+IF-MIB::ifInErrors.112 = Counter32: 0
+IF-MIB::ifInErrors.113 = Counter32: 0
+IF-MIB::ifInErrors.114 = Counter32: 0
+IF-MIB::ifInErrors.115 = Counter32: 0
+IF-MIB::ifInUnknownProtos.1 = Counter32: 0
+IF-MIB::ifInUnknownProtos.2 = Counter32: 0
+IF-MIB::ifInUnknownProtos.3 = Counter32: 0
+IF-MIB::ifInUnknownProtos.4 = Counter32: 0
+IF-MIB::ifInUnknownProtos.16 = Counter32: 0
+IF-MIB::ifInUnknownProtos.48 = Counter32: 0
+IF-MIB::ifInUnknownProtos.49 = Counter32: 0
+IF-MIB::ifInUnknownProtos.50 = Counter32: 0
+IF-MIB::ifInUnknownProtos.51 = Counter32: 0
+IF-MIB::ifInUnknownProtos.52 = Counter32: 0
+IF-MIB::ifInUnknownProtos.53 = Counter32: 0
+IF-MIB::ifInUnknownProtos.54 = Counter32: 0
+IF-MIB::ifInUnknownProtos.55 = Counter32: 0
+IF-MIB::ifInUnknownProtos.56 = Counter32: 0
+IF-MIB::ifInUnknownProtos.57 = Counter32: 0
+IF-MIB::ifInUnknownProtos.58 = Counter32: 0
+IF-MIB::ifInUnknownProtos.59 = Counter32: 0
+IF-MIB::ifInUnknownProtos.60 = Counter32: 0
+IF-MIB::ifInUnknownProtos.61 = Counter32: 0
+IF-MIB::ifInUnknownProtos.62 = Counter32: 0
+IF-MIB::ifInUnknownProtos.63 = Counter32: 0
+IF-MIB::ifInUnknownProtos.64 = Counter32: 0
+IF-MIB::ifInUnknownProtos.65 = Counter32: 0
+IF-MIB::ifInUnknownProtos.66 = Counter32: 0
+IF-MIB::ifInUnknownProtos.67 = Counter32: 0
+IF-MIB::ifInUnknownProtos.68 = Counter32: 0
+IF-MIB::ifInUnknownProtos.69 = Counter32: 0
+IF-MIB::ifInUnknownProtos.70 = Counter32: 0
+IF-MIB::ifInUnknownProtos.71 = Counter32: 0
+IF-MIB::ifInUnknownProtos.72 = Counter32: 0
+IF-MIB::ifInUnknownProtos.73 = Counter32: 0
+IF-MIB::ifInUnknownProtos.74 = Counter32: 0
+IF-MIB::ifInUnknownProtos.75 = Counter32: 0
+IF-MIB::ifInUnknownProtos.76 = Counter32: 0
+IF-MIB::ifInUnknownProtos.77 = Counter32: 0
+IF-MIB::ifInUnknownProtos.78 = Counter32: 0
+IF-MIB::ifInUnknownProtos.79 = Counter32: 0
+IF-MIB::ifInUnknownProtos.80 = Counter32: 0
+IF-MIB::ifInUnknownProtos.81 = Counter32: 0
+IF-MIB::ifInUnknownProtos.82 = Counter32: 0
+IF-MIB::ifInUnknownProtos.112 = Counter32: 0
+IF-MIB::ifInUnknownProtos.113 = Counter32: 0
+IF-MIB::ifInUnknownProtos.114 = Counter32: 0
+IF-MIB::ifInUnknownProtos.115 = Counter32: 0
+IF-MIB::ifOutOctets.1 = Counter32: 29472200
+IF-MIB::ifOutOctets.2 = Counter32: 144017236
+IF-MIB::ifOutOctets.3 = Counter32: 0
+IF-MIB::ifOutOctets.4 = Counter32: 21881019
+IF-MIB::ifOutOctets.16 = Counter32: 2103163
+IF-MIB::ifOutOctets.48 = Counter32: 0
+IF-MIB::ifOutOctets.49 = Counter32: 0
+IF-MIB::ifOutOctets.50 = Counter32: 0
+IF-MIB::ifOutOctets.51 = Counter32: 0
+IF-MIB::ifOutOctets.52 = Counter32: 0
+IF-MIB::ifOutOctets.53 = Counter32: 0
+IF-MIB::ifOutOctets.54 = Counter32: 0
+IF-MIB::ifOutOctets.55 = Counter32: 0
+IF-MIB::ifOutOctets.56 = Counter32: 0
+IF-MIB::ifOutOctets.57 = Counter32: 0
+IF-MIB::ifOutOctets.58 = Counter32: 0
+IF-MIB::ifOutOctets.59 = Counter32: 0
+IF-MIB::ifOutOctets.60 = Counter32: 0
+IF-MIB::ifOutOctets.61 = Counter32: 0
+IF-MIB::ifOutOctets.62 = Counter32: 0
+IF-MIB::ifOutOctets.63 = Counter32: 0
+IF-MIB::ifOutOctets.64 = Counter32: 0
+IF-MIB::ifOutOctets.65 = Counter32: 0
+IF-MIB::ifOutOctets.66 = Counter32: 0
+IF-MIB::ifOutOctets.67 = Counter32: 0
+IF-MIB::ifOutOctets.68 = Counter32: 0
+IF-MIB::ifOutOctets.69 = Counter32: 0
+IF-MIB::ifOutOctets.70 = Counter32: 0
+IF-MIB::ifOutOctets.71 = Counter32: 0
+IF-MIB::ifOutOctets.72 = Counter32: 0
+IF-MIB::ifOutOctets.73 = Counter32: 0
+IF-MIB::ifOutOctets.74 = Counter32: 0
+IF-MIB::ifOutOctets.75 = Counter32: 0
+IF-MIB::ifOutOctets.76 = Counter32: 0
+IF-MIB::ifOutOctets.77 = Counter32: 0
+IF-MIB::ifOutOctets.78 = Counter32: 0
+IF-MIB::ifOutOctets.79 = Counter32: 0
+IF-MIB::ifOutOctets.80 = Counter32: 0
+IF-MIB::ifOutOctets.81 = Counter32: 0
+IF-MIB::ifOutOctets.82 = Counter32: 158527993
+IF-MIB::ifOutOctets.112 = Counter32: 0
+IF-MIB::ifOutOctets.113 = Counter32: 0
+IF-MIB::ifOutOctets.114 = Counter32: 0
+IF-MIB::ifOutOctets.115 = Counter32: 0
+IF-MIB::ifOutUcastPkts.1 = Counter32: 29401
+IF-MIB::ifOutUcastPkts.2 = Counter32: 236897
+IF-MIB::ifOutUcastPkts.3 = Counter32: 0
+IF-MIB::ifOutUcastPkts.4 = Counter32: 0
+IF-MIB::ifOutUcastPkts.16 = Counter32: 19236
+IF-MIB::ifOutUcastPkts.48 = Counter32: 0
+IF-MIB::ifOutUcastPkts.49 = Counter32: 0
+IF-MIB::ifOutUcastPkts.50 = Counter32: 0
+IF-MIB::ifOutUcastPkts.51 = Counter32: 0
+IF-MIB::ifOutUcastPkts.52 = Counter32: 0
+IF-MIB::ifOutUcastPkts.53 = Counter32: 0
+IF-MIB::ifOutUcastPkts.54 = Counter32: 0
+IF-MIB::ifOutUcastPkts.55 = Counter32: 0
+IF-MIB::ifOutUcastPkts.56 = Counter32: 0
+IF-MIB::ifOutUcastPkts.57 = Counter32: 0
+IF-MIB::ifOutUcastPkts.58 = Counter32: 0
+IF-MIB::ifOutUcastPkts.59 = Counter32: 0
+IF-MIB::ifOutUcastPkts.60 = Counter32: 0
+IF-MIB::ifOutUcastPkts.61 = Counter32: 0
+IF-MIB::ifOutUcastPkts.62 = Counter32: 0
+IF-MIB::ifOutUcastPkts.63 = Counter32: 0
+IF-MIB::ifOutUcastPkts.64 = Counter32: 0
+IF-MIB::ifOutUcastPkts.65 = Counter32: 0
+IF-MIB::ifOutUcastPkts.66 = Counter32: 0
+IF-MIB::ifOutUcastPkts.67 = Counter32: 0
+IF-MIB::ifOutUcastPkts.68 = Counter32: 0
+IF-MIB::ifOutUcastPkts.69 = Counter32: 0
+IF-MIB::ifOutUcastPkts.70 = Counter32: 0
+IF-MIB::ifOutUcastPkts.71 = Counter32: 0
+IF-MIB::ifOutUcastPkts.72 = Counter32: 0
+IF-MIB::ifOutUcastPkts.73 = Counter32: 0
+IF-MIB::ifOutUcastPkts.74 = Counter32: 0
+IF-MIB::ifOutUcastPkts.75 = Counter32: 0
+IF-MIB::ifOutUcastPkts.76 = Counter32: 0
+IF-MIB::ifOutUcastPkts.77 = Counter32: 0
+IF-MIB::ifOutUcastPkts.78 = Counter32: 0
+IF-MIB::ifOutUcastPkts.79 = Counter32: 0
+IF-MIB::ifOutUcastPkts.80 = Counter32: 0
+IF-MIB::ifOutUcastPkts.81 = Counter32: 0
+IF-MIB::ifOutUcastPkts.82 = Counter32: 0
+IF-MIB::ifOutUcastPkts.112 = Counter32: 0
+IF-MIB::ifOutUcastPkts.113 = Counter32: 0
+IF-MIB::ifOutUcastPkts.114 = Counter32: 0
+IF-MIB::ifOutUcastPkts.115 = Counter32: 0
+IF-MIB::ifOutDiscards.1 = Counter32: 0
+IF-MIB::ifOutDiscards.2 = Counter32: 0
+IF-MIB::ifOutDiscards.3 = Counter32: 0
+IF-MIB::ifOutDiscards.4 = Counter32: 0
+IF-MIB::ifOutDiscards.16 = Counter32: 0
+IF-MIB::ifOutDiscards.48 = Counter32: 0
+IF-MIB::ifOutDiscards.49 = Counter32: 0
+IF-MIB::ifOutDiscards.50 = Counter32: 0
+IF-MIB::ifOutDiscards.51 = Counter32: 0
+IF-MIB::ifOutDiscards.52 = Counter32: 0
+IF-MIB::ifOutDiscards.53 = Counter32: 0
+IF-MIB::ifOutDiscards.54 = Counter32: 0
+IF-MIB::ifOutDiscards.55 = Counter32: 0
+IF-MIB::ifOutDiscards.56 = Counter32: 0
+IF-MIB::ifOutDiscards.57 = Counter32: 0
+IF-MIB::ifOutDiscards.58 = Counter32: 0
+IF-MIB::ifOutDiscards.59 = Counter32: 0
+IF-MIB::ifOutDiscards.60 = Counter32: 0
+IF-MIB::ifOutDiscards.61 = Counter32: 0
+IF-MIB::ifOutDiscards.62 = Counter32: 0
+IF-MIB::ifOutDiscards.63 = Counter32: 0
+IF-MIB::ifOutDiscards.64 = Counter32: 0
+IF-MIB::ifOutDiscards.65 = Counter32: 0
+IF-MIB::ifOutDiscards.66 = Counter32: 0
+IF-MIB::ifOutDiscards.67 = Counter32: 0
+IF-MIB::ifOutDiscards.68 = Counter32: 0
+IF-MIB::ifOutDiscards.69 = Counter32: 0
+IF-MIB::ifOutDiscards.70 = Counter32: 0
+IF-MIB::ifOutDiscards.71 = Counter32: 0
+IF-MIB::ifOutDiscards.72 = Counter32: 0
+IF-MIB::ifOutDiscards.73 = Counter32: 0
+IF-MIB::ifOutDiscards.74 = Counter32: 0
+IF-MIB::ifOutDiscards.75 = Counter32: 0
+IF-MIB::ifOutDiscards.76 = Counter32: 0
+IF-MIB::ifOutDiscards.77 = Counter32: 0
+IF-MIB::ifOutDiscards.78 = Counter32: 0
+IF-MIB::ifOutDiscards.79 = Counter32: 0
+IF-MIB::ifOutDiscards.80 = Counter32: 0
+IF-MIB::ifOutDiscards.81 = Counter32: 0
+IF-MIB::ifOutDiscards.82 = Counter32: 0
+IF-MIB::ifOutDiscards.112 = Counter32: 0
+IF-MIB::ifOutDiscards.113 = Counter32: 0
+IF-MIB::ifOutDiscards.114 = Counter32: 0
+IF-MIB::ifOutDiscards.115 = Counter32: 0
+IF-MIB::ifOutErrors.1 = Counter32: 0
+IF-MIB::ifOutErrors.2 = Counter32: 0
+IF-MIB::ifOutErrors.3 = Counter32: 0
+IF-MIB::ifOutErrors.4 = Counter32: 0
+IF-MIB::ifOutErrors.16 = Counter32: 0
+IF-MIB::ifOutErrors.48 = Counter32: 0
+IF-MIB::ifOutErrors.49 = Counter32: 0
+IF-MIB::ifOutErrors.50 = Counter32: 0
+IF-MIB::ifOutErrors.51 = Counter32: 0
+IF-MIB::ifOutErrors.52 = Counter32: 0
+IF-MIB::ifOutErrors.53 = Counter32: 0
+IF-MIB::ifOutErrors.54 = Counter32: 0
+IF-MIB::ifOutErrors.55 = Counter32: 0
+IF-MIB::ifOutErrors.56 = Counter32: 0
+IF-MIB::ifOutErrors.57 = Counter32: 0
+IF-MIB::ifOutErrors.58 = Counter32: 0
+IF-MIB::ifOutErrors.59 = Counter32: 0
+IF-MIB::ifOutErrors.60 = Counter32: 0
+IF-MIB::ifOutErrors.61 = Counter32: 0
+IF-MIB::ifOutErrors.62 = Counter32: 0
+IF-MIB::ifOutErrors.63 = Counter32: 0
+IF-MIB::ifOutErrors.64 = Counter32: 0
+IF-MIB::ifOutErrors.65 = Counter32: 0
+IF-MIB::ifOutErrors.66 = Counter32: 0
+IF-MIB::ifOutErrors.67 = Counter32: 0
+IF-MIB::ifOutErrors.68 = Counter32: 0
+IF-MIB::ifOutErrors.69 = Counter32: 0
+IF-MIB::ifOutErrors.70 = Counter32: 0
+IF-MIB::ifOutErrors.71 = Counter32: 0
+IF-MIB::ifOutErrors.72 = Counter32: 0
+IF-MIB::ifOutErrors.73 = Counter32: 0
+IF-MIB::ifOutErrors.74 = Counter32: 0
+IF-MIB::ifOutErrors.75 = Counter32: 0
+IF-MIB::ifOutErrors.76 = Counter32: 0
+IF-MIB::ifOutErrors.77 = Counter32: 0
+IF-MIB::ifOutErrors.78 = Counter32: 0
+IF-MIB::ifOutErrors.79 = Counter32: 0
+IF-MIB::ifOutErrors.80 = Counter32: 0
+IF-MIB::ifOutErrors.81 = Counter32: 0
+IF-MIB::ifOutErrors.82 = Counter32: 0
+IF-MIB::ifOutErrors.112 = Counter32: 0
+IF-MIB::ifOutErrors.113 = Counter32: 0
+IF-MIB::ifOutErrors.114 = Counter32: 0
+IF-MIB::ifOutErrors.115 = Counter32: 0
+RFC1213-MIB::ipForwarding.0 = INTEGER: forwarding(1)
+RFC1213-MIB::ipDefaultTTL.0 = INTEGER: 64
+RFC1213-MIB::ipReasmTimeout.0 = INTEGER: 0
+IP-MIB::ipv6IpForwarding.0 = INTEGER: notForwarding(2)
+IP-MIB::ipv6IpDefaultHopLimit.0 = INTEGER: 64
+IP-MIB::ipv4InterfaceTableLastChange.0 = Timeticks: (3375) 0:00:33.75
+IP-MIB::ipv4InterfaceReasmMaxSize.1 = INTEGER: 65535
+IP-MIB::ipv4InterfaceReasmMaxSize.2 = INTEGER: 65535
+IP-MIB::ipv4InterfaceEnableStatus.1 = INTEGER: up(1)
+IP-MIB::ipv4InterfaceEnableStatus.2 = INTEGER: up(1)
+IP-MIB::ipv4InterfaceRetransmitTime.1 = Gauge32: 1000 milliseconds
+IP-MIB::ipv4InterfaceRetransmitTime.2 = Gauge32: 1000 milliseconds
+IP-MIB::ipv6InterfaceTableLastChange.0 = Timeticks: (3375) 0:00:33.75
+IP-MIB::ipv6InterfaceReasmMaxSize.1 = Gauge32: 65535 octets
+IP-MIB::ipv6InterfaceReasmMaxSize.2 = Gauge32: 65535 octets
+IP-MIB::ipv6InterfaceIdentifier.1 = STRING: 3aad:2bff:fe12:494e
+IP-MIB::ipv6InterfaceIdentifier.2 = STRING: 3aad:2bff:fe12:494c
+IP-MIB::ipv6InterfaceEnableStatus.1 = INTEGER: up(1)
+IP-MIB::ipv6InterfaceEnableStatus.2 = INTEGER: up(1)
+IP-MIB::ipv6InterfaceReachableTime.1 = Gauge32: 30000 milliseconds
+IP-MIB::ipv6InterfaceReachableTime.2 = Gauge32: 30000 milliseconds
+IP-MIB::ipv6InterfaceRetransmitTime.1 = Gauge32: 1000 milliseconds
+IP-MIB::ipv6InterfaceRetransmitTime.2 = Gauge32: 1000 milliseconds
+IP-MIB::ipv6InterfaceForwarding.1 = INTEGER: notForwarding(2)
+IP-MIB::ipv6InterfaceForwarding.2 = INTEGER: notForwarding(2)
+IP-MIB::ipNetToPhysicalPhysAddress.16.ipv4."35.33.19.172" = STRING: 38:ad:2b:12:49:4d
+IP-MIB::ipNetToPhysicalLastUpdated.16.ipv4."35.33.19.172" = Timeticks: (0) 0:00:00.00
+IP-MIB::ipNetToPhysicalType.16.ipv4."35.33.19.172" = INTEGER: static(4)
+IP-MIB::ipNetToPhysicalState.16.ipv4."35.33.19.172" = INTEGER: unknown(6)
+IP-MIB::ipNetToPhysicalRowStatus.16.ipv4."35.33.19.172" = INTEGER: active(1)
+IP-MIB::icmpStatsInMsgs.ipv4 = Counter32: 57
+IP-MIB::icmpStatsInMsgs.ipv6 = Counter32: 54890
+IP-MIB::icmpStatsInErrors.ipv4 = Counter32: 0
+IP-MIB::icmpStatsInErrors.ipv6 = Counter32: 0
+IP-MIB::icmpStatsOutMsgs.ipv4 = Counter32: 44
+IP-MIB::icmpStatsOutMsgs.ipv6 = Counter32: 115
+IP-MIB::icmpStatsOutErrors.ipv4 = Counter32: 0
+IP-MIB::icmpStatsOutErrors.ipv6 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv4.0 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv4.3 = Counter32: 17
+IP-MIB::icmpMsgStatsInPkts.ipv4.4 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv4.5 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv4.8 = Counter32: 40
+IP-MIB::icmpMsgStatsInPkts.ipv4.11 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv4.12 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv4.13 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv4.14 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv4.17 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv4.18 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv6.1 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv6.2 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv6.3 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv6.4 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv6.127 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv6.128 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv6.129 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv6.130 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv6.131 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv6.132 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv6.133 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv6.134 = Counter32: 54890
+IP-MIB::icmpMsgStatsInPkts.ipv6.135 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv6.136 = Counter32: 0
+IP-MIB::icmpMsgStatsInPkts.ipv6.137 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv4.0 = Counter32: 40
+IP-MIB::icmpMsgStatsOutPkts.ipv4.3 = Counter32: 4
+IP-MIB::icmpMsgStatsOutPkts.ipv4.4 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv4.5 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv4.8 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv4.11 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv4.12 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv4.13 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv4.14 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv4.17 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv4.18 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv6.1 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv6.2 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv6.3 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv6.4 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv6.127 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv6.128 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv6.129 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv6.130 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv6.131 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv6.132 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv6.133 = Counter32: 69
+IP-MIB::icmpMsgStatsOutPkts.ipv6.134 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv6.135 = Counter32: 2
+IP-MIB::icmpMsgStatsOutPkts.ipv6.136 = Counter32: 0
+IP-MIB::icmpMsgStatsOutPkts.ipv6.137 = Counter32: 0
+UDP-MIB::udpHCInDatagrams.0 = Counter64: 0
+UDP-MIB::udpHCOutDatagrams.0 = Counter64: 0
+DOCS-IF-MIB::docsIfDownChannelId.3 = INTEGER: 1
+DOCS-IF-MIB::docsIfDownChannelId.48 = INTEGER: 197
+DOCS-IF-MIB::docsIfDownChannelId.49 = INTEGER: 196
+DOCS-IF-MIB::docsIfDownChannelId.50 = INTEGER: 195
+DOCS-IF-MIB::docsIfDownChannelId.51 = INTEGER: 194
+DOCS-IF-MIB::docsIfDownChannelId.52 = INTEGER: 193
+DOCS-IF-MIB::docsIfDownChannelId.53 = INTEGER: 32
+DOCS-IF-MIB::docsIfDownChannelId.54 = INTEGER: 31
+DOCS-IF-MIB::docsIfDownChannelId.55 = INTEGER: 30
+DOCS-IF-MIB::docsIfDownChannelId.56 = INTEGER: 29
+DOCS-IF-MIB::docsIfDownChannelId.57 = INTEGER: 28
+DOCS-IF-MIB::docsIfDownChannelId.58 = INTEGER: 27
+DOCS-IF-MIB::docsIfDownChannelId.59 = INTEGER: 26
+DOCS-IF-MIB::docsIfDownChannelId.60 = INTEGER: 25
+DOCS-IF-MIB::docsIfDownChannelId.61 = INTEGER: 24
+DOCS-IF-MIB::docsIfDownChannelId.62 = INTEGER: 23
+DOCS-IF-MIB::docsIfDownChannelId.63 = INTEGER: 22
+DOCS-IF-MIB::docsIfDownChannelId.64 = INTEGER: 21
+DOCS-IF-MIB::docsIfDownChannelId.65 = INTEGER: 20
+DOCS-IF-MIB::docsIfDownChannelId.66 = INTEGER: 19
+DOCS-IF-MIB::docsIfDownChannelId.67 = INTEGER: 18
+DOCS-IF-MIB::docsIfDownChannelId.68 = INTEGER: 17
+DOCS-IF-MIB::docsIfDownChannelId.69 = INTEGER: 16
+DOCS-IF-MIB::docsIfDownChannelId.70 = INTEGER: 15
+DOCS-IF-MIB::docsIfDownChannelId.71 = INTEGER: 14
+DOCS-IF-MIB::docsIfDownChannelId.72 = INTEGER: 13
+DOCS-IF-MIB::docsIfDownChannelId.73 = INTEGER: 12
+DOCS-IF-MIB::docsIfDownChannelId.74 = INTEGER: 11
+DOCS-IF-MIB::docsIfDownChannelId.75 = INTEGER: 10
+DOCS-IF-MIB::docsIfDownChannelId.76 = INTEGER: 9
+DOCS-IF-MIB::docsIfDownChannelId.77 = INTEGER: 8
+DOCS-IF-MIB::docsIfDownChannelId.78 = INTEGER: 7
+DOCS-IF-MIB::docsIfDownChannelId.79 = INTEGER: 6
+DOCS-IF-MIB::docsIfDownChannelId.112 = INTEGER: 5
+DOCS-IF-MIB::docsIfDownChannelId.113 = INTEGER: 4
+DOCS-IF-MIB::docsIfDownChannelId.114 = INTEGER: 3
+DOCS-IF-MIB::docsIfDownChannelId.115 = INTEGER: 2
+DOCS-IF-MIB::docsIfDownChannelFrequency.3 = INTEGER: 453000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.48 = INTEGER: 0 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.49 = INTEGER: 0 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.50 = INTEGER: 0 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.51 = INTEGER: 0 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.52 = INTEGER: 0 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.53 = INTEGER: 639000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.54 = INTEGER: 633000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.55 = INTEGER: 627000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.56 = INTEGER: 621000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.57 = INTEGER: 615000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.58 = INTEGER: 609000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.59 = INTEGER: 603000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.60 = INTEGER: 597000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.61 = INTEGER: 591000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.62 = INTEGER: 585000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.63 = INTEGER: 579000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.64 = INTEGER: 573000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.65 = INTEGER: 567000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.66 = INTEGER: 561000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.67 = INTEGER: 555000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.68 = INTEGER: 549000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.69 = INTEGER: 543000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.70 = INTEGER: 537000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.71 = INTEGER: 531000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.72 = INTEGER: 525000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.73 = INTEGER: 519000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.74 = INTEGER: 513000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.75 = INTEGER: 507000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.76 = INTEGER: 501000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.77 = INTEGER: 495000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.78 = INTEGER: 489000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.79 = INTEGER: 483000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.112 = INTEGER: 477000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.113 = INTEGER: 471000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.114 = INTEGER: 465000000 hertz
+DOCS-IF-MIB::docsIfDownChannelFrequency.115 = INTEGER: 459000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.3 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.48 = INTEGER: 0 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.49 = INTEGER: 0 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.50 = INTEGER: 0 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.51 = INTEGER: 0 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.52 = INTEGER: 0 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.53 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.54 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.55 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.56 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.57 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.58 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.59 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.60 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.61 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.62 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.63 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.64 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.65 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.66 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.67 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.68 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.69 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.70 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.71 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.72 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.73 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.74 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.75 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.76 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.77 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.78 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.79 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.112 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.113 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.114 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelWidth.115 = INTEGER: 6000000 hertz
+DOCS-IF-MIB::docsIfDownChannelModulation.3 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.48 = INTEGER: other(2)
+DOCS-IF-MIB::docsIfDownChannelModulation.49 = INTEGER: other(2)
+DOCS-IF-MIB::docsIfDownChannelModulation.50 = INTEGER: other(2)
+DOCS-IF-MIB::docsIfDownChannelModulation.51 = INTEGER: other(2)
+DOCS-IF-MIB::docsIfDownChannelModulation.52 = INTEGER: other(2)
+DOCS-IF-MIB::docsIfDownChannelModulation.53 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.54 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.55 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.56 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.57 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.58 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.59 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.60 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.61 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.62 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.63 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.64 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.65 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.66 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.67 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.68 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.69 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.70 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.71 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.72 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.73 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.74 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.75 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.76 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.77 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.78 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.79 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.112 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.113 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.114 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelModulation.115 = INTEGER: qam256(4)
+DOCS-IF-MIB::docsIfDownChannelInterleave.3 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.48 = INTEGER: other(2)
+DOCS-IF-MIB::docsIfDownChannelInterleave.49 = INTEGER: other(2)
+DOCS-IF-MIB::docsIfDownChannelInterleave.50 = INTEGER: other(2)
+DOCS-IF-MIB::docsIfDownChannelInterleave.51 = INTEGER: other(2)
+DOCS-IF-MIB::docsIfDownChannelInterleave.52 = INTEGER: other(2)
+DOCS-IF-MIB::docsIfDownChannelInterleave.53 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.54 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.55 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.56 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.57 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.58 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.59 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.60 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.61 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.62 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.63 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.64 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.65 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.66 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.67 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.68 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.69 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.70 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.71 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.72 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.73 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.74 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.75 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.76 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.77 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.78 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.79 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.112 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.113 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.114 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelInterleave.115 = INTEGER: taps32Increment4(5)
+DOCS-IF-MIB::docsIfDownChannelPower.3 = INTEGER: -.6 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.48 = INTEGER: .0 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.49 = INTEGER: .0 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.50 = INTEGER: .0 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.51 = INTEGER: .0 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.52 = INTEGER: .0 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.53 = INTEGER: .5 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.54 = INTEGER: .3 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.55 = INTEGER: .0 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.56 = INTEGER: .1 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.57 = INTEGER: .5 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.58 = INTEGER: .2 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.59 = INTEGER: -.1 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.60 = INTEGER: -.3 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.61 = INTEGER: .0 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.62 = INTEGER: .0 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.63 = INTEGER: -.1 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.64 = INTEGER: -.2 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.65 = INTEGER: -.3 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.66 = INTEGER: -.2 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.67 = INTEGER: -.3 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.68 = INTEGER: -.3 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.69 = INTEGER: -.3 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.70 = INTEGER: -.1 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.71 = INTEGER: .0 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.72 = INTEGER: .0 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.73 = INTEGER: .1 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.74 = INTEGER: .0 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.75 = INTEGER: .0 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.76 = INTEGER: .1 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.77 = INTEGER: -.2 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.78 = INTEGER: -.5 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.79 = INTEGER: -.8 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.112 = INTEGER: -.5 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.113 = INTEGER: -.3 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.114 = INTEGER: -.5 dBmV
+DOCS-IF-MIB::docsIfDownChannelPower.115 = INTEGER: -.7 dBmV
+DOCS-IF-MIB::docsIfDownChannelAnnex.3 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.48 = INTEGER: other(2)
+DOCS-IF-MIB::docsIfDownChannelAnnex.49 = INTEGER: other(2)
+DOCS-IF-MIB::docsIfDownChannelAnnex.50 = INTEGER: other(2)
+DOCS-IF-MIB::docsIfDownChannelAnnex.51 = INTEGER: other(2)
+DOCS-IF-MIB::docsIfDownChannelAnnex.52 = INTEGER: other(2)
+DOCS-IF-MIB::docsIfDownChannelAnnex.53 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.54 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.55 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.56 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.57 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.58 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.59 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.60 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.61 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.62 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.63 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.64 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.65 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.66 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.67 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.68 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.69 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.70 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.71 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.72 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.73 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.74 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.75 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.76 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.77 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.78 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.79 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.112 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.113 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.114 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelAnnex.115 = INTEGER: annexB(4)
+DOCS-IF-MIB::docsIfDownChannelStorageType.3 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.48 = INTEGER: other(1)
+DOCS-IF-MIB::docsIfDownChannelStorageType.49 = INTEGER: other(1)
+DOCS-IF-MIB::docsIfDownChannelStorageType.50 = INTEGER: other(1)
+DOCS-IF-MIB::docsIfDownChannelStorageType.51 = INTEGER: other(1)
+DOCS-IF-MIB::docsIfDownChannelStorageType.52 = INTEGER: other(1)
+DOCS-IF-MIB::docsIfDownChannelStorageType.53 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.54 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.55 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.56 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.57 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.58 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.59 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.60 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.61 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.62 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.63 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.64 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.65 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.66 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.67 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.68 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.69 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.70 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.71 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.72 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.73 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.74 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.75 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.76 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.77 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.78 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.79 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.112 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.113 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.114 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfDownChannelStorageType.115 = INTEGER: readOnly(5)
+DOCS-IF-MIB::docsIfUpChannelId.4 = INTEGER: 42
+DOCS-IF-MIB::docsIfUpChannelId.80 = INTEGER: 1
+DOCS-IF-MIB::docsIfUpChannelId.81 = INTEGER: 2
+DOCS-IF-MIB::docsIfUpChannelId.82 = INTEGER: 41
+DOCS-IF-MIB::docsIfUpChannelFrequency.4 = INTEGER: 0 hertz
+DOCS-IF-MIB::docsIfUpChannelFrequency.80 = INTEGER: 14600000 hertz
+DOCS-IF-MIB::docsIfUpChannelFrequency.81 = INTEGER: 21000000 hertz
+DOCS-IF-MIB::docsIfUpChannelFrequency.82 = INTEGER: 0 hertz
+DOCS-IF-MIB::docsIfUpChannelWidth.4 = INTEGER: 0 hertz
+DOCS-IF-MIB::docsIfUpChannelWidth.80 = INTEGER: 6400000 hertz
+DOCS-IF-MIB::docsIfUpChannelWidth.81 = INTEGER: 6400000 hertz
+DOCS-IF-MIB::docsIfUpChannelWidth.82 = INTEGER: 0 hertz
+DOCS-IF-MIB::docsIfUpChannelModulationProfile.4 = Gauge32: 0
+DOCS-IF-MIB::docsIfUpChannelModulationProfile.80 = Gauge32: 0
+DOCS-IF-MIB::docsIfUpChannelModulationProfile.81 = Gauge32: 0
+DOCS-IF-MIB::docsIfUpChannelModulationProfile.82 = Gauge32: 0
+DOCS-IF-MIB::docsIfUpChannelSlotSize.4 = Gauge32: 0 ticks
+DOCS-IF-MIB::docsIfUpChannelSlotSize.80 = Gauge32: 2 ticks
+DOCS-IF-MIB::docsIfUpChannelSlotSize.81 = Gauge32: 2 ticks
+DOCS-IF-MIB::docsIfUpChannelSlotSize.82 = Gauge32: 0 ticks
+DOCS-IF-MIB::docsIfUpChannelTxTimingOffset.4 = Gauge32: 0
+DOCS-IF-MIB::docsIfUpChannelTxTimingOffset.80 = Gauge32: 8589
+DOCS-IF-MIB::docsIfUpChannelTxTimingOffset.81 = Gauge32: 8589
+DOCS-IF-MIB::docsIfUpChannelTxTimingOffset.82 = Gauge32: 0
+DOCS-IF-MIB::docsIfUpChannelRangingBackoffStart.4 = INTEGER: 0
+DOCS-IF-MIB::docsIfUpChannelRangingBackoffStart.80 = INTEGER: 3
+DOCS-IF-MIB::docsIfUpChannelRangingBackoffStart.81 = INTEGER: 3
+DOCS-IF-MIB::docsIfUpChannelRangingBackoffStart.82 = INTEGER: 0
+DOCS-IF-MIB::docsIfUpChannelRangingBackoffEnd.4 = INTEGER: 0
+DOCS-IF-MIB::docsIfUpChannelRangingBackoffEnd.80 = INTEGER: 8
+DOCS-IF-MIB::docsIfUpChannelRangingBackoffEnd.81 = INTEGER: 8
+DOCS-IF-MIB::docsIfUpChannelRangingBackoffEnd.82 = INTEGER: 0
+DOCS-IF-MIB::docsIfUpChannelTxBackoffStart.4 = INTEGER: 0
+DOCS-IF-MIB::docsIfUpChannelTxBackoffStart.80 = INTEGER: 2
+DOCS-IF-MIB::docsIfUpChannelTxBackoffStart.81 = INTEGER: 2
+DOCS-IF-MIB::docsIfUpChannelTxBackoffStart.82 = INTEGER: 0
+DOCS-IF-MIB::docsIfUpChannelTxBackoffEnd.4 = INTEGER: 0
+DOCS-IF-MIB::docsIfUpChannelTxBackoffEnd.80 = INTEGER: 6
+DOCS-IF-MIB::docsIfUpChannelTxBackoffEnd.81 = INTEGER: 6
+DOCS-IF-MIB::docsIfUpChannelTxBackoffEnd.82 = INTEGER: 0
+DOCS-IF-MIB::docsIfUpChannelScdmaActiveCodes.4 = Gauge32: 0
+DOCS-IF-MIB::docsIfUpChannelScdmaActiveCodes.80 = Gauge32: 0
+DOCS-IF-MIB::docsIfUpChannelScdmaActiveCodes.81 = Gauge32: 0
+DOCS-IF-MIB::docsIfUpChannelScdmaActiveCodes.82 = Gauge32: 0
+DOCS-IF-MIB::docsIfUpChannelScdmaCodesPerSlot.4 = INTEGER: 0 codesperMinislots
+DOCS-IF-MIB::docsIfUpChannelScdmaCodesPerSlot.80 = INTEGER: 0 codesperMinislots
+DOCS-IF-MIB::docsIfUpChannelScdmaCodesPerSlot.81 = INTEGER: 0 codesperMinislots
+DOCS-IF-MIB::docsIfUpChannelScdmaCodesPerSlot.82 = INTEGER: 0 codesperMinislots
+DOCS-IF-MIB::docsIfUpChannelScdmaFrameSize.4 = Gauge32: 0 spreadIntervals
+DOCS-IF-MIB::docsIfUpChannelScdmaFrameSize.80 = Gauge32: 0 spreadIntervals
+DOCS-IF-MIB::docsIfUpChannelScdmaFrameSize.81 = Gauge32: 0 spreadIntervals
+DOCS-IF-MIB::docsIfUpChannelScdmaFrameSize.82 = Gauge32: 0 spreadIntervals
+DOCS-IF-MIB::docsIfUpChannelScdmaHoppingSeed.4 = Gauge32: 0
+DOCS-IF-MIB::docsIfUpChannelScdmaHoppingSeed.80 = Gauge32: 0
+DOCS-IF-MIB::docsIfUpChannelScdmaHoppingSeed.81 = Gauge32: 0
+DOCS-IF-MIB::docsIfUpChannelScdmaHoppingSeed.82 = Gauge32: 0
+DOCS-IF-MIB::docsIfUpChannelType.4 = INTEGER: unknown(0)
+DOCS-IF-MIB::docsIfUpChannelType.80 = INTEGER: atdma(2)
+DOCS-IF-MIB::docsIfUpChannelType.81 = INTEGER: atdma(2)
+DOCS-IF-MIB::docsIfUpChannelType.82 = INTEGER: unknown(0)
+DOCS-IF-MIB::docsIfUpChannelCloneFrom.4 = INTEGER: 0
+DOCS-IF-MIB::docsIfUpChannelCloneFrom.80 = INTEGER: 0
+DOCS-IF-MIB::docsIfUpChannelCloneFrom.81 = INTEGER: 0
+DOCS-IF-MIB::docsIfUpChannelCloneFrom.82 = INTEGER: 0
+DOCS-IF-MIB::docsIfUpChannelUpdate.4 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfUpChannelUpdate.80 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfUpChannelUpdate.81 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfUpChannelUpdate.82 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfUpChannelStatus.4 = INTEGER: active(1)
+DOCS-IF-MIB::docsIfUpChannelStatus.80 = INTEGER: active(1)
+DOCS-IF-MIB::docsIfUpChannelStatus.81 = INTEGER: active(1)
+DOCS-IF-MIB::docsIfUpChannelStatus.82 = INTEGER: active(1)
+DOCS-IF-MIB::docsIfUpChannelPreEqEnable.4 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfUpChannelPreEqEnable.80 = INTEGER: true(1)
+DOCS-IF-MIB::docsIfUpChannelPreEqEnable.81 = INTEGER: true(1)
+DOCS-IF-MIB::docsIfUpChannelPreEqEnable.82 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.3 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.53 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.54 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.55 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.56 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.57 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.58 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.59 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.60 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.61 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.62 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.63 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.64 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.65 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.66 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.67 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.68 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.69 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.70 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.71 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.72 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.73 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.74 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.75 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.76 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.77 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.78 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.79 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.112 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.113 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.114 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQIncludesContention.115 = INTEGER: false(2)
+DOCS-IF-MIB::docsIfSigQUnerroreds.3 = Counter32: 346374697 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.53 = Counter32: 307651711 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.54 = Counter32: 294905346 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.55 = Counter32: 3519334527 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.56 = Counter32: 3509647805 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.57 = Counter32: 3500110268 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.58 = Counter32: 3494919206 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.59 = Counter32: 3485208845 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.60 = Counter32: 3477222593 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.61 = Counter32: 3470209070 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.62 = Counter32: 3461611701 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.63 = Counter32: 3451905790 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.64 = Counter32: 3438889602 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.65 = Counter32: 3425045931 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.66 = Counter32: 3414255052 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.67 = Counter32: 3400551593 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.68 = Counter32: 3390806820 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.69 = Counter32: 3379559149 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.70 = Counter32: 3368933984 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.71 = Counter32: 3355791014 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.72 = Counter32: 3348148790 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.73 = Counter32: 3338524026 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.74 = Counter32: 3328774896 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.75 = Counter32: 3321098142 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.76 = Counter32: 3310556276 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.77 = Counter32: 3302390570 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.78 = Counter32: 3293119478 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.79 = Counter32: 3280071149 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.112 = Counter32: 3265675086 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.113 = Counter32: 3257269993 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.114 = Counter32: 3245358748 codewords
+DOCS-IF-MIB::docsIfSigQUnerroreds.115 = Counter32: 3233312715 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.3 = Counter32: 104 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.53 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.54 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.55 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.56 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.57 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.58 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.59 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.60 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.61 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.62 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.63 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.64 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.65 = Counter32: 6 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.66 = Counter32: 6 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.67 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.68 = Counter32: 6 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.69 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.70 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.71 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.72 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.73 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.74 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.75 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.76 = Counter32: 3 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.77 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.78 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.79 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.112 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.113 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.114 = Counter32: 2258 codewords
+DOCS-IF-MIB::docsIfSigQCorrecteds.115 = Counter32: 396 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.3 = Counter32: 1244 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.53 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.54 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.55 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.56 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.57 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.58 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.59 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.60 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.61 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.62 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.63 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.64 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.65 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.66 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.67 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.68 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.69 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.70 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.71 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.72 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.73 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.74 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.75 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.76 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.77 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.78 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.79 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.112 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.113 = Counter32: 0 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.114 = Counter32: 2608 codewords
+DOCS-IF-MIB::docsIfSigQUncorrectables.115 = Counter32: 2907 codewords
+DOCS-IF-MIB::docsIfSigQSignalNoise.3 = INTEGER: 44.6 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.53 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.54 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.55 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.56 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.57 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.58 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.59 = INTEGER: 44.6 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.60 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.61 = INTEGER: 44.6 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.62 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.63 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.64 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.65 = INTEGER: 44.6 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.66 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.67 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.68 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.69 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.70 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.71 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.72 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.73 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.74 = INTEGER: 44.6 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.75 = INTEGER: 44.6 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.76 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.77 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.78 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.79 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.112 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.113 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.114 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQSignalNoise.115 = INTEGER: 43.3 TenthdB
+DOCS-IF-MIB::docsIfSigQMicroreflections.3 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.53 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.54 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.55 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.56 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.57 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.58 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.59 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.60 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.61 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.62 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.63 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.64 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.65 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.66 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.67 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.68 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.69 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.70 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.71 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.72 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.73 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.74 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.75 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.76 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.77 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.78 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.79 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.112 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.113 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.114 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQMicroreflections.115 = INTEGER: 3 -dBc
+DOCS-IF-MIB::docsIfSigQEqualizationData.3 = Hex-STRING: 08 01 08 20 02 00 F7 FF FF FF 0D 00 37 00 DA FF 
+28 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 B3 FF BA FF 19 00 F1 FF 06 00 F0 FF 
+06 00 06 00 00 00 F0 FF F1 FF 08 00 10 00 F7 FF 
+08 00 09 00 F5 FF 0B 00 F8 FF 0D 00 11 00 FA FF 
+FA FF F3 FF 0F 00 08 00 03 00 EE FF 03 00 04 00 
+F6 FF 11 00 C2 10 A9 10 A9 10 7B FB AA FF 88 10 
+A9 10 A9 10 A9 10 A9 10 FC FF 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.53 = Hex-STRING: 08 01 08 20 E3 FF FF FF F7 FF F7 FF F8 FF D6 FF 
+10 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 91 00 D3 FF 24 00 E7 FF 0D 00 F3 FF 
+0C 00 02 00 FB FF ED FF FA FF FD FF 0F 00 F7 FF 
+0F 00 12 00 F1 FF 01 00 F0 FF 02 00 F2 FF 06 00 
+08 00 F8 FF 08 00 05 00 0A 00 F4 FF F8 FF F7 FF 
+F1 FF 10 00 C2 10 A9 10 A9 10 FA F9 AA FF 87 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.54 = Hex-STRING: 08 01 08 20 FB FF 15 00 0D 00 00 00 2D 00 00 00 
+33 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 32 00 C9 FF 12 00 ED FF 0E 00 EE FF 
+0F 00 07 00 08 00 ED FF FA FF EB FF 11 00 EE FF 
+F8 FF F6 FF 06 00 08 00 F0 FF 12 00 FA FF FA FF 
+FD FF 09 00 0F 00 F6 FF 06 00 F4 FF 04 00 EC FF 
+F5 FF 08 00 C2 10 A9 10 A9 10 FB F9 AA FF F8 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.55 = Hex-STRING: 08 01 08 20 21 00 F7 FF FF FF 26 00 26 00 F0 FF 
+2D 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 69 00 F2 FF 12 00 F1 FF 0E 00 ED FF 
+0D 00 00 00 07 00 00 00 F6 FF 08 00 13 00 F3 FF 
+08 00 09 00 EC FF 0D 00 09 00 0F 00 01 00 F7 FF 
+FE FF FF FF 08 00 00 00 FE FF F7 FF 11 00 02 00 
+F9 FF 10 00 C2 10 A9 10 A9 10 F8 F9 AA FF FA 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.56 = Hex-STRING: 08 01 08 20 17 00 1F 00 1C 00 06 00 32 00 00 00 
+34 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 3B 00 D5 FF 13 00 F4 FF 12 00 EB FF 
+13 00 05 00 13 00 F2 FF EE FF F4 FF 0E 00 F2 FF 
+0A 00 FE FF F2 FF FC FF F2 FF F8 FF F8 FF 00 00 
+01 00 F2 FF FF FF F9 FF EF FF 0E 00 FA FF F6 FF 
+FF FF 0D 00 C2 10 A9 10 A9 10 F9 F9 AA FF 8A 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.57 = Hex-STRING: 08 01 08 20 F6 FF FA FF 00 00 FC FF 09 00 F9 FF 
+2C 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 72 00 E4 FF 16 00 F3 FF 0F 00 F3 FF 
+09 00 F4 FF FF FF EE FF 0A 00 F9 FF 12 00 F8 FF 
+01 00 09 00 ED FF 10 00 01 00 0D 00 0B 00 03 00 
+FD FF 06 00 EC FF 0C 00 F4 FF F9 FF F6 FF F8 FF 
+FE FF 10 00 C2 10 A9 10 A9 10 F9 F9 AA FF 89 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.58 = Hex-STRING: 08 01 08 20 6E 00 F6 FF 06 00 1C 00 09 00 13 00 
+D8 FF 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 45 00 EA FF 0E 00 E4 FF 12 00 EF FF 
+08 00 E6 FF FA FF F0 FF FB FF F1 FF 12 00 F1 FF 
+01 00 12 00 F8 FF FE FF 01 00 FB FF 00 00 F2 FF 
+FE FF F3 FF 0F 00 EB FF F7 FF 08 00 F3 FF FC FF 
+F7 FF 11 00 C2 10 A9 10 A9 10 F8 F9 AA FF F8 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.59 = Hex-STRING: 08 01 08 20 FC FF 04 00 21 00 2A 00 15 00 14 00 
+2C 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 EB FF D0 FF 10 00 EC FF 06 00 EB FF 
+04 00 10 00 F3 FF FE FF F2 FF 06 00 0D 00 EE FF 
+01 00 0C 00 09 00 0D 00 FA FF 00 00 FF FF FC FF 
+03 00 00 00 0E 00 FC FF FA FF 00 00 08 00 09 00 
+F4 FF 0B 00 C2 10 A9 10 A9 10 FA F9 AA FF 88 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.60 = Hex-STRING: 08 01 08 20 7E 00 EA FF 17 00 FD FF 07 00 D6 FF 
+2F 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 93 00 F2 FF 0D 00 EA FF 0F 00 F0 FF 
+0B 00 F2 FF 08 00 EF FF F8 FF 05 00 12 00 08 00 
+F2 FF F2 FF FC FF 09 00 F0 FF 04 00 F0 FF 08 00 
+F1 FF F5 FF EC FF F8 FF F7 FF F5 FF F1 FF F6 FF 
+F5 FF 0F 00 C2 10 A9 10 A9 10 F8 F9 AA FF 86 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.61 = Hex-STRING: 08 01 08 20 E3 FF 02 00 EB FF 05 00 FC FF 2A 00 
+D1 FF 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 F4 FF C6 FF 29 00 F9 FF 15 00 F8 FF 
+1C 00 F0 FF 12 00 F9 FF 11 00 07 00 21 00 FE FF 
+FD FF 00 00 F8 FF 02 00 F9 FF FE FF FB FF F7 FF 
+10 00 0C 00 FA FF FB FF F0 FF 03 00 0A 00 12 00 
+FA FF 0F 00 C2 10 A9 10 A9 10 7A FA AA FF F8 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.62 = Hex-STRING: 08 01 08 20 FF FF EA FF 12 00 FF FF 10 00 EA FF 
+2F 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 8E 00 FA FF 0D 00 F7 FF 08 00 F5 FF 
+0C 00 F7 FF 02 00 FE FF FC FF F9 FF 08 00 F0 FF 
+FE FF FF FF F4 FF 10 00 F3 FF F6 FF F8 FF 00 00 
+FD FF EF FF FC FF FB FF F8 FF F2 FF F0 FF 0B 00 
+08 00 0E 00 C2 10 A9 10 A9 10 7A FA AA FF 88 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.63 = Hex-STRING: 08 01 08 20 00 00 F7 FF 06 00 0F 00 05 00 F6 FF 
+33 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 A8 FF AB FF 0F 00 E6 FF 11 00 EE FF 
+11 00 F0 FF 09 00 0B 00 F7 FF F7 FF 0F 00 EF FF 
+02 00 0A 00 F1 FF 0B 00 F8 FF 01 00 F2 FF F1 FF 
+ED FF F2 FF F6 FF FA FF EF FF FC FF ED FF FB FF 
+F1 FF 25 00 C2 10 A9 10 A9 10 7A FA AA FF 86 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.64 = Hex-STRING: 08 01 08 20 EF FF 03 00 07 00 0D 00 05 00 F6 FF 
+33 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 D1 00 11 00 11 00 EE FF 08 00 02 00 
+0E 00 F7 FF 0B 00 F3 FF EF FF F8 FF 08 00 F9 FF 
+05 00 02 00 F6 FF 09 00 01 00 14 00 03 00 05 00 
+01 00 0A 00 01 00 0E 00 10 00 F6 FF 02 00 F5 FF 
+01 00 13 00 C2 10 A9 10 A9 10 79 FA AA FF FE 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.65 = Hex-STRING: 08 01 08 20 03 00 0D 00 15 00 19 00 04 00 00 00 
+37 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 93 FF B5 FF 19 00 D8 FF 15 00 ED FF 
+0C 00 F0 FF 03 00 FC FF EF FF 06 00 14 00 00 00 
+F7 FF 18 00 F8 FF 0F 00 F7 FF F8 FF EE FF 00 00 
+FB FF 0A 00 F6 FF 0B 00 05 00 FE FF F2 FF 03 00 
+EB FF 13 00 C2 10 A9 10 A9 10 79 FA AA FF F7 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.66 = Hex-STRING: 08 01 08 20 07 00 FE FF 25 00 ED FF 2A 00 C6 FF 
+61 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 90 00 F8 FF 04 00 E2 FF 10 00 E5 FF 
+FF FF F2 FF F1 FF F5 FF F1 FF F0 FF 11 00 F6 FF 
+F3 FF 05 00 F7 FF FE FF 0C 00 10 00 FC FF 11 00 
+F7 FF F0 FF F9 FF 05 00 ED FF F1 FF 03 00 03 00 
+F0 FF 13 00 C2 10 A9 10 A9 10 79 FA AA FF F8 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.67 = Hex-STRING: 08 01 08 20 F2 FF EB FF D9 FF 01 00 F7 FF F6 FF 
+22 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 ED FF BA FF 0B 00 E9 FF 0F 00 EF FF 
+09 00 FD FF 0E 00 F5 FF F7 FF F9 FF 08 00 EF FF 
+FF FF 0E 00 F2 FF 0D 00 F1 FF F9 FF ED FF 09 00 
+F7 FF FE FF 0E 00 08 00 05 00 F7 FF 00 00 01 00 
+06 00 19 00 C2 10 A9 10 A9 10 7A FA AA FF 88 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.68 = Hex-STRING: 08 01 08 20 08 00 28 00 00 00 22 00 20 00 F3 FF 
+29 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 83 00 F0 FF 0F 00 F2 FF 02 00 EA FF 
+0E 00 F9 FF F7 FF F7 FF F6 FF FE FF 14 00 FF FF 
+FB FF 1B 00 FA FF 11 00 F4 FF 0A 00 F7 FF FB FF 
+FC FF 08 00 F5 FF FD FF F6 FF 00 00 08 00 10 00 
+00 00 13 00 C2 10 A9 10 A9 10 79 FA AA FF FF 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.69 = Hex-STRING: 08 01 08 20 7B 00 F6 FF 0D 00 08 00 08 00 F2 FF 
+29 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 35 00 D2 FF 1C 00 EF FF 10 00 EF FF 
+0F 00 F3 FF 01 00 F4 FF FE FF FD FF 0B 00 FD FF 
+02 00 09 00 F4 FF 08 00 FD FF 0E 00 F4 FF 01 00 
+02 00 F8 FF F1 FF 0E 00 05 00 04 00 F4 FF F2 FF 
+0C 00 19 00 C2 10 A9 10 A9 10 FC FA AA FF FC 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.70 = Hex-STRING: 08 01 08 20 17 00 F4 FF 24 00 04 00 2E 00 DE FF 
+37 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 49 00 E1 FF 11 00 ED FF 0E 00 F0 FF 
+15 00 02 00 05 00 FA FF 09 00 FF FF 13 00 FC FF 
+F3 FF 09 00 00 00 0F 00 01 00 06 00 F7 FF 0E 00 
+FF FF 0A 00 13 00 F6 FF 09 00 F0 FF FA FF FF FF 
+0E 00 10 00 C2 10 A9 10 A9 10 FB FA AA FF 83 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.71 = Hex-STRING: 08 01 08 20 03 00 29 00 FB FF FC FF 34 00 00 00 
+20 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 59 00 D5 FF 17 00 DC FF 12 00 FD FF 
+10 00 F8 FF 03 00 02 00 F4 FF F0 FF 12 00 ED FF 
+FD FF 13 00 F1 FF 0E 00 09 00 0E 00 F0 FF 04 00 
+F7 FF 05 00 04 00 F4 FF F3 FF F1 FF 02 00 08 00 
+0E 00 14 00 C2 10 A9 10 A9 10 FB FA AA FF 88 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.72 = Hex-STRING: 08 01 08 20 F7 FF 10 00 0F 00 0B 00 F2 FF 17 00 
+F7 FF 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 53 00 F1 FF 11 00 F1 FF 09 00 FB FF 
+0E 00 01 00 0C 00 FD FF F2 FF F6 FF 16 00 EF FF 
+00 00 F1 FF 11 00 F3 FF F5 FF 08 00 EF FF 04 00 
+09 00 EF FF FA FF 0D 00 FF FF FA FF 02 00 F1 FF 
+0A 00 08 00 C2 10 A9 10 A9 10 F8 FA AA FF 88 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.73 = Hex-STRING: 08 01 08 20 F7 FF 01 00 FC FF 05 00 29 00 ED FF 
+35 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 35 00 EA FF 14 00 F1 FF 0F 00 F5 FF 
+0E 00 0B 00 00 00 FA FF F8 FF 0E 00 0F 00 F4 FF 
+02 00 0D 00 0A 00 0A 00 0C 00 0E 00 02 00 04 00 
+03 00 FE FF FE FF 08 00 FE FF 11 00 F2 FF 0E 00 
+F8 FF 0B 00 C2 10 A9 10 A9 10 FA FA AA FF 8A 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.74 = Hex-STRING: 08 01 08 20 EE FF E3 FF D1 FF DF FF 17 00 F6 FF 
+19 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 4E 00 D0 FF 10 00 E8 FF 10 00 EE FF 
+16 00 06 00 00 00 F7 FF F3 FF FA FF 09 00 F3 FF 
+F0 FF FA FF F7 FF 0F 00 F4 FF 0B 00 07 00 00 00 
+01 00 F6 FF 02 00 01 00 F6 FF 0B 00 F7 FF 0A 00 
+05 00 11 00 C2 10 A9 10 A9 10 FA FA AA FF 8C 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.75 = Hex-STRING: 08 01 08 20 F2 FF F6 FF F5 FF 08 00 1C 00 04 00 
+F6 FF 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 55 00 E7 FF 13 00 F7 FF 0D 00 F0 FF 
+0F 00 0B 00 0D 00 F2 FF F0 FF F9 FF 13 00 E9 FF 
+12 00 09 00 03 00 08 00 0F 00 13 00 0E 00 0A 00 
+0C 00 0D 00 0B 00 0D 00 FB FF 03 00 05 00 03 00 
+F9 FF 15 00 C2 10 A9 10 A9 10 F9 FA AA FF 88 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.76 = Hex-STRING: 08 01 08 20 FD FF 00 00 FF FF 05 00 23 00 E8 FF 
+2E 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 4C 00 E1 FF 0F 00 F1 FF 10 00 EE FF 
+12 00 F4 FF 03 00 EF FF FC FF FD FF 0A 00 F0 FF 
+06 00 0E 00 F2 FF 0D 00 08 00 04 00 F5 FF F7 FF 
+06 00 F7 FF 0C 00 0F 00 10 00 0F 00 EF FF F8 FF 
+00 00 13 00 C2 10 A9 10 A9 10 F9 FA AA FF 00 11 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.77 = Hex-STRING: 08 01 08 20 FD FF 00 00 1E 00 04 00 04 00 DD FF 
+2F 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 48 00 D1 FF 07 00 E4 FF 0F 00 F2 FF 
+0A 00 F1 FF 0B 00 F5 FF EE FF F3 FF 07 00 F0 FF 
+FC FF 06 00 E7 FF 0C 00 F5 FF 04 00 F2 FF FE FF 
+0E 00 F2 FF F8 FF 07 00 02 00 F1 FF 00 00 F9 FF 
+F3 FF 0D 00 C2 10 A9 10 A9 10 78 FB AA FF FA 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.78 = Hex-STRING: 08 01 08 20 0B 00 05 00 11 00 E4 FF 17 00 D3 FF 
+31 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 0E 00 E4 FF 03 00 F2 FF 09 00 F3 FF 
+0C 00 F3 FF 14 00 F5 FF F2 FF F0 FF 0A 00 F2 FF 
+06 00 FD FF F1 FF F6 FF EF FF 0B 00 F9 FF 0C 00 
+FD FF 01 00 F6 FF 0F 00 09 00 FE FF F2 FF 01 00 
+F1 FF 1B 00 C2 10 A9 10 A9 10 7A FB AA FF F8 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.79 = Hex-STRING: 08 01 08 20 FD FF 0E 00 04 00 F6 FF F8 FF D4 FF 
+30 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 1A 00 D9 FF 17 00 F1 FF 12 00 ED FF 
+0E 00 FE FF 00 00 F9 FF F5 FF FE FF 11 00 FC FF 
+F0 FF 03 00 04 00 10 00 F2 FF 01 00 08 00 F1 FF 
+08 00 FE FF F5 FF F5 FF F8 FF 00 00 EF FF 0D 00 
+FF FF 0C 00 C2 10 A9 10 A9 10 7B FB AA FF F9 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.112 = Hex-STRING: 08 01 08 20 FF FF F3 FF 0E 00 11 00 06 00 E2 FF 
+2A 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 18 00 E4 FF 12 00 F1 FF 15 00 FA FF 
+0E 00 F6 FF 06 00 10 00 FA FF F0 FF 09 00 F5 FF 
+06 00 F8 FF F6 FF 03 00 08 00 09 00 F6 FF 0C 00 
+12 00 0F 00 08 00 F8 FF FD FF 10 00 05 00 0B 00 
+09 00 0A 00 C2 10 A9 10 A9 10 7A FB AA FF F9 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.113 = Hex-STRING: 08 01 08 20 F9 FF 14 00 F1 FF 04 00 2B 00 E4 FF 
+31 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 31 00 ED FF 0F 00 F1 FF 0B 00 F0 FF 
+09 00 F2 FF FA FF F5 FF F8 FF 02 00 FF FF F2 FF 
+05 00 02 00 F5 FF 0A 00 ED FF 0A 00 FF FF 12 00 
+F5 FF FC FF F8 FF FF FF FB FF FB FF F0 FF F4 FF 
+08 00 0E 00 C2 10 A9 10 A9 10 7A FB AA FF F7 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.114 = Hex-STRING: 08 01 08 20 02 00 FC FF 02 00 1C 00 24 00 E4 FF 
+1A 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 F0 FF CF FF 15 00 EF FF 0C 00 EB FF 
+02 00 F7 FF 06 00 ED FF F3 FF 0C 00 10 00 F2 FF 
+F9 FF 0E 00 02 00 03 00 F1 FF 09 00 08 00 FC FF 
+06 00 07 00 0E 00 FC FF EF FF FB FF F5 FF 0B 00 
+F0 FF 14 00 C2 10 A9 10 A9 10 7B FB AA FF F9 10 
+A9 10 A9 10 A9 10 A9 10 F9 FF 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQEqualizationData.115 = Hex-STRING: 08 01 08 20 F6 FF 02 00 02 00 01 00 1E 00 D2 FF 
+33 00 00 00 57 EF 57 EF 57 EF 57 EF 57 EF 57 EF 
+FF 7F 00 00 94 00 FC FF 0A 00 EE FF 0C 00 EF FF 
+0B 00 FE FF 06 00 02 00 ED FF FA FF 0D 00 F1 FF 
+FF FF 0B 00 F7 FF 02 00 EF FF 02 00 0E 00 F5 FF 
+F9 FF 08 00 FA FF 0E 00 F3 FF 0D 00 F0 FF FC FF 
+0A 00 18 00 C2 10 A9 10 A9 10 7B FB AA FF 88 10 
+A9 10 A9 10 A9 10 A9 10 00 00 00 00 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 A9 10 
+A9 10 A9 10 
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.3 = Counter64: 13231722451 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.53 = Counter64: 13192999487 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.54 = Counter64: 13180253119 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.55 = Counter64: 7814747709 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.56 = Counter64: 7805060987 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.57 = Counter64: 7795315125 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.58 = Counter64: 7790124060 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.59 = Counter64: 7780413693 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.60 = Counter64: 7772427441 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.61 = Counter64: 7765413918 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.62 = Counter64: 7756816552 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.63 = Counter64: 7747110641 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.64 = Counter64: 7734094453 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.65 = Counter64: 7720250782 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.66 = Counter64: 7709459894 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.67 = Counter64: 7695756435 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.68 = Counter64: 7686011662 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.69 = Counter64: 7674763991 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.70 = Counter64: 7664138826 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.71 = Counter64: 7650995856 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.72 = Counter64: 7643353635 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.73 = Counter64: 7633728862 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.74 = Counter64: 7623979735 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.75 = Counter64: 7616302981 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.76 = Counter64: 7605761115 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.77 = Counter64: 7597595409 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.78 = Counter64: 7588324317 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.79 = Counter64: 7575275985 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.112 = Counter64: 7560879916 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.113 = Counter64: 7552485407 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.114 = Counter64: 7540574162 codewords
+DOCS-IF-MIB::docsIfSigQExtUnerroreds.115 = Counter64: 7528528131 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.3 = Counter64: 104 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.53 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.54 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.55 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.56 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.57 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.58 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.59 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.60 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.61 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.62 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.63 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.64 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.65 = Counter64: 6 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.66 = Counter64: 6 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.67 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.68 = Counter64: 6 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.69 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.70 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.71 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.72 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.73 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.74 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.75 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.76 = Counter64: 3 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.77 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.78 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.79 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.112 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.113 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.114 = Counter64: 2258 codewords
+DOCS-IF-MIB::docsIfSigQExtCorrecteds.115 = Counter64: 396 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.3 = Counter64: 1244 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.53 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.54 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.55 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.56 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.57 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.58 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.59 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.60 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.61 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.62 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.63 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.64 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.65 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.66 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.67 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.68 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.69 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.70 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.71 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.72 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.73 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.74 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.75 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.76 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.77 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.78 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.79 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.112 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.113 = Counter64: 0 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.114 = Counter64: 2608 codewords
+DOCS-IF-MIB::docsIfSigQExtUncorrectables.115 = Counter64: 2907 codewords
+DOCS-IF-MIB::docsIfCmCmtsAddress.2 = STRING: 0:90:f0:1:0:0
+DOCS-IF-MIB::docsIfCmCapabilities.2 = BITS: 40 concatenation(1) 
+DOCS-IF-MIB::docsIfCmRangingTimeout.2 = INTEGER: 20 HundredOfSeconds
+DOCS-IF-MIB::docsIfCmStatusValue.2 = INTEGER: operational(12)
+DOCS-IF-MIB::docsIfCmStatusCode.2 = STRING: "J101.0"
+DOCS-IF-MIB::docsIfCmStatusTxPower.2 = INTEGER: .0 TenthdBmV
+DOCS-IF-MIB::docsIfCmStatusResets.2 = Counter32: 0 resets
+DOCS-IF-MIB::docsIfCmStatusLostSyncs.2 = Counter32: 0
+DOCS-IF-MIB::docsIfCmStatusInvalidMaps.2 = Counter32: 0 maps
+DOCS-IF-MIB::docsIfCmStatusInvalidUcds.2 = Counter32: 0 messages
+DOCS-IF-MIB::docsIfCmStatusInvalidRangingResponses.2 = Counter32: 0 messages
+DOCS-IF-MIB::docsIfCmStatusInvalidRegistrationResponses.2 = Counter32: 0 messages
+DOCS-IF-MIB::docsIfCmStatusT1Timeouts.2 = Counter32: 0 timeouts
+DOCS-IF-MIB::docsIfCmStatusT2Timeouts.2 = Counter32: 0 timeouts
+DOCS-IF-MIB::docsIfCmStatusT3Timeouts.2 = Counter32: 0 timeouts
+DOCS-IF-MIB::docsIfCmStatusT4Timeouts.2 = Counter32: 0 timeouts
+DOCS-IF-MIB::docsIfCmStatusRangingAborteds.2 = Counter32: 0 attempts
+DOCS-IF-MIB::docsIfCmStatusDocsisOperMode.2 = INTEGER: docsis11(2)
+DOCS-IF-MIB::docsIfCmStatusModulationType.2 = INTEGER: unknown(0)
+DOCS-IF-MIB::docsIfCmStatusEqualizationData.2 = ""
+DOCS-IF-MIB::docsIfCmStatusUCCs.2 = Counter32: 0 attempts
+DOCS-IF-MIB::docsIfCmStatusUCCFails.2 = Counter32: 0 attempts
+SNMPv2-MIB::snmpInPkts.0 = Counter32: 214905
+SNMPv2-MIB::snmpOutPkts.0 = Counter32: 214906
+SNMPv2-MIB::snmpInBadVersions.0 = Counter32: 0
+SNMPv2-MIB::snmpInBadCommunityNames.0 = Counter32: 0
+SNMPv2-MIB::snmpInBadCommunityUses.0 = Counter32: 0
+SNMPv2-MIB::snmpInASNParseErrs.0 = Counter32: 0
+SNMPv2-MIB::snmpInTooBigs.0 = Counter32: 0
+SNMPv2-MIB::snmpInNoSuchNames.0 = Counter32: 0
+SNMPv2-MIB::snmpInBadValues.0 = Counter32: 0
+SNMPv2-MIB::snmpInReadOnlys.0 = Counter32: 0
+SNMPv2-MIB::snmpInGenErrs.0 = Counter32: 0
+SNMPv2-MIB::snmpInTotalReqVars.0 = Counter32: 5524043
+SNMPv2-MIB::snmpInTotalSetVars.0 = Counter32: 86
+SNMPv2-MIB::snmpInGetRequests.0 = Counter32: 3063
+SNMPv2-MIB::snmpInGetNexts.0 = Counter32: 2645
+SNMPv2-MIB::snmpInSetRequests.0 = Counter32: 84
+SNMPv2-MIB::snmpInGetResponses.0 = Counter32: 0
+SNMPv2-MIB::snmpInTraps.0 = Counter32: 0
+SNMPv2-MIB::snmpOutTooBigs.0 = Counter32: 0
+SNMPv2-MIB::snmpOutNoSuchNames.0 = Counter32: 0
+SNMPv2-MIB::snmpOutBadValues.0 = Counter32: 0
+SNMPv2-MIB::snmpOutGenErrs.0 = Counter32: 0
+SNMPv2-MIB::snmpOutGetRequests.0 = Counter32: 0
+SNMPv2-MIB::snmpOutGetNexts.0 = Counter32: 0
+SNMPv2-MIB::snmpOutSetRequests.0 = Counter32: 0
+SNMPv2-MIB::snmpOutGetResponses.0 = Counter32: 214930
+SNMPv2-MIB::snmpOutTraps.0 = Counter32: 0
+SNMPv2-MIB::snmpEnableAuthenTraps.0 = INTEGER: enabled(1)
+SNMPv2-MIB::snmpSilentDrops.0 = Counter32: 0
+SNMPv2-MIB::snmpProxyDrops.0 = Counter32: 0
+BRIDGE-MIB::dot1dBaseBridgeAddress.0 = STRING: 2:e0:92:0:1:40
+BRIDGE-MIB::dot1dBaseNumPorts.0 = INTEGER: 3 ports
+BRIDGE-MIB::dot1dBaseType.0 = INTEGER: transparent-only(2)
+BRIDGE-MIB::dot1dBasePort.1 = INTEGER: 1
+BRIDGE-MIB::dot1dBasePort.2 = INTEGER: 2
+BRIDGE-MIB::dot1dBasePort.16 = INTEGER: 16
+BRIDGE-MIB::dot1dBasePortIfIndex.1 = INTEGER: 1
+BRIDGE-MIB::dot1dBasePortIfIndex.2 = INTEGER: 2
+BRIDGE-MIB::dot1dBasePortIfIndex.16 = INTEGER: 16
+BRIDGE-MIB::dot1dBasePortCircuit.1 = OID: SNMPv2-SMI::zeroDotZero
+BRIDGE-MIB::dot1dBasePortCircuit.2 = OID: SNMPv2-SMI::zeroDotZero
+BRIDGE-MIB::dot1dBasePortCircuit.16 = OID: SNMPv2-SMI::zeroDotZero
+BRIDGE-MIB::dot1dBasePortDelayExceededDiscards.1 = Counter32: 0
+BRIDGE-MIB::dot1dBasePortDelayExceededDiscards.2 = Counter32: 0
+BRIDGE-MIB::dot1dBasePortDelayExceededDiscards.16 = Counter32: 0
+BRIDGE-MIB::dot1dBasePortMtuExceededDiscards.1 = Counter32: 0
+BRIDGE-MIB::dot1dBasePortMtuExceededDiscards.2 = Counter32: 0
+BRIDGE-MIB::dot1dBasePortMtuExceededDiscards.16 = Counter32: 0
+BRIDGE-MIB::dot1dTpLearnedEntryDiscards.0 = Counter32: 0
+BRIDGE-MIB::dot1dTpAgingTime.0 = INTEGER: 300 seconds
+BRIDGE-MIB::dot1dTpFdbAddress.'..)..=' = STRING: 0:c:29:13:d7:3d
+BRIDGE-MIB::dot1dTpFdbAddress.'..):-.' = STRING: 0:c:29:3a:2d:b2
+BRIDGE-MIB::dot1dTpFdbAddress.'8.+.IL' = STRING: 38:ad:2b:12:49:4c
+BRIDGE-MIB::dot1dTpFdbAddress.'8.+.IM' = STRING: 38:ad:2b:12:49:4d
+BRIDGE-MIB::dot1dTpFdbAddress.'8.+.IN' = STRING: 38:ad:2b:12:49:4e
+BRIDGE-MIB::dot1dTpFdbPort.'..)..=' = INTEGER: 1
+BRIDGE-MIB::dot1dTpFdbPort.'..):-.' = INTEGER: 1
+BRIDGE-MIB::dot1dTpFdbPort.'8.+.IL' = INTEGER: 2
+BRIDGE-MIB::dot1dTpFdbPort.'8.+.IM' = INTEGER: 16
+BRIDGE-MIB::dot1dTpFdbPort.'8.+.IN' = INTEGER: 1
+BRIDGE-MIB::dot1dTpFdbStatus.'..)..=' = INTEGER: learned(3)
+BRIDGE-MIB::dot1dTpFdbStatus.'..):-.' = INTEGER: learned(3)
+BRIDGE-MIB::dot1dTpFdbStatus.'8.+.IL' = INTEGER: self(4)
+BRIDGE-MIB::dot1dTpFdbStatus.'8.+.IM' = INTEGER: mgmt(5)
+BRIDGE-MIB::dot1dTpFdbStatus.'8.+.IN' = INTEGER: self(4)
+BRIDGE-MIB::dot1dTpPort.1 = INTEGER: 1
+BRIDGE-MIB::dot1dTpPort.2 = INTEGER: 2
+BRIDGE-MIB::dot1dTpPort.16 = INTEGER: 16
+BRIDGE-MIB::dot1dTpPortMaxInfo.1 = INTEGER: 1500 bytes
+BRIDGE-MIB::dot1dTpPortMaxInfo.2 = INTEGER: 1522 bytes
+BRIDGE-MIB::dot1dTpPortMaxInfo.16 = INTEGER: 0 bytes
+BRIDGE-MIB::dot1dTpPortInFrames.1 = Counter32: 23246 frames
+BRIDGE-MIB::dot1dTpPortInFrames.2 = Counter32: 266316 frames
+BRIDGE-MIB::dot1dTpPortInFrames.16 = Counter32: 255 frames
+BRIDGE-MIB::dot1dTpPortOutFrames.1 = Counter32: 49285 frames
+BRIDGE-MIB::dot1dTpPortOutFrames.2 = Counter32: 238744 frames
+BRIDGE-MIB::dot1dTpPortOutFrames.16 = Counter32: 38279 frames
+BRIDGE-MIB::dot1dTpPortInDiscards.1 = Counter32: 0 frames
+BRIDGE-MIB::dot1dTpPortInDiscards.2 = Counter32: 0 frames
+BRIDGE-MIB::dot1dTpPortInDiscards.16 = Counter32: 0 frames
+HOST-RESOURCES-MIB::hrMemorySize.0 = INTEGER: 0 KBytes
+HOST-RESOURCES-MIB::hrStorageIndex.1 = INTEGER: 1
+HOST-RESOURCES-MIB::hrStorageType.1 = OID: SNMPv2-SMI::zeroDotZero
+HOST-RESOURCES-MIB::hrStorageDescr.1 = STRING: 
+HOST-RESOURCES-MIB::hrStorageAllocationUnits.1 = INTEGER: 1 Bytes
+HOST-RESOURCES-MIB::hrStorageSize.1 = INTEGER: 0
+HOST-RESOURCES-MIB::hrStorageUsed.1 = INTEGER: 0
+IF-MIB::ifName.1 = STRING: eth0_1
+IF-MIB::ifName.2 = STRING: cni0
+IF-MIB::ifName.3 = STRING: dsch1
+IF-MIB::ifName.4 = STRING: usch1
+IF-MIB::ifName.16 = STRING: esafe0
+IF-MIB::ifName.48 = STRING: dsch2
+IF-MIB::ifName.49 = STRING: dsch3
+IF-MIB::ifName.50 = STRING: dsch4
+IF-MIB::ifName.51 = STRING: dsch5
+IF-MIB::ifName.52 = STRING: dsch6
+IF-MIB::ifName.53 = STRING: dsch7
+IF-MIB::ifName.54 = STRING: dsch8
+IF-MIB::ifName.55 = STRING: dsch9
+IF-MIB::ifName.56 = STRING: dsch10
+IF-MIB::ifName.57 = STRING: dsch11
+IF-MIB::ifName.58 = STRING: dsch12
+IF-MIB::ifName.59 = STRING: dsch13
+IF-MIB::ifName.60 = STRING: dsch14
+IF-MIB::ifName.61 = STRING: dsch15
+IF-MIB::ifName.62 = STRING: dsch16
+IF-MIB::ifName.63 = STRING: dsch17
+IF-MIB::ifName.64 = STRING: dsch18
+IF-MIB::ifName.65 = STRING: dsch19
+IF-MIB::ifName.66 = STRING: dsch20
+IF-MIB::ifName.67 = STRING: dsch21
+IF-MIB::ifName.68 = STRING: dsch22
+IF-MIB::ifName.69 = STRING: dsch23
+IF-MIB::ifName.70 = STRING: dsch24
+IF-MIB::ifName.71 = STRING: dsch25
+IF-MIB::ifName.72 = STRING: dsch26
+IF-MIB::ifName.73 = STRING: dsch27
+IF-MIB::ifName.74 = STRING: dsch28
+IF-MIB::ifName.75 = STRING: dsch29
+IF-MIB::ifName.76 = STRING: dsch30
+IF-MIB::ifName.77 = STRING: dsch31
+IF-MIB::ifName.78 = STRING: dsch32
+IF-MIB::ifName.79 = STRING: dsch33
+IF-MIB::ifName.80 = STRING: usch2
+IF-MIB::ifName.81 = STRING: usch3
+IF-MIB::ifName.82 = STRING: usch4
+IF-MIB::ifName.112 = STRING: dsch34
+IF-MIB::ifName.113 = STRING: dsch35
+IF-MIB::ifName.114 = STRING: dsch36
+IF-MIB::ifName.115 = STRING: dsch37
+IF-MIB::ifInMulticastPkts.1 = Counter32: 3858
+IF-MIB::ifInMulticastPkts.2 = Counter32: 19049
+IF-MIB::ifInMulticastPkts.3 = Counter32: 0
+IF-MIB::ifInMulticastPkts.4 = Counter32: 0
+IF-MIB::ifInMulticastPkts.16 = Counter32: 9
+IF-MIB::ifInMulticastPkts.48 = Counter32: 0
+IF-MIB::ifInMulticastPkts.49 = Counter32: 0
+IF-MIB::ifInMulticastPkts.50 = Counter32: 0
+IF-MIB::ifInMulticastPkts.51 = Counter32: 0
+IF-MIB::ifInMulticastPkts.52 = Counter32: 0
+IF-MIB::ifInMulticastPkts.53 = Counter32: 0
+IF-MIB::ifInMulticastPkts.54 = Counter32: 0
+IF-MIB::ifInMulticastPkts.55 = Counter32: 0
+IF-MIB::ifInMulticastPkts.56 = Counter32: 0
+IF-MIB::ifInMulticastPkts.57 = Counter32: 0
+IF-MIB::ifInMulticastPkts.58 = Counter32: 0
+IF-MIB::ifInMulticastPkts.59 = Counter32: 0
+IF-MIB::ifInMulticastPkts.60 = Counter32: 0
+IF-MIB::ifInMulticastPkts.61 = Counter32: 0
+IF-MIB::ifInMulticastPkts.62 = Counter32: 0
+IF-MIB::ifInMulticastPkts.63 = Counter32: 0
+IF-MIB::ifInMulticastPkts.64 = Counter32: 0
+IF-MIB::ifInMulticastPkts.65 = Counter32: 0
+IF-MIB::ifInMulticastPkts.66 = Counter32: 0
+IF-MIB::ifInMulticastPkts.67 = Counter32: 0
+IF-MIB::ifInMulticastPkts.68 = Counter32: 0
+IF-MIB::ifInMulticastPkts.69 = Counter32: 0
+IF-MIB::ifInMulticastPkts.70 = Counter32: 0
+IF-MIB::ifInMulticastPkts.71 = Counter32: 0
+IF-MIB::ifInMulticastPkts.72 = Counter32: 0
+IF-MIB::ifInMulticastPkts.73 = Counter32: 0
+IF-MIB::ifInMulticastPkts.74 = Counter32: 0
+IF-MIB::ifInMulticastPkts.75 = Counter32: 0
+IF-MIB::ifInMulticastPkts.76 = Counter32: 0
+IF-MIB::ifInMulticastPkts.77 = Counter32: 0
+IF-MIB::ifInMulticastPkts.78 = Counter32: 0
+IF-MIB::ifInMulticastPkts.79 = Counter32: 0
+IF-MIB::ifInMulticastPkts.80 = Counter32: 0
+IF-MIB::ifInMulticastPkts.81 = Counter32: 0
+IF-MIB::ifInMulticastPkts.82 = Counter32: 0
+IF-MIB::ifInMulticastPkts.112 = Counter32: 0
+IF-MIB::ifInMulticastPkts.113 = Counter32: 0
+IF-MIB::ifInMulticastPkts.114 = Counter32: 0
+IF-MIB::ifInMulticastPkts.115 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.1 = Counter32: 608
+IF-MIB::ifInBroadcastPkts.2 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.3 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.4 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.16 = Counter32: 32
+IF-MIB::ifInBroadcastPkts.48 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.49 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.50 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.51 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.52 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.53 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.54 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.55 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.56 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.57 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.58 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.59 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.60 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.61 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.62 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.63 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.64 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.65 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.66 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.67 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.68 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.69 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.70 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.71 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.72 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.73 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.74 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.75 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.76 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.77 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.78 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.79 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.80 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.81 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.82 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.112 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.113 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.114 = Counter32: 0
+IF-MIB::ifInBroadcastPkts.115 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.1 = Counter32: 19825
+IF-MIB::ifOutMulticastPkts.2 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.3 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.4 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.16 = Counter32: 19040
+IF-MIB::ifOutMulticastPkts.48 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.49 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.50 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.51 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.52 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.53 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.54 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.55 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.56 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.57 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.58 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.59 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.60 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.61 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.62 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.63 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.64 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.65 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.66 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.67 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.68 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.69 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.70 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.71 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.72 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.73 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.74 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.75 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.76 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.77 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.78 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.79 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.80 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.81 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.82 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.112 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.113 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.114 = Counter32: 0
+IF-MIB::ifOutMulticastPkts.115 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.1 = Counter32: 57
+IF-MIB::ifOutBroadcastPkts.2 = Counter32: 648
+IF-MIB::ifOutBroadcastPkts.3 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.4 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.16 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.48 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.49 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.50 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.51 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.52 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.53 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.54 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.55 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.56 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.57 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.58 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.59 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.60 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.61 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.62 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.63 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.64 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.65 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.66 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.67 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.68 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.69 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.70 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.71 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.72 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.73 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.74 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.75 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.76 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.77 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.78 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.79 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.80 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.81 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.82 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.112 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.113 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.114 = Counter32: 0
+IF-MIB::ifOutBroadcastPkts.115 = Counter32: 0
+IF-MIB::ifHCInOctets.1 = Counter64: 3678787
+IF-MIB::ifHCInOctets.2 = Counter64: 48839212
+IF-MIB::ifHCInOctets.3 = Counter64: 102338777
+IF-MIB::ifHCInOctets.4 = Counter64: 0
+IF-MIB::ifHCInOctets.16 = Counter64: 31180
+IF-MIB::ifHCInOctets.48 = Counter64: 52556418
+IF-MIB::ifHCInOctets.49 = Counter64: 52704438
+IF-MIB::ifHCInOctets.50 = Counter64: 38543217
+IF-MIB::ifHCInOctets.51 = Counter64: 38588374
+IF-MIB::ifHCInOctets.52 = Counter64: 38555057
+IF-MIB::ifHCInOctets.53 = Counter64: 238043
+IF-MIB::ifHCInOctets.54 = Counter64: 221136
+IF-MIB::ifHCInOctets.55 = Counter64: 222678
+IF-MIB::ifHCInOctets.56 = Counter64: 233016
+IF-MIB::ifHCInOctets.57 = Counter64: 240909
+IF-MIB::ifHCInOctets.58 = Counter64: 228565
+IF-MIB::ifHCInOctets.59 = Counter64: 227257
+IF-MIB::ifHCInOctets.60 = Counter64: 226057
+IF-MIB::ifHCInOctets.61 = Counter64: 228898
+IF-MIB::ifHCInOctets.62 = Counter64: 225802
+IF-MIB::ifHCInOctets.63 = Counter64: 216339
+IF-MIB::ifHCInOctets.64 = Counter64: 225607
+IF-MIB::ifHCInOctets.65 = Counter64: 227442
+IF-MIB::ifHCInOctets.66 = Counter64: 224485
+IF-MIB::ifHCInOctets.67 = Counter64: 222307
+IF-MIB::ifHCInOctets.68 = Counter64: 221986
+IF-MIB::ifHCInOctets.69 = Counter64: 222582
+IF-MIB::ifHCInOctets.70 = Counter64: 226106
+IF-MIB::ifHCInOctets.71 = Counter64: 221178
+IF-MIB::ifHCInOctets.72 = Counter64: 222726
+IF-MIB::ifHCInOctets.73 = Counter64: 222417
+IF-MIB::ifHCInOctets.74 = Counter64: 226094
+IF-MIB::ifHCInOctets.75 = Counter64: 230908
+IF-MIB::ifHCInOctets.76 = Counter64: 229607
+IF-MIB::ifHCInOctets.77 = Counter64: 219462
+IF-MIB::ifHCInOctets.78 = Counter64: 231230
+IF-MIB::ifHCInOctets.79 = Counter64: 230564
+IF-MIB::ifHCInOctets.80 = Counter64: 0
+IF-MIB::ifHCInOctets.81 = Counter64: 0
+IF-MIB::ifHCInOctets.82 = Counter64: 0
+IF-MIB::ifHCInOctets.112 = Counter64: 237312
+IF-MIB::ifHCInOctets.113 = Counter64: 238808
+IF-MIB::ifHCInOctets.114 = Counter64: 222240
+IF-MIB::ifHCInOctets.115 = Counter64: 224968
+IF-MIB::ifHCInUcastPkts.1 = Counter64: 18780
+IF-MIB::ifHCInUcastPkts.2 = Counter64: 247468
+IF-MIB::ifHCInUcastPkts.3 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.4 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.16 = Counter64: 214
+IF-MIB::ifHCInUcastPkts.48 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.49 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.50 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.51 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.52 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.53 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.54 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.55 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.56 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.57 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.58 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.59 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.60 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.61 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.62 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.63 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.64 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.65 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.66 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.67 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.68 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.69 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.70 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.71 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.72 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.73 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.74 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.75 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.76 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.77 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.78 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.79 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.80 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.81 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.82 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.112 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.113 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.114 = Counter64: 0
+IF-MIB::ifHCInUcastPkts.115 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.1 = Counter64: 3858
+IF-MIB::ifHCInMulticastPkts.2 = Counter64: 19049
+IF-MIB::ifHCInMulticastPkts.3 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.4 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.16 = Counter64: 9
+IF-MIB::ifHCInMulticastPkts.48 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.49 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.50 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.51 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.52 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.53 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.54 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.55 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.56 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.57 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.58 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.59 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.60 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.61 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.62 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.63 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.64 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.65 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.66 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.67 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.68 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.69 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.70 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.71 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.72 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.73 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.74 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.75 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.76 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.77 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.78 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.79 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.80 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.81 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.82 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.112 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.113 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.114 = Counter64: 0
+IF-MIB::ifHCInMulticastPkts.115 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.1 = Counter64: 608
+IF-MIB::ifHCInBroadcastPkts.2 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.3 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.4 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.16 = Counter64: 32
+IF-MIB::ifHCInBroadcastPkts.48 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.49 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.50 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.51 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.52 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.53 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.54 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.55 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.56 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.57 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.58 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.59 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.60 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.61 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.62 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.63 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.64 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.65 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.66 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.67 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.68 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.69 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.70 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.71 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.72 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.73 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.74 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.75 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.76 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.77 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.78 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.79 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.80 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.81 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.82 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.112 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.113 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.114 = Counter64: 0
+IF-MIB::ifHCInBroadcastPkts.115 = Counter64: 0
+IF-MIB::ifHCOutOctets.1 = Counter64: 29472653
+IF-MIB::ifHCOutOctets.2 = Counter64: 144171757
+IF-MIB::ifHCOutOctets.3 = Counter64: 0
+IF-MIB::ifHCOutOctets.4 = Counter64: 21885882
+IF-MIB::ifHCOutOctets.16 = Counter64: 2103443
+IF-MIB::ifHCOutOctets.48 = Counter64: 0
+IF-MIB::ifHCOutOctets.49 = Counter64: 0
+IF-MIB::ifHCOutOctets.50 = Counter64: 0
+IF-MIB::ifHCOutOctets.51 = Counter64: 0
+IF-MIB::ifHCOutOctets.52 = Counter64: 0
+IF-MIB::ifHCOutOctets.53 = Counter64: 0
+IF-MIB::ifHCOutOctets.54 = Counter64: 0
+IF-MIB::ifHCOutOctets.55 = Counter64: 0
+IF-MIB::ifHCOutOctets.56 = Counter64: 0
+IF-MIB::ifHCOutOctets.57 = Counter64: 0
+IF-MIB::ifHCOutOctets.58 = Counter64: 0
+IF-MIB::ifHCOutOctets.59 = Counter64: 0
+IF-MIB::ifHCOutOctets.60 = Counter64: 0
+IF-MIB::ifHCOutOctets.61 = Counter64: 0
+IF-MIB::ifHCOutOctets.62 = Counter64: 0
+IF-MIB::ifHCOutOctets.63 = Counter64: 0
+IF-MIB::ifHCOutOctets.64 = Counter64: 0
+IF-MIB::ifHCOutOctets.65 = Counter64: 0
+IF-MIB::ifHCOutOctets.66 = Counter64: 0
+IF-MIB::ifHCOutOctets.67 = Counter64: 0
+IF-MIB::ifHCOutOctets.68 = Counter64: 0
+IF-MIB::ifHCOutOctets.69 = Counter64: 0
+IF-MIB::ifHCOutOctets.70 = Counter64: 0
+IF-MIB::ifHCOutOctets.71 = Counter64: 0
+IF-MIB::ifHCOutOctets.72 = Counter64: 0
+IF-MIB::ifHCOutOctets.73 = Counter64: 0
+IF-MIB::ifHCOutOctets.74 = Counter64: 0
+IF-MIB::ifHCOutOctets.75 = Counter64: 0
+IF-MIB::ifHCOutOctets.76 = Counter64: 0
+IF-MIB::ifHCOutOctets.77 = Counter64: 0
+IF-MIB::ifHCOutOctets.78 = Counter64: 0
+IF-MIB::ifHCOutOctets.79 = Counter64: 0
+IF-MIB::ifHCOutOctets.80 = Counter64: 0
+IF-MIB::ifHCOutOctets.81 = Counter64: 0
+IF-MIB::ifHCOutOctets.82 = Counter64: 158842092
+IF-MIB::ifHCOutOctets.112 = Counter64: 0
+IF-MIB::ifHCOutOctets.113 = Counter64: 0
+IF-MIB::ifHCOutOctets.114 = Counter64: 0
+IF-MIB::ifHCOutOctets.115 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.1 = Counter64: 29403
+IF-MIB::ifHCOutUcastPkts.2 = Counter64: 238533
+IF-MIB::ifHCOutUcastPkts.3 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.4 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.16 = Counter64: 19239
+IF-MIB::ifHCOutUcastPkts.48 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.49 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.50 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.51 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.52 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.53 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.54 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.55 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.56 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.57 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.58 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.59 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.60 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.61 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.62 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.63 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.64 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.65 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.66 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.67 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.68 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.69 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.70 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.71 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.72 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.73 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.74 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.75 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.76 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.77 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.78 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.79 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.80 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.81 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.82 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.112 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.113 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.114 = Counter64: 0
+IF-MIB::ifHCOutUcastPkts.115 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.1 = Counter64: 19825
+IF-MIB::ifHCOutMulticastPkts.2 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.3 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.4 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.16 = Counter64: 19040
+IF-MIB::ifHCOutMulticastPkts.48 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.49 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.50 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.51 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.52 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.53 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.54 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.55 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.56 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.57 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.58 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.59 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.60 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.61 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.62 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.63 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.64 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.65 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.66 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.67 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.68 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.69 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.70 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.71 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.72 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.73 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.74 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.75 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.76 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.77 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.78 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.79 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.80 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.81 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.82 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.112 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.113 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.114 = Counter64: 0
+IF-MIB::ifHCOutMulticastPkts.115 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.1 = Counter64: 57
+IF-MIB::ifHCOutBroadcastPkts.2 = Counter64: 648
+IF-MIB::ifHCOutBroadcastPkts.3 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.4 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.16 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.48 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.49 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.50 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.51 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.52 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.53 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.54 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.55 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.56 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.57 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.58 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.59 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.60 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.61 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.62 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.63 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.64 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.65 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.66 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.67 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.68 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.69 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.70 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.71 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.72 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.73 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.74 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.75 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.76 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.77 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.78 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.79 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.80 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.81 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.82 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.112 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.113 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.114 = Counter64: 0
+IF-MIB::ifHCOutBroadcastPkts.115 = Counter64: 0
+IF-MIB::ifLinkUpDownTrapEnable.1 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.2 = INTEGER: enabled(1)
+IF-MIB::ifLinkUpDownTrapEnable.3 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.4 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.16 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.48 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.49 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.50 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.51 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.52 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.53 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.54 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.55 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.56 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.57 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.58 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.59 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.60 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.61 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.62 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.63 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.64 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.65 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.66 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.67 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.68 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.69 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.70 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.71 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.72 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.73 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.74 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.75 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.76 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.77 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.78 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.79 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.80 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.81 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.82 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.112 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.113 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.114 = INTEGER: disabled(2)
+IF-MIB::ifLinkUpDownTrapEnable.115 = INTEGER: disabled(2)
+IF-MIB::ifHighSpeed.1 = Gauge32: 10000
+IF-MIB::ifHighSpeed.2 = Gauge32: 0
+IF-MIB::ifHighSpeed.3 = Gauge32: 43
+IF-MIB::ifHighSpeed.4 = Gauge32: 1035
+IF-MIB::ifHighSpeed.16 = Gauge32: 0
+IF-MIB::ifHighSpeed.48 = Gauge32: 2093
+IF-MIB::ifHighSpeed.49 = Gauge32: 2093
+IF-MIB::ifHighSpeed.50 = Gauge32: 2093
+IF-MIB::ifHighSpeed.51 = Gauge32: 2093
+IF-MIB::ifHighSpeed.52 = Gauge32: 1744
+IF-MIB::ifHighSpeed.53 = Gauge32: 43
+IF-MIB::ifHighSpeed.54 = Gauge32: 43
+IF-MIB::ifHighSpeed.55 = Gauge32: 43
+IF-MIB::ifHighSpeed.56 = Gauge32: 43
+IF-MIB::ifHighSpeed.57 = Gauge32: 43
+IF-MIB::ifHighSpeed.58 = Gauge32: 43
+IF-MIB::ifHighSpeed.59 = Gauge32: 43
+IF-MIB::ifHighSpeed.60 = Gauge32: 43
+IF-MIB::ifHighSpeed.61 = Gauge32: 43
+IF-MIB::ifHighSpeed.62 = Gauge32: 43
+IF-MIB::ifHighSpeed.63 = Gauge32: 43
+IF-MIB::ifHighSpeed.64 = Gauge32: 43
+IF-MIB::ifHighSpeed.65 = Gauge32: 43
+IF-MIB::ifHighSpeed.66 = Gauge32: 43
+IF-MIB::ifHighSpeed.67 = Gauge32: 43
+IF-MIB::ifHighSpeed.68 = Gauge32: 43
+IF-MIB::ifHighSpeed.69 = Gauge32: 43
+IF-MIB::ifHighSpeed.70 = Gauge32: 43
+IF-MIB::ifHighSpeed.71 = Gauge32: 43
+IF-MIB::ifHighSpeed.72 = Gauge32: 43
+IF-MIB::ifHighSpeed.73 = Gauge32: 43
+IF-MIB::ifHighSpeed.74 = Gauge32: 43
+IF-MIB::ifHighSpeed.75 = Gauge32: 43
+IF-MIB::ifHighSpeed.76 = Gauge32: 43
+IF-MIB::ifHighSpeed.77 = Gauge32: 43
+IF-MIB::ifHighSpeed.78 = Gauge32: 43
+IF-MIB::ifHighSpeed.79 = Gauge32: 43
+IF-MIB::ifHighSpeed.80 = Gauge32: 31
+IF-MIB::ifHighSpeed.81 = Gauge32: 31
+IF-MIB::ifHighSpeed.82 = Gauge32: 588
+IF-MIB::ifHighSpeed.112 = Gauge32: 43
+IF-MIB::ifHighSpeed.113 = Gauge32: 43
+IF-MIB::ifHighSpeed.114 = Gauge32: 43
+IF-MIB::ifHighSpeed.115 = Gauge32: 43
+IF-MIB::ifPromiscuousMode.1 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.2 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.3 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.4 = INTEGER: false(2)
+IF-MIB::ifPromiscuousMode.16 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.48 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.49 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.50 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.51 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.52 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.53 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.54 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.55 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.56 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.57 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.58 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.59 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.60 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.61 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.62 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.63 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.64 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.65 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.66 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.67 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.68 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.69 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.70 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.71 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.72 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.73 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.74 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.75 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.76 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.77 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.78 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.79 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.80 = INTEGER: false(2)
+IF-MIB::ifPromiscuousMode.81 = INTEGER: false(2)
+IF-MIB::ifPromiscuousMode.82 = INTEGER: false(2)
+IF-MIB::ifPromiscuousMode.112 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.113 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.114 = INTEGER: true(1)
+IF-MIB::ifPromiscuousMode.115 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.1 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.2 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.3 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.4 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.16 = INTEGER: false(2)
+IF-MIB::ifConnectorPresent.48 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.49 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.50 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.51 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.52 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.53 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.54 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.55 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.56 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.57 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.58 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.59 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.60 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.61 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.62 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.63 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.64 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.65 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.66 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.67 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.68 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.69 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.70 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.71 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.72 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.73 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.74 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.75 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.76 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.77 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.78 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.79 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.80 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.81 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.82 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.112 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.113 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.114 = INTEGER: true(1)
+IF-MIB::ifConnectorPresent.115 = INTEGER: true(1)
+IF-MIB::ifAlias.1 = STRING: 
+IF-MIB::ifAlias.2 = STRING: 
+IF-MIB::ifAlias.3 = STRING: 
+IF-MIB::ifAlias.4 = STRING: 
+IF-MIB::ifAlias.16 = STRING: 
+IF-MIB::ifAlias.48 = STRING: 
+IF-MIB::ifAlias.49 = STRING: 
+IF-MIB::ifAlias.50 = STRING: 
+IF-MIB::ifAlias.51 = STRING: 
+IF-MIB::ifAlias.52 = STRING: 
+IF-MIB::ifAlias.53 = STRING: 
+IF-MIB::ifAlias.54 = STRING: 
+IF-MIB::ifAlias.55 = STRING: 
+IF-MIB::ifAlias.56 = STRING: 
+IF-MIB::ifAlias.57 = STRING: 
+IF-MIB::ifAlias.58 = STRING: 
+IF-MIB::ifAlias.59 = STRING: 
+IF-MIB::ifAlias.60 = STRING: 
+IF-MIB::ifAlias.61 = STRING: 
+IF-MIB::ifAlias.62 = STRING: 
+IF-MIB::ifAlias.63 = STRING: 
+IF-MIB::ifAlias.64 = STRING: 
+IF-MIB::ifAlias.65 = STRING: 
+IF-MIB::ifAlias.66 = STRING: 
+IF-MIB::ifAlias.67 = STRING: 
+IF-MIB::ifAlias.68 = STRING: 
+IF-MIB::ifAlias.69 = STRING: 
+IF-MIB::ifAlias.70 = STRING: 
+IF-MIB::ifAlias.71 = STRING: 
+IF-MIB::ifAlias.72 = STRING: 
+IF-MIB::ifAlias.73 = STRING: 
+IF-MIB::ifAlias.74 = STRING: 
+IF-MIB::ifAlias.75 = STRING: 
+IF-MIB::ifAlias.76 = STRING: 
+IF-MIB::ifAlias.77 = STRING: 
+IF-MIB::ifAlias.78 = STRING: 
+IF-MIB::ifAlias.79 = STRING: 
+IF-MIB::ifAlias.80 = STRING: 
+IF-MIB::ifAlias.81 = STRING: 
+IF-MIB::ifAlias.82 = STRING: 
+IF-MIB::ifAlias.112 = STRING: 
+IF-MIB::ifAlias.113 = STRING: 
+IF-MIB::ifAlias.114 = STRING: 
+IF-MIB::ifAlias.115 = STRING: 
+IF-MIB::ifCounterDiscontinuityTime.1 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.2 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.3 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.4 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.16 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.48 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.49 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.50 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.51 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.52 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.53 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.54 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.55 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.56 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.57 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.58 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.59 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.60 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.61 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.62 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.63 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.64 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.65 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.66 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.67 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.68 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.69 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.70 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.71 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.72 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.73 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.74 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.75 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.76 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.77 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.78 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.79 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.80 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.81 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.82 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.112 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.113 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.114 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifCounterDiscontinuityTime.115 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifStackStatus.0.2 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.3 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.4 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.48 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.49 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.50 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.51 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.52 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.53 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.54 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.55 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.56 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.57 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.58 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.59 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.60 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.61 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.62 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.63 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.64 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.65 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.66 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.67 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.68 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.69 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.70 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.71 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.72 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.73 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.74 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.75 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.76 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.77 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.78 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.79 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.80 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.81 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.82 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.112 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.113 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.114 = INTEGER: active(1)
+IF-MIB::ifStackStatus.2.115 = INTEGER: active(1)
+IF-MIB::ifStackStatus.3.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.4.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.48.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.49.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.50.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.51.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.52.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.53.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.54.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.55.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.56.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.57.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.58.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.59.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.60.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.61.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.62.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.63.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.64.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.65.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.66.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.67.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.68.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.69.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.70.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.71.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.72.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.73.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.74.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.75.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.76.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.77.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.78.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.79.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.80.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.81.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.82.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.112.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.113.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.114.0 = INTEGER: active(1)
+IF-MIB::ifStackStatus.115.0 = INTEGER: active(1)
+IF-MIB::ifTableLastChange.0 = Timeticks: (0) 0:00:00.00
+IF-MIB::ifStackLastChange.0 = Timeticks: (5692) 0:00:56.92
+DOCS-CABLE-DEVICE-MIB::docsDevRole.0 = INTEGER: cm(1)
+DOCS-CABLE-DEVICE-MIB::docsDevDateTime.0 = STRING: 2025-7-7,14:35:16.0
+DOCS-CABLE-DEVICE-MIB::docsDevResetNow.0 = INTEGER: false(2)
+DOCS-CABLE-DEVICE-MIB::docsDevSerialNumber.0 = STRING: B52247000015
+DOCS-CABLE-DEVICE-MIB::docsDevSTPControl.0 = INTEGER: noStFilterBpdu(2)
+DOCS-CABLE-DEVICE-MIB::docsDevMaxCpe.0 = Gauge32: 16 CPEs
+DOCS-CABLE-DEVICE-MIB::docsDevSwServer.0 = IpAddress: 172.19.0.200
+DOCS-CABLE-DEVICE-MIB::docsDevSwFilename.0 = STRING: CODA6X-8.4.0.0.2b1-2G_DDR-20250620-D3.1.sbn
+DOCS-CABLE-DEVICE-MIB::docsDevSwAdminStatus.0 = INTEGER: ignoreProvisioningUpgrade(3)
+DOCS-CABLE-DEVICE-MIB::docsDevSwOperStatus.0 = INTEGER: completeFromMgt(3)
+DOCS-CABLE-DEVICE-MIB::docsDevSwCurrentVers.0 = STRING: 8.4.0.0.2b1
+DOCS-CABLE-DEVICE-MIB::docsDevSwServerAddressType.0 = INTEGER: ipv4(1)
+DOCS-CABLE-DEVICE-MIB::docsDevSwServerAddress.0 = Hex-STRING: AC 13 00 C8 
+DOCS-CABLE-DEVICE-MIB::docsDevSwServerTransportProtocol.0 = INTEGER: http(2)
+DOCS-CABLE-DEVICE-MIB::docsDevServerBootState.0 = INTEGER: operational(1)
+DOCS-CABLE-DEVICE-MIB::docsDevServerDhcp.0 = IpAddress: 172.19.0.200
+DOCS-CABLE-DEVICE-MIB::docsDevServerTime.0 = IpAddress: 172.19.0.200
+DOCS-CABLE-DEVICE-MIB::docsDevServerTftp.0 = IpAddress: 172.19.0.200
+DOCS-CABLE-DEVICE-MIB::docsDevServerConfigFile.0 = STRING: cache/38ad2b12494c.cfg
+DOCS-CABLE-DEVICE-MIB::docsDevServerDhcpAddressType.0 = INTEGER: ipv4(1)
+DOCS-CABLE-DEVICE-MIB::docsDevServerDhcpAddress.0 = Hex-STRING: AC 13 00 C8 
+DOCS-CABLE-DEVICE-MIB::docsDevServerTimeAddressType.0 = INTEGER: ipv4(1)
+DOCS-CABLE-DEVICE-MIB::docsDevServerTimeAddress.0 = Hex-STRING: AC 13 00 C8 
+DOCS-CABLE-DEVICE-MIB::docsDevServerConfigTftpAddressType.0 = INTEGER: ipv4(1)
+DOCS-CABLE-DEVICE-MIB::docsDevServerConfigTftpAddress.0 = Hex-STRING: AC 13 00 C8 
+DOCS-CABLE-DEVICE-MIB::docsDevEvControl.0 = INTEGER: useDefaultReporting(2)
+DOCS-CABLE-DEVICE-MIB::docsDevEvSyslog.0 = IpAddress: 172.19.0.200
+DOCS-CABLE-DEVICE-MIB::docsDevEvThrottleAdminStatus.0 = INTEGER: unconstrained(1)
+DOCS-CABLE-DEVICE-MIB::docsDevEvThrottleThreshold.0 = Gauge32: 0 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvThrottleInterval.0 = INTEGER: 1 seconds
+DOCS-CABLE-DEVICE-MIB::docsDevEvReporting.emergency = BITS: 80 00 local(0) 
+DOCS-CABLE-DEVICE-MIB::docsDevEvReporting.alert = BITS: 80 00 local(0) 
+DOCS-CABLE-DEVICE-MIB::docsDevEvReporting.critical = BITS: 80 00 local(0) 
+DOCS-CABLE-DEVICE-MIB::docsDevEvReporting.error = BITS: 70 80 traps(1) syslog(2) 3 8 
+DOCS-CABLE-DEVICE-MIB::docsDevEvReporting.warning = BITS: 10 80 3 8 
+DOCS-CABLE-DEVICE-MIB::docsDevEvReporting.notice = BITS: 70 80 traps(1) syslog(2) 3 8 
+DOCS-CABLE-DEVICE-MIB::docsDevEvReporting.information = BITS: 00 00 
+DOCS-CABLE-DEVICE-MIB::docsDevEvReporting.debug = BITS: 00 00 
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.10 = STRING: 2025-7-2,13:59:6.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.11 = STRING: 2025-7-2,13:59:46.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.12 = STRING: 2025-7-2,13:59:46.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.13 = STRING: 2025-7-2,13:59:56.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.14 = STRING: 2025-7-2,13:59:56.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.15 = STRING: 2025-7-2,13:59:56.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.16 = STRING: 2025-7-2,13:59:57.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.17 = STRING: 2025-7-2,13:59:57.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.18 = STRING: 2025-7-2,14:0:28.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.19 = STRING: 2025-7-6,12:48:10.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.20 = STRING: 2025-7-6,12:48:13.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.21 = STRING: 2025-7-6,12:49:23.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.22 = STRING: 2025-7-6,12:49:23.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.23 = STRING: 2025-7-6,12:49:23.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.24 = STRING: 2025-7-6,12:49:24.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.25 = STRING: 2025-7-6,12:49:24.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.26 = STRING: 2025-7-6,12:49:54.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.27 = STRING: 2025-7-7,9:10:43.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.28 = STRING: 2025-7-7,11:23:31.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvFirstTime.29 = STRING: 2025-7-7,14:23:37.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.10 = STRING: 2025-7-2,13:59:36.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.11 = STRING: 2025-7-2,13:59:46.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.12 = STRING: 2025-7-2,13:59:46.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.13 = STRING: 2025-7-2,13:59:56.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.14 = STRING: 2025-7-2,13:59:56.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.15 = STRING: 2025-7-2,13:59:56.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.16 = STRING: 2025-7-2,13:59:57.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.17 = STRING: 2025-7-2,13:59:57.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.18 = STRING: 2025-7-5,23:17:5.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.19 = STRING: 2025-7-6,12:48:10.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.20 = STRING: 2025-7-6,12:48:13.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.21 = STRING: 2025-7-6,12:49:23.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.22 = STRING: 2025-7-6,12:49:23.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.23 = STRING: 2025-7-6,12:49:23.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.24 = STRING: 2025-7-6,12:49:24.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.25 = STRING: 2025-7-6,12:49:24.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.26 = STRING: 2025-7-6,12:49:59.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.27 = STRING: 2025-7-7,9:10:43.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.28 = STRING: 2025-7-7,11:23:31.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvLastTime.29 = STRING: 2025-7-7,14:23:37.0
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.10 = Counter32: 16 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.11 = Counter32: 1 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.12 = Counter32: 1 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.13 = Counter32: 1 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.14 = Counter32: 1 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.15 = Counter32: 1 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.16 = Counter32: 1 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.17 = Counter32: 3 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.18 = Counter32: 93 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.19 = Counter32: 1 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.20 = Counter32: 4 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.21 = Counter32: 1 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.22 = Counter32: 1 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.23 = Counter32: 1 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.24 = Counter32: 1 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.25 = Counter32: 3 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.26 = Counter32: 2 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.27 = Counter32: 1 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.28 = Counter32: 1 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvCounts.29 = Counter32: 2 events
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.10 = INTEGER: critical(3)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.11 = INTEGER: critical(3)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.12 = INTEGER: critical(3)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.13 = INTEGER: warning(5)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.14 = INTEGER: notice(6)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.15 = INTEGER: critical(3)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.16 = INTEGER: warning(5)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.17 = INTEGER: warning(5)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.18 = INTEGER: notice(6)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.19 = INTEGER: notice(6)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.20 = INTEGER: critical(3)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.21 = INTEGER: warning(5)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.22 = INTEGER: notice(6)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.23 = INTEGER: critical(3)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.24 = INTEGER: warning(5)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.25 = INTEGER: warning(5)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.26 = INTEGER: notice(6)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.27 = INTEGER: notice(6)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.28 = INTEGER: notice(6)
+DOCS-CABLE-DEVICE-MIB::docsDevEvLevel.29 = INTEGER: notice(6)
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.10 = Gauge32: 82000200
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.11 = Gauge32: 82000100
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.12 = Gauge32: 82000200
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.13 = Gauge32: 90000000
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.14 = Gauge32: 73040100
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.15 = Gauge32: 68001102
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.16 = Gauge32: 73050400
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.17 = Gauge32: 82001200
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.18 = Gauge32: 67061601
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.19 = Gauge32: 90000007
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.20 = Gauge32: 82000700
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.21 = Gauge32: 90000000
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.22 = Gauge32: 73040100
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.23 = Gauge32: 68001102
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.24 = Gauge32: 73050400
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.25 = Gauge32: 82001200
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.26 = Gauge32: 67061601
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.27 = Gauge32: 74010100
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.28 = Gauge32: 67061601
+DOCS-CABLE-DEVICE-MIB::docsDevEvId.29 = Gauge32: 74010100
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.10 = STRING: No Ranging Response received - T3 time-out;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.11 = STRING: No Maintenance Broadcasts for Ranging opportunities received - T2 time-out;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.12 = STRING: No Ranging Response received - T3 time-out;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.13 = STRING: MIMO Event MIMO: Stored MIMO=-1 post cfg file MIMO=-1;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.14 = STRING: TLV-11 - unrecognized OID;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.15 = STRING: Config File Rejected due to Invalid or Unexpected TLV 11;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.16 = STRING: REG-RSP-MP Mismatch Between Calculated Value for P1.6hi Compared to CCAP Provided Value;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.17 = STRING: RNG-RSP CCAP Commanded Power in Excess of 6 dB Below the Value Corresponding to the Top of the DRW;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.18 = STRING: US profile assignment change.  US Chan ID: 41; Previous Profile: 9; New Profile: 6.;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.19 = STRING: CM Reboot Reason : SNMP_RESET;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.20 = STRING: Unicast Ranging Received Abort Response - initializing MAC;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.21 = STRING: MIMO Event MIMO: Stored MIMO=-1 post cfg file MIMO=-1;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.22 = STRING: TLV-11 - unrecognized OID;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.23 = STRING: Config File Rejected due to Invalid or Unexpected TLV 11;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.24 = STRING: REG-RSP-MP Mismatch Between Calculated Value for P1.6hi Compared to CCAP Provided Value;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.25 = STRING: RNG-RSP CCAP Commanded Power in Excess of 6 dB Below the Value Corresponding to the Top of the DRW;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.26 = STRING: US profile assignment change.  US Chan ID: 42; Previous Profile: 12; New Profile: 6.;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.27 = STRING: CM-STATUS message sent.  Event Type Code: 5; Chan ID: 3; DSID: N/A; MAC Addr: N/A; OFDM/OFDMA Profile ID: N/A.;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.28 = STRING: US profile assignment change.  US Chan ID: 42; Previous Profile: 6; New Profile: 5.;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvText.29 = STRING: CM-STATUS message sent.  Event Type Code: 5; Chan ID: 3; DSID: N/A; MAC Addr: N/A; OFDM/OFDMA Profile ID: N/A.;CM-MAC=38:ad:2b:12:49:4c;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;
+DOCS-CABLE-DEVICE-MIB::docsDevEvSyslogAddressType.0 = INTEGER: ipv4(1)
+DOCS-CABLE-DEVICE-MIB::docsDevEvSyslogAddress.0 = Hex-STRING: AC 13 00 C8 
+DOCS-CABLE-DEVICE-MIB::docsDevEvThrottleThresholdExceeded.0 = INTEGER: false(2)
+DOCS-CABLE-DEVICE-MIB::docsDevFilterLLCUnmatchedAction.0 = INTEGER: accept(2)
+DOCS-CABLE-DEVICE-MIB::docsDevFilterIpDefault.0 = INTEGER: accept(2)
+DOCS-CABLE-DEVICE-MIB::docsDevCpeEnroll.0 = INTEGER: any(2)
+DOCS-CABLE-DEVICE-MIB::docsDevCpeIpMax.0 = INTEGER: -1
+IGMP-STD-MIB::igmpInterfaceQueryInterval.1 = Gauge32: 125 seconds
+IGMP-STD-MIB::igmpInterfaceQueryInterval.2 = Gauge32: 0 seconds
+IGMP-STD-MIB::igmpInterfaceStatus.1 = INTEGER: active(1)
+IGMP-STD-MIB::igmpInterfaceStatus.2 = INTEGER: active(1)
+IGMP-STD-MIB::igmpInterfaceVersion.1 = Gauge32: 2
+IGMP-STD-MIB::igmpInterfaceVersion.2 = Gauge32: 2
+IGMP-STD-MIB::igmpInterfaceQuerier.1 = IpAddress: 0.0.0.0
+IGMP-STD-MIB::igmpInterfaceQuerier.2 = IpAddress: 0.0.0.0
+IGMP-STD-MIB::igmpInterfaceQueryMaxResponseTime.1 = Gauge32: 0 tenths of seconds
+IGMP-STD-MIB::igmpInterfaceQueryMaxResponseTime.2 = Gauge32: 0 tenths of seconds
+IGMP-STD-MIB::igmpInterfaceQuerierUpTime.1 = Timeticks: (0) 0:00:00.00
+IGMP-STD-MIB::igmpInterfaceQuerierUpTime.2 = Timeticks: (0) 0:00:00.00
+IGMP-STD-MIB::igmpInterfaceQuerierExpiryTime.1 = Timeticks: (0) 0:00:00.00
+IGMP-STD-MIB::igmpInterfaceQuerierExpiryTime.2 = Timeticks: (0) 0:00:00.00
+IGMP-STD-MIB::igmpInterfaceVersion1QuerierTimer.1 = Timeticks: (0) 0:00:00.00
+IGMP-STD-MIB::igmpInterfaceVersion1QuerierTimer.2 = Timeticks: (0) 0:00:00.00
+IGMP-STD-MIB::igmpInterfaceWrongVersionQueries.1 = Counter32: 0
+IGMP-STD-MIB::igmpInterfaceWrongVersionQueries.2 = Counter32: 0
+IGMP-STD-MIB::igmpInterfaceJoins.1 = Counter32: 0
+IGMP-STD-MIB::igmpInterfaceJoins.2 = Counter32: 0
+IGMP-STD-MIB::igmpInterfaceProxyIfIndex.1 = INTEGER: 2
+IGMP-STD-MIB::igmpInterfaceProxyIfIndex.2 = INTEGER: 0
+IGMP-STD-MIB::igmpInterfaceGroups.1 = Gauge32: 0
+IGMP-STD-MIB::igmpInterfaceGroups.2 = Gauge32: 0
+IGMP-STD-MIB::igmpInterfaceRobustness.1 = Gauge32: 1
+IGMP-STD-MIB::igmpInterfaceRobustness.2 = Gauge32: 1
+IGMP-STD-MIB::igmpInterfaceLastMembQueryIntvl.1 = Gauge32: 0 tenths of seconds
+IGMP-STD-MIB::igmpInterfaceLastMembQueryIntvl.2 = Gauge32: 0 tenths of seconds
+DOCS-IETF-BPI2-MIB::docsBpi2CmPrivacyEnable.2 = INTEGER: false(2)
+DOCS-IETF-BPI2-MIB::docsBpi2CmPublicKey.2 = Hex-STRING: 30 81 89 02 81 81 00 A6 B1 10 A6 CE 7F DB 29 99 
+E7 0E 35 FC 8C B4 E2 FA 7A 01 71 6B ED 04 B1 8A 
+B7 48 B4 5C 42 92 B1 3E 4B 3F 73 00 05 8B EF 0F 
+A2 E6 61 98 69 23 73 2D 72 C4 BE C5 6C AB 2D 9C 
+B2 71 08 04 D7 D0 C9 D1 6C E7 29 73 8D D0 1A 9D 
+90 4F 7C 0A 59 91 BF FF 6C 18 DA CB A7 B9 E7 A3 
+41 E1 D7 E3 71 B3 4F A6 57 74 D8 1A CB 20 F4 93 
+66 D5 DB 27 C1 66 F3 D2 B7 6F 54 83 6C 58 B7 14 
+D0 63 15 51 52 51 69 02 03 01 00 01 
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthState.2 = INTEGER: start(1)
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthKeySequenceNumber.2 = INTEGER: 0
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthExpiresOld.2 = STRING: 1970-1-1,0:0:0.0
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthExpiresNew.2 = STRING: 1970-1-1,0:0:32.0
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthReset.2 = INTEGER: false(2)
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthGraceTime.2 = INTEGER: 60 seconds
+DOCS-IETF-BPI2-MIB::docsBpi2CmTEKGraceTime.2 = INTEGER: 60 seconds
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthWaitTimeout.2 = INTEGER: 10 seconds
+DOCS-IETF-BPI2-MIB::docsBpi2CmReauthWaitTimeout.2 = INTEGER: 10 seconds
+DOCS-IETF-BPI2-MIB::docsBpi2CmOpWaitTimeout.2 = INTEGER: 10 seconds
+DOCS-IETF-BPI2-MIB::docsBpi2CmRekeyWaitTimeout.2 = INTEGER: 10 seconds
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthRejectWaitTimeout.2 = INTEGER: 60 seconds
+DOCS-IETF-BPI2-MIB::docsBpi2CmSAMapWaitTimeout.2 = INTEGER: 1 seconds
+DOCS-IETF-BPI2-MIB::docsBpi2CmSAMapMaxRetries.2 = INTEGER: 4 count
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthentInfos.2 = Counter32: 0
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthRequests.2 = Counter32: 0
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthReplies.2 = Counter32: 0
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthRejects.2 = Counter32: 0
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthInvalids.2 = Counter32: 0
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthRejectErrorCode.2 = INTEGER: none(1)
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthRejectErrorString.2 = STRING: 
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthInvalidErrorCode.2 = INTEGER: none(1)
+DOCS-IETF-BPI2-MIB::docsBpi2CmAuthInvalidErrorString.2 = STRING: 
+DOCS-IETF-BPI2-MIB::docsBpi2CmDeviceCmCert.2 = Hex-STRING: 30 82 03 4A 30 82 02 32 A0 03 02 01 02 02 10 66 
+A2 7D 96 52 CE 74 63 D3 31 24 80 E3 B4 1E AB 30 
+0D 06 09 2A 86 48 86 F7 0D 01 01 05 05 00 30 7C 
+31 0B 30 09 06 03 55 04 06 13 02 55 53 31 12 30 
+10 06 03 55 04 0A 13 09 43 61 62 6C 65 4C 61 62 
+73 31 0F 30 0D 06 03 55 04 0B 13 06 44 4F 43 53 
+49 53 31 12 30 10 06 03 55 04 0B 13 09 44 20 43 
+41 30 30 30 30 33 31 34 30 32 06 03 55 04 03 13 
+2B 43 61 62 6C 65 4C 61 62 73 20 43 61 62 6C 65 
+20 4D 6F 64 65 6D 20 43 65 72 74 69 66 69 63 61 
+74 65 20 41 75 74 68 6F 72 69 74 79 30 1E 17 0D 
+32 34 30 37 30 32 30 30 30 30 30 30 5A 17 0D 34 
+34 30 36 32 37 32 33 35 39 35 39 5A 30 81 97 31 
+0B 30 09 06 03 55 04 06 13 02 54 57 31 21 30 1F 
+06 03 55 04 0A 13 18 48 69 74 72 6F 6E 20 54 65 
+63 68 6E 6F 6C 6F 67 69 65 73 20 49 6E 63 2E 31 
+49 30 47 06 03 55 04 0B 13 40 4E 6F 2E 20 31 2D 
+38 2C 20 4C 69 73 69 6E 67 20 31 73 74 20 52 64 
+2E 2C 20 48 73 69 6E 63 68 75 20 53 63 68 69 65 
+6E 63 65 20 50 61 72 6B 2C 20 48 73 68 69 6E 63 
+68 75 2C 20 54 61 69 77 61 6E 31 1A 30 18 06 03 
+55 04 03 13 11 33 38 3A 41 44 3A 32 42 3A 31 32 
+3A 34 39 3A 34 43 30 81 9F 30 0D 06 09 2A 86 48 
+86 F7 0D 01 01 01 05 00 03 81 8D 00 30 81 89 02 
+81 81 00 A6 B1 10 A6 CE 7F DB 29 99 E7 0E 35 FC 
+8C B4 E2 FA 7A 01 71 6B ED 04 B1 8A B7 48 B4 5C 
+42 92 B1 3E 4B 3F 73 00 05 8B EF 0F A2 E6 61 98 
+69 23 73 2D 72 C4 BE C5 6C AB 2D 9C B2 71 08 04 
+D7 D0 C9 D1 6C E7 29 73 8D D0 1A 9D 90 4F 7C 0A 
+59 91 BF FF 6C 18 DA CB A7 B9 E7 A3 41 E1 D7 E3 
+71 B3 4F A6 57 74 D8 1A CB 20 F4 93 66 D5 DB 27 
+C1 66 F3 D2 B7 6F 54 83 6C 58 B7 14 D0 63 15 51 
+52 51 69 02 03 01 00 01 A3 30 30 2E 30 0B 06 03 
+55 1D 0F 04 04 03 02 05 A0 30 1F 06 03 55 1D 23 
+04 18 30 16 80 14 3C C0 8B FA F9 C8 FA 8F 14 64 
+1F 22 AC 7B 99 F0 BD 33 A7 3D 30 0D 06 09 2A 86 
+48 86 F7 0D 01 01 05 05 00 03 82 01 01 00 3A 38 
+75 2C 47 B9 46 1E 0D D0 D4 2A 27 11 CA D2 F0 09 
+E1 C2 EF 26 0A 9B 48 B1 B9 6B DE 87 BB AC EE A0 
+1A 47 AC 78 C8 24 DD 68 2E 20 44 30 87 AD 54 E8 
+8F BA DA 25 D4 B0 80 95 22 0B 6D 17 08 99 1D E0 
+7C 19 BE 56 41 91 09 99 BE 24 3B 59 34 FC 18 32 
+0B C3 15 03 EC 91 B4 50 A7 E8 F3 09 9B 40 ED 92 
+C1 C2 57 A7 7E D1 84 0E C5 BE BD 70 24 9C 58 29 
+3B 4F 82 52 43 39 B2 E6 41 09 5C 83 F7 27 25 DF 
+40 D5 42 99 18 97 99 DB F7 B8 C3 98 CA 33 B0 D3 
+49 0C 21 36 F0 FE 4C F3 1A 90 FB 5D 93 64 05 7B 
+4E F6 34 8E 73 23 2B D0 9B 13 C9 9C FF EB F9 43 
+C7 ED 8C 10 FD EB E3 9F C4 C5 08 FD C0 AB 70 4E 
+C0 AA B7 2D 7C DB 22 56 34 F9 BD AB 0B 8C 67 40 
+39 F7 C2 B4 D9 A5 88 38 6E C3 D7 E9 AF 8B 44 F1 
+B9 D4 72 A3 91 0E 22 19 A9 CE D2 95 07 93 E8 73 
+99 03 EC 74 AB 3F D2 FA 30 EC A3 68 CE 4A 
+DOCS-IETF-BPI2-MIB::docsBpi2CmDeviceManufCert.2 = Hex-STRING: 30 82 04 D1 30 82 03 B9 A0 03 02 01 02 02 10 6D 
+10 47 D1 94 F5 DF 86 50 63 8D C0 6E AD 23 21 30 
+0D 06 09 2A 86 48 86 F7 0D 01 01 05 05 00 30 81 
+97 31 0B 30 09 06 03 55 04 06 13 02 55 53 31 39 
+30 37 06 03 55 04 0A 13 30 44 61 74 61 20 4F 76 
+65 72 20 43 61 62 6C 65 20 53 65 72 76 69 63 65 
+20 49 6E 74 65 72 66 61 63 65 20 53 70 65 63 69 
+66 69 63 61 74 69 6F 6E 73 31 15 30 13 06 03 55 
+04 0B 13 0C 43 61 62 6C 65 20 4D 6F 64 65 6D 73 
+31 36 30 34 06 03 55 04 03 13 2D 44 4F 43 53 49 
+53 20 43 61 62 6C 65 20 4D 6F 64 65 6D 20 52 6F 
+6F 74 20 43 65 72 74 69 66 69 63 61 74 65 20 41 
+75 74 68 6F 72 69 74 79 30 1E 17 0D 31 36 30 36 
+31 34 30 30 30 30 30 30 5A 17 0D 33 36 30 36 31 
+33 32 33 35 39 35 39 5A 30 7C 31 0B 30 09 06 03 
+55 04 06 13 02 55 53 31 12 30 10 06 03 55 04 0A 
+13 09 43 61 62 6C 65 4C 61 62 73 31 0F 30 0D 06 
+03 55 04 0B 13 06 44 4F 43 53 49 53 31 12 30 10 
+06 03 55 04 0B 13 09 44 20 43 41 30 30 30 30 33 
+31 34 30 32 06 03 55 04 03 13 2B 43 61 62 6C 65 
+4C 61 62 73 20 43 61 62 6C 65 20 4D 6F 64 65 6D 
+20 43 65 72 74 69 66 69 63 61 74 65 20 41 75 74 
+68 6F 72 69 74 79 30 82 01 22 30 0D 06 09 2A 86 
+48 86 F7 0D 01 01 01 05 00 03 82 01 0F 00 30 82 
+01 0A 02 82 01 01 00 CA 78 4D AC BA B8 AE 69 20 
+5A F6 E9 FD 7E 77 69 E4 66 37 F4 E4 DE 3E 8C EE 
+A3 6D 60 F0 EC E1 27 2B F0 39 26 18 5A 88 01 AA 
+71 CE F2 B9 4B 24 A3 9C 43 10 AE 29 2D 6A 6E 99 
+79 58 3D 46 DA 86 6D 49 1B 8A 7D 77 F1 9C 9B 28 
+0D 4C 62 2B CF 83 29 5A D6 BF FB 87 AD BD 44 1F 
+31 F5 C9 95 2B 68 E8 C7 1F 13 57 46 42 B8 23 15 
+25 68 A4 1B 51 75 65 7B CA E5 B4 4D 80 29 6D 6C 
+E7 0F BA 63 B6 FA 97 9C 37 3E 1C 49 DA C0 AF F7 
+FE C5 B3 94 31 AD A0 31 D8 5C 29 9A 76 07 18 03 
+6D 01 A9 73 C8 D0 3A 89 65 9E AA 79 BE A1 BE 4E 
+4D AB 1D AA 8C 08 B9 51 47 04 E6 67 94 00 FD FA 
+38 B7 AC 21 A7 23 37 C9 CC 03 B5 26 77 36 D3 52 
+3E 9A C4 3C AE C2 3B B1 0C 6F BD 3A BD 17 3D FA 
+A8 A1 A9 55 8A 70 11 E8 F2 41 06 BA 5D FA 4B 13 
+CF 1A A5 95 CA AB B9 D9 37 CF 52 55 41 04 A4 79 
+8C DA A8 00 D5 F2 E9 02 03 01 00 01 A3 82 01 31 
+30 82 01 2D 30 12 06 03 55 1D 13 01 01 FF 04 08 
+30 06 01 01 FF 02 01 00 30 0E 06 03 55 1D 0F 01 
+01 FF 04 04 03 02 01 06 30 28 06 03 55 1D 11 04 
+21 30 1F A4 1D 30 1B 31 19 30 17 06 03 55 04 03 
+13 10 44 65 76 69 63 65 32 30 34 38 2D 31 2D 32 
+38 37 30 1D 06 03 55 1D 0E 04 16 04 14 3C C0 8B 
+FA F9 C8 FA 8F 14 64 1F 22 AC 7B 99 F0 BD 33 A7 
+3D 30 81 BD 06 03 55 1D 23 04 81 B5 30 81 B2 A1 
+81 9D A4 81 9A 30 81 97 31 0B 30 09 06 03 55 04 
+06 13 02 55 53 31 39 30 37 06 03 55 04 0A 13 30 
+44 61 74 61 20 4F 76 65 72 20 43 61 62 6C 65 20 
+53 65 72 76 69 63 65 20 49 6E 74 65 72 66 61 63 
+65 20 53 70 65 63 69 66 69 63 61 74 69 6F 6E 73 
+31 15 30 13 06 03 55 04 0B 13 0C 43 61 62 6C 65 
+20 4D 6F 64 65 6D 73 31 36 30 34 06 03 55 04 03 
+13 2D 44 4F 43 53 49 53 20 43 61 62 6C 65 20 4D 
+6F 64 65 6D 20 52 6F 6F 74 20 43 65 72 74 69 66 
+69 63 61 74 65 20 41 75 74 68 6F 72 69 74 79 82 
+10 58 53 64 87 28 A4 4D C0 33 5F 0C DB 33 84 9C 
+19 30 0D 06 09 2A 86 48 86 F7 0D 01 01 05 05 00 
+03 82 01 01 00 57 CD FE F1 25 EE C4 93 C2 7F C2 
+97 DF BA 8A 46 1F 6D 5E 1E 1E C8 60 6D F6 3F D7 
+12 F2 AD CC B0 42 BE 3F 44 CC E9 46 D0 EF DC 81 
+25 89 20 B1 87 83 43 B1 75 68 6D E1 65 9B 85 05 
+1E 33 FC 9A 56 FE 06 F5 52 D4 45 E5 41 79 33 0F 
+1F 2D DE 80 FD 72 36 FF 1D 82 FD AD 6A A6 A4 39 
+91 58 AB 92 A4 51 C8 4A 15 D4 09 7B 47 71 A0 6D 
+BA E1 45 5C 97 DE 14 5D D0 ED 2A D6 B7 CF F0 76 
+26 6A F9 EE 6E 1D 8C A1 2B DE 3D FA 74 2C 91 72 
+81 80 49 64 56 8C FA EB 1C B2 69 4C 1E E0 1F 4C 
+32 90 49 56 31 1C 3A 04 6D D4 87 F1 88 16 B5 BA 
+7F 00 24 94 CE 6F 86 9B 49 70 B5 AC AB CE 0E 46 
+BD CF 2B E6 F9 6F 69 FC FE CB 52 2B 3C 52 A7 CC 
+87 8D FA 50 CB F0 48 AB 38 EC 62 B6 A5 C6 44 A9 
+C5 73 F2 6B 41 64 B7 4D CE F3 1F EA 5F 22 5A F6 
+D8 11 D8 3B 57 5A F7 1A 41 20 59 FD 67 DA 6C B5 
+EA 4F 32 53 4C 
+DOCS-IETF-BPI2-MIB::docsBpi2CmCryptoSuiteDataEncryptAlg.2.1 = INTEGER: des56CbcMode(1)
+DOCS-IETF-BPI2-MIB::docsBpi2CmCryptoSuiteDataEncryptAlg.2.2 = INTEGER: des40CbcMode(2)
+DOCS-IETF-BPI2-MIB::docsBpi2CmCryptoSuiteDataEncryptAlg.2.3 = INTEGER: aes128CbcMode(4)
+DOCS-IETF-BPI2-MIB::docsBpi2CmCryptoSuiteDataAuthentAlg.2.1 = INTEGER: none(0)
+DOCS-IETF-BPI2-MIB::docsBpi2CmCryptoSuiteDataAuthentAlg.2.2 = INTEGER: none(0)
+DOCS-IETF-BPI2-MIB::docsBpi2CmCryptoSuiteDataAuthentAlg.2.3 = INTEGER: none(0)
+DOCS-IETF-BPI2-MIB::docsBpi2CodeDownloadStatusCode.0 = INTEGER: configFileCvcVerified(1)
+DOCS-IETF-BPI2-MIB::docsBpi2CodeDownloadStatusString.0 = STRING: 
+DOCS-IETF-BPI2-MIB::docsBpi2CodeMfgOrgName.0 = STRING: Hitron Technologies
+DOCS-IETF-BPI2-MIB::docsBpi2CodeMfgCodeAccessStart.0 = STRING: 1970-1-1,0:0:0.0,+0:0
+DOCS-IETF-BPI2-MIB::docsBpi2CodeMfgCvcAccessStart.0 = STRING: 1970-1-1,0:0:0.0,+0:0
+DOCS-IETF-BPI2-MIB::docsBpi2CodeCoSignerOrgName.0 = STRING: 
+DOCS-IETF-BPI2-MIB::docsBpi2CodeCoSignerCodeAccessStart.0 = STRING: 1970-1-1,0:0:0.0,+0:0
+DOCS-IETF-BPI2-MIB::docsBpi2CodeCoSignerCvcAccessStart.0 = STRING: 1970-1-1,0:0:0.0,+0:0
+DOCS-IETF-BPI2-MIB::docsBpi2CodeCvcUpdate.0 = ""
+DOCS-IETF-BPI2-MIB::docsBpi2CodeDownloadControl.10.0 = ""
