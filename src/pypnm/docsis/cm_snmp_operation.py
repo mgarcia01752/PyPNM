@@ -1234,9 +1234,6 @@ class CmSnmpOperation:
 
         return entries if entries else None
         
-            
-        
- 
 ######################
 # SNMP Set Operation #
 ######################
