@@ -74,4 +74,5 @@ Welcome to the PyPNM documentation. Use this master index to navigate through al
 
 ## 🧰 Tools
 
-* [PyPNM MIB Compiler](tools/pypnm-mib-compiler.md)
+* [MIB Compiler](tools/pypnm-mib-compiler.md)
+* [Clean](tools/pypnm-clean.md)
