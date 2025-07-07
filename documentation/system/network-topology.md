@@ -2,16 +2,12 @@
 
 This document outlines common deployment topologies for PyPNM (Proactive Network Maintenance) and explains how PyPNM retrieves and processes PNM data from cable modems (CMs).
 
----
-
 ## 📑 Table of Contents
 
 1. [Standalone Deployment](#1-standalone-deployment)
 2. [Spoke-and-Wheel Deployment](#2-spoke-and-wheel-deployment)
 3. [Protocols & Connectivity](#protocols--connectivity)
 4. [Summary of Usage Models](#summary-of-usage-models)
-
----
 
 ## 1. Standalone Deployment
 
@@ -63,8 +59,6 @@ In a standalone deployment, a single PyPNM server handles SNMP polling and file 
 
 > **🖼️ Diagram Placeholder:** Standalone system with PyPNM + CM + TFTP
 
----
-
 ## 2. Spoke-and-Wheel Deployment
 
 A central PyPNM server (hub) manages remote CMs at various sites (spokes) and fetches completed PNM files via network file-transfer.
@@ -108,8 +102,6 @@ A central PyPNM server (hub) manages remote CMs at various sites (spokes) and fe
 
 > **🖼️ Diagram Placeholder:** Hub connected to multiple remote sites
 
----
-
 ## Protocols & Connectivity
 
 - **SNMP** (v2c/v3): Used to trigger measurements and read completion status.
@@ -120,8 +112,6 @@ A central PyPNM server (hub) manages remote CMs at various sites (spokes) and fe
   - Use SNMPv3 or isolate SNMPv2c in management VLANs.
   - Use SFTP or HTTPS for secure file transfers.
 
----
-
 ## Summary of Usage Models
 
 | Model              | SNMP Path     | Upload Target           | Retrieval Method          | Notes                                       |
@@ -129,7 +119,6 @@ A central PyPNM server (hub) manages remote CMs at various sites (spokes) and fe
 | **Standalone**    | PyPNM → CM    | Local TFTP (same box)    | Local read                | Simplified, all-in-one system.              |
 | **Spoke-and-Wheel**| PyPNM → CM    | Remote TFTP at site      | Remote fetch via protocols| Scalable, centralized control.              |
 
----
 
 > ✅ **Best Practices**
 >
