@@ -4,7 +4,7 @@ from typing import Optional
 from pypnm.snmp.compiled_oids import COMPILED_OIDS
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
-class DocsFddCmFddCapabilities:
+class DocsFddCmFddBandEdgeCapabilities:
     """
     Represents the FDD diplexer band edge capabilities for a DOCSIS 4.0 cable modem,
     retrieved via SNMP.
@@ -33,6 +33,8 @@ class DocsFddCmFddCapabilities:
         self.docsFddDiplexerUsUpperBandEdgeCapability: Optional[int] = None
         self.docsFddDiplexerDsLowerBandEdgeCapability: Optional[int] = None
         self.docsFddDiplexerDsUpperBandEdgeCapability: Optional[int] = None
+        
+        self._started:bool = False
 
     async def start(self) -> bool:
         """
@@ -47,6 +49,12 @@ class DocsFddCmFddCapabilities:
             "docsFddDiplexerDsUpperBandEdgeCapability": int,
         }
 
+        # This should only be run once
+        if self.is_start():
+            return True
+        
+        self._started = True
+        
         try:
             for attr, transform in fields.items():
                 oid = COMPILED_OIDS.get(attr)
@@ -74,6 +82,9 @@ class DocsFddCmFddCapabilities:
             self.logger.exception("Unexpected error during SNMP population")
             return False
 
+    def is_start(self) -> bool:
+        return self._started
+    
     def to_dict(self) -> dict:
         """
         Convert the populated attributes into a structured dictionary.

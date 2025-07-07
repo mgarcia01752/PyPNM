@@ -9,7 +9,7 @@ from pysnmp.proto.rfc1902 import (OctetString, Counter32, Bits,
                                   Counter64, Gauge32, Integer, 
                                   Integer32, IpAddress)
 from pypnm.docsis.data_type.DocsDevEventEntry import DocsDevEventEntry
-from pypnm.docsis.data_type.DocsFddCmFddCapabilities import DocsFddCmFddCapabilities
+from pypnm.docsis.data_type.DocsFddCmFddCapabilities import DocsFddCmFddBandEdgeCapabilities
 from pypnm.docsis.data_type.DocsFddCmFddSystemCfgState import DocsFddCmFddSystemCfgState
 from pypnm.docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanEntry
 from pypnm.docsis.data_type.DocsIf31CmDsOfdmProfileStatsEntry import DocsIf31CmDsOfdmProfileStatsEntry
@@ -1171,6 +1171,10 @@ class CmSnmpOperation:
         self.logger.warning(f"Filename '{filename}' not found in BulkDataFile table.")
         return DocsPnmBulkFileUploadStatus.ERROR
 
+####################
+# DOCSIS 4.0 - FDD #
+####################
+
     async def getDocsFddCmFddSystemCfgState(self, index: int = 0) -> Optional[DocsFddCmFddSystemCfgState | None]:
         """
         Retrieves the FDD band edge configuration state for a specific cable modem index.
@@ -1205,12 +1209,18 @@ class CmSnmpOperation:
 
         return obj
 
-    async def getDocsFddCmFddCapabilities(self) -> Optional[List[DocsFddCmFddCapabilities]]:
+    async def getDocsFddCmFddBandEdgeCapabilities(self, create_and_start: bool = True) -> Optional[List[DocsFddCmFddBandEdgeCapabilities]]:
         """
-        Retrieves a list of DocsFddCmFddCapabilities entries by walking a known OID index base.
+        Retrieve a list of FDD band edge capability entries for a DOCSIS 4.0 modem.
+
+        Walks the SNMP table to discover indices, and returns capability objects
+        optionally populated with SNMP data.
+
+        Args:
+            create_and_start (bool): Whether to call `.start()` on each entry.
 
         Returns:
-            Optional[List[DocsFddCmFddCapabilities]]: List of populated capability objects, or None on failure.
+            A list of DocsFddCmFddBandEdgeCapabilities objects, or None if none found.
         """
         oid = COMPILED_OIDS.get("docsFddDiplexerUsUpperBandEdgeCapability")
         if not oid:
@@ -1222,18 +1232,19 @@ class CmSnmpOperation:
             self.logger.warning(f"No results found during SNMP walk for OID {oid}")
             return None
 
-        indices: List[int] = Snmp_v2c.extract_last_oid_index(results)
-        entries: List[DocsFddCmFddCapabilities] = []
+        entries = []
+        for idx in Snmp_v2c.extract_last_oid_index(results):
+            obj = DocsFddCmFddBandEdgeCapabilities(idx, self._snmp)
 
-        for idx in indices:
-            obj = DocsFddCmFddCapabilities(idx, self._snmp)
-            if await obj.start():
-                entries.append(obj)
-            else:
-                self.logger.warning(f"SNMP population failed for DocsFddCmFddCapabilities (index={idx})")
+            if create_and_start:
+                if not await obj.start():
+                    self.logger.warning(f"SNMP population failed for DocsFddCmFddBandEdgeCapabilities (index={idx})")
+                    continue
 
-        return entries if entries else None
-        
+            entries.append(obj)
+
+        return entries or None
+
 ######################
 # SNMP Set Operation #
 ######################
