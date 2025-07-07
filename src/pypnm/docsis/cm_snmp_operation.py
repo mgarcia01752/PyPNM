@@ -9,6 +9,7 @@ from pysnmp.proto.rfc1902 import (OctetString, Counter32, Bits,
                                   Counter64, Gauge32, Integer, 
                                   Integer32, IpAddress)
 from pypnm.docsis.data_type.DocsDevEventEntry import DocsDevEventEntry
+from pypnm.docsis.data_type.DocsFddCmFddCapabilities import DocsFddCmFddCapabilities
 from pypnm.docsis.data_type.DocsFddCmFddSystemCfgState import DocsFddCmFddSystemCfgState
 from pypnm.docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanEntry
 from pypnm.docsis.data_type.DocsIf31CmDsOfdmProfileStatsEntry import DocsIf31CmDsOfdmProfileStatsEntry
@@ -1204,6 +1205,37 @@ class CmSnmpOperation:
 
         return obj
 
+    async def getDocsFddCmFddCapabilities(self) -> Optional[List[DocsFddCmFddCapabilities]]:
+        """
+        Retrieves a list of DocsFddCmFddCapabilities entries by walking a known OID index base.
+
+        Returns:
+            Optional[List[DocsFddCmFddCapabilities]]: List of populated capability objects, or None on failure.
+        """
+        oid = COMPILED_OIDS.get("docsFddDiplexerUsUpperBandEdgeCapability")
+        if not oid:
+            self.logger.error("OID 'docsFddDiplexerUsUpperBandEdgeCapability' not found in COMPILED_OIDS")
+            return None
+
+        results = await self._snmp.walk(oid)
+        if not results:
+            self.logger.warning(f"No results found during SNMP walk for OID {oid}")
+            return None
+
+        indices: List[int] = Snmp_v2c.extract_last_oid_index(results)
+        entries: List[DocsFddCmFddCapabilities] = []
+
+        for idx in indices:
+            obj = DocsFddCmFddCapabilities(idx, self._snmp)
+            if await obj.start():
+                entries.append(obj)
+            else:
+                self.logger.warning(f"SNMP population failed for DocsFddCmFddCapabilities (index={idx})")
+
+        return entries if entries else None
+        
+            
+        
  
 ######################
 # SNMP Set Operation #
