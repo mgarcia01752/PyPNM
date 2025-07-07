@@ -55,7 +55,7 @@ git clone https://github.com/mgarcia01752/PyPNM.git
 cd PyPNM
 ```
 
-### Step 2: Install system & Python dependencies
+### Step 2: Install System & Python dependencies
 
 The included `install.sh` will detect Ubuntu 22.04 vs 24.04 (or fall back to your distro’s default Python), install system packages, create a virtual environment, and install PyPNM in editable mode:
 
@@ -63,7 +63,7 @@ The included `install.sh` will detect Ubuntu 22.04 vs 24.04 (or fall back to you
 ./install.sh
 ```
 
-### Step 3: (If not already active) activate the virtual environment
+### Step 3: (If not already active) activate the Python virtual environment
 
 ```bash
 python3 -m venv .env
@@ -94,7 +94,7 @@ pypnm
 * **ReDoc**:     [http://localhost:8000/redoc](http://localhost:8000/redoc)
 * **Postman**:   [`Download Postman`](https://www.postman.com/downloads/)
 
-> ⚠️ Tip: Use Postman for complex or large JSON payloads—Swagger UI can struggle with deeply nested schemas.
+⚠️ Tip: Use Postman for complex or large JSON payloads—Swagger UI can struggle with deeply nested schemas.
 
 ## 📚 Full Documentation
 
