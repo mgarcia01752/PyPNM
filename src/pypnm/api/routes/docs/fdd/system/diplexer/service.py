@@ -12,21 +12,37 @@ logger = logging.getLogger(__name__)
 
 class FddDiplexerConfigService:
     """
-    Service for retrieving DOCSIS 4.0 FDD diplexer configuration state from a cable modem.
+    Service for retrieving the current DOCSIS 4.0 FDD diplexer configuration
+    (i.e., the active upstream/downstream band edge settings) from a cable modem.
 
+    These values are reported in TLVs 5.79, 5.80, and 5.81 as part of modem registration,
+    and they represent the configured frequency ranges in MHz for FDD operation.
     """
-    MHZ: int = 1_000_000
+
+    MHZ: int = 1_000_000  # Constant for MHz unit conversion (currently unused)
 
     @staticmethod
     async def fetch_fdd_diplexer_config(mac_address: str, ip_address: str) -> DocsFddCmFddSystemCfgState:
         """
-.
+        Connects to the cable modem using the given MAC and IP address,
+        and retrieves its currently configured FDD diplexer band edge settings.
+
+        Args:
+            mac_address (str): MAC address of the target cable modem.
+            ip_address (str): IP address of the target cable modem.
+
+        Returns:
+            DocsFddCmFddSystemCfgState: Object containing the configured upstream and downstream band edges.
+
+        Raises:
+            RuntimeError: If no configuration data is retrieved from the modem.
         """
         logger.info(f"Fetching diplexer config for {mac_address}@{ip_address}")
 
         cm = CableModem(
             mac_address=MacAddress(mac_address),
-            inet=Inet(ip_address))
+            inet=Inet(ip_address)
+        )
         
         state: DocsFddCmFddSystemCfgState = await cm.getDocsFddCmFddSystemCfgState()
         if state is None:
@@ -34,6 +50,3 @@ class FddDiplexerConfigService:
             raise RuntimeError("Failed to retrieve diplexer configuration")
        
         return state
-        
-
-

@@ -24,8 +24,7 @@ class FddDiplexerConfigResult:
     def __init__(self) -> None:
         self.router = APIRouter(
             prefix="/docs/fdd/system",
-            tags=["DOCSIS 4.0 FDD System"]
-        )
+            tags=["DOCSIS 4.0 FDD System"])
         self.logger = logging.getLogger(self.__class__.__name__)
         self._register_routes()
 

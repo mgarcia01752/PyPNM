@@ -30,8 +30,7 @@ class FddDiplexerBandEdgeCapability:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.router = APIRouter(
             prefix="/docs/fdd/diplexer",
-            tags=["DOCSIS 4.0 FDD Diplexer Band Edge Capability"]
-        )
+            tags=["DOCSIS 4.0 FDD Diplexer Band Edge Capability"])
         self._add_routes()
 
     def _add_routes(self):
@@ -71,8 +70,8 @@ class FddDiplexerBandEdgeCapability:
             # Fetch capability data from the cable modem
             service = FddDiplexerBandEdgeCapabilityService(
                 mac_address=request.mac_address,
-                ip_address=request.ip_address
-            )
+                ip_address=request.ip_address)
+            
             data = await service.getFddDiplexerBandEdgeCapabilityEntries()
 
             return JSONResponse(content=data)
