@@ -20,7 +20,7 @@ class BaseCapabilityRouter:
     def __init__(self) -> None:
         self.router = APIRouter(
             prefix="/docs/if31/docsis",
-            tags=["DOCSIS 3.1 - DOCSIS Base Capability"])
+            tags=["DOCSIS 3.1 DOCSIS Base Capability"])
         self.logger = logging.getLogger(self.__class__.__name__)
         self._register_routes()
 
