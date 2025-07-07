@@ -32,7 +32,7 @@ class FddDiplexerConfigResult:
         @self.router.post("/diplexer/configuration", response_model=Union[SnmpResponse, Dict[str, Any]])
         async def diplexer_config(request: PnmRequest) -> Union[SnmpResponse, JSONResponse]:
             """
-            🎯 Retrieve DOCSIS 4.0 FDD Diplexer Configuration
+            **DOCSIS 4.0 FDD Diplexer Configuration**
 
             This endpoint queries the cable modem for its active diplexer band edge
             settings (Upstream Upper, Downstream Lower, Downstream Upper), as defined by
