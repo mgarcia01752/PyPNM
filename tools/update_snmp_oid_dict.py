@@ -8,13 +8,11 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict
 import tempfile
-import shutil
 
 # Adjusted relative paths (script lives in 'tools/')
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MIB_DIR = PROJECT_ROOT / "mibs"
 OUTPUT_FILE = PROJECT_ROOT / "src/pypnm/snmp/compiled_oids.py"
-
 
 def run_snmptranslate(output_path: Path) -> None:
     """
@@ -31,7 +29,6 @@ def run_snmptranslate(output_path: Path) -> None:
     ]
     with output_path.open("w", encoding="utf-8") as f:
         subprocess.run(cmd, check=True, stdout=f)
-
 
 def parse_snmptranslate_output(file_path: Path) -> Dict[str, str]:
     """
@@ -52,7 +49,6 @@ def parse_snmptranslate_output(file_path: Path) -> Dict[str, str]:
                 oid_dict[name] = oid
     return oid_dict
 
-
 def write_python_dict(oid_dict: Dict[str, str], output_path: Path) -> None:
     """
     Writes the OID dictionary to a Python file as a formatted constant.
@@ -72,7 +68,6 @@ COMPILED_OIDS = {{
             f.write(f'    "{name}": "{oid}",\n')
         f.write("}\n")
 
-
 def main():
     print("🔄 Generating compiled OIDs from MIBs...")
 
@@ -86,7 +81,6 @@ def main():
         write_python_dict(oid_dict, OUTPUT_FILE)
 
     print(f"✅ Compiled {len(oid_dict)} OIDs to '{OUTPUT_FILE}'")
-
 
 if __name__ == "__main__":
     main()
