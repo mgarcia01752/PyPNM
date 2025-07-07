@@ -2,8 +2,6 @@
 
 Use this guide to auto-discover and invoke all SNMP-based PNM endpoints under `/docs/pnm/...` in your FastAPI service with a simple helper script.
 
----
-
 ## 🚀 Usage
 
 1. **Set environment variables** (or substitute values directly):
@@ -30,8 +28,6 @@ Use this guide to auto-discover and invoke all SNMP-based PNM endpoints under `/
 3. **Review** the output JSON file (`responses.json`) to see the combined responses.
 
 > **Tip:** View all `/docs/pnm/...` endpoints in your Swagger UI at [http://localhost:8000/docs](http://localhost:8000/docs) or see the FastAPI overview: [API Reference](../api/fast-api/index.md).
-
----
 
 ## 📂 Script Location
 
