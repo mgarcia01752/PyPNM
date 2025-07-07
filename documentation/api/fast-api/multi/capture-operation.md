@@ -35,8 +35,6 @@ Records each background **operation** and its connection to a capture group.
 * **capture\_group**: Associated `capture_group_id`.
 * **created**: Unix timestamp when the operation started.
 
----
-
 ## 2. Capture Group Database (`capture_group.json`)
 
 Tracks each high‑level invocation as a distinct **capture group**.
@@ -60,8 +58,6 @@ Tracks each high‑level invocation as a distinct **capture group**.
 * **Key**: `capture_group_id` (e.g., `10b6ea239641487c`).
 * **created**: Unix timestamp when the group was created.
 * **transactions**: List of associated `transaction_id`s (one per file).
-
----
 
 ## 3. Transactions Manifest (`transactions.json`)
 
@@ -95,8 +91,6 @@ A detailed manifest of every PNM file moved into `data/pnm/` during the capture.
 * **pnm\_test\_type**: Identifier of the PNM capture type.
 * **filename**: Name of the `.bin` file in `data/pnm/`.
 * **device\_details.sys\_descr**: Snapshot of modem metadata at capture time.
-
----
 
 ## Workflow Summary
 
