@@ -166,9 +166,7 @@ class PnmFileTransaction:
                     "pnm_test_type": record.get("pnm_test_type"),
                     "filename": record.get("filename"),
                     "timestamp": datetime.fromtimestamp(record.get("timestamp", 0)).strftime("%Y-%m-%d %H:%M:%S UTC"),
-                    "device_details": {
-                        "sys_descr": record.get("sys_descr"),
-                    }
+                    "device_details": record.get("device_details","sys_descr"),
                 })
 
         return results if results else None

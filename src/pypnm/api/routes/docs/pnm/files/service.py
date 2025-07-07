@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+from datetime import datetime
 import os
 import logging
 from pathlib import Path
@@ -62,20 +63,23 @@ class PnmFileService:
                 self.logger.warning(f"No files found for MAC: {mac}")
                 return FileQueryResponse(files={str(mac): []})
 
-            file_entries = [
-                FileEntry(
-                    transaction_id=entry["transaction_id"],
-                    filename=entry["filename"],
-                    pnm_test_type=entry["pnm_test_type"],
-                    timestamp=entry["timestamp"]
+            file_entries = []
+            for entry in results:
+                print(entry)
+                file_entries.append(
+                    FileEntry(
+                        transaction_id=entry["transaction_id"],
+                        filename=entry["filename"],
+                        pnm_test_type=entry["pnm_test_type"],
+                        timestamp=entry["timestamp"],
+                        sys_descr=entry["device_details"]["sys_descr"]
+                    )
                 )
-                for entry in results
-            ]
 
             return FileQueryResponse(files={str(mac): file_entries})
 
         except Exception as e:
-            self.logger.exception(f"Failed to search files for MAC {req.mac_address}: {e}")
+            self.logger.error(f"Failed to search files for MAC {req.mac_address}: {e}")
             return FileQueryResponse(files={req.mac_address: []})
 
     def get_file_by_transaction_id(self, transaction_id: str) -> FileResponse:

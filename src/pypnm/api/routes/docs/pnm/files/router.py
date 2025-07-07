@@ -2,18 +2,14 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import os
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, Path, Query
 from fastapi.responses import FileResponse, JSONResponse
 
 from pypnm.api.routes.docs.pnm.files.schemas import (
-    FileAnalysisRequest,
-    FileQueryResponse,
-    FileQueryRequest,
-    PushFileRequest,
-    PushFileResponse,
-    AnalysisResponse
-)
+    FileAnalysisRequest, FileQueryResponse, FileQueryRequest, PushFileRequest, PushFileResponse, AnalysisResponse)
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
+from pypnm.config.system_config_settings import SystemConfigSettings
+from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 
 class PnmFileManager:
     """
@@ -26,32 +22,26 @@ class PnmFileManager:
     """
 
     def __init__(self):
-        self.router = APIRouter(
-            prefix="/docs/pnm/files",
-            tags=["PNM File Manager"]
-        )
+        self.router = APIRouter(prefix="/docs/pnm/files",tags=["PNM File Manager"])
         self._add_routes()
 
     def _add_routes(self):
 
-        @self.router.post("/searchFiles", response_model=FileQueryResponse, summary="Search for PNM Files")
-        def search_files(request: FileQueryRequest):
+        default_mac_address = MacAddress(SystemConfigSettings.default_mac_address).to_mac_format(fmt=MacAddressFormat.COLON).lower()
+        
+        @self.router.get("/searchFiles/{mac_address}", 
+                         response_model=FileQueryResponse, 
+                         summary="Search for PNM Files via mac address")
+        def search_files(mac_address: str = Path(..., description=f"MAC address of the cable modem, default: **{default_mac_address}**")):
             """
-            Searches and returns all available PNM files associated with the specified MAC address.
-
-            This endpoint queries the transaction registry and groups results by MAC address.
-            Each result includes filename, PNM test type, timestamp, and transaction ID.
-
-            Returns:
-            
-                JSONResponse: A structured response with a dictionary mapping MAC addresses
-                            to lists of PNM file metadata entries.
             """
+            request = FileQueryRequest(mac_address=mac_address)
             result = PnmFileService().search_files(request)
             return JSONResponse(content=result.model_dump())
 
         @self.router.get("/download/{transaction_id}", 
-                         response_class=FileResponse, summary="Download a PNM file by transaction ID")
+                         response_class=FileResponse, 
+                         summary="Download a PNM file by transaction ID")
         def download_file(transaction_id: str = Path(..., description="Transaction ID of the file")):
             """
             Downloads the original binary file associated with a given transaction ID.

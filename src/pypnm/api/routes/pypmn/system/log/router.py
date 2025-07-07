@@ -19,8 +19,12 @@ class PyPnmSystemLog:
         """
         Initialize the PyPNM System Log API router and bind routes.
         """
-        self.router = APIRouter(prefix="/pypnm/system/log",tags=["PyPNM System Log"])
-        self.router.post("/download", summary="Download PyPNM Log File")(self.get_pypnm_log)
+        self.router = APIRouter(prefix="/pypnm/system/log", tags=["PyPNM System Log"])
+        self.router.add_api_route(
+            path="/download",
+            endpoint=self.get_pypnm_log,
+            methods=["GET"],
+            summary="Download PyPNM Log File")
 
     async def get_pypnm_log(self):
         """
@@ -40,10 +44,11 @@ class PyPnmSystemLog:
             return FileResponse(
                 path=log_path,
                 filename=SystemConfigSettings.log_filename,
-                media_type="text/plain")
+                media_type="text/plain"
+            )
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to retrieve log: {e}")
 
-# Expose router for FastAPI app
+# Expose router for FastAPI
 router = PyPnmSystemLog().router

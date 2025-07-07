@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from pydantic import BaseModel, Field
-from typing import Dict, Optional, List
+from typing import Any, Dict, Optional, List
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import CommonFileRequest
 
 class FileQueryRequest(CommonFileRequest):
@@ -13,7 +13,7 @@ class FileEntry(BaseModel):
     filename: str = Field(..., description="Name of the file")
     pnm_test_type: str = Field(..., description="Type of PNM test performed")
     timestamp: str = Field(..., description="Human-readable timestamp")
-
+    sys_descr: Optional[dict] = Field(None, description="System description details")
 
 class FileQueryResponse(BaseModel):
     files: Dict[str, List[FileEntry]] = Field(

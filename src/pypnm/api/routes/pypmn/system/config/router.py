@@ -29,7 +29,6 @@ class PyPnmSystemConfigAPI:
             tags=["PyPNM System Configuration"])
         self.router.post("/get", summary="Get PyPNM System Config")(self.get_system_config)
         self.router.post("/update", summary="Update PyPNM System Config")(self.update_system_config)
-        self.router.post("/fetch/log", summary="Download PyPNM Log File")(self.get_pypnm_log)
 
     async def get_system_config(self):
         """
