@@ -14,8 +14,6 @@ from pypnm.lib.inet import Inet
 from pypnm.lib.inet_utils import InetUtils
 from pypnm.snmp.modules import InetAddressType
 
-
-
 class Snmp_v2c:
     """
     SNMPv2c Client for asynchronous GET, SET, and WALK operations.
