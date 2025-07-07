@@ -8,6 +8,7 @@ from typing import List, Tuple, Union
 from pysnmp.proto.rfc1902 import (OctetString, Counter32, Bits, 
                                   Counter64, Gauge32, Integer, 
                                   Integer32, IpAddress)
+from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
 from pypnm.docsis.data_type.DocsDevEventEntry import DocsDevEventEntry
 from pypnm.docsis.data_type.DocsFddCmFddCapabilities import DocsFddCmFddBandEdgeCapabilities
 from pypnm.docsis.data_type.DocsFddCmFddSystemCfgState import DocsFddCmFddSystemCfgState
@@ -1171,6 +1172,43 @@ class CmSnmpOperation:
         self.logger.warning(f"Filename '{filename}' not found in BulkDataFile table.")
         return DocsPnmBulkFileUploadStatus.ERROR
 
+    async def getDocsisBaseCapability(self) -> Optional[ClabsDocsisVersion]:
+        """
+        Retrieve the DOCSIS version capability reported by the device.
+
+        This method queries the SNMP OID `docsIf31DocsisBaseCapability`, which reflects
+        the supported DOCSIS Radio Frequency specification version.
+
+        Returns:
+            ClabsDocsisVersion: Enum indicating the DOCSIS version supported by the device.
+
+        SNMP MIB Reference:
+            - OID: docsIf31CmDocsisBaseCapability
+            - SYNTAX: ClabsDocsisVersion (INTEGER enum from 0 to 6)
+            - Affected Devices:
+                - CMTS: reports highest supported DOCSIS version.
+                - CM: reports supported DOCSIS version.
+
+            This attribute replaces `docsIfDocsisBaseCapability` from RFC 4546.
+        """
+        self.logger.debug("Fetching docsIf31CmDocsisBaseCapability")
+
+        oid = f"{COMPILED_OIDS['docsIf31CmDocsisBaseCapability']}.0"
+        rsp = await self._snmp.get(oid)
+        docsis_version:int = Snmp_v2c.get_result_value(rsp)
+        docsis_version = int(docsis_version)
+
+        cdv = ClabsDocsisVersion.from_value(int(docsis_version))
+
+        if cdv == ClabsDocsisVersion.OTHER:
+            self.logger.warning(f"Unknown DOCSIS version: {docsis_version} -> Enum: {cdv.name}")
+        else:
+            self.logger.info(f"DOCSIS version: {cdv.name}")
+
+        return cdv
+
+
+            
 ####################
 # DOCSIS 4.0 - FDD #
 ####################
