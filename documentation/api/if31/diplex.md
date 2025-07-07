@@ -2,7 +2,6 @@
 
 Retrieves the DOCSIS 3.1 diplexer configuration and capabilities from a cable modem. The diplexer defines the frequency split between upstream and downstream channels, helping determine how the modem partitions RF spectrum for transmission and reception.
 
----
 
 ### 🔧 Request
 
@@ -22,7 +21,6 @@ Retrieves the DOCSIS 3.1 diplexer configuration and capabilities from a cable mo
 | mac\_address | string | MAC address of the target cable modem. |
 | ip\_address  | string | IP address used to reach the modem.    |
 
----
 
 ### 📤 Response
 
@@ -50,7 +48,6 @@ Retrieves the DOCSIS 3.1 diplexer configuration and capabilities from a cable mo
 | ds\_upper\_capability      | int    | Maximum supported downstream upper frequency in MHz.         |
 | cfg\_ds\_upper\_band\_edge | int    | Configured downstream upper band edge in MHz.                |
 
----
 
 ### ✅ Example
 

@@ -93,7 +93,6 @@ This process yields a structured performance ledger to:
 * **Correlate Reliability**: Link error‑correction events to capacity deficits.
 * **Monitor Trends**: Track performance over time and detect transients.
 
----
 
 ## Workflow Flowchart
 

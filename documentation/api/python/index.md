@@ -2,7 +2,6 @@
 
 This section introduces the core PNM measurement types available via the PyPNM Python API. Each measurement class parses a raw PNM binary file into a structured Python `dict` or JSON-like object. Downstream, you can convert that output into frequency vs. amplitude spectra, time-domain traces, or statistical summaries depending on the file type.
 
----
 
 ## How It Works
 
@@ -14,7 +13,6 @@ This section introduces the core PNM measurement types available via the PyPNM P
 
 Chain these steps in scripts, dashboards, or Jupyter notebooks for custom analytics.
 
----
 
 ## Class Hierarchy UML
 
@@ -41,7 +39,6 @@ Chain these steps in scripts, dashboards, or Jupyter notebooks for custom analyt
 * [**PnmHeader**](../../../src/pypnm/pnm/process/pnm_header.py): Parses and holds header metadata extracted from the byte-stream.
 * [**PnmFileType**](../../../src/pypnm/pnm/process/pnm_file_type.py): Check PNM Header against PNM FileTypes.
 * **PnmParser**: Consumes the header and payload to produce structured measurement data.
----
 
 ## Output Format
 
@@ -53,7 +50,6 @@ All PNM parser classes produce their results as a Python `dict` or JSON-like str
 
 Use `json.dumps(parser_output)` to emit JSON, or access fields via standard dict operations.
 
----
 
 ## 🎯 Measurement Types (Parsers)
 
@@ -71,7 +67,6 @@ Use `json.dumps(parser_output)` to emit JSON, or access fields via standard dict
 | **ATDMA Pre-Equalization**    | [DocsEqualizerData](../../../src/pypnm/pnm/data_type/DocsEqualizerData.py)           | Parses legacy ATDMA equalizer taps for upstream DOCSIS channels.                      | ✅     |
 | **Latency Reporting**         | [CmLatencyRpt](../../../src/pypnm/pnm/process/CmLatencyRpt.py)                     | Reports one-way delay and jitter statistics from PNM captures.                        | TBD    |
 
----
 
 ## Fetch and Process via a Service
 
@@ -85,7 +80,6 @@ Use higher-level service wrappers to automate PNM file retrieval and parsing:
 2. **`CommonProcessService.process()`** — parses returned PNM payloads into JSON-ready structures.
 3. **`FileProcessor.write_file()`** — saves each parsed result to disk as a timestamped JSON file.
 
----
 
 ## Background Staging & Manifesting
 
@@ -93,7 +87,6 @@ Use higher-level service wrappers to automate PNM file retrieval and parsing:
 * A concurrent background task creates a transition JSON manifest listing each captured file path and metadata.
 * Downstream consumers can read this manifest to automatically discover and process new files without manual directory polling.
 
----
 
 ## Manifest Transaction Example
 

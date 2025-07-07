@@ -6,7 +6,6 @@ This document describes the structure and meaning of the `system.json` configura
 * **ConfigManager class**: [`ConfigManager`](../../src/pypnm/config/config_manager.py)
 * **PNM ConfigManager class**: [`PnmConfigManager`](../../src/pypnm/config/pnm_config_manager.py)
 
----
 
 ## 1. FastApiRequestDefault
 
@@ -113,7 +112,6 @@ Configuration for application logging.
 * **log\_dir**: Directory to write log files.
 * **log\_filename**: Timestamped filename pattern using `strftime` tokens.
 
----
 
 ## Loading Configuration
 

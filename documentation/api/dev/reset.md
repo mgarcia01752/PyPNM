@@ -3,7 +3,6 @@ Here is a `reset_cable_modem.md` markdown file documenting the Cable Modem Reset
 
 Resets a DOCSIS cable modem by sending a `docsDevResetNow` SNMP command to the target device identified by MAC and IP address.
 
----
 
 #### 🔁 Endpoint
 
@@ -11,7 +10,6 @@ Resets a DOCSIS cable modem by sending a `docsDevResetNow` SNMP command to the t
 POST /docs/dev/reset
 ```
 
----
 
 #### 🧾 Request Schema
 
@@ -27,7 +25,6 @@ POST /docs/dev/reset
 | `mac_address` | string | MAC address of the cable modem |
 | `ip_address`  | string | IP (IPv4 or IPv6) of the modem |
 
----
 
 #### ✅ Success Response
 
@@ -38,7 +35,6 @@ POST /docs/dev/reset
 }
 ```
 
----
 
 #### ❌ Failure Responses
 
@@ -59,7 +55,6 @@ POST /docs/dev/reset
 }
 ```
 
----
 
 #### 🔐 Notes
 

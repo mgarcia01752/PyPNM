@@ -2,7 +2,6 @@
 
 This guide explains the `OFDMEchoDetector` class, which performs FFT/IFFT-based echo detection on OFDM channel estimates, and provides typical propagation delay values for common coaxial drop cables.
 
----
 
 ## 1. Class Overview
 
@@ -29,7 +28,6 @@ The `OFDMEchoDetector` class:
 * `compute_freq_response(time_data)`
   Optionally applies FFT to reconstruct frequency response from time-domain data.
 
----
 
 ## 2. Mathematical Foundations
 
@@ -60,7 +58,6 @@ The `OFDMEchoDetector` class:
    * $c_0$: speed of light in vacuum.
    * `prop_speed_frac`: velocity factor relative to $c_0$.
 
----
 
 ## 3. Typical Usage
 
@@ -90,7 +87,6 @@ The `OFDMEchoDetector` class:
    print(result)
    ```
 
----
 
 ## 4. Coax Cable Propagation Delays
 
@@ -103,7 +99,6 @@ The `OFDMEchoDetector` class:
 * **Delay (ns/ft)** = $1/\mathrm{velocity\_factor}$.
 * **Delay (ns/m)** = Delay (ns/ft) × 3.28084.
 
----
 
 ## 5. References
 
@@ -111,6 +106,5 @@ The `OFDMEchoDetector` class:
 * **RG-6/U Quad Shield** velocity factors (Manufacturer datasheets)
 * **RG-11/U** NVP and delay (Technical specifications)
 
----
 
 > **Tip:** Use the `compute_freq_response` method to verify the FFT/IFFT round-trip, ensuring no windowing artifacts affect echo detection.

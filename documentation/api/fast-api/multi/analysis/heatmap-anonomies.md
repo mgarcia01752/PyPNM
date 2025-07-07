@@ -2,7 +2,6 @@
 
 This guide describes a pipeline for detecting and localizing anomalous regions in a 2D numerical array (e.g., a heat map) by thresholding its global z-score and extracting bounding boxes around connected anomalies.
 
----
 
 ## Mathematical Formulation
 
@@ -44,7 +43,6 @@ Given an \$M \times N\$ array of values \$X\_{i,j}\$:
    \text{col}_{\max} = \max\{j : \text{mask}_{i,j} = 1\}
    $$
 
----
 
 ## JSON Output Format
 
@@ -63,7 +61,6 @@ The detection function returns a JSON object with the threshold and a list of bo
 * **threshold**: z-score cutoff \$T\$
 * **boxes**: array of detected regions with top-left \$(\text{row}*{\min}, \text{col}*{\min})\$ and bottom-right \$(\text{row}*{\max}, \text{col}*{\max})\$ coordinates
 
----
 
 ## Algorithm Steps
 
@@ -87,6 +84,5 @@ The detection function returns a JSON object with the threshold and a list of bo
 
    * Return \$T\$ and all bounding boxes in JSON.
 
----
 
 > 💡 **Tip:** Choose the threshold \$T\$ based on expected noise (e.g., 3–4 standard deviations). Use 8‑connectivity if you want diagonally-connected anomalies grouped together.

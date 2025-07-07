@@ -89,7 +89,6 @@ Thanks! Based on your provided response snippet, I’ve updated the **Response**
 }
 ```
 
----
 
 ### 🔎 Field Descriptions
 
@@ -126,7 +125,6 @@ Thanks! Based on your provided response snippet, I’ve updated the **Response**
   * Measurement restarted
   * Dwell count overflows (32-bit limit)
 
----
 
 ## Dependencies
 
@@ -148,7 +146,6 @@ Thanks! Based on your provided response snippet, I’ve updated the **Response**
 
 A CMTS operator notices an increase in downstream packet loss and distortion. By running this histogram API, they identify a clipped histogram tail — likely caused by laser clipping — and can take corrective action (e.g., adjusting optical power levels or replacing faulty hardware).
 
----
 
 ## Author
 

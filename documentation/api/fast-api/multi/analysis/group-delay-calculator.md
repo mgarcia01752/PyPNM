@@ -2,7 +2,6 @@
 
 This guide explains the mathematical foundation and usage of the `GroupDelayCalculator` class for computing group delay from per-subcarrier complex channel estimates, supporting multi-snapshot coherent averaging and comprehensive output via `to_dict()`.
 
----
 
 ## 1. Group Delay: Continuous Definition
 
@@ -14,7 +13,6 @@ $$
 
 where $\omega = 2\pi f$ and $\arg(H(f))$ is the phase of $H(f)$.
 
----
 
 ## 2. Discrete Approximation
 
@@ -44,7 +42,6 @@ the discrete group delay per subcarrier is approximated by finite differences:
   \tau_g[K-1] = -\frac{\phi_{K-1} - \phi_{K-2}}{2\pi(f_{K-1} - f_{K-2})}
   $$
 
----
 
 ## 3. Multi-Snapshot Coherent Averaging
 
@@ -60,7 +57,6 @@ $$
 \tau_{g,\mathrm{med}}[k] = \mathrm{median}\bigl\{\tau_g^{(1)}[k],\dots,\tau_g^{(M)}[k]\bigr\}.
 $$
 
----
 
 ## 4. Class API
 
@@ -103,7 +99,6 @@ calc = GroupDelayCalculator(H, freqs)
   * `snapshot_group_delay`: `[[...], ...]`
   * `median_group_delay`: `{ "freqs": [...], "tau_med": [...] }`
 
----
 
 ## 5. Usage Example
 

@@ -2,7 +2,6 @@
 
 This document outlines the high-level steps and supporting mathematics for implementing a multi-resolution phase-slope echo detection workflow. Each step will later map to Python functions and classes.
 
----
 
 ## 1. Data Ingestion
 
@@ -14,7 +13,6 @@ $$
 
 Aggregate into an array of shape $(M, K)$.
 
----
 
 ## 2. (Optional) Coherent Averaging
 
@@ -26,7 +24,6 @@ $$
 
 Use $\overline H$ for subsequent steps if desired.
 
----
 
 ## 3. Phase-Slope Delay Estimation
 
@@ -52,7 +49,6 @@ For each snapshot (or $\overline H$):
    d = v\,\tau,\quad v = c_0\times\mathrm{prop\_speed\_frac}.
    $$
 
----
 
 ## 4. Per-Subcarrier Group-Delay Extraction
 
@@ -62,7 +58,6 @@ $$
 \tau_k \approx -\frac{\phi_{k+1}-\phi_{k-1}}{2\pi(f_{k+1}-f_{k-1})}.
 $$
 
----
 
 ## 5. Global Flatness Metric
 
@@ -74,7 +69,6 @@ $$
 \sigma_{\mathrm{tot}} = \sqrt{\frac{1}{K-1} \sum_{k=1}^K (\tau_k - \mu)^2}.
 $$
 
----
 
 ## 6. Coarse-Bin Analysis (1 MHz bins)
 
@@ -92,7 +86,6 @@ $$
 \Delta\sigma_j = |\sigma_j - \sigma_{\mathrm{tot}}|.
 $$
 
----
 
 ## 7. Anomaly Flagging
 
@@ -104,7 +97,6 @@ $$
 
 where $T$ is an empirical threshold based on baseline ripple.
 
----
 
 ## 8. Multi-Resolution Refinement
 
@@ -116,7 +108,6 @@ For each flagged 1 MHz bin:
 
 This hierarchical strategy focuses computation on likely disturbance regions.
 
----
 
 ## 9. Reporting
 
@@ -128,6 +119,5 @@ Produce a summary of:
 
 This report can be serialized as JSON, plotted, or integrated into monitoring dashboards.
 
----
 
 **Next Steps:** Translate each step into Python modules and functions, handling data I/O, phase unwrapping, regression, binning logic, and iterative refinement.

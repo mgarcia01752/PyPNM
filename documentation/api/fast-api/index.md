@@ -2,7 +2,6 @@
 
 This section provides general documentation and link stubs for the core FastAPI endpoint categories in PyPNM, along with guidance on launching the service and interacting via common HTTP clients and tools.
 
----
 
 ## Getting Started with FastAPI
 
@@ -16,7 +15,6 @@ This section provides general documentation and link stubs for the core FastAPI 
    * FastAPI documentation: [https://fastapi.tiangolo.com](https://fastapi.tiangolo.com)
    * Uvicorn server docs: [https://www.uvicorn.org/](https://www.uvicorn.org/)
 
----
 
 ## Tools & Clients
 
@@ -46,7 +44,6 @@ Handles one-off PNM or SNMP operations, such as:
 
 * **Guide:** [Single-Capture API Guide](single/index.md)
 
----
 
 ## Multi-Capture
 
@@ -64,7 +61,6 @@ Manages long-running, threaded capture sessions that periodically collect PNM da
   Periodic estimation coefficient collection for multiple OFDM channels.
   **Guide:** [Multi-DS Channel Estimation API Guide](multi/multi-capture-chan-est.md)
 
----
 
 ## Service Status Code
 
@@ -72,6 +68,5 @@ Defines standardized status codes returned by both SNMP and PNM operations, such
 
 * **Reference:** [Service Status Codes](status/fast-api-status-codes.md)
 
----
 
 > **Note:** Update link stubs above to match your documentation structure once the detailed guides exist.

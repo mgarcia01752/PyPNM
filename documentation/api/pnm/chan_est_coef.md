@@ -121,7 +121,6 @@ Performs detailed analysis of downstream OFDM channel estimation data for a give
 
   This indicates frequency-dependent delays in the channel response, useful for diagnosing impairments like echoes or group delay distortions.
 
----
 
 ## 3. POST `/docs/pnm/ds/ofdm/channelEstCoeff/getFiles`
 

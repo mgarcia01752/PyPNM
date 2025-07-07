@@ -25,7 +25,6 @@ The Multi-DS Channel Estimation API allows clients to schedule periodic captures
 
    * Provide `operation_id` and an `analysis_type` to run signal-analysis routines on collected samples.
 
----
 
 ## Endpoint Stubs
 

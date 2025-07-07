@@ -93,7 +93,6 @@ The file `system.json` (located at [src/pypnm/settings/system.json](../../src/py
   * Prefer export over a management VLAN.
   * Require client authentication (Kerberos, NTLMv2) where possible.
 
----
 
 ## Secure Copy (SCP)
 
@@ -138,7 +137,6 @@ The file `system.json` (located at [src/pypnm/settings/system.json](../../src/py
 * Keep SSH port (22) open only to trusted collector IPs via firewall rules.
 * Optionally set `AllowUsers pypnm_user@collectorIP` in `/etc/ssh/sshd_config` on the PyPNM host to further limit who can SCP in.
 
----
 
 ## Secure File Transfer Protocol (SFTP)
 
@@ -177,7 +175,6 @@ The file `system.json` (located at [src/pypnm/settings/system.json](../../src/py
 * Use `SFTPClient.chdir()` and `listdir()` to verify files before downloading.
 * Use `sftp.get(remotepath, localpath, preserve_mtime=True)` to keep timestamps intact, reducing risk of injecting stale/forged files.
 
----
 
 ## File Transfer Protocol (FTP) with TLS
 
@@ -218,7 +215,6 @@ The file `system.json` (located at [src/pypnm/settings/system.json](../../src/py
 * **Firewall passive port range**: restrict to a small range (e.g. 10000–10100) and open only those.
 * **Regularly rotate credentials** or use a one-time token if possible.
 
----
 
 ## Trivial File Transfer Protocol (TFTP)
 
@@ -260,7 +256,6 @@ The file `system.json` (located at [src/pypnm/settings/system.json](../../src/py
 * **Use very short time-to-live (TTL) IP ACLs** on network switches so that TFTP requests cannot transit untrusted segments.
 * **Periodically scan the PNM directory** for malicious or unexpected files (e.g. non-`.bin`) and remove them.
 
----
 
 ## Summary Comparison
 

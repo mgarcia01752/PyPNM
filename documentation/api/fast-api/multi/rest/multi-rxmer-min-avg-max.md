@@ -123,6 +123,5 @@ Each of the three measurement series (`min`, `avg`, `max`) includes statistical 
 * Precision is provided for display/rounding guidance.
 * All statistics are calculated **per channel**.
 
----
 
 > 📂 For full field definitions, refer to: `api/routes/advance/multi_rxmer/schemas.py`

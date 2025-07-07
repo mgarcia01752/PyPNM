@@ -10,7 +10,6 @@ Use this endpoint to support PNM workflows, particularly when analyzing power le
 
 Retrieves statistics and configuration parameters for upstream OFDMA channels from a DOCSIS 3.1 cable modem. This includes subcarrier layout, transmit power, and upstream timing-related error counters.
 
----
 
 ## 📥 Request Body (JSON)
 
@@ -44,7 +43,6 @@ Retrieves statistics and configuration parameters for upstream OFDMA channels fr
 }
 ```
 
----
 
 ## 📤 Response Body (JSON)
 
@@ -77,7 +75,6 @@ Retrieves statistics and configuration parameters for upstream OFDMA channels fr
 ]
 ```
 
----
 
 ## 📘 Response Field Highlights
 
@@ -102,7 +99,6 @@ Retrieves statistics and configuration parameters for upstream OFDMA channels fr
 | `docsIf31CmStatusOfdmaUsIsMuted`                | bool  | Indicates if the upstream is muted              |
 | `docsIf31CmStatusOfdmaUsRangingStatus`          | str   | Current ranging status (e.g., `4` = success)    |
 
----
 
 ## 📝 Notes
 

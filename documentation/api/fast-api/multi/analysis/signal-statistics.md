@@ -14,7 +14,6 @@ Time-domain statistics summarize raw signal samples using simple formulas. They 
 
 These metrics are widely used for anomaly detection, quality assessment, feature extraction for machine learning, and diagnostic monitoring.
 
----
 
 ## Metrics and Definitions
 
@@ -35,7 +34,6 @@ Given a sequence of $N$ samples $x_1, x_2, \dots, x_N$ with mean $\mu$:
 | **Zero-Crossing Rate (ZCR)**      | $\displaystyle \frac{1}{N-1}\sum_{i=1}^{N-1} \mathbf{1}[x_i x_{i+1}<0]$       | Proxy for frequency content; higher ZCR → higher frequencies  |
 | **Zero Crossings**                | Total count of sign changes: $\sum_{i=1}^{N-1} \mathbf{1}[x_i x_{i+1}<0]$     | Basic oscillation count; complements ZCR                      |
 
----
 
 ## Practical Applications
 
@@ -51,6 +49,5 @@ Given a sequence of $N$ samples $x_1, x_2, \dots, x_N$ with mean $\mu$:
 4. **Monitoring & Diagnostics**
    Tracking mean and power over time helps detect drift, component aging, or environmental changes.
 
----
 
 > **Tip:** Always normalize or detrend your signal (remove its mean $\mu$) before computing higher-order moments (skewness, kurtosis) to avoid bias from DC offsets.

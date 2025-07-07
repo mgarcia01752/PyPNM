@@ -2,7 +2,6 @@
 
 This guide presents the mathematical foundation, class API, and practical usage of the `PhaseSlopeEchoDetector`, which estimates echo delays and reflector distances from OFDM channel estimates.
 
----
 
 ## 1. Theory and Justification
 
@@ -52,7 +51,6 @@ $$
 
 where $v = c_0 \times \mathrm{prop\_speed\_frac}$ is the propagation velocity (fraction of the speed of light).
 
----
 
 ## 2. Class API
 
@@ -95,7 +93,6 @@ class PhaseSlopeEchoDetector:
         """Return a comprehensive dict of inputs, parameters, and results."""
 ```
 
----
 
 ## 3. Practical Usage
 
@@ -108,13 +105,11 @@ class PhaseSlopeEchoDetector:
 2. Inspect `results['delay_s']` and `results['distance_m']` for one‑way delay and reflector distance.
 3. Use `detector.to_dict()` to serialize full inputs and outputs for logging or further analysis.
 
----
 
 ## 4. References
 
 1. **Delay Estimation via Phase Slope** — DSPRelated.com
 2. **Multipath Channel Models and Rake Receivers** — WirelessPi
 
----
 
 > **Tip:** Ensure phase unwrapping is robust (e.g., via `numpy.unwrap`) before fitting. Small frequency spacing improves delay resolution.

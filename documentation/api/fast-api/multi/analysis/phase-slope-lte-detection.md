@@ -2,7 +2,6 @@
 
 This guide delves into the theory of phase‑slope echo detection, examines how front‑end AGC and in‑band LTE signals affect group‑delay estimates, and presents a multi‑resolution scanning strategy to pinpoint disturbances.
 
----
 
 ## 1. Fundamental Principle
 
@@ -46,7 +45,6 @@ $$
 
 with propagation velocity $v = c_0 \times \mathrm{prop\_speed\_frac}$.
 
----
 
 ## 2. Effects of AGC and In‑Band Signals
 
@@ -56,7 +54,6 @@ with propagation velocity $v = c_0 \times \mathrm{prop\_speed\_frac}$.
 
 * **Impact**: The measured slope reflects both echo delay and AGC/equalizer transients until front‑end circuits re‑settle.
 
----
 
 ## 3. Group‑Delay Flatness Metric
 
@@ -86,7 +83,6 @@ Let $\tau_k$ be the one‑way delay estimated at subcarrier $f_k$. Define:
 
 Flag bin $j$ as disturbed if $\Delta\sigma_j > T$, where $T$ is a threshold based on baseline ripple levels.
 
----
 
 ## 4. Multi‑Resolution Scanning Strategy
 
@@ -97,7 +93,6 @@ Flag bin $j$ as disturbed if $\Delta\sigma_j > T$, where $T$ is a threshold base
 
 This hierarchical method focuses computation on suspect regions, optimizing performance.
 
----
 
 ## 5. Practical Considerations
 
@@ -106,13 +101,11 @@ This hierarchical method focuses computation on suspect regions, optimizing perf
 * **AGC/EQ modeling**: Consider digital filter group‑delay and DC‑offset compensation.
 * **Extensions**: Combine with PSD analysis or pilot-correlation to reduce false positives.
 
----
 
 ## 6. References
 
 1. Delay Estimation via Phase Slope, DSPRelated.com
 2. Multipath Channel Models and Rake Receivers, WirelessPi
 
----
 
 > **Tip:** Always verify AGC settling time and remove large in-band interferers before echo analysis.

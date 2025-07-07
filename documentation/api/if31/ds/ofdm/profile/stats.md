@@ -9,7 +9,6 @@ Retrieves DOCSIS 3.1 OFDM downstream profile statistics for a given cable modem 
 
 This endpoint provides detailed statistics per OFDM downstream profile per channel, including codeword counts, CRC failures, and frame-level metrics. It is useful for analyzing CM performance and diagnosing profile-related issues in the downstream OFDM path.
 
----
 
 ## 📥 Request
 
@@ -30,7 +29,6 @@ This endpoint provides detailed statistics per OFDM downstream profile per chann
 | mac\_address | string | MAC address of the cable modem |
 | ip\_address  | string | IP address of the cable modem  |
 
----
 
 ## 📤 Response
 
@@ -74,7 +72,6 @@ This endpoint provides detailed statistics per OFDM downstream profile per chann
 | channel\_id | integer | CM-reported OFDM channel ID                |
 | profiles    | dict    | Mapping of profile ID → profile statistics |
 
----
 
 ## ❗ Errors
 
@@ -82,7 +79,6 @@ This endpoint provides detailed statistics per OFDM downstream profile per chann
 * `status: "2"` – CM not reachable or no OFDM profiles available
 * `status: "3"` – Internal server error
 
----
 
 ## 🛠️ Backend Class Reference
 
@@ -90,7 +86,6 @@ This endpoint provides detailed statistics per OFDM downstream profile per chann
 * SNMP OIDs from `docsIf31CmDsOfdmProfileStats*` and `docsIf31CmDsOfdmChanChannelId`
 * Uses `CableModem.getDocsIf31CmDsOfdmProfileStatsEntry()`
 
----
 
 ## ✅ Example Use Case
 

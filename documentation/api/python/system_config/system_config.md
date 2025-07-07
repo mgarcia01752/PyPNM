@@ -2,7 +2,6 @@
 
 Manage the system configuration for the PyPNM application using the following endpoints.
 
----
 
 #### 📍 Base URL
 
@@ -10,7 +9,6 @@ Manage the system configuration for the PyPNM application using the following en
 /pypnm/system/config
 ```
 
----
 
 ### 🚀 Endpoints
 
@@ -20,7 +18,6 @@ Manage the system configuration for the PyPNM application using the following en
 | `POST /pypnm/system/config/update`  | Update the system configuration.        |
 
 
----
 
 ### 📥 Request Examples
 
@@ -49,7 +46,6 @@ Content-Type: application/json
 }
 ```
 
----
 
 #### ✏️ `POST /pypnm/system/config/update`
 
@@ -77,7 +73,6 @@ Content-Type: application/json
 }
 ```
 
----
 
 ### 🔐 Notes
 

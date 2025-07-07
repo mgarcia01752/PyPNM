@@ -74,6 +74,5 @@ INFO:     Started server process [...] with HTTPS
 INFO:     Uvicorn running on https://127.0.0.1:8000
 ```
 
----
 
 **Security Note:** Self-signed certificates are suitable for development or internal use only. For production deployments, obtain certificates from a trusted Certificate Authority (CA) like [Let’s Encrypt](https://letsencrypt.org/).

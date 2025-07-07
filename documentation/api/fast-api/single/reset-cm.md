@@ -6,7 +6,6 @@
 
 Initiates a remote reset (reboot) of the specified DOCSIS cable modem via SNMP.
 
----
 
 ## 📅 Request Body (JSON)
 
@@ -30,7 +29,6 @@ Initiates a remote reset (reboot) of the specified DOCSIS cable modem via SNMP.
 }
 ```
 
----
 
 ## 📤 JSON Response
 
@@ -43,7 +41,6 @@ Initiates a remote reset (reboot) of the specified DOCSIS cable modem via SNMP.
 }
 ```
 
----
 
 ## 📘 Response Field Details
 
@@ -54,7 +51,6 @@ Initiates a remote reset (reboot) of the specified DOCSIS cable modem via SNMP.
 | `message`     | string | Success or error message with IP/MAC detail     |
 | `data`        | null   | Reserved for future use or extended diagnostics |
 
----
 
 ## 📃 Notes
 

@@ -2,7 +2,6 @@
 
 The `Snmp_v2c` class offers an asynchronous, Python-friendly interface for SNMP v2c **GET**, **WALK**, and **SET** operations using `pysnmp`. It optionally supports MIB compilation for faster lookups, includes robust error handling, and provides common utility methods.
 
----
 
 ## Table of Contents
 
@@ -17,7 +16,6 @@ The `Snmp_v2c` class offers an asynchronous, Python-friendly interface for SNMP 
 5. [Closing the Client](#closing-the-client)
 6. [Error Handling](#error-handling)
 
----
 
 ## Initialization
 
@@ -34,7 +32,6 @@ from pypnm.snmp.snmp_module import Snmp_v2c
 snmp = Snmp_v2c(host=Inet("192.168.0.10"), community="public")
 ```
 
----
 
 ## Basic Operations
 
@@ -68,7 +65,6 @@ varbinds = await snmp.set(
 )
 ```
 
----
 
 ## MIB Compilation
 
@@ -84,7 +80,6 @@ oid = f"{COMPILED_OIDS['sysDescr']}.0"
 result = await snmp.get(oid)
 ```
 
----
 
 ## Utility Methods
 
@@ -95,7 +90,6 @@ result = await snmp.get(oid)
 * **`get_inet_address_type(ip)`** — Determine whether an address is IPv4 or IPv6.
 * **`parse_snmp_datetime(data)`** — Convert SNMP DateAndTime bytes into an ISO 8601 timestamp.
 
----
 
 ## Closing the Client
 
@@ -105,7 +99,6 @@ After completing SNMP operations, release resources:
 snmp.close()
 ```
 
----
 
 ## Error Handling
 
@@ -115,6 +108,5 @@ snmp.close()
 > **Tip:** Wrap SNMP calls in `try/except` blocks to gracefully handle unreachable hosts or authorization failures.
 > Remember to run within an `asyncio` event loop, as all methods are asynchronous.
 
----
 
 For comprehensive API details, refer to the [auto-generated documentation](doc/api/snmp/index.md).
