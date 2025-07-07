@@ -1,8 +1,5 @@
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
-
 # Auto-generated OID dictionary from snmptranslate -Tz
-# Do not modify manually. Generated on: 2025-07-07T03:50:35.789239
+# Do not modify manually. Generated on: 2025-07-07T04:02:52.915604
 
 COMPILED_OIDS = {
     "ACSPolicyIndex": "1.3.6.1.4.1.4526.3.1.2.9",
