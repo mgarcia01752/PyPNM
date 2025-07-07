@@ -14,8 +14,6 @@ data/
     └── <.bin files>                # Raw PNM captures retrieved via TFTP
 ```
 
----
-
 ## 1. Operation Database (`operation_capture.json`)
 
 Records each background **operation** and its connection to a capture group.
