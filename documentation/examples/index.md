@@ -12,13 +12,9 @@ examples/
 
 [FastAPI](endpoint-fetcher.md)
 
----
-
 ## 1. [FastAPI](endpoint-fetcher.md) 
 
 PyPNM FastAPI router:
-
----
 
 ## 2. PNM File Parsing Examples (`examples/pnm`)
 
@@ -42,8 +38,6 @@ Standalone Python scripts that load PNM binary files (from `examples/data/pnm`) 
 python cm-pnm-ds-ofdm-fec-summary.py examples/data/pnm/sample.pnm
 ```
 
----
-
 ## 3. Service Layer Examples (`examples/service`)
 
 Shows how to wrap low‐level PNM or SNMP calls into higher‐level service functions:
@@ -55,8 +49,6 @@ Shows how to wrap low‐level PNM or SNMP calls into higher‐level service func
   ```
 
 Each `cm-service-*.py` script invokes the corresponding `Service` class method and prints a Pydantic‐validated response.
-
----
 
 ## 4. SNMP Raw Examples (`examples/snmp`)
 
@@ -94,8 +86,6 @@ Demonstrates SNMP: GET, SET, WALK
 
   ./cm-get-sysDescr.py ${CLI}
   ```
-
----
 
 **Happy Testing!**
 These examples should help you get started quickly with parsing PNM files, invoking SNMP operations, and standing up the full FastAPI service. Let us know if you need more!
