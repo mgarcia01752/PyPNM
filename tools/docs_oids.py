@@ -1,11 +1,3 @@
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
-
-
-# snmptranslate -M mibs/ -m all -Tz
-#
-# TODO: Add a class to update any MIBS, example: tools/update_snmp_oid_dict.py
-#
 COMPILED_OIDS = {
     "member-body" : "1.2",
     "gb" : "1.2.826",

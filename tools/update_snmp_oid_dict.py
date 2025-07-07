@@ -28,7 +28,6 @@ def parse_snmptranslate_output(file_path: str) -> dict:
 
     return oid_dict
 
-
 def write_python_dict(oid_dict: dict, output_path: str):
     """
     Writes the OID dictionary to a Python file as a formatted constant.
