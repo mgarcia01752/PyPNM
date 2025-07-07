@@ -15,7 +15,7 @@ This reference serves as the **single-shot FastAPI REST API landing point** for 
 | [OFDM RxMER](./ds/ofdm/rxmer.md)                                 | Raw RxMER data, summary, and graphing          |
 | [OFDM Channel Stats](./ds/ofdm/stats.md)                         | OFDM channel stats: frequency, power, MER      |
 | [SC-QAM Downstream Stats](./ds/scqam/stats.md)                   | Downstream SC-QAM channel stats                |
-| [Histogram](./histogram.md)                                      | Downstream power-level histogram (not MER/SNR) |
+| [Histogram](./histogram.md)                                      | Downstream power-level histogram               |
 | [Spectrum Analyzer](./spectrum-analyzer.md)                      | Downstream sweep capture                       |
 
 #### 📶 Upstream (US) Operations
@@ -39,12 +39,11 @@ This reference serves as the **single-shot FastAPI REST API landing point** for 
 
 #### ⚙️ PyPNM System
 
-| Markdown                                   | Description                                      |
-| ------------------------------------------ | ------------------------------------------------ |
-| [System Configuration](./configuration.md) | Retrieve or update PyPNM SNMP settings           |
-| [System Log](../system/log.md)              | Download PyPNM backend log file                  |
+| Markdown                                                 | Description                                      |
+| -------------------------------------------------------- | ------------------------------------------------ |
+| [System Configuration](./configuration.md)               | Retrieve or update PyPNM SNMP settings           |
+| [System Log](../system/log.md)                           | Download PyPNM backend log file                  |
 | [File Operations](../file_manager/file-manager.md)       | Search, retrieve, and analyze uploaded PNM files |
-
 
 ### 📘 Overview
 
@@ -61,7 +60,6 @@ All endpoints use `POST` requests and accept JSON payloads containing a cable mo
 | `POST /pypnm/system/config/get | Retrieve current system configuration. |
 | `POST /pypnm/system/config/update | Update the system configuration. |
 
-
 ### 🖥️ System Information
 
 | Endpoint                | Description                                                                                                  |
@@ -69,16 +67,12 @@ All endpoints use `POST` requests and accept JSON payloads containing a cable mo
 | `POST /system/sysdescr` | Retrieves the system description (`sysDescr`) of the cable modem, indicating hardware/software details.     |
 | `POST /system/uptime`   | Retrieves the modem's uptime in seconds since the last reboot.                                               |
 
----
-
 ### 📄 Event Logs
 
 | Endpoint                  | Description                                                                                                               |
 |---------------------------|---------------------------------------------------------------------------------------------------------------------------|
 | `POST /docs/dev/eventLog` | Retrieves DOCSIS event logs, including critical errors (e.g., ranging failures, T3/T4 timeouts).                          |
 | `POST /docs/dev/reset`    | Sends a reset command to the cable modem.                                                                                 |
-
----
 
 ### 📶 Interface & Channel Statistics
 
@@ -185,28 +179,6 @@ Most endpoints follow this JSON structure:
 
 * `mac_address`: Accepts formats like `aabbccddeeff`, `aabb.ccdd.eeff`, or `aa:bb:cc:dd:ee:ff`.
 * `ip_address`: Supports both IPv4 and IPv6 addresses.
-
-### 📤 Common Response Format
-
-Most SNMP-derived responses follow this format:
-
-```json
-[
-  {
-    "index": 1,
-    "channel_id": 32,
-    "entry": {
-      "powerLevel": -1.5,
-      "modulation": "QAM256",
-      ...
-    }
-  }
-]
-```
-
-* `index`: SNMP table index (usually for interface/channel).
-* `channel_id`: Logical channel identifier.
-* `entry`: Key-value pairs from the SNMP MIB entry.
 
 ### 📚 DOCSIS MIB Support
 
