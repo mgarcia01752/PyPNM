@@ -48,8 +48,6 @@ All endpoints use `POST` requests and accept JSON payloads containing a cable mo
 | `POST /docs/if30/us/atdma/chan/stats`   | ATDMA upstream info: frequency, modulation, pre-equalization, power levels.                                    |
 | `POST /docs/if30/us/atdma/chan/preEqualization`   | ATDMA upstream info: frequency, modulation, pre-equalization, power levels.                                    |
 
----
-
 ### 🔧 PNM: General Diagnostics
 
 | Endpoint                                   | Description                                                                                                 |
@@ -65,17 +63,12 @@ All endpoints use `POST` requests and accept JSON payloads containing a cable mo
 | `POST /docs/pnm/us/ofdma/preEqualization`  | Gets upstream pre-equalization coefficients to assess plant impairments.                                    |
 | `POST /docs/pnm/lld/latencyReport`         | Retrieves Low Latency DOCSIS metrics like queue delay and flow behavior.                                    |
 
----
-
 ### 📊 PNM: RxMER Measurements
 
 | Endpoint                                      | Description                                                                                           |
 |-----------------------------------------------|-------------------------------------------------------------------------------------------------------|
 | `POST /docs/pnm/ds/ofdm/rxMer/getMeasurement` | Gets the latest RxMER snapshot per subcarrier.                                                        |
 | `POST /docs/pnm/ds/ofdm/rxMer/getAnalysis`    | Generates visual plots (e.g., heatmap, line graph) of RxMER data.                                    |
-| `POST /docs/pnm/ds/ofdm/rxMer/getFiles`       | Lists or retrieves saved RxMER files from storage (e.g., TFTP or local).                              |
-
----
 
 ### ⚙️ PNM: FEC Summary
 
@@ -83,17 +76,12 @@ All endpoints use `POST` requests and accept JSON payloads containing a cable mo
 |----------------------------------------------------|-----------------------------------------------------------------------------------------------|
 | `POST /docs/pnm/ds/ofdm/fecSummary/getMeasurment`  | Retrieves OFDM Forward Error Correction stats (corrected vs uncorrected codewords, profile).  |
 
----
-
 ### 📐 PNM: Channel Estimation
 
 | Endpoint                                                       | Description                                                                                       |
 |----------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
 | `POST /docs/pnm/ds/ofdm/channelEstCoeff/getMeasurement`        | Fetch raw channel estimation coefficient data.                                                    |
 | `POST /docs/pnm/ds/ofdm/channelEstCoeff/getAnalysis`           | Analyze channel distortion metrics (e.g., group delay, frequency response).                      |
-| `POST /docs/pnm/ds/ofdm/channelEstCoeff/getFiles`              | Download associated measurement files for offline inspection.                                     |
-
----
 
 ### 🛰️ PNM: Constellation Display
 
@@ -101,9 +89,6 @@ All endpoints use `POST` requests and accept JSON payloads containing a cable mo
 |------------------------------------------------------|-----------------------------------------------------------------------------|
 | `POST /docs/pnm/ds/ofdm/constDisplay/getMeasurement` | Capture raw constellation symbols from cable modem.                         |
 | `POST /docs/pnm/ds/ofdm/constDisplay/getAnalysis`    | Generate plots and detect modulation anomalies or impairments.              |
-| `POST /docs/pnm/ds/ofdm/constDisplay/getFiles`       | Retrieve saved constellation result files.                                  |
-
----
 
 ### 📡 PNM: Upstream Pre-Equalization
 
@@ -111,7 +96,6 @@ All endpoints use `POST` requests and accept JSON payloads containing a cable mo
 |-------------------------------------------------------------------------|------------------------------------------------------------------------------|
 | `POST /docs/pnm/us/ofdma/preEqualization/getMeasurement`               | Gets complex tap coefficients from upstream channel.                         |
 | `POST /docs/pnm/us/ofdma/preEqualization/getAnalysis`                  | Derives metrics like magnitude, phase, and group delay from raw taps.        |
-| `POST /docs/pnm/us/ofdma/preEqualization/getFiles`                     | Lists/downloads pre-equalization data files.                                 |
 
 ## PNM Advance Operation and Analysis
 
@@ -122,20 +106,14 @@ All endpoints use `POST` requests and accept JSON payloads containing a cable mo
 | GET    | `/advance/multiRxMer/results/{op_id}`    | Retrieve all timestamped transaction IDs & files | path param `operation_id` | `MultiRxMerResultsResponse`  |
 | POST   | `/advance/multiRxMer/stop/{op_id}`       | Signal capture to stop after current iteration   | path param `operation_id` | `MultiRxMerStatusResponse`   |
 
-
----
-
 ### 📁 PNM: File Management
 
 | Endpoint                          | Description                                                                                   |
 |-----------------------------------|-----------------------------------------------------------------------------------------------|
-| `POST /docs/pnm/files`            | Main endpoint for uploading or initiating retrieval of PNM files.                             |
 | `POST /docs/pnm/files/searchFiles`   | |
 | `POST /docs/pnm/files/getFiles`   | Lists all available PNM files by MAC address or filtering criteria.                           |
 | `POST /docs/pnm/files/pushFile`   | Uploads a new PNM measurement file to the system.                                             |
 | `POST /docs/pnm/files/getAnalysis`| Produces a visual output (e.g., spectrum or RxMER graph) from a selected PNM file.            |
-
----
 
 ### 🔁 Common Request Format
 
@@ -164,8 +142,6 @@ Most endpoints follow this JSON structure:
 * `mac_address`: Accepts formats like `aabbccddeeff`, `aabb.ccdd.eeff`, or `aa:bb:cc:dd:ee:ff`.
 * `ip_address`: Supports both IPv4 and IPv6 addresses.
 
----
-
 ### 📤 Common Response Format
 
 Most SNMP-derived responses follow this format:
@@ -187,8 +163,6 @@ Most SNMP-derived responses follow this format:
 * `index`: SNMP table index (usually for interface/channel).
 * `channel_id`: Logical channel identifier.
 * `entry`: Key-value pairs from the SNMP MIB entry.
-
----
 
 ### 📚 DOCSIS MIB Support
 
