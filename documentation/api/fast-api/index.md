@@ -6,26 +6,12 @@ This section provides general documentation and link stubs for the core FastAPI 
 
 ## Getting Started with FastAPI
 
-1. **Install dependencies**
-   Ensure you have `fastapi` and `uvicorn` installed in your environment:
-
-   ```bash
-   pip install fastapi uvicorn
-   ```
-
-2. **Launch the server**
-   Run Uvicorn to serve the API on port 8000 (default):
-
-   ```bash
-   uvicorn pypnm.main:app --reload  
-   ```
-
-3. **Explore interactive docs**
+1. **Explore interactive docs**
 
    * **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
    * **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
-4. **Official references**
+2. **Official references**
 
    * FastAPI documentation: [https://fastapi.tiangolo.com](https://fastapi.tiangolo.com)
    * Uvicorn server docs: [https://www.uvicorn.org/](https://www.uvicorn.org/)
@@ -44,19 +30,11 @@ You can use any HTTP client to interact with the API. Examples:
        -d @request.json
   ```
 
-* **HTTPie** (simplified syntax):
-
-  ```bash
-  http POST localhost:8000/advance/multiRxMer/start < request.json
-  ```
-
 * **Postman**:
   Import the `postman_collection.json` provided in the repo root for pre-configured endpoints.
 
 * **Swagger UI**:
   Use the interactive forms to explore request schemas and execute operations directly from the browser.
-
----
 
 ## Single-Capture
 
