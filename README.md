@@ -100,11 +100,9 @@ pypnm
 
 Access in-depth guides, workflows, and examples:
 
-[📖 Master Index](documentation/master-index.md)
-
-[🧠 Python API Reference](documentation/api/python/index.md)
-
-[⚙️  Example Scripts](documentation/examples/index.md)
+- [📖 Master Index](documentation/master-index.md)
+- [🧠 Python API Reference](documentation/api/python/index.md)
+- [⚙️  Example Scripts](documentation/examples/index.md)
 
 ## 📦 Supported Standards & Specs
 
