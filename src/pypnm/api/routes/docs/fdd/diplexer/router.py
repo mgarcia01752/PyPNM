@@ -45,15 +45,17 @@ class FddDiplexerBandEdgeCapability:
             response_model=Union[List[PnmChannelEntryResponse], SnmpResponse])
         async def get_scqam_channels(request: PnmRequest):
             """
-            Retrieve FDD diplexer band edge capability entries from the cable modem.
+            **DOCSIS 4.0 FDD Diplexer Band Edge Capabilities**
 
-            Performs:
-            - Precheck validation (MAC/IP reachability and SNMP readiness)
-            - Capability data retrieval
-            - Return as a list of channel entry-style dictionaries
+            Queries the cable modem to retrieve all supported diplexer band edge configurations 
+            for upstream and downstream paths. These capabilities are advertised via TLVs 5.82, 
+            5.83, and 5.84 during CM registration and reflect the modem's spectrum planning capabilities.
 
-            Returns:
-                JSONResponse: Either populated capability data or an error response with status.
+            - Upstream Upper Band Edge Capability (TLV 5.84)
+            - Downstream Lower Band Edge Capability (TLV 5.82)
+            - Downstream Upper Band Edge Capability (TLV 5.83)
+
+            [API Reference](https://github.com/mgarcia01752/PyPNM/tree/main/documentation/api/fast-api/single/fdd-diplexer-band-edge-cap.md)
             """
             # Ensure modem is reachable and SNMP is operational
             status, msg = await CableModemServicePreCheck(
@@ -66,18 +68,16 @@ class FddDiplexerBandEdgeCapability:
                 return SnmpResponse(
                     mac_address=str(request.mac_address),
                     status=status,
-                    message=msg
-                )
+                    message=msg)
 
             # Fetch capability data from the cable modem
             service = FddDiplexerBandEdgeCapabilityService(
                 mac_address=request.mac_address,
                 ip_address=request.ip_address
             )
-            data = await service.getFddDiplexerBandEdgeCapability()
+            data = await service.getFddDiplexerBandEdgeCapabilityEntries()
 
             return JSONResponse(content=data)
-
 
 # ✅ Required for dynamic auto-registration
 router = FddDiplexerBandEdgeCapability().router
