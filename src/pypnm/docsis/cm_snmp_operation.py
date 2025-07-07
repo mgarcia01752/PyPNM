@@ -9,6 +9,7 @@ from pysnmp.proto.rfc1902 import (OctetString, Counter32, Bits,
                                   Counter64, Gauge32, Integer, 
                                   Integer32, IpAddress)
 from pypnm.docsis.data_type.DocsDevEventEntry import DocsDevEventEntry
+from pypnm.docsis.data_type.DocsFddCmFddSystemCfgState import DocsFddCmFddSystemCfgState
 from pypnm.docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanEntry
 from pypnm.docsis.data_type.DocsIf31CmDsOfdmProfileStatsEntry import DocsIf31CmDsOfdmProfileStatsEntry
 from pypnm.docsis.data_type.DocsIf31CmSystemCfgState import DocsIf31CmSystemCfgDiplexState
@@ -1168,6 +1169,41 @@ class CmSnmpOperation:
         # not found
         self.logger.warning(f"Filename '{filename}' not found in BulkDataFile table.")
         return DocsPnmBulkFileUploadStatus.ERROR
+
+    async def getDocsFddCmFddSystemCfgState(self, index: int = 0) -> Optional[DocsFddCmFddSystemCfgState | None]:
+        """
+        Retrieves the FDD band edge configuration state for a specific cable modem index.
+
+        This queries the DOCSIS 4.0 MIB values for:
+        - Downstream Lower Band Edge
+        - Downstream Upper Band Edge
+        - Upstream Upper Band Edge
+
+        Args:
+            index (int): SNMP index of the CM to query (default: 0).
+
+        Returns:
+            DocsFddCmFddSystemCfgState | None: Populated object if successful, or None on failure.
+        """
+        oid = COMPILED_OIDS.get("docsFddCmFddSystemCfgState")
+        if not oid:
+            self.logger.error("OID 'docsFddCmFddSystemCfgState' not found in COMPILED_OIDS")
+            return None
+
+        results = await self._snmp.walk(oid)
+        if not results:
+            self.logger.warning(f"No results found during SNMP walk for OID {oid}")
+            return None
+
+        obj = DocsFddCmFddSystemCfgState(index, self._snmp)
+        success = await obj.start()
+        
+        if not success:
+            self.logger.warning(f"SNMP population failed for DocsFddCmFddSystemCfgState (index={index})")
+            return None
+
+        return obj
+
  
 ######################
 # SNMP Set Operation #
