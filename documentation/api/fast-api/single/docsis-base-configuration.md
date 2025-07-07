@@ -91,10 +91,3 @@ Returns the DOCSIS version supported by the device.
   }
 }
 ```
-
-## 📂 Reference
-
-* `docsIf31DocsisBaseCapability` (OID: `{ docsIf31MibObjects 1 }`)
-* CM-SP-CM-OSSIv3.1
-* CM-SP-MULPIv4.0-I08
-* RFC-4546
