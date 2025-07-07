@@ -31,7 +31,7 @@ class FddDiplexerBandEdgeCapabilityService:
         """
         self.cm = CableModem(mac_address=MacAddress(mac_address), inet=Inet(ip_address))
 
-    async def getFddDiplexerBandEdgeCapability(self) -> List[Dict]:
+    async def getFddDiplexerBandEdgeCapabilityEntries(self) -> List[Dict]:
         """
         Retrieve and populate the FDD diplexer band edge capabilities from the modem.
 
@@ -47,10 +47,10 @@ class FddDiplexerBandEdgeCapabilityService:
         fdd_band_edge_list: List[DocsFddCmFddBandEdgeCapabilities] = \
             await self.cm.getDocsFddCmFddBandEdgeCapabilities(create_and_start=False)
 
-        result: List[Dict] = []
+        entries: List[Dict] = []
 
         for fdd_band_edge in fdd_band_edge_list:
             if await fdd_band_edge.start():
-                result.append(fdd_band_edge.to_dict())
+                entries.append(fdd_band_edge.to_dict())
 
-        return result
+        return entries

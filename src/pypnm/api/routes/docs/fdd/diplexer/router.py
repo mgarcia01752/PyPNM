@@ -42,8 +42,7 @@ class FddDiplexerBandEdgeCapability:
 
         @self.router.post(
             "/bandEdgeCapability",
-            response_model=Union[List[PnmChannelEntryResponse], SnmpResponse]
-        )
+            response_model=Union[List[PnmChannelEntryResponse], SnmpResponse])
         async def get_scqam_channels(request: PnmRequest):
             """
             Retrieve FDD diplexer band edge capability entries from the cable modem.
