@@ -2,9 +2,7 @@
 
 This enum defines status codes used by PNM service classes to indicate the result of operations such as SNMP reachability, RxMER capture, and TFTP interactions.
 
-> 📁 **Location**: `api/routes/status_codes/codes.py`
-
----
+> 📁 [Status Codes](../../../../src/pypnm/api/routes/common/service/status_codes.py)
 
 ## ✅ Success Codes
 
@@ -12,9 +10,7 @@ This enum defines status codes used by PNM service classes to indicate the resul
 |---------------------|--------|--------------------------------------------------|
 | `SUCCESS`           | `0`    | Operation completed successfully.                |
 
----
-
-## ❌ General Error Codes
+## ❌ General Error Codes, but limited to the following
 
 | Name                          | Value | Description                                                  |
 |-------------------------------|--------|--------------------------------------------------------------|
@@ -29,11 +25,3 @@ This enum defines status codes used by PNM service classes to indicate the resul
 | `TFTP_SERVER_PATH_SET_FAIL`| `9`    | Unable to set the TFTP server address or path on the modem. |
 | `NOT_REACY_AFTER_FILE_CAPTURE` | `10` | Modem did not enter READY state after RxMER capture.        |
 
----
-
-## 📊 RxMER Status Code Block
-
-Future RxMER-specific error codes should begin at `100` and follow a structured range up to `199`.
-
-```python
-# RXMER STATUS CODE START (100-199)

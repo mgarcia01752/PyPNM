@@ -16,7 +16,6 @@
 
 **PyPNM** is a modular, Python-based toolkit for parsing, analyzing, and visualizing DOCSIS 3.x/4.0 Proactive Network Maintenance (PNM) telemetry. It is designed to support engineers and developers with real-time and offline diagnostic capabilities via both a programmatic API and an interactive web interface.
 
-
 ## 🧰 Key Features
 
 - **Structured SNMP Integration** — Poll DOCSIS modems for live telemetry (RxMER, modulation profiles, spectrum, equalization)
