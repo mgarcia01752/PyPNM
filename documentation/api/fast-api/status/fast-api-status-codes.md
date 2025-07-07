@@ -2,9 +2,7 @@
 
 This enum defines status codes used by PNM service classes to indicate the result of operations such as SNMP reachability, RxMER capture, and TFTP interactions.
 
-> 📁 [Status Codes](../../../../src/pypnm/api/routes/common/service/status_codes.py)
-
-## ✅ Success Codes
+## [Success Codes](../../../../src/pypnm/api/routes/common/service/status_codes.py)
 
 | Name                | Value | Description                                      |
 |---------------------|--------|--------------------------------------------------|
