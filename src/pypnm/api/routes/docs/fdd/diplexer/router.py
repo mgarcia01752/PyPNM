@@ -12,7 +12,6 @@ from pypnm.api.routes.common.classes.operation.cable_modem_precheck import Cable
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.fdd.diplexer.service import FddDiplexerBandEdgeCapabilityService
 
-
 class FddDiplexerBandEdgeCapability:
     """
     FastAPI router class for exposing DOCSIS 4.0 FDD diplexer band edge capability via a REST endpoint.
@@ -41,9 +40,8 @@ class FddDiplexerBandEdgeCapability:
         """
 
         @self.router.post(
-            "/bandEdgeCapability",
-            response_model=Union[List[PnmChannelEntryResponse], SnmpResponse])
-        async def get_scqam_channels(request: PnmRequest):
+            "/bandEdgeCapability", response_model=SnmpResponse)
+        async def get_band_edge_cap(request: PnmRequest):
             """
             **DOCSIS 4.0 FDD Diplexer Band Edge Capabilities**
 

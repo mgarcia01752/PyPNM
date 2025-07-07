@@ -26,7 +26,7 @@ class DiplexerConfigResult:
         @self.router.post("/diplexer", response_model=Union[DiplexerResponse, SnmpResponse])
         async def diplexer_config(request: PnmRequest) -> Union[DiplexerResponse, SnmpResponse]:
             """
-            **Retrieve DOCSIS 3.1 System Diplexer Configuration**
+            **DOCSIS 3.1 System Diplexer Configuration**
 
             Queries the modem for upstream/downstream diplexer frequency band configurations
             and hardware capability settings.
