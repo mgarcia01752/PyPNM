@@ -2,8 +2,6 @@
 
 This guide outlines the theory and workflow for measuring DOCSIS 3.1 OFDM channel performance, quantifying capacity margins, and correlating them with error‑correction events.
 
----
-
 ## Mathematical Foundations
 
 ### 1. Shannon Capacity Limit
@@ -17,7 +15,7 @@ $$
 with
 
 $$
-\mathrm{SNR}_{\mathrm{lin}} = 10^{\mathrm{SNR}_{\mathrm{dB}} / 10}.
+mathrm{SNR}_{\mathrm{lin}} = 10^{\mathrm{SNR}_{\mathrm{dB}} / 10}.
 $$
 
 ### 2. MER‑Derived Capacity
@@ -60,8 +58,6 @@ $$
 
 where $j$ indexes FEC counters (corrected, uncorrectable, etc.).
 
----
-
 ## High-Level Workflow
 
 1. **Compute MER Capacity**
@@ -90,8 +86,6 @@ where $j$ indexes FEC counters (corrected, uncorrectable, etc.).
    * Average MER and $C_{\mathrm{MER}}$
    * Total FEC counts
    * Time‑series of $\Delta C$ for each profile
-
----
 
 ## Outcome
 
