@@ -2,7 +2,7 @@
 
 This directory contains expert-level tutorials and diagnostics guides for analyzing DOCSIS telemetry using PyPNM. Each document focuses on a specific signal processing concept or metric used in proactive network maintenance.
 
-| Guide Title | Description |
+| Title | Description |
 |------------|-------------|
 | [Group Delay Estimation](group-delay-calculator.md) | Compute the group delay of OFDM channels to assess timing alignment and echo dispersion. |
 | [Heatmap Anomaly Detection](heatmap-anonomies.md) | Generate frequency-based heatmaps to visualize and detect performance anomalies over time. |
