@@ -28,9 +28,4 @@ htmlcov/
 # PyPNM 
 .data/
 data/
-mibs
 output/*
-
-# So not to change generic settings
-system.json
-
