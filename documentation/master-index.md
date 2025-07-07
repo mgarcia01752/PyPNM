@@ -2,8 +2,6 @@
 
 Welcome to the PyPNM documentation. Use this master index to navigate through all guides, API references, examples, tools, and system documentation.
 
----
-
 ## 📚 API Reference
 
 ### FastAPI Reference
@@ -60,27 +58,19 @@ Welcome to the PyPNM documentation. Use this master index to navigate through al
   * [SNMPv2c](api/python/snmp/snmp-v2c.md)
   * [System Config](api/python/system_config/system_config.md)
 
----
-
 ## 💾 DOCSIS Background
 
 * [DOCSIS Overview](docsis/index.md)
 
----
-
 ## 🛠 Examples
 
 * [Example Scripts](examples/index.md)
-
----
 
 ## ⚙️ System & Setup
 
 * [Generate SSL Certificates](system/generate-ssl-certificates.md)
 * [System Configuration](system/system_config.md)
 * [PNM File Transfer Methods](system/file-transfer-methods.md)
-
----
 
 ## 🧰 Tools
 
