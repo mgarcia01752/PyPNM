@@ -14,7 +14,7 @@ Retrieves statistics per modulation profile for each DOCSIS 3.1 downstream OFDM 
 
 This data is useful for evaluating traffic utilization, identifying profile transitions, and monitoring FEC correction rates per modulation profile.
 
-## 📥 Request Body (JSON)
+## 📅 Request Body (JSON)
 
 ```json
 {
@@ -38,11 +38,11 @@ This data is useful for evaluating traffic utilization, identifying profile tran
 
 ### 🔑 Request Fields
 
-| Field        | Type   | Description                                 |
-| ------------ | ------ | ------------------------------------------- |
-| mac\_address | string | MAC address of the cable modem              |
-| ip\_address  | string | IP address of the cable modem               |
-| snmp         | object | SNMPv2c or SNMPv3 configuration credentials |
+| Field       | Data Type | Description                                 |
+|-------------|-----------|---------------------------------------------|
+| mac_address | string    | MAC address of the cable modem              |
+| ip_address  | string    | IP address of the cable modem               |
+| snmp        | object    | SNMPv2c or SNMPv3 configuration credentials |
 
 
 ## 📤 Response Format (Abbreviated Example)
@@ -68,17 +68,17 @@ This data is useful for evaluating traffic utilization, identifying profile tran
 
 ### 📊 Per-Profile Stats (Each profile: 0–4, 255)
 
-| Field                                                | Type | Description                           |
-| ---------------------------------------------------- | ---- | ------------------------------------- |
-| `docsIf31CmDsOfdmProfileStatsTotalCodewords`         | int  | Total number of codewords received    |
-| `docsIf31CmDsOfdmProfileStatsCorrectedCodewords`     | int  | Codewords corrected via FEC           |
-| `docsIf31CmDsOfdmProfileStatsUncorrectableCodewords` | int  | Codewords that could not be corrected |
-| `docsIf31CmDsOfdmProfileStatsInOctets`               | int  | Total bytes received for this profile |
-| `docsIf31CmDsOfdmProfileStatsInUnicastOctets`        | int  | Bytes from unicast sources            |
-| `docsIf31CmDsOfdmProfileStatsInMulticastOctets`      | int  | Bytes from multicast sources          |
-| `docsIf31CmDsOfdmProfileStatsInFrames`               | int  | Number of data frames received        |
-| `docsIf31CmDsOfdmProfileStatsInUnicastFrames`        | int  | Count of unicast frames               |
-| `docsIf31CmDsOfdmProfileStatsInMulticastFrames`      | int  | Count of multicast frames             |
-| `docsIf31CmDsOfdmProfileStatsInFrameCrcFailures`     | int  | Number of CRC-failed frames           |
-| `docsIf31CmDsOfdmProfileStatsConfigChangeCt`         | int  | Configuration change counter          |
-| `docsIf31CmDsOfdmProfileStatsCtrDiscontinuityTime`   | int  | Counter discontinuity indicator       |
+| Field                                               | Data Type | Description                           |
+|----------------------------------------------------|-----------|---------------------------------------|
+| docsIf31CmDsOfdmProfileStatsTotalCodewords         | int       | Total number of codewords received    |
+| docsIf31CmDsOfdmProfileStatsCorrectedCodewords     | int       | Codewords corrected via FEC           |
+| docsIf31CmDsOfdmProfileStatsUncorrectableCodewords | int       | Codewords that could not be corrected |
+| docsIf31CmDsOfdmProfileStatsInOctets               | int       | Total bytes received for this profile |
+| docsIf31CmDsOfdmProfileStatsInUnicastOctets        | int       | Bytes from unicast sources            |
+| docsIf31CmDsOfdmProfileStatsInMulticastOctets      | int       | Bytes from multicast sources          |
+| docsIf31CmDsOfdmProfileStatsInFrames               | int       | Number of data frames received        |
+| docsIf31CmDsOfdmProfileStatsInUnicastFrames        | int       | Count of unicast frames               |
+| docsIf31CmDsOfdmProfileStatsInMulticastFrames      | int       | Count of multicast frames             |
+| docsIf31CmDsOfdmProfileStatsInFrameCrcFailures     | int       | Number of CRC-failed frames           |
+| docsIf31CmDsOfdmProfileStatsConfigChangeCt         | int       | Configuration change counter          |
+| docsIf31CmDsOfdmProfileStatsCtrDiscontinuityTime   | int       | Counter discontinuity indicator       |
