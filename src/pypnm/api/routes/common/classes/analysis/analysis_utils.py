@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 import logging
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.lib.mac_address import MacAddress
