@@ -10,8 +10,6 @@ examples/
 └── snmp              # Low‐level SNMP get / walk and bulk‐set examples
 ```
 
-[FastAPI](endpoint-fetcher.md)
-
 ## 1. [FastAPI](endpoint-fetcher.md) 
 
 PyPNM FastAPI router:
