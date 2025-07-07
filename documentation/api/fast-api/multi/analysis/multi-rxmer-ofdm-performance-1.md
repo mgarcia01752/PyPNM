@@ -12,7 +12,9 @@ $$
 C = \log_{2}\bigl(1 + \mathrm{SNR}_{\mathrm{lin}}\bigr),
 $$
 
-$$\mathrm{SNR}_{\mathrm{lin}} = 10^{\mathrm{SNR}_{\mathrm{dB}} / 10}$$
+$$
+\mathrm{SNR}_{\mathrm{lin}} = 10^{\mathrm{SNR}_{\mathrm{dB}} / 10}
+$$
 
 ### 2. MER‑Derived Capacity
 
