@@ -75,17 +75,27 @@ Make sure `snmptranslate` is in your `PATH`:
 which snmptranslate
 ```
 
-### 3. Download Latest CableLabs MIBs
+### 3. curl (for MIB retrieval)
+
+The MIB fetch process uses `curl` and `grep`. Install if needed:
+
+```bash
+sudo apt install -y curl
+```
+
+### 4. Download Latest CableLabs MIBs
 
 To populate the `mibs/` directory with the latest DOCSIS MIBs from CableLabs **without traversing subdirectories like archive/**:
 
 ```bash
-wget -np -nH --cut-dirs=3 -R index.html* -l 1 \
-  https://mibs.cablelabs.com/MIBs/DOCSIS/ \
-  -P mibs/
+curl -s https://mibs.cablelabs.com/MIBs/DOCSIS/ | \
+  grep -oP '(?<=href=")[^"/]+\.(my|txt)(?=")' | \
+  while read file; do
+    wget -nc "https://mibs.cablelabs.com/MIBs/DOCSIS/$file" -P mibs/
+  done
 ```
 
-> This limits the depth to the top-level DOCSIS MIBs directory, avoiding historical or archived content.
+> This limits downloads to only top-level `.my` and `.txt` MIB files, avoiding archive folders.
 
 ## 📝 Output Format
 
