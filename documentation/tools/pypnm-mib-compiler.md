@@ -77,15 +77,15 @@ which snmptranslate
 
 ### 3. Download Latest CableLabs MIBs
 
-To populate the `mibs/` directory with the latest DOCSIS MIBs from CableLabs:
+To populate the `mibs/` directory with the latest DOCSIS MIBs from CableLabs **without traversing subdirectories like archive/**:
 
 ```bash
-wget -r -np -nH --cut-dirs=3 -R index.html* \
+wget -np -nH --cut-dirs=3 -R index.html* -l 1 \
   https://mibs.cablelabs.com/MIBs/DOCSIS/ \
   -P mibs/
 ```
 
-> This fetches all available DOCSIS-related MIBs directly into your existing `mibs/` directory.
+> This limits the depth to the top-level DOCSIS MIBs directory, avoiding historical or archived content.
 
 ## 📝 Output Format
 
