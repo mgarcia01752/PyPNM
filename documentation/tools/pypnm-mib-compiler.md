@@ -14,7 +14,6 @@ This file is automatically overwritten and includes a UTC timestamp indicating w
 
 ⚡ **Why this matters**: Pre-compiling OIDs dramatically reduces SNMP lookup overhead and avoids dynamic MIB parsing at runtime with PySNMP. This speeds up application startup and ensures stability in production environments.
 
-
 ## 🔧 How It Works
 
 The script:
@@ -78,15 +77,15 @@ which snmptranslate
 
 ### 3. Download Latest CableLabs MIBs
 
-To populate the `mibs/` directory with the latest CableLabs MIBs:
+To populate the `mibs/` directory with the latest DOCSIS MIBs from CableLabs:
 
 ```bash
-mkdir -p mibs
-wget -r -np -nH --cut-dirs=3 -R index.html \
-  https://www.cablelabs.com/wp-content/uploads/mibs/current/ -P mibs/
+wget -r -np -nH --cut-dirs=3 -R index.html* \
+  https://mibs.cablelabs.com/MIBs/DOCSIS/ \
+  -P mibs/
 ```
 
-> This pulls the latest published MIBs into your local `mibs/` directory for compilation.
+> This fetches all available DOCSIS-related MIBs directly into your existing `mibs/` directory.
 
 ## 📝 Output Format
 
