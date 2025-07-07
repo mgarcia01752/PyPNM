@@ -34,6 +34,13 @@ class PnmFileManager:
                          summary="Search for PNM Files via mac address")
         def search_files(mac_address: str = Path(..., description=f"MAC address of the cable modem, default: **{default_mac_address}**")):
             """
+            **Search Uploaded PNM Files by MAC Address**
+
+            Returns all registered telemetry capture files associated with a given DOCSIS cable modem.
+
+            Each file represents a measurement such as RxMER, constellation, pre-equalization taps, or spectrum scan, and can be downloaded or analyzed via other endpoints.
+
+            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/file_manager/file-manager.md#-search-uploaded-files)
             """
             request = FileQueryRequest(mac_address=mac_address)
             result = PnmFileService().search_files(request)
@@ -44,15 +51,21 @@ class PnmFileManager:
                          summary="Download a PNM file by transaction ID")
         def download_file(transaction_id: str = Path(..., description="Transaction ID of the file")):
             """
-            Downloads the original binary file associated with a given transaction ID.
+            **Download PNM Measurement File by Transaction ID**
+
+            Retrieves the raw binary file generated during a telemetry capture session.
+            Used for offline inspection, reprocessing, or historical archiving.
+
+            > ⚠️ Note:  
+            > If using SwaggerUI, the file may either download automatically or require clicking the download link in your browser.
+
+            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/file_manager/file-manager.md#-download-file-by-transaction)
             """
             return PnmFileService().get_file_by_transaction_id(transaction_id)
 
         @self.router.post("/upload", response_model=PushFileResponse, summary="Upload a PNM File")
         def push_file(request: PushFileRequest):
             """
-            Accepts a file from the user and stores it in the PyPNM file system.
-            Registers the file for future analysis or lookup.
             """
             result = PnmFileService().push_file(request)
             return JSONResponse(content=result.model_dump())
@@ -60,8 +73,18 @@ class PnmFileManager:
         @self.router.post("/getAnalysis", response_model=AnalysisResponse, summary="Analyze a PNM File")
         def get_analysis(request: FileAnalysisRequest):
             """
-            Analyzes the provided file and returns structured results
-            such as plots, summaries, or decoded telemetry.
+            **Trigger Automated Analysis of a PNM File**
+
+            Launches an analysis routine based on the specified file and test type.
+            Automatically selects the correct processor depending on file contents.
+
+            Supports analysis types such as:
+            - RxMER per subcarrier
+            - Channel estimation
+            - Pre-equalization taps
+            - Spectrum snapshots
+
+            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/file_manager/file-manager.md#-trigger-file-analysis)
             """
             result = PnmFileService().get_analysis(request)
             return JSONResponse(content=result.model_dump())
