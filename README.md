@@ -9,28 +9,23 @@
   </a>
 </p>
 
-# PyPNM (pre-alpha) — DOCSIS 3.1/4.0 Proactive Network Maintenance Toolkit
+# PyPNM (pre-alpha) — DOCSIS 3.x/4.0 Proactive Network Maintenance Toolkit
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 ![Pre-Release](https://img.shields.io/badge/release-pre--alpha-lightgrey)
 
-**PyPNM** is a modular, Python-based toolkit for parsing, analyzing, and visualizing DOCSIS 3.0/3.1 Proactive Network Maintenance (PNM) telemetry. It provides:
+**PyPNM** is a modular, Python-based toolkit for parsing, analyzing, and visualizing DOCSIS 3.x/4.0 Proactive Network Maintenance (PNM) telemetry. It is designed to support engineers and developers with real-time and offline diagnostic capabilities via both a programmatic API and an interactive web interface.
 
-* **Structured SNMP integration** for real-time cable modem telemetry (RxMER, spectrum, equalization, modulation profiles, FEC, etc.)
-* **Binary capture parsing** via TFTP/SNMP–triggered files (OFDM symbols, histograms, latency traces)
-* **FastAPI REST service** delivering clean JSON for integration into dashboards and automation
-* **Extensible architecture** for adding new measurement types and custom analytics
 
-## 🛠 Key Features
+## 🧰 Key Features
 
-* **PyPNM API**: programmatic access to core parsing, aggregation, and analysis routines
-* **SNMP v2c Support**: Telemetry acquisition via SNMP v2c
-* **OFDM Diagnostics**: RxMER, FEC summary, spectrum analysis, channel estimation, constellation display, modulation profiles
-* **Upstream Support**: ATDMA & TDMA pre-equalization tap analysis, latency reporting
-* **Error-Correction Insights**: Aggregate FEC counters over time 
-* **Capacity Margin Calculations**: OFDM Shannon-based bit-per-subcarrier limits and deltas
-* **RESTful API**: Auto-generated OpenAPI, Swagger UI, Postman collection
-* **Command-Line Examples**: Standalone analysis scripts and batch processing utilities
+- **Structured SNMP Integration** — Poll DOCSIS modems for live telemetry (RxMER, modulation profiles, spectrum, equalization)
+- **Binary File Decoding** — Retrieve and parse modem-generated TFTP or SNMP-triggered binary capture files
+- **FastAPI REST Interface** — Clean JSON API output for dashboards, automation, and analytics pipelines
+- **OFDM & Upstream Tools** — Includes support for channel estimation, FEC analysis, tap delay visualization, and more
+- **Built-in Calculators** — Shannon capacity, delta margin, signal statistics
+- **Extensible Analysis Framework** — Easily plug in new capture types and algorithms
+- **CLI Utilities** — Command-line tools for scripting and automation workflows
 
 ## Prerequisites
 
@@ -102,16 +97,13 @@ pypnm
 
 > ⚠️ Tip: Use Postman for complex or large JSON payloads—Swagger UI can struggle with deeply nested schemas.
 
-## [PyPNM Documentation](documentation/master-index.md)
+## 📚 Full Documentation
 
-PyPNM Documentation to navigate through all guides, API references, examples, and system docs.
+Access in-depth guides, workflows, and examples:
 
-## PyPNM API
-
-Integrate PNM telemetry end-to-end in your own Python scripts:
-
-* **Full Reference**: [PyPNM API Reference →](documentation/api/python/index.md)
-* **Hands-On Examples**: [Example Scripts →](documentation/examples/index.md)
+- [📖 Master Index](documentation/master-index.md)
+- [🧠 Python API Reference](documentation/api/python/index.md)
+- [⚙️  Example Scripts](documentation/examples/index.md)
 
 ## 📦 Supported Standards & Specs
 
