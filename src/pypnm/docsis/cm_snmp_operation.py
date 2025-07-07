@@ -1168,9 +1168,7 @@ class CmSnmpOperation:
         # not found
         self.logger.warning(f"Filename '{filename}' not found in BulkDataFile table.")
         return DocsPnmBulkFileUploadStatus.ERROR
-
-
-    
+ 
 ######################
 # SNMP Set Operation #
 ######################
