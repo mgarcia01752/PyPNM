@@ -13,15 +13,7 @@ Welcome to the PyPNM documentation. Use this master index to navigate through al
 
 #### • Multi-Snapshot Analysis
 - [Overview](api/fast-api/multi/index.md)
-- **Analysis**
-  - [Group Delay Calculator](api/fast-api/multi/analysis/group-delay-calculator.md)
-  - [Heatmap Anomalies](api/fast-api/multi/analysis/heatmap-anonomies.md)
-  - [OFDM Performance 1:1](api/fast-api/multi/analysis/multi-rxmer-ofdm-performance-1-1.md)
-  - [OFDM Echo Detection](api/fast-api/multi/analysis/ofdm-echo-detection.md)
-  - [Phase Slope LTE Detection](api/fast-api/multi/analysis/phase-slope-lte-detection.md)
-  - [Phase Slope (Legacy)](api/fast-api/multi/analysis/phase-slope-lete-detection-2.md)
-  - [Phase Slope (General)](api/fast-api/multi/analysis/phase-slope.md)
-  - [Signal Statistics](api/fast-api/multi/analysis/signal-statistics.md)
+
 - [Capture Operation](api/fast-api/multi/capture-operation.md)
 - [Multi-Capture Channel Estimation](api/fast-api/multi/multi-capture-chan-est.md)
 - [Multi-Capture RxMER](api/fast-api/multi/multi-capture-rxmer.md)
