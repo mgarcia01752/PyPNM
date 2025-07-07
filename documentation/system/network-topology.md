@@ -118,16 +118,3 @@ A central PyPNM server (hub) manages remote CMs at various sites (spokes) and fe
 |-------------------|---------------|--------------------------|---------------------------|---------------------------------------------|
 | **Standalone**    | PyPNM → CM    | Local TFTP (same box)    | Local read                | Simplified, all-in-one system.              |
 | **Spoke-and-Wheel**| PyPNM → CM    | Remote TFTP at site      | Remote fetch via protocols| Scalable, centralized control.              |
-
-
-> ✅ **Best Practices**
->
-> - Use consistent filename patterns (e.g., `spectrum_<mac>_<timestamp>.bin`).
-> - Organize storage paths:
->
->   ```
->   /data/pnm/{site}/{cm-mac}/raw/
->   /data/db/{site}/{cm-mac}/parsed/
->   /output/{site}/{cm-mac}/visuals/
->   ```
-> - Secure all SNMP and file-transfer traffic using VLANs, firewalls, and credentials.
