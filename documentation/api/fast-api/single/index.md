@@ -2,7 +2,7 @@
 
 ### 🛠️ Single-Shot PNM Operations
 
-This reference serves as the **single-shot FastAPI REST API landing point** for all major PNM (Proactive Network Maintenance) diagnostic operations. It consolidates the key FastAPI documentation pages for DOCSIS 3.0/3.1 cable modem monitoring, analysis, and reporting—designed for both on-demand and automated diagnostics workflows.
+This reference serves as the **single-shot FastAPI REST API landing point** for all major PNM (Proactive Network Maintenance) diagnostic operations. It consolidates the key FastAPI documentation pages for DOCSIS 3.0/3.1 cable modem monitoring, analysis, and reporting designed for both on-demand and automated diagnostics workflows.
 
 #### 📡 Downstream (DS) Operations
 
