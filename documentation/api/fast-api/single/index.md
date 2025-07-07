@@ -43,7 +43,7 @@ This reference serves as the **single-shot FastAPI REST API landing point** for 
 | ------------------------------------------ | ------------------------------------------------ |
 | [System Configuration](./configuration.md) | Retrieve or update PyPNM SNMP settings           |
 | [System Log](./system-log.md)              | Download PyPNM backend log file                  |
-| [File Operations](./file-manager.md)       | Search, retrieve, and analyze uploaded PNM files |
+| [File Operations](../file_manager/file-manager.md)       | Search, retrieve, and analyze uploaded PNM files |
 
 
 ### 📘 Overview
