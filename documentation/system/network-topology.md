@@ -1,205 +1,144 @@
 # PyPNM Network Topology and Usage Models
 
-This document describes two common deployment topologies for PyPNM (Proactive Network Maintenance) and how PyPNM retrieves PNM (Proactive Network Maintenance) data from cable modems (CMs).
+This document outlines common deployment topologies for PyPNM (Proactive Network Maintenance) and explains how PyPNM retrieves and processes PNM data from cable modems (CMs).
 
 ---
 
-## Table of Contents
+## 📑 Table of Contents
 
-1. [Standalone Deployment](#standalone-deployment)  
-2. [Spoke-and-Wheel Deployment](#spoke-and-wheel-deployment)
+1. [Standalone Deployment](#1-standalone-deployment)
+2. [Spoke-and-Wheel Deployment](#2-spoke-and-wheel-deployment)
+3. [Protocols & Connectivity](#protocols--connectivity)
+4. [Summary of Usage Models](#summary-of-usage-models)
 
 ---
 
 ## 1. Standalone Deployment
 
-In a standalone setup, a single PyPNM server handles both SNMP polling and PNM file retrieval without any intermediate agents.
+In a standalone deployment, a single PyPNM server handles SNMP polling and file retrieval without intermediate file-relay agents.
 
-### Components
+### 🧩 Components
 
-- **PyPNM Server**  
-  - Hosts the FastAPI backend, analysis engine, and (optional) web UI.  
-  - Listens on UDP/161 for SNMP GET/SET to each CM.  
-  - Runs a local file‐transfer service (typically TFTP) for CMs to upload PNM files.  
-  - Stores raw and parsed PNM data under `/data/pnm/` and `/data/db/`.
+- **PyPNM Server**
+  - Hosts the FastAPI backend, analysis engine, and optional UI.
+  - Performs SNMP SET/GET operations to CMs.
+  - Runs a local TFTP server to receive PNM files.
+  - Stores raw and parsed data in `/data/pnm/` and `/data/db/`.
 
-- **Cable Modem (CM)**  
-  - Supports DOCSIS 3.0 or DOCSIS 3.1 with PNM MIB extensions (spectrum, RxMER histogram, equalizer taps).  
-  - Configured (via CMTS or DHCP) to send PNM files to the PyPNM server’s TFTP root directory (e.g., `/var/tftpboot/pnm/`).  
-  - Responds to SNMP SET (to trigger measurement) and SNMP GET (to report status).
+- **Cable Modem (CM)**
+  - DOCSIS 3.0/3.1 with PNM MIB support.
+  - Sends SNMP responses and uploads files to TFTP root (`/var/tftpboot/pnm/`).
 
-- **CMTS / CCAP**  
-  - Issues PNM measurement commands to the CM (via SNMP SET).  
-  - Provides TFTP server address to CM (through provisioning OID or DHCP).  
+- **CMTS / CCAP**
+  - Issues SNMP triggers and provides the TFTP server IP to the CM.
 
-### Data Flow
+### 🔁 Data Flow
 
-1. **Trigger Measurement**  
-   ```text
-   Operator/API Client ──▶ PyPNM Server ──(SNMP SET)──▶ CM
-````
-
-* The operator (or automation) calls PyPNM’s REST endpoint (e.g., `POST /pnm/spectrum/start`).
-* PyPNM issues `docsIf3CmSpectrumAnalysisTrigger` (DOCSIS 3.1 MIB) or `docsIfCmDsHistogramTrigger` (DOCSIS 3.0) as an SNMP SET to the CM.
-
-2. **Measurement Execution & Upload**
+1. **Trigger Measurement**
 
    ```text
-   CM ──(Measurement)──▶ (Stores data internally)  
-   CM ──(TFTP PUT)──▶ PyPNM Server’s TFTP directory (/var/tftpboot/pnm/)
+   Operator/API ──▶ PyPNM ──(SNMP SET)──▶ CM
    ```
+   * PyPNM calls SNMP SET to initiate the measurement (e.g., spectrum, histogram).
 
-   * CM completes the spectrum/histogram measurement.
-   * Once done, CM uploads the raw PNM file (binary or ASCII) via TFTP to the PyPNM server.
-
-3. **SNMP Poll for Completion**
+2. **Measurement & File Upload**
 
    ```text
-   PyPNM Server ──(SNMP GET)──▶ CM
+   CM ──(TFTP PUT)──▶ PyPNM TFTP Server
    ```
+   * CM runs the measurement and uploads the result.
 
-   * PyPNM polls `docsIf3CmSpectrumAnalysisMeasState` or `docsIf3CmSpectrumAnalysisMeasAmplitudeDataPresent`.
-   * When “data ready” is signaled, PyPNM proceeds to file retrieval (if small metadata is fetched via SNMP GET).
+3. **Polling for Completion**
+
+   ```text
+   PyPNM ──(SNMP GET)──▶ CM
+   ```
+   * PyPNM checks the CM’s state OIDs to determine when data is ready.
 
 4. **File Retrieval & Parsing**
-
-   * PyPNM reads the uploaded file from its local TFTP folder.
-   * Parsing modules (e.g., `CmSpectrumAnalysis`, `CmDsHistogramService`) extract frequency bins, amplitudes, MER buckets, equalizer taps, etc.
-   * Parsed results are stored/share under `/data/db/` and visualizations (heatmaps, line graphs) are placed under `/output/`.
+   * PyPNM reads from the TFTP directory, extracts frequency bins, MER, taps, etc.
 
 5. **Visualization & Alerts**
+   * Results are visualized in dashboards; alerts may be generated.
 
-   * Operators view results in the PyPNM UI or dashboards.
-   * Threshold violations (e.g., MER < 30 dB) generate alerts (email, SNMP traps, or webhooks).
-
-> **Diagram Placeholder:**
-> *(Standalone Deployment showing PyPNM server, SNMP link, CM, and TFTP service)*
+> **🖼️ Diagram Placeholder:** Standalone system with PyPNM + CM + TFTP
 
 ---
 
 ## 2. Spoke-and-Wheel Deployment
 
-In a spoke-and-wheel topology, a central PyPNM server (hub) remotely pulls PNM files from multiple TFTP servers at remote sites (spokes). There is no intermediary agent—PyPNM directly connects to each spoke to fetch completed files.
+A central PyPNM server (hub) manages remote CMs at various sites (spokes) and fetches completed PNM files via network file-transfer.
 
-### Components
+### 🧩 Components
 
-* **Hub (Central PyPNM Server)**
+- **Hub (PyPNM Central Server)**
+  - Connects via SNMP to all CMs.
+  - Uses TFTP, FTP, SFTP, SCP, or HTTP to fetch PNM files from remote sites.
 
-  * Hosts FastAPI backend, analysis engine, and (optional) UI.
-  * Maintains SNMP connectivity (UDP/161) to every CM across sites.
-  * Periodically polls each CM for PNM status and then pulls finished files from remote TFTP servers using TFTP, FTP, SFTP, or SCP.
-  * Stores raw PNM files under `/data/pnm/{site}/{cm-mac}/` and parsed data under `/data/db/`.
+- **Spoke (Remote Site)**
+  - Contains a TFTP server receiving CM uploads.
+  - Exposes the file directory for PyPNM retrieval.
 
-* **Spoke (Remote TFTP Server)**
+- **PyPNM Retrieval Engine**
+  - Supports: TFTP, FTP/FTPS, SFTP/SCP, HTTP(S)
+  - Downloads and organizes files under `/data/pnm/{site}/{cm-mac}/`
 
-  * Deployed at each distribution hub or regional POP.
-  * Receives PNM files from local CMs via TFTP (UDP/69).
-  * Exposes a shared directory (e.g., `/var/tftpboot/pnm/`) where completed PNM files reside.
-  * May also expose FTP, SFTP, or HTTP(S) endpoints for secure file retrieval.
-
-* **PyPNM Remote Connect**
-
-  * PyPNM’s retrieval subsystem runs fetch operations over:
-
-    * **TFTP** (UDP/69)
-    * **FTP / FTPS** (TCP/21, optionally TLS)
-    * **SFTP / SCP** (SSH over TCP/22)
-    * **HTTP(S)** (TCP/80/443)
-  * Pulls files into `/data/pnm/{site}/{cm-mac}/`.
-
-### Data Flow
+### 🔁 Data Flow
 
 1. **Trigger Measurement**
 
    ```text
-   Operator/API Client ──▶ PyPNM Server ──(SNMP SET)──▶ CM
+   Operator/API ──▶ PyPNM ──(SNMP SET)──▶ CM
    ```
 
-   * PyPNM calls `docsIf3CmSpectrumAnalysisTrigger` (or equivalent) on each CM.
-
-2. **Local Upload (Spoke)**
+2. **CM Uploads to Spoke TFTP**
 
    ```text
-   CM ──(TFTP PUT)──▶ Spoke TFTP Server (/var/tftpboot/pnm/)
+   CM ──(TFTP PUT)──▶ Spoke TFTP Server
    ```
 
-   * After measurement, CM uploads the PNM file to the nearest TFTP server at its local site.
-
-3. **Remote Collection (PyPNM Fetch)**
+3. **Remote Retrieval**
 
    ```text
-   PyPNM Server ──(TFTP/FTP/SFTP/SCP)──▶ Spoke TFTP Server
+   PyPNM ──(TFTP/SFTP/FTP/HTTP)──▶ Spoke Server
    ```
 
-   * PyPNM polls each CM’s status OID (e.g., `docsIf3CmSpectrumAnalysisMeasState`) until “data ready.”
-   * When ready, PyPNM launches a file‐transfer session to fetch the PNM file:
+4. **Parse & Visualize**
+   * Files are parsed, stored, and visualized as in standalone mode.
 
-     1. **TFTP**: Direct TFTP GET from the spoke’s `/var/tftpboot/pnm/`.
-     2. **FTP/FTPS**: If the spoke runs an FTP server, PyPNM logs in and downloads the file.
-     3. **SFTP/SCP**: If SSH‐based file transfer is enabled, PyPNM uses key‐based or password authentication to copy files.
-     4. **HTTP(S)**: If the spoke serves files via HTTP(S), PyPNM performs an HTTP GET.
-   * Downloaded files are saved under `/data/pnm/{site}/{cm-mac}/` (e.g., `/data/pnm/NYC-POP-01/aa:bb:cc:dd:ee:ff/`).
-
-4. **File Parsing & Storage**
-
-   * Parsed data (frequency/amplitude, MER histogram buckets, equalizer tap coefficients) is written to `/data/db/{site}/{cm-mac}/`.
-   * Visual outputs (heatmaps, line plots, histograms) are generated and saved under `/output/{site}/{cm-mac}/`.
-   * Anomalies trigger alerts via email, SNMP trap, or webhook.
-
-> **Diagram Placeholder:**
-> *(Spoke-and-Wheel topology showing PyPNM hub, SNMP links to CMs, and TFTP servers at remote sites)*
+> **🖼️ Diagram Placeholder:** Hub connected to multiple remote sites
 
 ---
 
 ## Protocols & Connectivity
 
-* **SNMP (RFC 3411–3418)**
-
-  * Use **SNMPv3** when possible (authentication/encryption). If SNMPv2c is used, confine it to a trusted management VLAN.
-  * Key OIDs for DOCSIS 3.1 PNM:
-
-    * `docsIf3CmSpectrumAnalysisTrigger` (SET)
-    * `docsIf3CmSpectrumAnalysisMeasState` (GET)
-    * `docsIf3CmSpectrumAnalysisMeasAmplitudeDataPresent` (GET)
-  * Key OIDs for DOCSIS 3.0 RxMER histogram:
-
-    * `docsIfCmDsHistogramTrigger`, `docsIfCmDsHistogramState`, etc.
-
-* **File-Transfer Protocols**
-
-  * **TFTP (RFC 1350)**: Default for cable modems. Unencrypted, UDP/69.
-  * **FTP/FTPS (RFC 959 + TLS)**: Legacy; FTPS adds encryption.
-  * **SFTP/SCP (SSH)**: Secure, uses SSH over TCP/22.
-  * **HTTP(S) (RFC 7230–7235)**: Use HTTPS with valid TLS certificates for secure retrieval.
-
-* **Network Access**
-
-  * Hub must reach each CM on UDP/161 (SNMP) and each spoke on the chosen file‐transfer port (UDP/69 for TFTP, TCP/22 for SFTP, etc.).
-  * Firewalls between hub and spokes should allow only the necessary ports and source IP (PyPNM server) to connect.
+- **SNMP** (v2c/v3): Used to trigger measurements and read completion status.
+- **File Transfer**:
+  - **TFTP (UDP/69)**: Default protocol used by CMs.
+  - **FTP/SFTP/SCP/HTTP**: Used by PyPNM to pull files from spokes.
+- **Security Tips**:
+  - Use SNMPv3 or isolate SNMPv2c in management VLANs.
+  - Use SFTP or HTTPS for secure file transfers.
 
 ---
 
 ## Summary of Usage Models
 
-| Deployment Model    | SNMP Polling | PNM File Upload Location     | File-Retrieval Method       | Comments                                       |
-| ------------------- | ------------ | ---------------------------- | --------------------------- | ---------------------------------------------- |
-| **Standalone**      | Hub → CM     | PyPNM Server’s local TFTP    | Local TFTP GET (same box)   | Simplest: one server does everything.          |
-| **Spoke-and-Wheel** | Hub → CM     | Remote TFTP servers (spokes) | Hub pulls via TFTP/FTP/SFTP | Scales to multiple sites; hub aggregates data. |
+| Model              | SNMP Path     | Upload Target           | Retrieval Method          | Notes                                       |
+|-------------------|---------------|--------------------------|---------------------------|---------------------------------------------|
+| **Standalone**    | PyPNM → CM    | Local TFTP (same box)    | Local read                | Simplified, all-in-one system.              |
+| **Spoke-and-Wheel**| PyPNM → CM    | Remote TFTP at site      | Remote fetch via protocols| Scalable, centralized control.              |
 
 ---
 
-> **Note:**
+> ✅ **Best Practices**
 >
-> * Ensure all SNMP traffic (especially SNMPv2c community strings) is confined to a secure management VLAN.
-> * If using FTP or HTTP(S) for file retrieval, enforce strong authentication and TLS.
-> * Use consistent naming conventions: include `site ID`, `CM MAC`, and `timestamp` in PNM filenames (e.g., `spectrum_aa_bb_cc_dd_ee_ff_20250604_151230.bin`).
-> * Store files under a hierarchical path:
+> - Use consistent filename patterns (e.g., `spectrum_<mac>_<timestamp>.bin`).
+> - Organize storage paths:
 >
 >   ```
 >   /data/pnm/{site}/{cm-mac}/raw/
 >   /data/db/{site}/{cm-mac}/parsed/
 >   /output/{site}/{cm-mac}/visuals/
 >   ```
-
-```
-```
+> - Secure all SNMP and file-transfer traffic using VLANs, firewalls, and credentials.
