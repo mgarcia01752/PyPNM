@@ -14,17 +14,21 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MIB_DIR = PROJECT_ROOT / "mibs"
 OUTPUT_FILE = PROJECT_ROOT / "src/pypnm/snmp/compiled_oids.py"
 
-def run_snmptranslate(output_path: Path) -> None:
+# Standard MIBs we want to give overwrite priority
+PREFERRED_MIBS = ["IF-MIB"]
+
+def run_snmptranslate(mibs: str, output_path: Path) -> None:
     """
     Runs `snmptranslate -Tz` using the local MIB directory and saves the output.
 
     Args:
+        mibs (str): MIB list string passed to `-m`.
         output_path (Path): File to save the raw output.
     """
     cmd = [
         "snmptranslate",
         "-M", str(MIB_DIR.resolve()),
-        "-m", "all",
+        "-m", mibs,
         "-Tz"
     ]
     with output_path.open("w", encoding="utf-8") as f:
@@ -75,12 +79,26 @@ def main():
         raise FileNotFoundError(f"MIB directory '{MIB_DIR}' not found.")
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        tmp_output = Path(tmpdir) / "snmptranslate_output.txt"
-        run_snmptranslate(tmp_output)
-        oid_dict = parse_snmptranslate_output(tmp_output)
-        write_python_dict(oid_dict, OUTPUT_FILE)
+        tmp_output_1 = Path(tmpdir) / "snmp_all_output.txt"
+        tmp_output_2 = Path(tmpdir) / "snmp_preferred_output.txt"
 
-    print(f"✅ Compiled {len(oid_dict)} OIDs to '{OUTPUT_FILE}'")
+        # Phase 1: Load all MIBs first
+        run_snmptranslate("all", tmp_output_1)
+        all_oids = parse_snmptranslate_output(tmp_output_1)
+
+        # Phase 2: Load trusted MIBs and overwrite duplicates
+        preferred_list = ":".join(PREFERRED_MIBS)
+        run_snmptranslate(preferred_list, tmp_output_2)
+        trusted_oids = parse_snmptranslate_output(tmp_output_2)
+
+        # Overwrite entries
+        all_oids.update(trusted_oids)
+
+        # Write merged result
+        write_python_dict(all_oids, OUTPUT_FILE)
+
+    print(f"✅ Compiled {len(all_oids)} OIDs to '{OUTPUT_FILE}'")
+
 
 if __name__ == "__main__":
     main()

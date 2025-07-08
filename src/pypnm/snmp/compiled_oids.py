@@ -1,8 +1,5 @@
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
-
 # Auto-generated OID dictionary from snmptranslate -Tz
-# Do not modify manually. Generated on: 2025-07-07T04:02:52.915604
+# Do not modify manually. Generated on: 2025-07-08T20:14:57.881740
 
 COMPILED_OIDS = {
     "ACSPolicyIndex": "1.3.6.1.4.1.4526.3.1.2.9",
@@ -21437,7 +21434,7 @@ COMPILED_OIDS = {
     "ifInOctets": "1.3.6.1.2.1.2.2.1.10",
     "ifInUcastPkts": "1.3.6.1.2.1.2.2.1.11",
     "ifInUnknownProtos": "1.3.6.1.2.1.2.2.1.15",
-    "ifIndex": "1.3.6.1.4.1.4526.30.13.1.1.9999",
+    "ifIndex": "1.3.6.1.2.1.2.2.1.1",
     "ifLastChange": "1.3.6.1.2.1.2.2.1.9",
     "ifLinkUpDownTrapEnable": "1.3.6.1.2.1.31.1.1.1.14",
     "ifMIB": "1.3.6.1.2.1.31",
@@ -32672,7 +32669,7 @@ COMPILED_OIDS = {
     "syslogRemoteHost": "1.3.6.1.4.1.17318.1.1.50.1.1.50",
     "syslogsEntry": "1.3.6.1.4.1.202.80.11.13.1.3.1",
     "syslogsIndex": "1.3.6.1.4.1.202.80.11.13.1.3.1.1",
-    "system": "1.3.6.1.4.1.1429.5.1.1.2.2",
+    "system": "1.3.6.1.2.1.1",
     "systemClock": "1.3.6.1.4.1.4998.1.1.10.1.1.1",
     "systemGeneral": "1.3.6.1.4.1.4998.1.1.10.1.1",
     "systemGeneralGroup": "1.3.6.1.4.1.4998.1.1.10.1.10.2.1",

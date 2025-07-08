@@ -4,7 +4,7 @@
 from enum import Enum
 import logging
 import time
-from typing import List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 from pysnmp.proto.rfc1902 import (OctetString, Counter32, Bits, 
                                   Counter64, Gauge32, Integer, 
                                   Integer32, IpAddress)
@@ -20,6 +20,7 @@ from pypnm.docsis.data_type.DocsIfDownstreamChannel import DocsIfDownstreamChann
 from pypnm.docsis.data_type.DocsIfSignalQualityEntry import DocsIfSignalQuality
 from pypnm.docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChannelEntry
 from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst
+from pypnm.docsis.data_type.InterfaceStats import InterfaceStats
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.docsis.lib.pnm_bulk_data import DocsPnmBulkDataGroup, DocsPnmBulkFileEntry
 from pypnm.lib.format_string import Format
@@ -1206,7 +1207,23 @@ class CmSnmpOperation:
             self.logger.info(f"DOCSIS version: {cdv.name}")
 
         return cdv
-         
+
+    async def getInterfaceStatistics(self) -> Dict[str, List[Dict]]:
+        """
+        Retrieves interface statistics grouped by DocsisIfType.
+
+        Returns:
+            Dict[str, List[Dict]]: Mapping of interface type name to list of interface stats.
+        """
+        stats: Dict[str, List[Dict]] = {}
+
+        for if_type in DocsisIfType:
+            interfaces = await InterfaceStats.from_snmp(self._snmp, if_type)
+            if interfaces:
+                stats[if_type.name] = [iface.model_dump() for iface in interfaces]
+
+        return stats
+
 ####################
 # DOCSIS 4.0 - FDD #
 ####################

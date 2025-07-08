@@ -106,9 +106,11 @@ class Snmp_v2c:
         Returns:
             Optional[List[ObjectType]]: List of walked SNMP ObjectTypes, or None if no results.
         """
-        self.logger.debug(f"Starting SNMP WALK with OID: {oid}")
+        self.logger.info(f"Starting SNMP WALK with OID: {oid}")
 
         oid = Snmp_v2c.resolve_oid(oid)
+        
+        self.logger.info(f"Converted: {oid}")
      
         identity = self._to_object_identity(oid)
         obj = ObjectType(identity)
