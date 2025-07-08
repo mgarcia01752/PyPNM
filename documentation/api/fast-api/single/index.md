@@ -27,6 +27,13 @@ This reference serves as the **single-shot FastAPI REST API landing point** for 
 | [SC-QAM Pre-Equalization](./us/scqam/chan/pre-equalization.md) | SC-QAM upstream pre-equalization       |
 | [SC-QAM Upstream Stats](./us/scqam/chan/stats.md)              | SC-QAM upstream stats                  |
 
+#### Frequency Division Duplex (FDD)
+
+| Markdown                                                       | Description                                                      |
+| -------------------------------------------------------------- | ---------------------------------------------------------------- |
+| [Diplexer Band Edge Capability](./fdd/fdd-diplexer-band-edge-cap.md) | Reports modem's supported diplexer frequency range.        |
+| [Diplexer Configuration](./fdd/fdd-system-diplexer-configuration.md) | Returns currently active diplexer frequency configuration. |
+
 #### 🧾 Cable Modem Functions
 
 | Markdown                                              | Description                     |

@@ -43,7 +43,7 @@ class FddDiplexerConfigResult:
             - Returns diplexer frequency configuration in MHz.
             - Returns an error response if the modem is unreachable or SNMP fails.
 
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/fdd-system-diplexer-configuration.md)
+            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/fdd/fdd-system-diplexer-configuration.md)
             """
             status, msg = await CableModemServicePreCheck(
                 mac_address=request.mac_address, ip_address=request.ip_address,

@@ -53,7 +53,7 @@ class FddDiplexerBandEdgeCapability:
             - Downstream Lower Band Edge Capability (TLV 5.82)
             - Downstream Upper Band Edge Capability (TLV 5.83)
 
-            [API Reference](https://github.com/mgarcia01752/PyPNM/tree/main/documentation/api/fast-api/single/fdd-diplexer-band-edge-cap.md)
+            [API Reference](https://github.com/mgarcia01752/PyPNM/tree/main/documentation/api/fast-api/single/fdd/fdd-diplexer-band-edge-cap.md)
             """
             # Ensure modem is reachable and SNMP is operational
             status, msg = await CableModemServicePreCheck(
