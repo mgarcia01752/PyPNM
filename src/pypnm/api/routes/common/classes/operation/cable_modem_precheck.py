@@ -9,7 +9,7 @@ verifying reachability via ping, SNMP, and optional DOCSIS version compatibility
 """
 
 import logging
-from typing import List, Tuple, Optional
+from typing import Iterable, List, Tuple, Optional
 
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.docsis.cable_modem import CableModem
@@ -81,7 +81,12 @@ class CableModemServicePreCheck:
         else:
             raise ValueError("Must provide either `cable_modem` or both `mac_address` and `ip_address`.")
 
-        self.check_docsis_version = check_docsis_version or []
+        if check_docsis_version:
+            if not isinstance(check_docsis_version, Iterable) or isinstance(check_docsis_version, (str, bytes)):
+                check_docsis_version = [check_docsis_version]
+            self.check_docsis_version = list(check_docsis_version)
+        else:
+            self.check_docsis_version = []
 
     async def run_precheck(self) -> Tuple[ServiceStatusCode, str]:
         """

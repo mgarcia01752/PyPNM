@@ -11,6 +11,7 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.fdd.system.diplexer.service import FddDiplexerConfigService
+from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
 
 
 class FddDiplexerConfigResult:
@@ -45,8 +46,8 @@ class FddDiplexerConfigResult:
             📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/fdd-system-diplexer-configuration.md)
             """
             status, msg = await CableModemServicePreCheck(
-                mac_address=request.mac_address,
-                ip_address=request.ip_address).run_precheck()
+                mac_address=request.mac_address, ip_address=request.ip_address,
+                check_docsis_version=ClabsDocsisVersion.DOCSIS_40).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)

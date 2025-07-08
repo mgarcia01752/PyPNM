@@ -59,7 +59,7 @@ class FddDiplexerBandEdgeCapability:
             status, msg = await CableModemServicePreCheck(
                 mac_address=request.mac_address,
                 ip_address=request.ip_address, 
-                check_docsis_version=ClabsDocsisVersion.DOCSIS_40).run_precheck()
+                check_docsis_version=[ClabsDocsisVersion.DOCSIS_40]).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
