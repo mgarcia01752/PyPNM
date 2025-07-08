@@ -4,7 +4,7 @@
 from enum import Enum
 import logging
 import time
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Type, Union
 from pysnmp.proto.rfc1902 import (OctetString, Counter32, Bits, 
                                   Counter64, Gauge32, Integer, 
                                   Integer32, IpAddress)
@@ -1208,16 +1208,19 @@ class CmSnmpOperation:
 
         return cdv
 
-    async def getInterfaceStatistics(self) -> Dict[str, List[Dict]]:
+    async def getInterfaceStatistics(self, interface_types: Type[Enum] = DocsisIfType) -> Dict[str, List[Dict]]:
         """
-        Retrieves interface statistics grouped by DocsisIfType.
+        Retrieves interface statistics grouped by provided Enum of interface types.
+
+        Args:
+            interface_types (Type[Enum]): Enum class representing interface types.
 
         Returns:
             Dict[str, List[Dict]]: Mapping of interface type name to list of interface stats.
         """
         stats: Dict[str, List[Dict]] = {}
 
-        for if_type in DocsisIfType:
+        for if_type in interface_types:
             interfaces = await InterfaceStats.from_snmp(self._snmp, if_type)
             if interfaces:
                 stats[if_type.name] = [iface.model_dump() for iface in interfaces]
