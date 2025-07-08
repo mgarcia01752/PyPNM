@@ -71,8 +71,6 @@ This transaction model is used internally by PyPNM to:
 * Enable cross-referencing in Excel reports
 * Provide lookup and filtering in REST APIs or UIs
 
----
-
 ## 🔁 Operation Capture Linking
 
 The `.data/db/operation_capture.json` file links a **multi-measurement operation** to a **capture group**.
@@ -95,8 +93,6 @@ These operation IDs are useful for:
 
 * Group-based retrieval via REST
 * Session persistence and deferred analysis
-
----
 
 ## 🧩 Capture Group Registry
 
@@ -128,8 +124,6 @@ They serve as the data backbone for multi-file workflows, including Excel genera
 | -------------- | ----------------------------------------------------- |
 | `created`      | Timestamp of group creation (matches first operation) |
 | `transactions` | List of transaction IDs grouped in this capture       |
-
----
 
 ## 🔁 Summary of Relationships
 

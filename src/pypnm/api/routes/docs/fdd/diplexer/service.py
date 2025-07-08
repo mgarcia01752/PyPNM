@@ -3,6 +3,7 @@
 
 from typing import Dict, List
 from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
 from pypnm.docsis.data_type.DocsFddCmFddCapabilities import DocsFddCmFddBandEdgeCapabilities
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -31,6 +32,11 @@ class FddDiplexerBandEdgeCapabilityService:
         """
         self.cm = CableModem(mac_address=MacAddress(mac_address), inet=Inet(ip_address))
 
+    def isDocsis40(self) -> bool:
+        if self.cm.getDocsisBaseCapability() != ClabsDocsisVersion.DOCSIS_40:
+            return False
+        return True
+    
     async def getFddDiplexerBandEdgeCapabilityEntries(self) -> List[Dict]:
         """
         Retrieve and populate the FDD diplexer band edge capabilities from the modem.

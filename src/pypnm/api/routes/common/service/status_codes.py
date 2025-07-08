@@ -39,6 +39,8 @@ class ServiceStatusCode(IntEnum):
     HTTP_PNM_FILE_FETCH_ERROR               = 34
     SHTTP_PNM_FILE_FETCH_ERROR              = 35
     
+    INVALID_DOCSIS_VERSION                  = 40
+    
     TRANSACTION_RECORD_GET_FAILED           = 200
     UNSUPPORTED_TEST_TYPE                   = 201
     CAPTURE_GROUP_NOT_FOUND                 = 202
