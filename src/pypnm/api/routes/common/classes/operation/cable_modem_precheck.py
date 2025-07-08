@@ -4,43 +4,49 @@
 """
 Module: common_endpoint_classes.schema.precheck
 
-Defines a pre-check service for CableModem connectivity, verifying reachability via ping and SNMP.
+Defines a pre-check service for CableModem connectivity,
+verifying reachability via ping, SNMP, and optional DOCSIS version compatibility.
 """
+
 import logging
-from typing import Tuple, Optional
+from typing import List, Tuple, Optional
 
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 
 
 class CableModemServicePreCheck:
     """
-    Performs preliminary connectivity checks against a CableModem.
+    Performs preliminary connectivity checks against a DOCSIS Cable Modem.
 
-    Can be initialized with either:
-      - a pre-built CableModem instance, or
-      - MAC address + IP address (it will construct the CableModem).
+    Supports:
+    - Ping (ICMP) reachability
+    - SNMP reachability
+    - Optional DOCSIS version validation
 
-    Attributes:
-        cm (CableModem): The cable modem under test.
-        logger (logging.Logger): Logger for status messages.
+    Can be initialized using:
+    - A `CableModem` object
+    - MAC address and IP address pair
 
-    Usage:
+    Example:
         ```python
-        # Using existing CableModem
-        cm = CableModem(mac_address=MacAddress("00:11:22:33:44:55"), inet=Inet("192.168.1.100"))
-        precheck = CableModemServicePreCheck(cm=cm)
+        # Using CableModem instance
+        cm = CableModem(mac_address=MacAddress("00:11:22:33:44:55"), inet=Inet("192.168.0.100"))
+        precheck = CableModemServicePreCheck(cable_modem=cm)
 
-        # Or by passing MAC+IP directly
+        # Using MAC and IP directly
         precheck = CableModemServicePreCheck(
             mac_address="00:11:22:33:44:55",
-            ip_address="192.168.1.100"
+            ip_address="192.168.0.100",
+            check_docsis_version=[ClabsDocsisVersion.DOCSIS_31]
         )
-        status, message = precheck.run_precheck()
+
+        status, msg = await precheck.run_precheck()
         if status != ServiceStatusCode.SUCCESS:
-            print(f"Pre-check failed ({status}): {message}")
+            print(f"Pre-check failed: {msg}")
         ```
     """
 
@@ -48,43 +54,44 @@ class CableModemServicePreCheck:
         self,
         cable_modem: Optional[CableModem] = None,
         mac_address: Optional[str] = None,
-        ip_address: Optional[str] = None
+        ip_address: Optional[str] = None,
+        check_docsis_version: Optional[List[ClabsDocsisVersion]] = None
     ) -> None:
         """
         Initialize the pre-check service.
 
         Args:
-            cm (CableModem, optional): Pre-built CableModem instance.
-            mac_address (str, optional): MAC address if not passing `cm`.
-            ip_address (str, optional): IP address if not passing `cm`.
+            cable_modem: An existing CableModem instance (optional).
+            mac_address: The cable modem's MAC address (optional).
+            ip_address: The cable modem's IP address (optional).
+            check_docsis_version: Optional list of accepted DOCSIS versions.
 
         Raises:
-            ValueError: If neither `cm` nor both `mac_address` and `ip_address` are provided.
+            ValueError: If insufficient parameters are provided to construct the CableModem.
         """
         self.logger = logging.getLogger(self.__class__.__name__)
+
         if cable_modem:
             self.cm = cable_modem
-        else:
-            if not (mac_address and ip_address):
-                raise ValueError(
-                    "Must provide either `cm` or both `mac_address` and `ip_address`."
-                )
-            # Construct CableModem internally
+        elif mac_address and ip_address:
             self.cm = CableModem(
                 mac_address=MacAddress(mac_address),
                 inet=Inet(ip_address)
             )
+        else:
+            raise ValueError("Must provide either `cable_modem` or both `mac_address` and `ip_address`.")
+
+        self.check_docsis_version = check_docsis_version or []
 
     async def run_precheck(self) -> Tuple[ServiceStatusCode, str]:
         """
-        Execute a sequence of connectivity tests:
-          1. ICMP ping reachability
-          2. SNMP reachability
+        Run full pre-check routine:
+          1. Ping modem
+          2. Perform SNMP check
+          3. Validate DOCSIS version (optional)
 
         Returns:
-            Tuple[ServiceStatusCode, str]:
-                - First non-SUCCESS status, or SUCCESS if all tests pass.
-                - Descriptive message of result or failure reason.
+            Tuple[ServiceStatusCode, str]: Status and message.
         """
         self.logger.debug(f"Starting pre-check for CableModem: {self.cm}")
 
@@ -100,41 +107,67 @@ class CableModemServicePreCheck:
             self.logger.error(msg)
             return status, msg
 
+        if self.check_docsis_version:
+            status, msg = await self.validate_docsis_version()
+            if status != ServiceStatusCode.SUCCESS:
+                return status, msg
+
         msg = "Pre-check successful: CableModem reachable via ping and SNMP"
         self.logger.info(msg)
         return ServiceStatusCode.SUCCESS, msg
 
     def ping_reachable(self) -> ServiceStatusCode:
         """
-        Perform an ICMP ping check against the cable modem.
+        Perform an ICMP ping test.
 
         Returns:
-            ServiceStatusCode: SUCCESS if reachable, PING_FAILED otherwise.
+            SUCCESS if reachable, else PING_FAILED.
         """
         try:
             if self.cm.is_ping_reachable():
-                self.logger.debug("Ping reachable succeeded")
+                self.logger.debug("Ping check passed")
                 return ServiceStatusCode.SUCCESS
-            self.logger.debug("Ping reachable failed")
+            self.logger.debug("Ping check failed")
             return ServiceStatusCode.PING_FAILED
         except Exception as e:
-            self.logger.error(f"Error during ping check: {e}", exc_info=True)
+            self.logger.error(f"Ping check exception: {e}", exc_info=True)
             return ServiceStatusCode.PING_FAILED
 
     async def snmp_reachable(self) -> ServiceStatusCode:
         """
-        Perform an SNMP reachability check against the cable modem.
+        Perform SNMP reachability check.
 
         Returns:
-            ServiceStatusCode: SUCCESS if SNMP queries succeed, UNREACHABLE_SNMP otherwise.
+            SUCCESS if SNMP response received, else UNREACHABLE_SNMP.
         """
         try:
             if await self.cm.is_snmp_reachable():
-                self.logger.debug("SNMP reachable succeeded")
+                self.logger.debug("SNMP check passed")
                 return ServiceStatusCode.SUCCESS
-            self.logger.debug("SNMP reachable failed")
+            self.logger.debug("SNMP check failed")
             return ServiceStatusCode.UNREACHABLE_SNMP
-        
         except Exception as e:
-            self.logger.error(f"Error during SNMP check: {e}", exc_info=True)
+            self.logger.error(f"SNMP check exception: {e}", exc_info=True)
             return ServiceStatusCode.UNREACHABLE_SNMP
+
+    async def validate_docsis_version(self) -> Tuple[ServiceStatusCode, str]:
+        """
+        Check if the modem's DOCSIS version is in the accepted list.
+
+        Returns:
+            SUCCESS if version is allowed, else INVALID_DOCSIS_VERSION.
+        """
+        try:
+            base_cap = await self.cm.getDocsisBaseCapability()
+            if base_cap not in self.check_docsis_version:
+                msg = f"Invalid DOCSIS Version: {base_cap.name}"
+                self.logger.error(msg)
+                return ServiceStatusCode.INVALID_DOCSIS_VERSION, msg
+
+            self.logger.debug(f"DOCSIS version check passed: {base_cap.name}")
+            return ServiceStatusCode.SUCCESS, "Valid DOCSIS version"
+
+        except Exception as e:
+            msg = f"Error checking DOCSIS version: {e}"
+            self.logger.error(msg, exc_info=True)
+            return ServiceStatusCode.INVALID_DOCSIS_VERSION, msg

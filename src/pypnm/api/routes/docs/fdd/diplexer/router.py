@@ -11,6 +11,7 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.fdd.diplexer.service import FddDiplexerBandEdgeCapabilityService
+from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
 
 class FddDiplexerBandEdgeCapability:
     """
@@ -57,24 +58,22 @@ class FddDiplexerBandEdgeCapability:
             # Ensure modem is reachable and SNMP is operational
             status, msg = await CableModemServicePreCheck(
                 mac_address=request.mac_address,
-                ip_address=request.ip_address
-            ).run_precheck()
+                ip_address=request.ip_address, 
+                check_docsis_version=ClabsDocsisVersion.DOCSIS_40).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(
-                    mac_address=str(request.mac_address),
-                    status=status,
-                    message=msg)
-
+                return SnmpResponse(mac_address=str(request.mac_address),
+                    status=status, message=msg)
+            
             # Fetch capability data from the cable modem
             service = FddDiplexerBandEdgeCapabilityService(
                 mac_address=request.mac_address,
                 ip_address=request.ip_address)
-            
-            data = await service.getFddDiplexerBandEdgeCapabilityEntries()
+                        
+            entry = await service.getFddDiplexerBandEdgeCapabilityEntries()
 
-            return JSONResponse(content=data)
+            return JSONResponse(content=entry)
 
 # ✅ Required for dynamic auto-registration
 router = FddDiplexerBandEdgeCapability().router
