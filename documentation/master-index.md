@@ -8,11 +8,6 @@ Welcome to the PyPNM documentation. Use this master index to navigate through al
 
 * [FastAPI Overview](api/fast-api/index.md)
 
-### DOCSIS Device Endpoints
-
-* [Event Log](api/dev/eventLog.md)
-* [Reset](api/dev/reset.md)
-
 #### • Multi-Snapshot Analysis
 
 * [Overview](api/fast-api/multi/index.md)
@@ -27,19 +22,6 @@ Welcome to the PyPNM documentation. Use this master index to navigate through al
 #### • Status Codes
 
 * [FastAPI Status Codes](api/fast-api/status/fast-api-status-codes.md)
-
-### DOCSIS 3.0
-
-* [Downstream SCQAM Channel Stats](api/if30/ds/scqam/chan/stats.md)
-* [Upstream ATDMA Channel Stats](api/if30/us/atdma/chan/stats.md)
-
-### DOCSIS 3.1
-
-* [System Diplexer](api/if31/diplex.md)
-* **Downstream OFDM**
-
-  * [Channel Stats](api/if31/ds/ofdm/channel/stats.md)
-  * [Profile Stats](api/if31/ds/ofdm/profile/stats.md)
 
 ### PNM Data Parsers
 
@@ -71,6 +53,7 @@ Welcome to the PyPNM documentation. Use this master index to navigate through al
 * [Generate SSL Certificates](system/generate-ssl-certificates.md)
 * [System Configuration](system/system_config.md)
 * [PNM File Transfer Methods](system/file-transfer-methods.md)
+* [PyPNM DataBase](system/pypnm-data-base.md)
 
 ## 🧰 Tools
 
