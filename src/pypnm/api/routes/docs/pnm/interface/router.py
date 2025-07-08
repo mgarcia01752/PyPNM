@@ -31,7 +31,7 @@ class InterfaceStatsRouter:
             """
             📶 Retrieve DOCSIS interface statistics grouped by interface type.
 
-            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/pnm/interface/stats.md)
+            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/pnm/interface/stats.md)
             """
             status, msg = await CableModemServicePreCheck(
                 mac_address=request.mac_address,
