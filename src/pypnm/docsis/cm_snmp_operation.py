@@ -1206,9 +1206,7 @@ class CmSnmpOperation:
             self.logger.info(f"DOCSIS version: {cdv.name}")
 
         return cdv
-
-
-            
+         
 ####################
 # DOCSIS 4.0 - FDD #
 ####################
