@@ -29,10 +29,10 @@ This reference serves as the **single-shot FastAPI REST API landing point** for 
 
 #### Frequency Division Duplex (FDD)
 
-| Markdown                                                       | Description                                                      |
-| -------------------------------------------------------------- | ---------------------------------------------------------------- |
-| [Diplexer Band Edge Capability](./fdd/fdd-diplexer-band-edge-cap.md) | Reports modem's supported diplexer frequency range.        |
-| [Diplexer Configuration](./fdd/fdd-system-diplexer-configuration.md) | Returns currently active diplexer frequency configuration. |
+| Markdown                                                       | Description                              |
+| -------------------------------------------------------------- | -----------------------------------------|
+| [Diplexer Band Edge Capability](./fdd/fdd-diplexer-band-edge-cap.md) | Supported diplexer frequency range |
+| [Diplexer Configuration](./fdd/fdd-system-diplexer-configuration.md) | Diplexer system settings           |
 
 #### 🧾 Cable Modem Functions
 
