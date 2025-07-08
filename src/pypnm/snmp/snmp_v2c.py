@@ -2,6 +2,7 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
+import re
 from typing import List, Optional, Tuple, Type, Union
 from datetime import datetime, timedelta, timezone
 
@@ -12,6 +13,7 @@ from pysnmp.hlapi.v3arch.asyncio import (
 from pysnmp.proto.rfc1902 import (OctetString)
 from pypnm.lib.inet import Inet
 from pypnm.lib.inet_utils import InetUtils
+from pypnm.snmp.compiled_oids import COMPILED_OIDS
 from pypnm.snmp.modules import InetAddressType
 
 class Snmp_v2c:
@@ -73,7 +75,10 @@ class Snmp_v2c:
             RuntimeError: On SNMP errors.
         """
         self.logger.debug(f'Input OID: {oid}')
-        identity = self._resolve_oid(oid)
+        
+        oid = Snmp_v2c.resolve_oid(oid)
+                
+        identity = self._to_object_identity(oid)
 
         obj = ObjectType(identity)
 
@@ -85,7 +90,7 @@ class Snmp_v2c:
             obj,
         )
         try:
-            self._check_for_errors(errorIndication, errorStatus, errorIndex)
+            self._raise_on_snmp_error(errorIndication, errorStatus, errorIndex)
         except Exception as e:
             self.logger.error(f"Failed get : {e}")
   
@@ -103,7 +108,9 @@ class Snmp_v2c:
         """
         self.logger.debug(f"Starting SNMP WALK with OID: {oid}")
 
-        identity = self._resolve_oid(oid)
+        oid = Snmp_v2c.resolve_oid(oid)
+     
+        identity = self._to_object_identity(oid)
         obj = ObjectType(identity)
         results: List[ObjectType] = []
 
@@ -122,7 +129,7 @@ class Snmp_v2c:
             errorIndication, errorStatus, errorIndex, varBinds = item
 
             try:
-                self._check_for_errors(errorIndication, errorStatus, errorIndex)
+                self._raise_on_snmp_error(errorIndication, errorStatus, errorIndex)
                 
             except Exception as e:
                 self.logger.error(f"Failed walk : {e}")
@@ -134,7 +141,7 @@ class Snmp_v2c:
             for varBind in varBinds:
                 oid_str = str(varBind[0])
 
-                if not self._is_subtree_match(oid_str, str(identity)):
+                if not self._is_oid_in_subtree(oid_str, str(identity)):
                     self.logger.debug(f"End of OID subtree reached at {oid_str} -> {varBind} - List size {len(results)}")
                     return results if results else None
 
@@ -168,6 +175,8 @@ class Snmp_v2c:
 
         self.logger.debug(f'SNMP-SET-OID: {oid} -> {value_type} -> {value}')
 
+        oid = Snmp_v2c.resolve_oid(oid)
+        
         transport = await UdpTransportTarget.create((self._host, self._port))
 
         try:
@@ -183,7 +192,7 @@ class Snmp_v2c:
             ObjectType(ObjectIdentity(oid), snmp_value),
         )
         try:
-            self._check_for_errors(errorIndication, errorStatus, errorIndex)
+            self._raise_on_snmp_error(errorIndication, errorStatus, errorIndex)
 
         except Exception as e:
             self.logger.error(f"Error extracting SNMP value: {e}")
@@ -197,6 +206,49 @@ class Snmp_v2c:
         """
         self._snmp_engine.close_dispatcher()
 
+    @staticmethod
+    def resolve_oid(oid: Union[str, Tuple[str, str, int]]) -> str:
+        """
+        Resolves symbolic OIDs with optional numeric suffixes.
+
+        Examples:
+            'ifDescr'             → '1.3.6.1.2.1.2.2.1.2'
+            'ifDescr.2'           → '1.3.6.1.2.1.2.2.1.2.2'
+            '1.3.6.1.2.1.2.2.1.2' → '1.3.6.1.2.1.2.2.1.2' (unchanged)
+
+        Returns:
+            str: Fully resolved numeric OID string.
+        """
+        if isinstance(oid, tuple):
+            # Optional support for Tuple format: (base, suffix1, suffix2)
+            oid = '.'.join(map(str, oid))
+
+        if Snmp_v2c.is_numeric_oid(oid):
+            return oid
+
+        # Split symbolic base from numeric suffix
+        match = re.match(r"^([a-zA-Z0-9_:]+)(\..+)?$", oid)
+        if not match:
+            return oid  # fallback: invalid pattern
+
+        base_sym, suffix = match.groups()
+        base_num = COMPILED_OIDS.get(base_sym, base_sym)
+        return f"{base_num}{suffix or ''}"
+
+    @staticmethod
+    def is_numeric_oid(oid: str) -> bool:
+        """
+        Returns True if the OID string is numeric.
+
+        Accepted formats:
+            - '1.3.6.1.2.1.2.2.1.2'
+            - '.1.3.6.1.2.1.2.2.1.2'  (leading dot is allowed)
+
+        Returns:
+            bool: True if the OID is numeric, False otherwise.
+        """
+        return bool(re.fullmatch(r"\.?(\d+\.)+\d+", oid))
+    
     @staticmethod
     def get_result_value(pysnmp_get_result) -> Optional[str]:
         """
@@ -437,62 +489,7 @@ class Snmp_v2c:
             dt = dt.replace(tzinfo=tz)
 
         return dt.isoformat()
-
-
-###################
-# Private Methods #
-###################
-
-    def _resolve_oid(self, oid: Union[str, Tuple[str, str, int]]) -> ObjectIdentity:
-        """
-        Internal helper to resolve an OID.
-
-        Args:
-            oid (Union[str, Tuple[str, str, int]]): OID to resolve.
-
-        Returns:
-            ObjectIdentity: pysnmp ObjectIdentity.
-        """
-        if isinstance(oid, tuple):
-            self.logger.debug(f"Resolving OID tuple: {oid}")
-            return ObjectIdentity(*oid)
-        else:
-            self.logger.debug(f"Resolving OID string: {oid}")
-            return ObjectIdentity(oid)
-
-    def _check_for_errors(self, errorIndication, errorStatus, errorIndex):
-        """
-        Internal helper to raise exceptions for SNMP errors.
-
-        Args:
-            errorIndication: SNMP error indication.
-            errorStatus: SNMP error status.
-            errorIndex: SNMP error index.
-
-        Raises:
-            RuntimeError: When SNMP errors are present.
-        """
-        if errorIndication:
-            raise RuntimeError(f"SNMP operation failed: {errorIndication}")
-        if errorStatus:
-            raise RuntimeError(f"SNMP error {errorStatus.prettyPrint()} at index {errorIndex}")
-
-    def _is_subtree_match(self, oid_str: str, obj_str: str) -> bool:
-        """
-        Check if an OID is part of the requested subtree.
-
-        Args:
-            oid_str (str): The current OID string.
-            obj_str (str): The requested root OID string.
-
-        Returns:
-            bool: True if still within subtree, False otherwise.
-        """
-        oid_parts = oid_str.split('.')
-        obj_parts = obj_str.split('.')
-        # self.logger.debug(f'OBJ: {obj_parts} -> OID: {oid_parts}')
-        return oid_parts[:len(obj_parts)] == obj_parts
-    
+ 
     @staticmethod
     def truth_value(snmp_value) -> bool:
         """
@@ -544,3 +541,59 @@ class Snmp_v2c:
         duration = timedelta(seconds=total_seconds, milliseconds=remainder_hundredths * 10)
 
         return str(duration)
+
+
+    ###################
+    # Private Methods #
+    ###################
+    
+    def _to_object_identity(self, oid: Union[str, Tuple[str, str, int]]) -> ObjectIdentity:
+        """
+        Internal helper to resolve an OID.
+
+        Args:
+            oid (Union[str, Tuple[str, str, int]]): OID to resolve.
+
+        Returns:
+            ObjectIdentity: pysnmp ObjectIdentity.
+        """
+        if isinstance(oid, tuple):
+            self.logger.debug(f"Resolving OID tuple: {oid}")
+            return ObjectIdentity(*oid)
+        else:
+            self.logger.debug(f"Resolving OID string: {oid}")
+            return ObjectIdentity(oid)
+
+    def _raise_on_snmp_error(self, errorIndication, errorStatus, errorIndex):
+        """
+        Raises RuntimeError if any SNMP error is detected.
+
+        Args:
+            errorIndication: General SNMP engine-level error (e.g., timeout, transport failure).
+            errorStatus: SNMP protocol-level error (e.g., noSuchName, tooBig).
+            errorIndex: Index of the variable that caused the error (if applicable).
+
+        Raises:
+            RuntimeError: If an SNMP error or indication is present.
+        """
+        if errorIndication:
+            raise RuntimeError(f"SNMP operation failed: {errorIndication}")
+        if errorStatus:
+            raise RuntimeError(
+                f"SNMP error {errorStatus.prettyPrint()} at index {errorIndex}"
+            )
+
+    def _is_oid_in_subtree(self, oid_str: str, obj_str: str) -> bool:
+        """
+        Check if an OID is part of the requested subtree.
+
+        Args:
+            oid_str (str): The current OID string (e.g., '1.3.6.1.2.1.2.2.1.2.5').
+            obj_str (str): The requested root OID string (e.g., '1.3.6.1.2.1.2.2.1.2').
+
+        Returns:
+            bool: True if oid_str is within the subtree of obj_str.
+        """
+        oid_parts = oid_str.strip('.').split('.')
+        obj_parts = obj_str.strip('.').split('.')
+        return oid_parts[:len(obj_parts)] == obj_parts
