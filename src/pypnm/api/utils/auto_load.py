@@ -8,7 +8,6 @@ import traceback
 import logging
 from fastapi import FastAPI
 
-
 class RouterRegistrar:
     """
     Auto-discovers and registers FastAPI routers by scanning for 'router.py' files

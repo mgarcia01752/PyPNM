@@ -4,9 +4,8 @@
 import logging
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from typing import List, Union
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmChannelEntryResponse, PnmRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmRequest
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode

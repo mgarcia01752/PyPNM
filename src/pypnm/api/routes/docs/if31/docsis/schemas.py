@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 from pydantic import BaseModel, Field
 
 from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion

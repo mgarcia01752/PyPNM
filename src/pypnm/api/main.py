@@ -22,9 +22,9 @@ LoggerConfigurator(SystemConfigSettings.log_dir,
                    SystemConfigSettings.log_level)
 
 fast_api_description = """
-**Proactive Network Maintenance API for DOCSIS devices**
+**Proactive Network Maintenance (PNM) API for DOCSIS devices**
 
-Python-based RESTful API for accessing, analyzing, and visualizing DOCSIS 3.0/3.1 Proactive Network Maintenance (PNM) telemetry.
+Python-based RESTful API for accessing, analyzing, and visualizing DOCSIS 3.1/4.0 PNM telemetry.
 
 **PyPNM provides structured endpoints for:**
 - Downstream and upstream OFDM/OFDMA diagnostics
@@ -35,8 +35,6 @@ Python-based RESTful API for accessing, analyzing, and visualizing DOCSIS 3.0/3.
 - TFTP/SNMP-based file retrieval and modem polling
 
 Designed for integration into dashboards, automation pipelines, and engineering tools to assist with plant health monitoring, anomaly detection, and DOCSIS signal quality evaluation.
-
-📦 Built with FastAPI, Pydantic, and native SNMP libraries.
 
 🔗 [**GitHub - PyPNM**](https://github.com/mgarcia01752/PyPNM)
 """
