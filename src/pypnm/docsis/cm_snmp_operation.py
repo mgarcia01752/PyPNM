@@ -441,49 +441,6 @@ class CmSnmpOperation:
         except Exception as e:
             self.logger.error(f"Failed to retrieve SC-QAM Indexes: {e}")
             return []
-    
-    async def _DEPRECATE_getDocsIfCmDsScQamChanChannelIdIndex(self) -> List[int]:
-        """
-        Retrieve the list of DOCSIS 3.0 downstream SC-QAM channel indices (i.e., QAM64 or QAM256).
-
-        Returns:
-            List[int]: A list of SC-QAM channel indices present on the device.
-        """
-        sq_qam_idx_list: List[int] = []
-        oid_channel_id = "docsIfDownChannelId"
-        
-        try:
-            results = await self._snmp.walk(oid_channel_id)
-            if not results:
-                self.logger.warning(f"No results found for OID {oid_channel_id}")
-                return []
-
-            idx_list = Snmp_v2c.extract_last_oid_index(results)
-
-            oid_modulation = "docsIfDownChannelModulation"
-            for idx in idx_list:
-                result = await self._snmp.get(f'{oid_modulation}.{idx}')
-                
-                if not result:
-                    self.logger.warning(f"SNMP get failed or returned empty docsIfDownChannelModulation for index {idx}.")
-                    continue
-
-                # Assuming the result is a tuple (oid, value)
-                val = Snmp_v2c.snmp_get_result_value(result)[0]
-                try:
-                    modulation = int(val)
-                except ValueError:
-                    self.logger.warning(f"Failed to convert modulation value '{val}' to int for index {idx}. Skipping.")
-                    continue
-
-                if modulation in (3, 4):  # QAM64 or QAM256
-                    sq_qam_idx_list.append(idx)
-
-            return sq_qam_idx_list
-
-        except Exception as e:
-            self.logger.error(f"Failed to retrieve SC-QAM channel indices from {oid_channel_id}: {e}")
-            return []
 
     async def getDocsIfCmUsTdmaChanChannelIdIndex(self) -> List[int]:
         """
