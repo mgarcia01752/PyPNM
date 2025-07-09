@@ -34,8 +34,8 @@ class UsScQamChannelService:
             List[dict]: A list of dictionaries representing upstream channel information.
         """
         entries = await self.cm.getDocsIfUpstreamChannelEntry()
-        return [entry.to_dict() for entry in entries]
-
+        return [entry.model_dump() for entry in entries]
+ 
     async def get_upstream_pre_equalizations(self) ->  dict[int, dict]:
         """
         Fetches upstream pre-equalization coefficient data.

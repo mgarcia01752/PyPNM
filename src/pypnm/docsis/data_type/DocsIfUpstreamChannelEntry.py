@@ -2,140 +2,129 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
+from typing import Optional, Callable, Union, List
+from pydantic import BaseModel
+
 from pypnm.snmp.snmp_v2c import Snmp_v2c
-from pypnm.snmp.compiled_oids import COMPILED_OIDS
 
-class DocsIfUpstreamChannelEntry:
+class DocsIfUpstreamEntry(BaseModel):
+    docsIfUpChannelId: Optional[int] = None
+    docsIfUpChannelFrequency: Optional[int] = None
+    docsIfUpChannelWidth: Optional[int] = None
+    docsIfUpChannelModulationProfile: Optional[int] = None
+    docsIfUpChannelSlotSize: Optional[int] = None
+    docsIfUpChannelTxTimingOffset: Optional[int] = None
+    docsIfUpChannelRangingBackoffStart: Optional[int] = None
+    docsIfUpChannelRangingBackoffEnd: Optional[int] = None
+    docsIfUpChannelTxBackoffStart: Optional[int] = None
+    docsIfUpChannelTxBackoffEnd: Optional[int] = None
+    docsIfUpChannelType: Optional[int] = None
+    docsIfUpChannelCloneFrom: Optional[int] = None
+    docsIfUpChannelUpdate: Optional[bool] = None
+    docsIfUpChannelStatus: Optional[int] = None
+    docsIfUpChannelPreEqEnable: Optional[bool] = None
 
+    # DOCS-IF3-MIB extensions
+    docsIf3CmStatusUsTxPower: Optional[float] = None
+    docsIf3CmStatusUsT3Timeouts: Optional[int] = None
+    docsIf3CmStatusUsT4Timeouts: Optional[int] = None
+    docsIf3CmStatusUsRangingAborteds: Optional[int] = None
+    docsIf3CmStatusUsModulationType: Optional[int] = None
+    docsIf3CmStatusUsEqData: Optional[str] = None
+    docsIf3CmStatusUsT3Exceededs: Optional[int] = None
+    docsIf3CmStatusUsIsMuted: Optional[bool] = None
+    docsIf3CmStatusUsRangingStatus: Optional[int] = None
+
+class DocsIfUpstreamChannelEntry(BaseModel):
     index: int
-    docsIfUpChannelId: int = 0
-    docsIfUpChannelFrequency: int = 0
-    docsIfUpChannelWidth: int = 0
-    docsIfUpChannelModulationProfile: int = 0
-    docsIfUpChannelSlotSize: int = 0
-    docsIfUpChannelTxTimingOffset: int = 0
-    docsIfUpChannelRangingBackoffStart: int = 0
-    docsIfUpChannelRangingBackoffEnd: int = 0
-    docsIfUpChannelTxBackoffStart: int = 0
-    docsIfUpChannelTxBackoffEnd: int = 0
-    docsIfUpChannelType: int = 0
-    docsIfUpChannelCloneFrom: int = 0
-    docsIfUpChannelUpdate: bool = False
-    docsIfUpChannelStatus: int = 0
-    docsIfUpChannelPreEqEnable: bool = False
+    channel_id: int
+    entry: DocsIfUpstreamEntry
 
-    # Additional fields from DOCS-IF3-MIB
-    docsIf3CmStatusUsTxPower: float = 0.0
-    docsIf3CmStatusUsT3Timeouts: int = 0
-    docsIf3CmStatusUsT4Timeouts: int = 0
-    docsIf3CmStatusUsRangingAborteds: int = 0
-    docsIf3CmStatusUsModulationType: int = 0
-    docsIf3CmStatusUsEqData: str = None
-    docsIf3CmStatusUsT3Exceededs: int = 0
-    docsIf3CmStatusUsIsMuted: bool = False
-    docsIf3CmStatusUsRangingStatus: int = 0
+    @classmethod
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsIfUpstreamChannelEntry":
+        logger = logging.getLogger(cls.__name__)
 
-    def __init__(self, index: int, snmp: Snmp_v2c):
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.index = index
-        self.snmp = snmp
-
-    async def start(self) -> bool:
-        """
-        Asynchronously populates the channel data from SNMP.
-
-        Returns:
-            bool: True if SNMP queries complete successfully, False otherwise.
-        """
-        def tenthdBmV_to_float(value: str) -> float | None:
+        def tenthdBmV_to_float(value: str) -> Optional[float]:
             try:
                 return float(value) / 10.0
             except Exception:
                 return None
-            
-        fields = {
-            # Base DOCSIS Upstream Channel Fields
-            "docsIfUpChannelId": int,
-            "docsIfUpChannelFrequency": int,
-            "docsIfUpChannelWidth": int,
-            "docsIfUpChannelModulationProfile": int,
-            "docsIfUpChannelSlotSize": int,
-            "docsIfUpChannelTxTimingOffset": int,
-            "docsIfUpChannelRangingBackoffStart": int,
-            "docsIfUpChannelRangingBackoffEnd": int,
-            "docsIfUpChannelTxBackoffStart": int,
-            "docsIfUpChannelTxBackoffEnd": int,
-            "docsIfUpChannelType": int,
-            "docsIfUpChannelCloneFrom": int,
-            "docsIfUpChannelUpdate": Snmp_v2c.truth_value,
-            "docsIfUpChannelStatus": int,
-            "docsIfUpChannelPreEqEnable": Snmp_v2c.truth_value,
 
-            # DOCS-IF3-MIB Fields
-            "docsIf3CmStatusUsTxPower": tenthdBmV_to_float,
-            "docsIf3CmStatusUsT3Timeouts": int,
-            "docsIf3CmStatusUsT4Timeouts": int,
-            "docsIf3CmStatusUsRangingAborteds": int,
-            "docsIf3CmStatusUsModulationType": int,
-            "docsIf3CmStatusUsEqData": str,
-            "docsIf3CmStatusUsT3Exceededs": int,
-            "docsIf3CmStatusUsIsMuted": Snmp_v2c.truth_value,
-            "docsIf3CmStatusUsRangingStatus": int,
-        }
+        def safe_cast(value: str, cast: Callable) -> Union[int, float, str, bool, None]:
+            try:
+                return cast(value)
+            except Exception:
+                return None
 
-        try:
-            for attr, transform in fields.items():
-                oid_key = attr
+        async def fetch(field: str, cast: Optional[Callable] = None):
+            try:
+                raw = await snmp.get(f"{field}.{index}")
+                val = Snmp_v2c.get_result_value(raw)
+                if val is None or val == "":
+                    return None
+                if cast:
+                    return safe_cast(val, cast)
+                val = val.strip()
+                if val.isdigit():
+                    return int(val)
+                if val.lower() in ("true", "false"):
+                    return val.lower() == "true"
                 try:
-                    result = await self.snmp.get(f"{COMPILED_OIDS[oid_key]}.{self.index}")
-                    value_list = Snmp_v2c.get_result_value(result)
+                    return float(val)
+                except ValueError:
+                    return val
+            except Exception as e:
+                logger.warning(f"Failed to fetch {field}: {e}")
+                return None
 
-                    if not value_list:
-                        self.logger.warning(f"No value for {oid_key}.{self.index}")
-                        setattr(self, attr, None)
-                        continue
+        entry = DocsIfUpstreamEntry(
+            docsIfUpChannelId=await fetch("docsIfUpChannelId", int),
+            docsIfUpChannelFrequency=await fetch("docsIfUpChannelFrequency", int),
+            docsIfUpChannelWidth=await fetch("docsIfUpChannelWidth", int),
+            docsIfUpChannelModulationProfile=await fetch("docsIfUpChannelModulationProfile", int),
+            docsIfUpChannelSlotSize=await fetch("docsIfUpChannelSlotSize", int),
+            docsIfUpChannelTxTimingOffset=await fetch("docsIfUpChannelTxTimingOffset", int),
+            docsIfUpChannelRangingBackoffStart=await fetch("docsIfUpChannelRangingBackoffStart", int),
+            docsIfUpChannelRangingBackoffEnd=await fetch("docsIfUpChannelRangingBackoffEnd", int),
+            docsIfUpChannelTxBackoffStart=await fetch("docsIfUpChannelTxBackoffStart", int),
+            docsIfUpChannelTxBackoffEnd=await fetch("docsIfUpChannelTxBackoffEnd", int),
+            docsIfUpChannelType=await fetch("docsIfUpChannelType", int),
+            docsIfUpChannelCloneFrom=await fetch("docsIfUpChannelCloneFrom", int),
+            docsIfUpChannelUpdate=await fetch("docsIfUpChannelUpdate", Snmp_v2c.truth_value),
+            docsIfUpChannelStatus=await fetch("docsIfUpChannelStatus", int),
+            docsIfUpChannelPreEqEnable=await fetch("docsIfUpChannelPreEqEnable", Snmp_v2c.truth_value),
 
-                    if isinstance(transform, type) and hasattr(transform, "from_snmp"):
-                        value = transform.from_snmp(value_list)
-                    else:
-                        value = transform(value_list)
+            docsIf3CmStatusUsTxPower=await fetch("docsIf3CmStatusUsTxPower", tenthdBmV_to_float),
+            docsIf3CmStatusUsT3Timeouts=await fetch("docsIf3CmStatusUsT3Timeouts", int),
+            docsIf3CmStatusUsT4Timeouts=await fetch("docsIf3CmStatusUsT4Timeouts", int),
+            docsIf3CmStatusUsRangingAborteds=await fetch("docsIf3CmStatusUsRangingAborteds", int),
+            docsIf3CmStatusUsModulationType=await fetch("docsIf3CmStatusUsModulationType", int),
+            docsIf3CmStatusUsEqData=await fetch("docsIf3CmStatusUsEqData", str),
+            docsIf3CmStatusUsT3Exceededs=await fetch("docsIf3CmStatusUsT3Exceededs", int),
+            docsIf3CmStatusUsIsMuted=await fetch("docsIf3CmStatusUsIsMuted", Snmp_v2c.truth_value),
+            docsIf3CmStatusUsRangingStatus=await fetch("docsIf3CmStatusUsRangingStatus", int)
+        )
 
-                    setattr(self, attr, value)
+        return cls(
+            index=index,
+            channel_id=entry.docsIfUpChannelId or 0,
+            entry=entry
+        )
 
-                except Exception as e:
-                    self.logger.warning(f"Error fetching {attr}: {e}")
-                    setattr(self, attr, None)
+    @classmethod
+    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsIfUpstreamChannelEntry"]:
+        logger = logging.getLogger(cls.__name__)
+        results: List[DocsIfUpstreamChannelEntry] = []
 
-            return True
+        if not indices:
+            logger.warning("No upstream ATDMA indices found.")
+            return results
 
-        except Exception as e:
-            self.logger.exception("Error populating DocsIfUpstreamChannelEntry")
-            return False
+        for index in indices:
+            try:
+                result = await cls.from_snmp(index, snmp)
+                results.append(result)
+            except Exception as e:
+                logger.warning(f"Failed to retrieve upstream channel {index}: {e}")
 
-    def to_dict(self) -> dict:
-        """
-        Converts the instance into a standardized dictionary format.
-
-        Returns:
-            dict: {
-                "index": int,
-                "channel_id": int,
-                "entry": {field: value, ...}
-            }
-        """
-        entry_data = {}
-        channel_id = None
-
-        for attr in self.__annotations__:
-            if attr == "index":
-                continue
-            value = getattr(self, attr, None)
-            if attr == "docsIfUpChannelId":
-                channel_id = value
-            entry_data[attr] = value
-
-        return {
-            "index": self.index,
-            "channel_id": channel_id if channel_id is not None else 0,
-            "entry": entry_data
-        }
+        return results

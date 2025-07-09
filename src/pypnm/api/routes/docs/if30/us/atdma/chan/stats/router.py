@@ -61,7 +61,7 @@ class UsScQamChannelRouter:
         @self.router.post("/preEqualization", response_model=List[PnmChannelEntryResponse])
         async def get_us_scqam_pre_equalizations(request: SnmpRequest):
             """
-            📐 **DOCSIS 3.0 Upstream Pre-Equalization Coefficients**
+            **DOCSIS 3.0 Upstream Pre-Equalization Coefficients**
 
             Retrieves forward and reverse pre-equalization tap coefficients from a DOCSIS 3.0 SC-QAM upstream channel.
 
@@ -82,8 +82,8 @@ class UsScQamChannelRouter:
                 return PnmChannelEntryResponse(
                     mac_address=str(request.mac_address),
                     status=status,
-                    message=msg
-                )                  
+                    message=msg)
+                                  
             service = UsScQamChannelService(
                 mac_address=request.mac_address,
                 ip_address=request.ip_address)

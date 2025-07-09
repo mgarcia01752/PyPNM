@@ -762,24 +762,23 @@ class CmSnmpOperation:
         Returns:
             List[DocsIfUpstreamChannelEntry]: List of populated ATDMA channel objects.
         """
-        channel_list: List[DocsIfUpstreamChannelEntry] = []
-
         try:
             indices = await self.getDocsIfCmUsTdmaChanChannelIdIndex()
-            
+
             if not indices:
                 self.logger.warning("No upstream ATDMA indices found.")
-                return channel_list
-            
-            for idx in indices:
-                entry = DocsIfUpstreamChannelEntry(index=idx, snmp=self._snmp)
-                await entry.start()
-                channel_list.append(entry)
+                return []
+
+            entries = await DocsIfUpstreamChannelEntry.get(
+                snmp=self._snmp,
+                indices=indices
+            )
+
+            return entries
 
         except Exception as e:
-            self.logger.exception("Failed to retrieve ATDMA channel entries")
-
-        return channel_list  
+            self.logger.exception("Failed to retrieve ATDMA upstream channel entries")
+            return []
 
     async def getEventEntryIndex(self) -> List[int]:
         """
