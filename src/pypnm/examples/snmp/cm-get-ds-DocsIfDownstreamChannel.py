@@ -5,10 +5,15 @@
 
 import argparse
 import asyncio
+import json
 import logging
+from typing import List
 from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.data_type.DocsIfDownstreamChannel import DocsIfDownstreamChannelEntry
+from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.utils import Utils
 
 
 # Configure logging
@@ -33,10 +38,24 @@ async def main():
 
     logging.info(f"Connected to: {await cm.getSysDescr()}")
     
-    ddc_list = await cm.getDocsIfDownstreamChannel()
-    
-    for ddc in ddc_list:
-        print(ddc.to_dict())
+    try:
+        entries: List[DocsIfDownstreamChannelEntry] = await cm.getDocsIfDownstreamChannel()
+
+        if not entries:
+            logging.warning("No downstream channel entries found.")
+        else:
+            # Convert list of entries to list of dictionaries
+            entry_dicts = [entry.model_dump() for entry in entries]
+            json_out = json.dumps(entry_dicts, indent=2)
+
+            # Write to file
+            filename = f".data/pnm/DocsIfDownstreamChannelEntry-{Utils.time_stamp()}.json"
+            FileProcessor(filename).write_file(json_out)
+            logging.info(f"✅ Output written to: {filename}")
+
+    except Exception as e:
+        logging.exception("An error occurred while fetching downstream channel entries.")
+
     
 if __name__ == "__main__":
     asyncio.run(main())

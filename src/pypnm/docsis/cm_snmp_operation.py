@@ -16,7 +16,7 @@ from pypnm.docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmCha
 from pypnm.docsis.data_type.DocsIf31CmDsOfdmProfileStatsEntry import DocsIf31CmDsOfdmProfileStatsEntry
 from pypnm.docsis.data_type.DocsIf31CmSystemCfgState import DocsIf31CmSystemCfgDiplexState
 from pypnm.docsis.data_type.DocsIf31CmUsOfdmaChanEntry import DocsIf31CmUsOfdmaChanEntry
-from pypnm.docsis.data_type.DocsIfDownstreamChannel import DocsIfDownstreamChannel
+from pypnm.docsis.data_type.DocsIfDownstreamChannel import DocsIfDownstreamChannelEntry
 from pypnm.docsis.data_type.DocsIfSignalQualityEntry import DocsIfSignalQuality
 from pypnm.docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChannelEntry
 from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst
@@ -427,8 +427,22 @@ class CmSnmpOperation:
             mac_address_value = bytes(mac_address_value)
 
         return MacAddress(mac_address_value)
-    
+
     async def getDocsIfCmDsScQamChanChannelIdIndex(self) -> List[int]:
+        """
+        Retrieve the list of DOCSIS 3.0 downstream SC-QAM channel indices.
+
+        Returns:
+            List[int]: A list of SC-QAM channel indices present on the device.
+        """  
+        try:
+            return await self.getIfTypeIndex(DocsisIfType.docsCableDownstream)
+
+        except Exception as e:
+            self.logger.error(f"Failed to retrieve SC-QAM Indexes: {e}")
+            return []
+    
+    async def _DEPRECATE_getDocsIfCmDsScQamChanChannelIdIndex(self) -> List[int]:
         """
         Retrieve the list of DOCSIS 3.0 downstream SC-QAM channel indices (i.e., QAM64 or QAM256).
 
@@ -705,30 +719,30 @@ class CmSnmpOperation:
 
         return sig_qual_list
 
-    async def getDocsIfDownstreamChannel(self) -> List[DocsIfDownstreamChannel]:
+    async def getDocsIfDownstreamChannel(self) -> List[DocsIfDownstreamChannelEntry]:
         """
-        Retrieves signal quality metrics for all downstream QAM channels.
+        Retrieves signal quality metrics for all downstream SC-QAM channels.
 
-        This method queries the SNMP agent for the list of downstream QAM channel indexes,
-        and for each index, creates a `DocsIfDownstreamChannel` instance, populates it with SNMP data,
-        and collects it into a list.
+        This method queries the SNMP agent for the list of downstream SC-QAM channel indexes,
+        and for each index, fetches and builds a DocsIfDownstreamChannelEntry.
 
         Returns:
-            List[DocsIfDownstreamChannel]: A list of signal quality objects, one per downstream channel.
+            List[DocsIfDownstreamChannelEntry]: A list of populated downstream channel entries.
         """
-        channel_list: List[DocsIfDownstreamChannel] = []
+        try:
+            indices = await self.getDocsIfCmDsScQamChanChannelIdIndex()
+            
+            if not indices:
+                self.logger.warning("No downstream SC-QAM channel indices found.")
+                return []
 
-        indices = await self.getDocsIfCmDsScQamChanChannelIdIndex()
-        if not indices:
-            self.logger.warning("No downstream sc-qam channel indices found.")
-            return channel_list
+            entries = await DocsIfDownstreamChannelEntry.get(snmp=self._snmp,indices=indices)
 
-        for idx in indices:
-            obj = DocsIfDownstreamChannel(index=idx, snmp=self._snmp)
-            await obj.start()
-            channel_list.append(obj)
+            return entries
 
-        return channel_list
+        except Exception as e:
+            self.logger.exception("Failed to retrieve downstream SC-QAM channel entries")
+            return []
 
     async def getDocsIf31CmUsOfdmaChanEntry(self) -> List[DocsIf31CmUsOfdmaChanEntry]:
         """
