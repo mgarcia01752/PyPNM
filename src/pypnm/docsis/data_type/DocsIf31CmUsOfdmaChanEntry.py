@@ -2,127 +2,114 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from typing import Callable, Optional
+from typing import Optional, Callable, Union, List
+from pydantic import BaseModel
 
-from pypnm.snmp.compiled_oids import COMPILED_OIDS
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
+class DocsIf31CmUsOfdmaChan(BaseModel):
+    docsIf31CmUsOfdmaChanChannelId: Optional[int] = None
+    docsIf31CmUsOfdmaChanConfigChangeCt: Optional[int] = None
+    docsIf31CmUsOfdmaChanSubcarrierZeroFreq: Optional[int] = None
+    docsIf31CmUsOfdmaChanFirstActiveSubcarrierNum: Optional[int] = None
+    docsIf31CmUsOfdmaChanLastActiveSubcarrierNum: Optional[int] = None
+    docsIf31CmUsOfdmaChanNumActiveSubcarriers: Optional[int] = None
+    docsIf31CmUsOfdmaChanSubcarrierSpacing: Optional[int] = None
+    docsIf31CmUsOfdmaChanCyclicPrefix: Optional[int] = None
+    docsIf31CmUsOfdmaChanRollOffPeriod: Optional[int] = None
+    docsIf31CmUsOfdmaChanNumSymbolsPerFrame: Optional[int] = None
+    docsIf31CmUsOfdmaChanTxPower: Optional[float] = None
+    docsIf31CmUsOfdmaChanPreEqEnabled: Optional[bool] = None
+    docsIf31CmStatusOfdmaUsT3Timeouts: Optional[int] = None
+    docsIf31CmStatusOfdmaUsT4Timeouts: Optional[int] = None
+    docsIf31CmStatusOfdmaUsRangingAborteds: Optional[int] = None
+    docsIf31CmStatusOfdmaUsT3Exceededs: Optional[int] = None
+    docsIf31CmStatusOfdmaUsIsMuted: Optional[bool] = None
+    docsIf31CmStatusOfdmaUsRangingStatus: Optional[str] = None
 
-class DocsIf31CmUsOfdmaChanEntry:
-
+class DocsIf31CmUsOfdmaChanEntry(BaseModel):
     index: int
-    docsIf31CmUsOfdmaChanChannelId: int = 0
-    docsIf31CmUsOfdmaChanConfigChangeCt: int = 0
-    docsIf31CmUsOfdmaChanSubcarrierZeroFreq: int = 0
-    docsIf31CmUsOfdmaChanFirstActiveSubcarrierNum: int = 0
-    docsIf31CmUsOfdmaChanLastActiveSubcarrierNum: int = 0
-    docsIf31CmUsOfdmaChanNumActiveSubcarriers: int = 0
-    docsIf31CmUsOfdmaChanSubcarrierSpacing: int = 0
-    docsIf31CmUsOfdmaChanCyclicPrefix: int = 0
-    docsIf31CmUsOfdmaChanRollOffPeriod: int = 0
-    docsIf31CmUsOfdmaChanNumSymbolsPerFrame: int = 0
-    docsIf31CmUsOfdmaChanTxPower: float = 0.0
-    docsIf31CmUsOfdmaChanPreEqEnabled: int = 0
-    docsIf31CmStatusOfdmaUsT3Timeouts: int = 0
-    docsIf31CmStatusOfdmaUsT4Timeouts: int = 0
-    docsIf31CmStatusOfdmaUsRangingAborteds: int = 0
-    docsIf31CmStatusOfdmaUsT3Exceededs: int = 0
-    docsIf31CmStatusOfdmaUsIsMuted: bool = False
-    docsIf31CmStatusOfdmaUsRangingStatus: str = "Unknown"
+    channel_id: int
+    entry: DocsIf31CmUsOfdmaChan
 
-    def __init__(self, index: int, snmp: Snmp_v2c):
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.index = index
-        self.snmp = snmp
+    @classmethod
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsIf31CmUsOfdmaChanEntry":
+        logger = logging.getLogger(cls.__name__)
 
-    async def start(self) -> bool:
-        """
-        Asynchronously populates the channel data from SNMP.
-
-        Returns:
-            bool: True if SNMP queries complete successfully (even if some values are None), False otherwise.
-        """
         def tenthdBmV_to_float(value: str) -> Optional[float]:
             try:
-                return float(value) / 10.0 if value else None
+                return float(value) / 10.0
             except Exception:
                 return None
-            
-        def convert_to_int(value: str) -> Optional[int]:
+
+        def safe_cast(value: str, cast: Callable) -> Union[int, float, str, bool, None]:
             try:
-                return int(value)
+                return cast(value)
             except Exception:
                 return None
 
-        fields: dict[str, tuple[str, Callable[[str], Optional[float]]]] = {
-            # Existing fields
-            "docsIf31CmUsOfdmaChanChannelId": ("docsIf31CmUsOfdmaChanChannelId", int),
-            "docsIf31CmUsOfdmaChanConfigChangeCt": ("docsIf31CmUsOfdmaChanConfigChangeCt", int),
-            "docsIf31CmUsOfdmaChanSubcarrierZeroFreq": ("docsIf31CmUsOfdmaChanSubcarrierZeroFreq", int),
-            "docsIf31CmUsOfdmaChanFirstActiveSubcarrierNum": ("docsIf31CmUsOfdmaChanFirstActiveSubcarrierNum", int),
-            "docsIf31CmUsOfdmaChanLastActiveSubcarrierNum": ("docsIf31CmUsOfdmaChanLastActiveSubcarrierNum", int),
-            "docsIf31CmUsOfdmaChanNumActiveSubcarriers": ("docsIf31CmUsOfdmaChanNumActiveSubcarriers", int),
-            "docsIf31CmUsOfdmaChanSubcarrierSpacing": ("docsIf31CmUsOfdmaChanSubcarrierSpacing", int),
-            "docsIf31CmUsOfdmaChanCyclicPrefix": ("docsIf31CmUsOfdmaChanCyclicPrefix", int),
-            "docsIf31CmUsOfdmaChanRollOffPeriod": ("docsIf31CmUsOfdmaChanRollOffPeriod", int),
-            "docsIf31CmUsOfdmaChanNumSymbolsPerFrame": ("docsIf31CmUsOfdmaChanNumSymbolsPerFrame", int),
-            "docsIf31CmUsOfdmaChanTxPower": ("docsIf31CmUsOfdmaChanTxPower", tenthdBmV_to_float),
-            "docsIf31CmUsOfdmaChanPreEqEnabled": ("docsIf31CmUsOfdmaChanPreEqEnabled", Snmp_v2c.truth_value),
-            "docsIf31CmStatusOfdmaUsT3Timeouts": ("docsIf31CmStatusOfdmaUsT3Timeouts", convert_to_int),
-            "docsIf31CmStatusOfdmaUsT4Timeouts": ("docsIf31CmStatusOfdmaUsT4Timeouts", convert_to_int),
-            "docsIf31CmStatusOfdmaUsRangingAborteds": ("docsIf31CmStatusOfdmaUsRangingAborteds", convert_to_int),
-            "docsIf31CmStatusOfdmaUsT3Exceededs": ("docsIf31CmStatusOfdmaUsT3Exceededs", convert_to_int),
-            "docsIf31CmStatusOfdmaUsIsMuted": ("docsIf31CmStatusOfdmaUsIsMuted", Snmp_v2c.truth_value),
-            "docsIf31CmStatusOfdmaUsRangingStatus": ("docsIf31CmStatusOfdmaUsRangingStatus", str),
-        }
-                
-        try:
-            for attr, (oid_key, transform) in fields.items():
+        async def fetch(field: str, cast: Optional[Callable] = None):
+            try:
+                raw = await snmp.get(f"{field}.{index}")
+                val = Snmp_v2c.get_result_value(raw)
+                if val is None or val == "":
+                    return None
+                if cast:
+                    return safe_cast(val, cast)
+                val = val.strip()
+                if val.isdigit():
+                    return int(val)
+                if val.lower() in ("true", "false"):
+                    return val.lower() == "true"
                 try:
-                    result = await self.snmp.get(f"{COMPILED_OIDS[oid_key]}.{self.index}")
-                    value_list = Snmp_v2c.get_result_value(result)
+                    return float(val)
+                except ValueError:
+                    return val
+            except Exception as e:
+                logger.warning(f"Failed to fetch {field}: {e}")
+                return None
 
-                    if not value_list:
-                        self.logger.warning(f"Invalid value returned for {oid_key}.{self.index}: {value_list}")
-                        setattr(self, attr, None)
-                        continue
+        entry = DocsIf31CmUsOfdmaChan(
+            docsIf31CmUsOfdmaChanChannelId=await fetch("docsIf31CmUsOfdmaChanChannelId", int),
+            docsIf31CmUsOfdmaChanConfigChangeCt=await fetch("docsIf31CmUsOfdmaChanConfigChangeCt", int),
+            docsIf31CmUsOfdmaChanSubcarrierZeroFreq=await fetch("docsIf31CmUsOfdmaChanSubcarrierZeroFreq", int),
+            docsIf31CmUsOfdmaChanFirstActiveSubcarrierNum=await fetch("docsIf31CmUsOfdmaChanFirstActiveSubcarrierNum", int),
+            docsIf31CmUsOfdmaChanLastActiveSubcarrierNum=await fetch("docsIf31CmUsOfdmaChanLastActiveSubcarrierNum", int),
+            docsIf31CmUsOfdmaChanNumActiveSubcarriers=await fetch("docsIf31CmUsOfdmaChanNumActiveSubcarriers", int),
+            docsIf31CmUsOfdmaChanSubcarrierSpacing=await fetch("docsIf31CmUsOfdmaChanSubcarrierSpacing", int),
+            docsIf31CmUsOfdmaChanCyclicPrefix=await fetch("docsIf31CmUsOfdmaChanCyclicPrefix", int),
+            docsIf31CmUsOfdmaChanRollOffPeriod=await fetch("docsIf31CmUsOfdmaChanRollOffPeriod", int),
+            docsIf31CmUsOfdmaChanNumSymbolsPerFrame=await fetch("docsIf31CmUsOfdmaChanNumSymbolsPerFrame", int),
+            docsIf31CmUsOfdmaChanTxPower=await fetch("docsIf31CmUsOfdmaChanTxPower", tenthdBmV_to_float),
+            docsIf31CmUsOfdmaChanPreEqEnabled=await fetch("docsIf31CmUsOfdmaChanPreEqEnabled", Snmp_v2c.truth_value),
+            docsIf31CmStatusOfdmaUsT3Timeouts=await fetch("docsIf31CmStatusOfdmaUsT3Timeouts", int),
+            docsIf31CmStatusOfdmaUsT4Timeouts=await fetch("docsIf31CmStatusOfdmaUsT4Timeouts", int),
+            docsIf31CmStatusOfdmaUsRangingAborteds=await fetch("docsIf31CmStatusOfdmaUsRangingAborteds", int),
+            docsIf31CmStatusOfdmaUsT3Exceededs=await fetch("docsIf31CmStatusOfdmaUsT3Exceededs", int),
+            docsIf31CmStatusOfdmaUsIsMuted=await fetch("docsIf31CmStatusOfdmaUsIsMuted", Snmp_v2c.truth_value),
+            docsIf31CmStatusOfdmaUsRangingStatus=await fetch("docsIf31CmStatusOfdmaUsRangingStatus", str)
+        )
 
-                    value = transform(value_list)
-                    setattr(self, attr, value)
-                except Exception as e:
-                    self.logger.warning(f"Failed to fetch or transform {attr} ({oid_key}): {e}")
-                    setattr(self, attr, None)
+        return cls(
+            index=index,
+            channel_id=entry.docsIf31CmUsOfdmaChanChannelId or 0,
+            entry=entry
+        )
 
-            return True
+    @classmethod
+    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsIf31CmUsOfdmaChanEntry"]:
+        logger = logging.getLogger(cls.__name__)
+        results: List[DocsIf31CmUsOfdmaChanEntry] = []
 
-        except Exception as e:
-            self.logger.exception("Unexpected error during SNMP population")
-            return False
+        if not indices:
+            logger.warning("No upstream OFDMA indices found.")
+            return results
 
-    def to_dict(self) -> dict:
-        """
-        Converts the instance into a standardized dictionary format.
+        for index in indices:
+            try:
+                result = await cls.from_snmp(index, snmp)
+                results.append(result)
+            except Exception as e:
+                logger.warning(f"Failed to retrieve OFDMA channel {index}: {e}")
 
-        Returns:
-            dict: {
-                "index": int,
-                "channel_id": int,
-                "entry": {field: value, ...}
-            }
-        """
-        entry_data = {}
-        channel_id = None
-
-        for attr in self.__annotations__:
-            if attr == "index":
-                continue
-            value = getattr(self, attr, None)
-            if attr == "docsIf31CmUsOfdmaChanChannelId":
-                channel_id = value
-            entry_data[attr] = value
-
-        return {
-            "index": self.index,
-            "channel_id": channel_id if channel_id is not None else 0,
-            "entry": entry_data
-        }
+        return results

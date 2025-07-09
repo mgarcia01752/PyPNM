@@ -45,19 +45,18 @@ class UsOfdmaChannelRouter:
             """
         
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
-                                                    ip_address=request.ip_address).run_precheck()
+                                                          ip_address=request.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
                     mac_address=str(request.mac_address),
                     status=status,
-                    message=msg,
-                )              
+                    message=msg,)              
             
             service = UsOfdmChannelService(
                 mac_address=request.mac_address,
-                ip_address=request.ip_address
-            )
+                ip_address=request.ip_address)
+            
             data = await service.get_ofdma_chan_entries()
             return JSONResponse(content=data)
         
