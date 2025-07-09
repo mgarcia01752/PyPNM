@@ -26,9 +26,9 @@ class DsScQamChannelRouter:
 
     def _add_routes(self):
         @self.router.post("/stats", response_model=Union[List[PnmChannelEntryResponse], SnmpResponse])
-        async def get_scqam_channels(request: PnmRequest):
+        async def get_scqam_ds_channels(request: PnmRequest):
             """
-            📡 **DOCSIS 3.0 Downstream SC-QAM Channel Stats**
+            **DOCSIS 3.0 Downstream SC-QAM Channel Stats**
 
             Retrieves downstream SC-QAM channel configuration and signal quality metrics
             for a DOCSIS 3.0 modem, including modulation type, frequency, RxMER, power,
@@ -41,7 +41,7 @@ class DsScQamChannelRouter:
 
             """
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
-                                                    ip_address=request.ip_address).run_precheck()
+                                                          ip_address=request.ip_address).run_precheck()
             
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
@@ -52,8 +52,7 @@ class DsScQamChannelRouter:
             
             service = DsScQamChannelService(
                 mac_address=request.mac_address,
-                ip_address=request.ip_address
-            )
+                ip_address=request.ip_address)
             
             data = await service.get_scqam_chan_entries()
             return JSONResponse(content=data)

@@ -3,7 +3,7 @@
 
 from typing import Dict, List
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.docsis.data_type import DocsIfDownstreamChannel
+from pypnm.docsis.data_type.DocsIfDownstreamChannel import DocsIfDownstreamChannelEntry
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 
@@ -34,12 +34,5 @@ class DsScQamChannelService:
             List[Dict]: A list of dictionaries representing successfully retrieved 
                         and populated SC-QAM downstream channel entries.
         """
-        ds_channel_list: List[DocsIfDownstreamChannel] = await self.cm.getDocsIfDownstreamChannel()
-        result: List[Dict] = []
-
-        for ds_channel in ds_channel_list:
-            success = await ds_channel.start()
-            if success and ds_channel.docsIfDownChannelId is not None:
-                result.append(ds_channel.to_dict())
-
-        return result
+        entries: List[DocsIfDownstreamChannelEntry] = await self.cm.getDocsIfDownstreamChannel()
+        return [entry.model_dump() for entry in entries]
