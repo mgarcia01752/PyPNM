@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-
 import argparse
 import asyncio
 import json
@@ -56,6 +55,5 @@ async def main():
     except Exception as e:
         logging.exception("An error occurred while fetching downstream channel entries.")
 
-    
 if __name__ == "__main__":
     asyncio.run(main())
