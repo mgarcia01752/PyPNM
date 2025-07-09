@@ -538,24 +538,6 @@ class CmSnmpOperation:
         """
         return self.getIfTypeIndex(DocsisIfType.docsOfdmaUpstream)
 
-    async def _DEPRECATED_getDocsIf31CmUsOfdmaChanChannelIdIndex(self) -> List[int]:
-        """
-        Get the Docsis 3.1 upstream OFDMA channels.
-
-        Returns:
-            List[int]: A list of OFDMA channel indices present on the device.
-        """
-        oid = "docsIf31CmUsOfdmaChanChannelId"
-        try:
-            results = await self._snmp.walk(oid)
-            if not results:
-                self.logger.warning(f"No results found for OID {oid}")
-                return []
-            return Snmp_v2c.extract_last_oid_index(results)
-        except Exception as e:
-            self.logger.error(f"Failed to retrieve OFDMA channel indices from {oid}: {e}")
-            return []
-
     async def getDocsIf31CmDsOfdmChanPlcFreq(self) -> List[Tuple[int, int]]:
         """
         Retrieve the PLC frequencies of DOCSIS 3.1 downstream OFDM channels.

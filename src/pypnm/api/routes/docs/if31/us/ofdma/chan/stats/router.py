@@ -12,7 +12,6 @@ from pypnm.api.routes.common.classes.operation.cable_modem_precheck import Cable
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.if31.us.ofdma.chan.stats.service import UsOfdmChannelService
 
-
 class UsOfdmaChannelRouter:
     """
     Router class for DOCSIS 3.1 Upstream OFDMA Channel Statistics.
@@ -22,8 +21,7 @@ class UsOfdmaChannelRouter:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.router = APIRouter(
             prefix="/docs/if31/us/ofdma/channel",
-            tags=["DOCSIS 3.1 Upstream OFDMA Channel Statistics"]
-        )
+            tags=["DOCSIS 3.1 Upstream OFDMA Channel Statistics"])
         self._add_routes()
 
     def _add_routes(self):
