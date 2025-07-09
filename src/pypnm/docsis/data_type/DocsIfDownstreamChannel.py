@@ -5,7 +5,7 @@ import logging
 from pypnm.snmp.compiled_oids import COMPILED_OIDS
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
-class DocsIfDownstreamChannel:
+class DocsIfDownstreamChannelEntry:
     """
     Represents DOCSIS downstream channel configuration and signal metrics retrieved via SNMP.
 
