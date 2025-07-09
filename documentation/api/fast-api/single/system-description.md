@@ -36,13 +36,12 @@ Retrieves basic system identity and firmware metadata from a DOCSIS cable modem 
   "status": 0,
   "message": null,
   "results": {
-    "sysDescr": {
-      "hw_rev": "0A",
-      "vendor": "Hitron Technologies",
-      "boot_rev": "2022.01-MXL-v-4.0.350",
-      "sw_rev": "8.4.0.0.2b1",
-      "model": "CODA60V",
-      "is_empty": false
+    "sys_descr": {
+        "HW_REV": "1.0",
+        "VENDOR": "LANCity",
+        "BOOTR": "NONE",
+        "SW_REV": "1.0.0",
+        "MODEL": "LCPET-3"
     }
   }
 }

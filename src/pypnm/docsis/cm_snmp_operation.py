@@ -179,7 +179,7 @@ class CmSnmpOperation:
         - Optional[Union[str, bytes, int]]: The value retrieved from SNMP, converted to the specified type, 
           or `None` if there was an error or no value could be obtained.
         """
-        result = await self._snmp.get(f"{COMPILED_OIDS[oid_suffix]}.0")
+        result = await self._snmp.get(f"{oid_suffix}.0")
         
         if result is None:
             logging.warning(f"Failed to get value for {oid_suffix}")
@@ -243,7 +243,7 @@ class CmSnmpOperation:
         indexes: List[int] = []
 
         # Perform SNMP walk
-        results = await self._snmp.walk(COMPILED_OIDS["ifType"])
+        results = await self._snmp.walk("ifType")
 
         if not results:
             self.logger.warning("No results found during SNMP walk for ifType.")
@@ -280,7 +280,7 @@ class CmSnmpOperation:
         """
         self.logger.debug("Starting getSysDescr...")
 
-        result = await self._snmp.get(f'{COMPILED_OIDS["sysDescr"]}.0')
+        result = await self._snmp.get(f'{"sysDescr"}.0')
 
         if not result:
             self.logger.warning("SNMP get failed or returned empty for sysDescr.")
@@ -321,7 +321,7 @@ class CmSnmpOperation:
         """
         Asynchronously retrieves a bulk list of PNM file entries from SNMP.
 
-        This method performs an SNMP walk on the OID specified by `COMPILED_OIDS["docsPnmBulkFileEntry"]` 
+        This method performs an SNMP walk on the OID specified by `"docsPnmBulkFileEntry"` 
         and processes the resulting entries. Each entry is fetched using the SNMP `walk` operation, 
         and its value is extracted using the `Snmp_v2c.snmp_get_result_value()` function.
 
@@ -337,7 +337,7 @@ class CmSnmpOperation:
         """
         
         # Perform SNMP walk to retrieve the bulk file entries
-        result = self._snmp.walk(f'{COMPILED_OIDS["docsPnmBulkFileEntry"]}')
+        result = self._snmp.walk(f'{"docsPnmBulkFileEntry"}')
         
         # Initialize a list to store processed entries (for future use)
         entries = []
@@ -379,7 +379,7 @@ class CmSnmpOperation:
         count = 1
         while True:
             
-            result = await self._snmp.get(f'{COMPILED_OIDS["docsPnmCmCtlStatus"]}.0')
+            result = await self._snmp.get(f'{"docsPnmCmCtlStatus"}.0')
             
             if result is None:
                 time.sleep(2)
@@ -418,7 +418,7 @@ class CmSnmpOperation:
         if not if_indexes:
             raise RuntimeError(f"No interfaces found for {if_type.name}")
 
-        result = await self._snmp.get(f'{COMPILED_OIDS["ifPhysAddress"]}.{if_indexes[0]}')
+        result = await self._snmp.get(f'{"ifPhysAddress"}.{if_indexes[0]}')
         self.logger.debug(f"getIfPhysAddress() -> {result}")
 
         # Extract and normalize MAC address value
@@ -436,7 +436,7 @@ class CmSnmpOperation:
             List[int]: A list of SC-QAM channel indices present on the device.
         """
         sq_qam_idx_list: List[int] = []
-        oid_channel_id = COMPILED_OIDS["docsIfDownChannelId"]
+        oid_channel_id = "docsIfDownChannelId"
         
         try:
             results = await self._snmp.walk(oid_channel_id)
@@ -446,7 +446,7 @@ class CmSnmpOperation:
 
             idx_list = Snmp_v2c.extract_last_oid_index(results)
 
-            oid_modulation = COMPILED_OIDS["docsIfDownChannelModulation"]
+            oid_modulation = "docsIfDownChannelModulation"
             for idx in idx_list:
                 result = await self._snmp.get(f'{oid_modulation}.{idx}')
                 
@@ -479,7 +479,7 @@ class CmSnmpOperation:
             List[int]: A list of TDMA/ATDMA channel indices present on the device.
         """
         idx_list: List[int] = []
-        oid_channel_id = COMPILED_OIDS["docsIfUpChannelId"]
+        oid_channel_id = "docsIfUpChannelId"
         
         try:
             results = await self._snmp.walk(oid_channel_id)
@@ -489,7 +489,7 @@ class CmSnmpOperation:
 
             index_list = Snmp_v2c.extract_last_oid_index(results)
 
-            oid_modulation = COMPILED_OIDS["docsIfUpChannelType"]
+            oid_modulation = "docsIfUpChannelType"
             
             for idx in index_list:
                 
@@ -547,7 +547,7 @@ class CmSnmpOperation:
         Returns:
             List[int]: A list of channel indices present on the device.
         """
-        oid = COMPILED_OIDS["docsIf31CmDsOfdmChanChannelId"]
+        oid = "docsIf31CmDsOfdmChanChannelId"
         try:
             results = await self._snmp.walk(oid)
             if not results:
@@ -565,7 +565,7 @@ class CmSnmpOperation:
         Returns:
             List[int]: A list of OFDMA channel indices present on the device.
         """
-        oid = COMPILED_OIDS["docsIf31CmUsOfdmaChanChannelId"]
+        oid = "docsIf31CmUsOfdmaChanChannelId"
         try:
             results = await self._snmp.walk(oid)
             if not results:
@@ -585,7 +585,7 @@ class CmSnmpOperation:
                 - the index (int) of the OFDM channel
                 - the PLC frequency (int, in Hz)
         """
-        oid = COMPILED_OIDS["docsIf31CmDsOfdmChanPlcFreq"]
+        oid = "docsIf31CmDsOfdmChanPlcFreq"
         self.logger.debug(f"Walking OID for PLC frequencies: {oid}")
 
         try:
@@ -608,7 +608,7 @@ class CmSnmpOperation:
         Returns:
         int: The measurement status.
         '''
-        result = await self._snmp.get(f'{COMPILED_OIDS["docsPnmCmOfdmChEstCoefMeasStatus"]}.{ofdm_idx}')
+        result = await self._snmp.get(f'{"docsPnmCmOfdmChEstCoefMeasStatus"}.{ofdm_idx}')
         return int(Snmp_v2c.snmp_get_result_value(result)[0])
 
     async def getCmDsOfdmProfileStatsConfigChangeCt(self, ofdm_idx: int) -> dict[int,dict[int,int]]:
@@ -624,7 +624,7 @@ class CmSnmpOperation:
         TODO: Need to get back, not really working
         
         """
-        result = self._snmp.walk(f'{COMPILED_OIDS["docsIf31CmDsOfdmProfileStatsConfigChangeCt"]}.{ofdm_idx}')
+        result = self._snmp.walk(f'{"docsIf31CmDsOfdmProfileStatsConfigChangeCt"}.{ofdm_idx}')
         profile_change_count = Snmp_v2c.snmp_get_result_value(result)[0]
         return profile_change_count
       
@@ -788,7 +788,7 @@ class CmSnmpOperation:
         Returns:
             List[int]: A list of SNMP index integers.
         """
-        oid = COMPILED_OIDS["docsDevEvId"]
+        oid = "docsDevEvId"
 
         results = await self._snmp.walk(oid)
 
@@ -951,7 +951,7 @@ class CmSnmpOperation:
             logging.warning(f"Unsupported test type provided: {test_type}")
             return MeasStatusType.OTHER
 
-        oid = f"{COMPILED_OIDS[oid]}.{ofdm_ifindex}"
+        oid = f"{oid}.{ofdm_ifindex}"
 
         try:
             result = await self._snmp.get(oid)
@@ -971,7 +971,7 @@ class CmSnmpOperation:
         Returns:
             List[Tuple[int, int]]: Each tuple contains (index, channelId). Returns an empty list if no data is found.
         """
-        result = await self._snmp.walk(f'{COMPILED_OIDS["docsIf31CmDsOfdmChanChannelId"]}')
+        result = await self._snmp.walk(f'{"docsIf31CmDsOfdmChanChannelId"}')
         
         if not result:
             return []
@@ -988,7 +988,7 @@ class CmSnmpOperation:
         Returns:
             List[Tuple[int, int]]: Each tuple contains (index, channelId). Returns an empty list if no data is found.
         """
-        result = await self._snmp.walk(f'{COMPILED_OIDS["docsIf31CmUsOfdmaChanChannelId"]}')
+        result = await self._snmp.walk(f'{"docsIf31CmUsOfdmaChanChannelId"}')
         
         if not result:
             return []
@@ -1013,7 +1013,7 @@ class CmSnmpOperation:
             - A warning if the SNMP GET fails or returns no result.
             - An error if the value cannot be converted to an integer.
         """
-        result = await self._snmp.get(f'{COMPILED_OIDS["sysUpTime"]}.0')
+        result = await self._snmp.get(f'{"sysUpTime"}.0')
 
         if not result:
             self.logger.warning("SNMP get failed or returned empty for sysUpTime.")
@@ -1123,8 +1123,8 @@ class CmSnmpOperation:
         """
         self.logger.debug(f"Starting getBulkFileUploadStatus for filename: {filename}")
 
-        name_oid = COMPILED_OIDS["docsPnmBulkFileName"]
-        status_oid = COMPILED_OIDS["docsPnmBulkFileUploadStatus"]
+        name_oid = "docsPnmBulkFileName"
+        status_oid = "docsPnmBulkFileUploadStatus"
 
         # 1) Walk file‐name column
         try:
@@ -1194,7 +1194,7 @@ class CmSnmpOperation:
         """
         self.logger.debug("Fetching docsIf31CmDocsisBaseCapability")
 
-        oid = f"{COMPILED_OIDS['docsIf31CmDocsisBaseCapability']}.0"
+        oid = f"{'docsIf31CmDocsisBaseCapability'}.0"
         rsp = await self._snmp.get(oid)
         docsis_version:int = Snmp_v2c.get_result_value(rsp)
         docsis_version = int(docsis_version)
@@ -1313,7 +1313,7 @@ class CmSnmpOperation:
         - bool: True if the SNMP set operation is successful, False otherwise.
         """
         try:
-            oid = f'{COMPILED_OIDS["docsDevResetNow"]}.0'
+            oid = f'{"docsDevResetNow"}.0'
             self.logger.debug(f'Sending device reset via SNMP SET: {oid} = 1')
 
             response = await self._snmp.set(oid, Snmp_v2c.TRUE, Integer32)
@@ -1339,19 +1339,19 @@ class CmSnmpOperation:
         """
         try:
             ip_type = Snmp_v2c.get_inet_address_type(tftp_server).value
-            set_response = await self._snmp.set(f'{COMPILED_OIDS["docsPnmBulkDestIpAddrType"]}.0', ip_type, Integer32)
+            set_response = await self._snmp.set(f'{"docsPnmBulkDestIpAddrType"}.0', ip_type, Integer32)
             self.logger.debug(f'docsPnmBulkDestIpAddrType set: {set_response}')
 
-            set_response = await self._snmp.set(f'{COMPILED_OIDS["docsPnmBulkUploadControl"]}.0', 
+            set_response = await self._snmp.set(f'{"docsPnmBulkUploadControl"}.0', 
                                           DocsPnmBulkUploadControl.AUTO_UPLOAD.value, Integer32)
             self.logger.debug(f'docsPnmBulkUploadControl set: {set_response}')
 
-            set_response = await self._snmp.set(f'{COMPILED_OIDS["docsPnmBulkDestIpAddr"]}.0', 
+            set_response = await self._snmp.set(f'{"docsPnmBulkDestIpAddr"}.0', 
                                           InetUtils.inet_to_binary(tftp_server), OctetString)
             self.logger.debug(f'docsPnmBulkDestIpAddr set: {set_response}')
 
             tftp_path = tftp_path or ""
-            set_response = await self._snmp.set(f'{COMPILED_OIDS["docsPnmBulkDestPath"]}.0', tftp_path, OctetString)
+            set_response = await self._snmp.set(f'{"docsPnmBulkDestPath"}.0', tftp_path, OctetString)
             self.logger.debug(f'docsPnmBulkDestPath set: {set_response}')
 
             return True
@@ -1536,7 +1536,7 @@ class CmSnmpOperation:
             bool: True if both SNMP set operations succeed and verify expected values; False otherwise.
         """
         try:
-            oid = f'{COMPILED_OIDS["docsPnmCmUsPreEqFileName"]}.{ofdma_idx}'
+            oid = f'{"docsPnmCmUsPreEqFileName"}.{ofdma_idx}'
             self.logger.debug(f'Setting Pre-EQ filename: [{oid}] = "{filename}"')
             response = await self._snmp.set(oid, filename, OctetString)
             result = Snmp_v2c.snmp_set_result_value(response)
@@ -1545,7 +1545,7 @@ class CmSnmpOperation:
                 self.logger.error(f'Filename mismatch. Expected "{filename}", got "{result[0] if result else "None"}"')
                 return False
 
-            oid = f'{COMPILED_OIDS["docsPnmCmUsPreEqLastUpdateFileName"]}.{ofdma_idx}'
+            oid = f'{"docsPnmCmUsPreEqLastUpdateFileName"}.{ofdma_idx}'
             self.logger.debug(f'Setting Last-Pre-EQ filename: [{oid}] = "{last_pre_eq_filename}"')
             response = await self._snmp.set(oid, last_pre_eq_filename, OctetString)
             result = Snmp_v2c.snmp_set_result_value(response)
@@ -1556,7 +1556,7 @@ class CmSnmpOperation:
             
             if set_and_go:
                 time.sleep(1)
-                enable_oid = f'{COMPILED_OIDS["docsPnmCmUsPreEqFileEnable"]}.{ofdma_idx}'
+                enable_oid = f'{"docsPnmCmUsPreEqFileEnable"}.{ofdma_idx}'
                 self.logger.debug(f'Enabling Pre-EQ capture [{enable_oid}] = {Snmp_v2c.TRUE}')
                 response = await self._snmp.set(enable_oid, Snmp_v2c.TRUE, Integer32)
                 result = Snmp_v2c.snmp_set_result_value(response)
@@ -1583,8 +1583,8 @@ class CmSnmpOperation:
         - bool: True if both SNMP sets were successful, False otherwise.
         """
         try:
-            file_oid = f'{COMPILED_OIDS["docsPnmCmDsOfdmModProfFileName"]}.{ofdm_idx}'
-            enable_oid = f'{COMPILED_OIDS["docsPnmCmDsOfdmModProfFileEnable"]}.{ofdm_idx}'
+            file_oid = f'{"docsPnmCmDsOfdmModProfFileName"}.{ofdm_idx}'
+            enable_oid = f'{"docsPnmCmDsOfdmModProfFileEnable"}.{ofdm_idx}'
 
             file_response = await self._snmp.set(file_oid, mod_prof_file_name, OctetString)
             self.logger.debug(f'Set {file_oid} to {mod_prof_file_name}: {file_response}')
@@ -1611,7 +1611,7 @@ class CmSnmpOperation:
         - bool: True if both SNMP set operations succeed and return expected values, False otherwise.
         """
         try:
-            oid_file_name = f'{COMPILED_OIDS["docsPnmCmDsOfdmRxMerFileName"]}.{ofdm_idx}'
+            oid_file_name = f'{"docsPnmCmDsOfdmRxMerFileName"}.{ofdm_idx}'
             set_response = await self._snmp.set(oid_file_name, rxmer_file_name, OctetString)
             self.logger.debug(f'Setting RxMER file name [{oid_file_name}] = "{rxmer_file_name}"')
 
@@ -1621,7 +1621,7 @@ class CmSnmpOperation:
                 return False
 
             if set_and_go:
-                oid_file_enable = f'{COMPILED_OIDS["docsPnmCmDsOfdmRxMerFileEnable"]}.{ofdm_idx}'
+                oid_file_enable = f'{"docsPnmCmDsOfdmRxMerFileEnable"}.{ofdm_idx}'
                 set_response = await self._snmp.set(oid_file_enable, 1, Integer32)
                 self.logger.debug(f'Enabling RxMER capture [{oid_file_enable}] = 1')
 
@@ -1652,7 +1652,7 @@ class CmSnmpOperation:
         - bool: True if successful, False if any error occurs during SNMP operations.
         """
         try:
-            oid_file_name = f'{COMPILED_OIDS["docsPnmCmDsOfdmFecFileName"]}.{ofdm_idx}'
+            oid_file_name = f'{"docsPnmCmDsOfdmFecFileName"}.{ofdm_idx}'
             self.logger.debug(f'Setting FEC file name [{oid_file_name}] = "{fec_sum_file_name}"')
             set_response = await self._snmp.set(oid_file_name, fec_sum_file_name, OctetString)
             result = Snmp_v2c.snmp_set_result_value(set_response)
@@ -1660,7 +1660,7 @@ class CmSnmpOperation:
                 self.logger.error(f'File name mismatch. Expected "{fec_sum_file_name}", got "{result[0] if result else "None"}"')
                 return False
 
-            oid_sum_type = f'{COMPILED_OIDS["docsPnmCmDsOfdmFecSumType"]}.{ofdm_idx}'
+            oid_sum_type = f'{"docsPnmCmDsOfdmFecSumType"}.{ofdm_idx}'
             self.logger.debug(f'Setting FEC sum type [{oid_sum_type}] = {fec_sum_type.name} -> {type(fec_sum_type.value)}')
             set_response = await self._snmp.set(oid_sum_type, fec_sum_type.value, Integer32)
             result = Snmp_v2c.snmp_set_result_value(set_response)
@@ -1669,7 +1669,7 @@ class CmSnmpOperation:
                 return False
 
             if set_and_go:
-                oid_file_enable = f'{COMPILED_OIDS["docsPnmCmDsOfdmFecFileEnable"]}.{ofdm_idx}'
+                oid_file_enable = f'{"docsPnmCmDsOfdmFecFileEnable"}.{ofdm_idx}'
                 self.logger.debug(f'Enabling FEC file capture [{oid_file_enable}] = 1')
                 set_response = await self._snmp.set(oid_file_enable, 1, Integer32)
                 result = Snmp_v2c.snmp_set_result_value(set_response)
@@ -1696,7 +1696,7 @@ class CmSnmpOperation:
         - bool: True if the SNMP set operations were successful, False otherwise.
         """
         try:
-            oid_file_name = f'{COMPILED_OIDS["docsPnmCmOfdmChEstCoefFileName"]}.{ofdm_idx}'
+            oid_file_name = f'{"docsPnmCmOfdmChEstCoefFileName"}.{ofdm_idx}'
             self.logger.debug(f'Setting OFDM Channel Estimation File Name [{oid_file_name}] = "{chan_est_file_name}"')
             set_response = await self._snmp.set(oid_file_name, chan_est_file_name, OctetString)
 
@@ -1706,7 +1706,7 @@ class CmSnmpOperation:
                 return False
 
             if set_and_go:
-                oid_trigger_enable = f'{COMPILED_OIDS["docsPnmCmOfdmChEstCoefTrigEnable"]}.{ofdm_idx}'
+                oid_trigger_enable = f'{"docsPnmCmOfdmChEstCoefTrigEnable"}.{ofdm_idx}'
                 self.logger.debug(f'Setting Channel Estimation Trigger Enable [{oid_trigger_enable}] = 1')
                 set_response = await self._snmp.set(oid_trigger_enable, Snmp_v2c.TRUE, Integer32)
 
@@ -1745,7 +1745,7 @@ class CmSnmpOperation:
         """
         try:
             # Set file name
-            oid = f'{COMPILED_OIDS["docsPnmCmDsConstDispFileName"]}.{ofdm_idx}'
+            oid = f'{"docsPnmCmDsConstDispFileName"}.{ofdm_idx}'
             self.logger.debug(f'Setting FileName [{oid}] = "{const_disp_name}"')
             set_response = await self._snmp.set(oid, const_disp_name, OctetString)
             result = Snmp_v2c.snmp_set_result_value(set_response)
@@ -1754,7 +1754,7 @@ class CmSnmpOperation:
                 return False
 
             # Set modulation order offset
-            oid = f'{COMPILED_OIDS["docsPnmCmDsConstDispModOrderOffset"]}.{ofdm_idx}'
+            oid = f'{"docsPnmCmDsConstDispModOrderOffset"}.{ofdm_idx}'
             self.logger.debug(f'Setting ModOrderOffset [{oid}] = {modulation_order_offset}')
             set_response = await self._snmp.set(oid, modulation_order_offset, Gauge32)
             result = Snmp_v2c.snmp_set_result_value(set_response)
@@ -1763,7 +1763,7 @@ class CmSnmpOperation:
                 return False
 
             # Set number of sample symbols
-            oid = f'{COMPILED_OIDS["docsPnmCmDsConstDispNumSampleSymb"]}.{ofdm_idx}'
+            oid = f'{"docsPnmCmDsConstDispNumSampleSymb"}.{ofdm_idx}'
             self.logger.debug(f'Setting NumSampleSymb [{oid}] = {number_sample_symbol}')
             set_response = await self._snmp.set(oid, number_sample_symbol, Gauge32)
             result = Snmp_v2c.snmp_set_result_value(set_response)
@@ -1773,7 +1773,7 @@ class CmSnmpOperation:
 
             if set_and_go:
                 # Trigger measurement
-                oid = f'{COMPILED_OIDS["docsPnmCmDsConstDispTrigEnable"]}.{ofdm_idx}'
+                oid = f'{"docsPnmCmDsConstDispTrigEnable"}.{ofdm_idx}'
                 self.logger.debug(f'Setting TrigEnable [{oid}] = 1')
                 set_response = await self._snmp.set(oid, Snmp_v2c.TRUE, Integer32)
                 result = Snmp_v2c.snmp_set_result_value(set_response)
@@ -1809,7 +1809,7 @@ class CmSnmpOperation:
         mac_idx = self.getIfTypeIndex(DocsisIfType.docsCableMaclayer)[0]
         
         try:
-            oid_file_name = f'{COMPILED_OIDS["docsCmLatencyRptCfgFileName"]}.{mac_idx}'
+            oid_file_name = f'{"docsCmLatencyRptCfgFileName"}.{mac_idx}'
             self.logger.debug(f'Setting US Latency Report file name [{oid_file_name}] = "{latency_rpt_file_name}"')
             set_response = await self._snmp.set(oid_file_name, latency_rpt_file_name, OctetString)
             result = Snmp_v2c.snmp_set_result_value(set_response)
@@ -1819,7 +1819,7 @@ class CmSnmpOperation:
                 return False
 
             if set_and_go:
-                oid_num_reports = f'{COMPILED_OIDS["docsCmLatencyRptCfgNumFiles"]}.{mac_idx}'
+                oid_num_reports = f'{"docsCmLatencyRptCfgNumFiles"}.{mac_idx}'
                 self.logger.debug(f'Setting number of latency reports [{oid_num_reports}] = {num_of_reports}')
                 set_response = await self._snmp.set(oid_num_reports, num_of_reports, Gauge32)
                 result = Snmp_v2c.snmp_set_result_value(set_response)
@@ -1871,10 +1871,10 @@ class CmSnmpOperation:
 
         try:
             # TODO: Need to make this dynamic
-            set_response = await self._snmp.set(f'{COMPILED_OIDS["docsPnmCmDsHistTimeOut"]}.{idx}', timeout, Gauge32)
+            set_response = await self._snmp.set(f'{"docsPnmCmDsHistTimeOut"}.{idx}', timeout, Gauge32)
             self.logger.debug(f'Setting Histogram Timeout: {timeout}')
 
-            oid_file_name = f'{COMPILED_OIDS["docsPnmCmDsHistFileName"]}.{idx}'
+            oid_file_name = f'{"docsPnmCmDsHistFileName"}.{idx}'
             set_response = await self._snmp.set( oid_file_name, ds_histogram_file_name, OctetString)
             self.logger.debug(f'Setting Histogram file name [{oid_file_name}] = "{ds_histogram_file_name}"')
 
@@ -1884,7 +1884,7 @@ class CmSnmpOperation:
                 return False
 
             if set_and_go:
-                oid_file_enable = f'{COMPILED_OIDS["docsPnmCmDsHistEnable"]}.{idx}'
+                oid_file_enable = f'{"docsPnmCmDsHistEnable"}.{idx}'
                 set_response = await self._snmp.set(oid_file_enable, Snmp_v2c.TRUE, Integer32)
                 self.logger.debug(f'Enabling Histogram capture [{oid_file_enable}] = 1')
 
@@ -1912,7 +1912,7 @@ class CmSnmpOperation:
         TODO: NOT ABLE TO TEST DUE TO CMTS DOES NOT SUPPORT
         """
         try:
-            oid_file_name = f'{COMPILED_OIDS["docsPnmCmDsOfdmSymCaptFileName"]}.{ofdm_idx}'
+            oid_file_name = f'{"docsPnmCmDsOfdmSymCaptFileName"}.{ofdm_idx}'
             self.logger.debug(f'Setting OFDM Downstream Symbol Capture File Name [{oid_file_name}] = "{symbol_trig_file_name}"')
             set_response = await self._snmp.set(oid_file_name, symbol_trig_file_name, OctetString)
 
@@ -1921,7 +1921,7 @@ class CmSnmpOperation:
                 self.logger.error(f'Failed to set Downstream Symbol Capture file name. Expected "{symbol_trig_file_name}", got "{result[0] if result else "None"}"')
                 return False
 
-            oid_trigger_enable = f'{COMPILED_OIDS["docsPnmCmDsConstDispTrigEnable"]}.{ofdm_idx}'
+            oid_trigger_enable = f'{"docsPnmCmDsConstDispTrigEnable"}.{ofdm_idx}'
             self.logger.debug(f'Setting OFDM Downstream Symbol Capture Trigger Enable [{oid_trigger_enable}] = 1')
             set_response = await self._snmp.set(oid_trigger_enable, 1, Integer32)
 
