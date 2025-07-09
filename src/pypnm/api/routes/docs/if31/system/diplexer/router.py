@@ -11,6 +11,7 @@ from pypnm.api.routes.common.classes.operation.cable_modem_precheck import Cable
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.if31.system.diplexer.schemas import DiplexerResponse
 from pypnm.api.routes.docs.if31.system.diplexer.service import DiplexerConfigService
+from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
 
 
 class DiplexerConfigResult:
@@ -40,8 +41,9 @@ class DiplexerConfigResult:
             """
             try:
 
-                status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
-                                                        ip_address=request.ip_address).run_precheck()
+                status, msg = await CableModemServicePreCheck(mac_address=request.mac_address, 
+                                                              ip_address=request.ip_address,
+                                                              check_docsis_version=ClabsDocsisVersion.DOCSIS_31).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
