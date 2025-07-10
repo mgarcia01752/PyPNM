@@ -1198,12 +1198,7 @@ class CmSnmpOperation:
         Returns:
             DocsFddCmFddSystemCfgState | None: Populated object if successful, or None on failure.
         """
-        oid = COMPILED_OIDS.get("docsFddCmFddSystemCfgState")
-        if not oid:
-            self.logger.error("OID 'docsFddCmFddSystemCfgState' not found in COMPILED_OIDS")
-            return None
-
-        results = await self._snmp.walk(oid)
+        results = await self._snmp.walk('docsFddCmFddSystemCfgState')
         if not results:
             self.logger.warning(f"No results found during SNMP walk for OID {oid}")
             return None
@@ -1230,12 +1225,7 @@ class CmSnmpOperation:
         Returns:
             A list of DocsFddCmFddBandEdgeCapabilities objects, or None if none found.
         """
-        oid = COMPILED_OIDS.get("docsFddDiplexerUsUpperBandEdgeCapability")
-        if not oid:
-            self.logger.error("OID 'docsFddDiplexerUsUpperBandEdgeCapability' not found in COMPILED_OIDS")
-            return None
-
-        results = await self._snmp.walk(oid)
+        results = await self._snmp.walk('docsFddDiplexerUsUpperBandEdgeCapability')
         if not results:
             self.logger.warning(f"No results found during SNMP walk for OID {oid}")
             return None
@@ -1904,15 +1894,9 @@ class CmSnmpOperation:
             for each upstream channel index.
             Returns None if SNMP walk fails, no data is returned, or parsing fails.
         """
-        oid = "docsIf3CmStatusUsEqData"
-        oid_path = COMPILED_OIDS.get(oid)
-
-        if not oid_path:
-            self.logger.error(f"OID path not found for {oid}. Check DOCS_OIDS configuration.")
-            return DocsEqualizerData()
-
+        oid = 'docsIf3CmStatusUsEqData'
         try:
-            result = await self._snmp.walk(oid_path)
+            result = await self._snmp.walk(oid)
             
         except Exception as e:
             self.logger.error(f"SNMP walk failed for {oid}: {e}")
@@ -1939,9 +1923,7 @@ class CmSnmpOperation:
         if not ded.coefficients_found():
             self.logger.warning(
                 "No upstream pre-equalization coefficients found. "
-                "Ensure Pre-Equalization is enabled on the upstream interface(s)."
-            )
+                "Ensure Pre-Equalization is enabled on the upstream interface(s).")
 
         return ded
-
              

@@ -43,7 +43,7 @@ class PnmFastApiRouter(ABC):
         self.set_analysis_description = set_analysis_description
         
         self._add_routes()
-
+        
     def _add_routes(self):
         
         @self.router.post(f"/{self._base_endpoint}/getMeasurement", 
@@ -69,42 +69,29 @@ class PnmFastApiRouter(ABC):
                 raise
             except Exception as e:
                 self.logger.exception(f"[getAnalysis] Error for MAC {request.mac_address}")
-                raise HTTPException(status_code=500, detail=f"Plot retrieval failed: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Analysis retrieval failed: {str(e)}")
 
+    def _add_stat_route(self):
+        
+        @self.router.post(f"/{self._base_endpoint}/stat", 
+                          response_model=Union[PnmAnalysisResponse, SnmpResponse], 
+                          response_model_exclude_unset=True,
+                          description=self.set_stat_description)
+        async def get_stat(request: PnmAnalysisRequest):
+            try:
+                return await self.get_stat_logic(request)
+            except HTTPException:
+                raise
+            except Exception as e:
+                self.logger.exception(f"[getStat] Error for MAC {request.mac_address}")
+                raise HTTPException(status_code=500, detail=f"Stat retrieval failed: {str(e)}")        
+            
     @abstractmethod
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:
-        """Subclasses must implement this to provide measurement data.
-        
-        Example:
-        
-        self.logger.info(f"Retrieving RxMER measurement for MAC {request.mac_address}")
-        
-        data = {
-            "measurement": [35.2, 34.8, 36.0],  # Example RxMER values in dB
-        }
-        return PnmMeasurementResponse(status=ServiceStatusCode.SUCCESS, 
-                                      mac_address=MacAddress(request.mac_address), 
-                                      measurement=data)
-        
-        """
+        """Subclasses must implement this to provide measurement data"""
         pass
 
     @abstractmethod
     async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, SnmpResponse]:
-        """Subclasses must implement this to provide plotting data.
-        
-        Example:
-        
-        self.logger.info(f"Generating RxMER plot data for MAC {request.mac_address}")
-        
-        # Placeholder plotting data
-        plot_data = {
-            "labels": ["SC0", "SC1", "SC2"],
-            "values": [35.2, 34.8, 36.0]
-        }
-        return PnmPlotResponse(status=ServiceStatusCode.SUCCESS, 
-                               mac_address=MacAddress(request.mac_address), 
-                               plot_data=plot_data)      
-        
-        """
+        """Subclasses must implement this to provide analysis data"""
         pass

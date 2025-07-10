@@ -118,6 +118,7 @@ This endpoint enables advanced insight into upstream channel quality using stati
         return PnmAnalysisResponse(mac_address=request.mac_address,
                                       status=ServiceStatusCode.SUCCESS,
                                       data=analysis.get_results()) 
-
+        
 # ✅ Required for dynamic auto-registration
 router = UsOfdmaPreEqualizationRouter().router
+
