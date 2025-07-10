@@ -1,7 +1,7 @@
 {
     "FastApiRequestDefault": {
-        "mac_address": "38:ad:2b:12:49:4c",
-        "ip_address": "172.19.32.72"
+        "mac_address": "F8:34:5A:4F:9B:58",
+        "ip_address": "172.19.24.23"
     },   
     "SNMP": {
         "version": "2",

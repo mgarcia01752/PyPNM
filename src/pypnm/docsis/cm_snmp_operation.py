@@ -536,7 +536,7 @@ class CmSnmpOperation:
         Returns:
             List[int]: A list of OFDMA channel indices present on the device.
         """
-        return self.getIfTypeIndex(DocsisIfType.docsOfdmaUpstream)
+        return await self.getIfTypeIndex(DocsisIfType.docsOfdmaUpstream)
 
     async def getDocsIf31CmDsOfdmChanPlcFreq(self) -> List[Tuple[int, int]]:
         """
@@ -699,23 +699,14 @@ class CmSnmpOperation:
         Returns:
             List[DocsIf31CmUsOfdmaChanEntry]: List of populated OFDMA channel objects.
         """
-        us_chan_list: List[DocsIf31CmUsOfdmaChanEntry] = []
+        results: List[DocsIf31CmUsOfdmaChanEntry] = []
 
-        try:
-            indices = await self.getDocsIf31CmUsOfdmaChanChannelIdIndex()
-            if not indices:
-                self.logger.warning("No upstream OFDMA indices found.")
-                return us_chan_list
+        indices = await self.getDocsIf31CmUsOfdmaChanChannelIdIndex()
+        if not indices:
+            self.logger.warning("No upstream OFDMA indices found.")
+            return results
 
-            for idx in indices:
-                entry = DocsIf31CmUsOfdmaChanEntry()
-                await entry.get(snmp=self._snmp, indices=indices)
-                us_chan_list.append(entry)
-
-        except Exception as e:
-            self.logger.exception("Failed to retrieve OFDMA channel entries")
-
-        return us_chan_list
+        return await DocsIf31CmUsOfdmaChanEntry.get(snmp=self._snmp, indices=indices)
 
     async def getDocsIfUpstreamChannelEntry(self) -> List[DocsIfUpstreamChannelEntry]:
         """
