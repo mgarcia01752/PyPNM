@@ -17,11 +17,25 @@ Engineers can use this data for detailed spectral diagnostics, plant maintenance
 
 * [Get Measurement](#get-measurement)
 * [Get Analysis](#get-analysis)
+* [Get Measurement Statistics](#get-measurement-statistics)
 * [Analysis and Output Types](#analysis-and-output-types)
+* [Measurement Status Codes](#measurement-status-codes)
+
+## Measurement Status Codes
+
+| Code | Meaning                    | Context                                                            |
+| ---- | -------------------------- | ------------------------------------------------------------------ |
+| 0    | SUCCESS                    | Measurement completed and results are valid                        |
+| 1    | CAPTURE FILE MISSING       | SNMP points to a missing or unavailable binary data file           |
+| 2    | PARTIAL DATA               | Measurement file present, but content is truncated or incomplete   |
+| 3    | INVALID FORMAT             | Measurement file is unreadable or has invalid structure            |
+| 4    | UNSUPPORTED MODEM RESPONSE | Modem responded with unexpected or unhandled data layout           |
+| 5    | TIMEOUT                    | SNMP timeout or capture request did not complete within time limit |
+| 6    | NOT IMPLEMENTED            | Capture or parsing functionality not supported on current platform |
 
 ## Get Measurement
 
-### 🛁 Endpoint
+### 🚱 Endpoint
 
 **POST** `/docs/pnm/ds/ofdm/channelEstCoeff/getMeasurement`
 
@@ -86,7 +100,7 @@ Retrieves complex channel estimation coefficients from a DOCSIS 3.1 cable modem 
 ### 📘️ Response Field Breakdown
 
 | Field                           | Type     | Description                                                      |
-| - | -- | - |
+| ------------------------------- | -------- | ---------------------------------------------------------------- |
 | `pnm_header`                    | object   | Metadata from the capture file                                   |
 | `channel_id`                    | int      | Downstream OFDM channel ID                                       |
 | `mac_address`                   | string   | MAC address of the modem                                         |
@@ -99,10 +113,9 @@ Retrieves complex channel estimation coefficients from a DOCSIS 3.1 cable modem 
 | `value_units`                   | string   | Format of the data, e.g. `[Real, Imaginary]`                     |
 | `values`                        | list     | List of complex coefficients (length = number\_of\_coefficients) |
 
-
 ## Get Analysis
 
-### 🛁 Endpoint
+### 🚱 Endpoint
 
 **POST** `/docs/pnm/ds/ofdm/channelEstCoeff/getAnalysis`
 
@@ -183,6 +196,67 @@ Performs structured analysis of the channel estimation coefficients, including m
           "crest_factor": 2.66,
           "zero_crossing_rate": 0.113,
           "zero_crossings": 430
+        }
+      }
+    ]
+  }
+}
+```
+
+## Get Measurement Statistics
+
+### 🚱 Endpoint
+
+**POST** `/docs/pnm/ds/ofdm/channelEstCoeff/getMeasurementStatistics`
+
+Returns high-level measurement statistics for downstream OFDM Channel Estimation Coefficients.
+
+### 📒 Request Body (JSON)
+
+```json
+{
+  "mac_address": "aa:bb:cc:dd:ee:ff",
+  "ip_address": "172.19.24.23",
+  "snmp": {
+    "snmpV2C": {
+      "community": "private"
+    },
+    "snmpV3": {
+      "username": "string",
+      "securityLevel": "noAuthNoPriv",
+      "authProtocol": "MD5",
+      "authPassword": "string",
+      "privProtocol": "DES",
+      "privPassword": "string"
+    }
+  }
+}
+```
+
+### 📤 JSON Response
+
+```json
+{
+  "mac_address": "aa:bb:cc:dd:ee:ff",
+  "status": 0,
+  "message": "Measurement Statistics for OFDM Channel Estimation Coefficients",
+  "results": {
+    "DS_OFDM_CHAN_EST_COEF": [
+      {
+        "index": <SNMP_INDEX>,
+        "channel_id": <CHANNEL_ID>,
+        "entry": {
+          "docsPnmCmOfdmChEstCoefTrigEnable": false,
+          "docsPnmCmOfdmChEstCoefAmpRipplePkToPk": 1484,
+          "docsPnmCmOfdmChEstCoefAmpRippleRms": 379,
+          "docsPnmCmOfdmChEstCoefAmpSlope": 1,
+          "docsPnmCmOfdmChEstCoefGrpDelayRipplePkToPk": 112741,
+          "docsPnmCmOfdmChEstCoefGrpDelayRippleRms": 3164,
+          "docsPnmCmOfdmChEstCoefMeasStatus": 4,
+          "docsPnmCmOfdmChEstCoefFileName": "ds-chan-est_48_1752333441.bin",
+          "docsPnmCmOfdmChEstCoefAmpMean": 4468,
+          "docsPnmCmOfdmChEstCoefGrpDelaySlope": 5,
+          "docsPnmCmOfdmChEstCoefGrpDelayMean": 1558514
         }
       }
     ]
