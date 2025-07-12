@@ -54,12 +54,19 @@ This endpoint enables advanced insight into upstream channel quality using stati
 
 🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/pre-equalization.md#get-analysis)
 """
+        measurement_statistics_description = """
+**Analyze OFDMA Pre-Equalization Coefficients (DOCSIS 3.1)**
+
+🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/pre-equalization.md#get-measurement-statistics)
+"""
+
         super().__init__(
             prefix="/docs/pnm/us/ofdma",
             tags=["PNM Operations - Upstream OFDMA Pre-Equalization"],
             base_endpoint="/preEqualization",
             set_measurement_description = measurement_description,
-            set_analysis_description = analysis_description)
+            set_analysis_description = analysis_description,
+            set_measurement_statistics_description=measurement_statistics_description)
         self.logger = logging.getLogger("UsOfdmaPreEqualization")
 
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:
@@ -118,7 +125,39 @@ This endpoint enables advanced insight into upstream channel quality using stati
         return PnmAnalysisResponse(mac_address=request.mac_address,
                                       status=ServiceStatusCode.SUCCESS,
                                       data=analysis.get_results()) 
-        
+
+    async def get_measurement_statistics_logic(self, request: PnmRequest) -> Union[SnmpResponse]:
+        """
+        Retrieves upstream OFDMA Pre-Equalization measurement statistics for a DOCSIS 3.1 cable modem.
+
+        This includes summary values such as:
+        - Amplitude ripple (RMS and peak-to-peak)
+        - Group delay ripple and slope
+        - Mean amplitude and group delay
+        - Pre-equalization adjustment status
+        - Associated capture and update filenames
+        - SNMP measurement status codes
+        """
+        self.logger.info(f"Fetching OFDMA Pre-Equalization Measurement Statistics for MAC: {request.mac_address}")
+
+        cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
+
+        status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
+        if status != ServiceStatusCode.SUCCESS:
+            self.logger.error(msg)
+            return SnmpResponse(
+                mac_address=str(request.mac_address),
+                status=status,message=msg)
+
+        service: CmUsOfdmaPreEqService = CmUsOfdmaPreEqService(cm)
+        service_measure_stat = await service.get_pnm_measurement_statistics()
+
+        return SnmpResponse(
+            mac_address=str(request.mac_address),
+            status=ServiceStatusCode.SUCCESS,
+            message="Measurement Statistics for OFDMA Pre-Equalization",
+            results=service_measure_stat)
+   
 # ✅ Required for dynamic auto-registration
 router = UsOfdmaPreEqualizationRouter().router
 
