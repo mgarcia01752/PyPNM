@@ -25,6 +25,7 @@ from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import (
     DocsPnmBulkFileUploadStatus, DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType)
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOfdmChanEstCoefEntry
 from pypnm.lib.file_processor import FileProcessor
@@ -314,8 +315,13 @@ class CommonMeasureService(CommonMessagingService):
             return entries
 
         elif pnm_test_type == DocsPnmCmCtlTest.DS_CONSTELLATION_DISP:
-            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_CONSTELLATION_DISP")
-            return build_response("DS_CONSTELLATION_DISP", "Not implemented yet")
+            self.logger.info(f"{self.log_prefix} - Running OFDM Constellation Display collection")
+
+            entries: List[DocsPnmCmDsConstDispMeasEntry] = await self.cm.getDocsPnmCmDsConstDispMeasEntry()
+
+            if return_type == MeasureServiceReturnTypes.DICT:
+                return build_response("DS_CONSTELLATION_DISP", [e.model_dump() for e in entries])
+            return entries
 
         elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR:
             self.logger.info(f"{self.log_prefix} - Running RXMER entry collection")

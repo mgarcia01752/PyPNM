@@ -107,7 +107,7 @@ class ConstellationDisplayRouter:
         async def get_analysis(request: PnmAnalysisRequest):
             
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address, 
-                                                    ip_address=request.ip_address).run_precheck()
+                                                          ip_address=request.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
@@ -121,32 +121,51 @@ class ConstellationDisplayRouter:
                 self.logger.exception(f"[getAnalysis] Error for MAC {request.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Plot retrieval failed: {str(e)}")
 
-    async def get_measurement_statistics_logic(self, request: PnmRequest) -> Union[SnmpResponse]:
-        """
-        Retrieves downstream OFDM Constellation Display measurement statistics for a DOCSIS 3.1 cable modem.
 
-        This includes values such as selected modulation order, modulation offset, number of sample symbols,
-        measurement status, and the associated binary filename used for capture.
-        """
-        self.logger.info(f"Fetching OFDM Constellation Display Statistics for MAC: {request.mac_address}")
+        @self.router.post(f"/{self.base_endpoint}/getMeasurementStatistics", response_model=Union[SnmpResponse])
+        async def get_analysis(request: PnmRequest):
+            """
+            Returns high-level Constellation Display measurement statistics for a DOCSIS 3.1 cable modem.
+            This includes modulation order, symbol capture config, and measurement state metadata.
+            """
+            try:
+                # Initial precheck using MAC and IP
+                status, msg = await CableModemServicePreCheck(
+                    mac_address=request.mac_address,
+                    ip_address=request.ip_address
+                ).run_precheck()
+                
+                if status != ServiceStatusCode.SUCCESS:
+                    self.logger.error(msg)
+                    return SnmpResponse(
+                        mac_address=str(request.mac_address),
+                        status=status,
+                        message=msg
+                    )
 
-        cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
+                self.logger.info(f"Fetching OFDM Constellation Display Statistics for MAC: {request.mac_address}")
 
-        status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
-        if status != ServiceStatusCode.SUCCESS:
-            self.logger.error(msg)
-            return SnmpResponse(
-                mac_address=str(request.mac_address),
-                status=status, message=msg)
+                # Build modem and invoke measurement service
+                cm: CableModem = CableModem(
+                    MacAddress(request.mac_address),
+                    Inet(request.ip_address)
+                )
 
-        service: CmDsOfdmConstDisplayService = CmDsOfdmConstDisplayService(cm)
-        service_measure_stat = await service.get_pnm_measurement_statistics()
+                service: CmDsOfdmConstDisplayService = CmDsOfdmConstDisplayService(cm)
+                service_measure_stat = await service.get_pnm_measurement_statistics()
 
-        return SnmpResponse(
-            mac_address=str(request.mac_address),
-            status=ServiceStatusCode.SUCCESS,
-            message="Measurement Statistics for OFDM Constellation Display",
-            results=service_measure_stat)
+                return SnmpResponse(
+                    mac_address=str(request.mac_address),
+                    status=ServiceStatusCode.SUCCESS,
+                    message="Measurement Statistics for OFDM Constellation Display",
+                    results=service_measure_stat
+                )
+
+            except HTTPException:
+                raise
+            except Exception as e:
+                self.logger.exception(f"[getMeasurementStatistics] Error for MAC {request.mac_address}")
+                raise HTTPException(status_code=500, detail=f"Measurement statistics retrieval failed: {str(e)}")
 
 
 # ✅ Required for dynamic auto-registration
