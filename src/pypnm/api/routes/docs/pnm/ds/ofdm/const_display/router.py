@@ -6,7 +6,7 @@ from typing import List, Union
 
 from fastapi import APIRouter, HTTPException
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmAnalysisResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmAnalysisResponse, PnmRequest
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
@@ -112,9 +112,7 @@ class ConstellationDisplayRouter:
                 self.logger.error(msg)
                 return SnmpResponse(
                     mac_address=str(request.mac_address),
-                    status=status,
-                    message=msg
-                )               
+                    status=status, message=msg)               
             try:
                 pass
             except HTTPException:
@@ -122,6 +120,34 @@ class ConstellationDisplayRouter:
             except Exception as e:
                 self.logger.exception(f"[getAnalysis] Error for MAC {request.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Plot retrieval failed: {str(e)}")
+
+    async def get_measurement_statistics_logic(self, request: PnmRequest) -> Union[SnmpResponse]:
+        """
+        Retrieves downstream OFDM Constellation Display measurement statistics for a DOCSIS 3.1 cable modem.
+
+        This includes values such as selected modulation order, modulation offset, number of sample symbols,
+        measurement status, and the associated binary filename used for capture.
+        """
+        self.logger.info(f"Fetching OFDM Constellation Display Statistics for MAC: {request.mac_address}")
+
+        cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
+
+        status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
+        if status != ServiceStatusCode.SUCCESS:
+            self.logger.error(msg)
+            return SnmpResponse(
+                mac_address=str(request.mac_address),
+                status=status, message=msg)
+
+        service: CmDsOfdmConstDisplayService = CmDsOfdmConstDisplayService(cm)
+        service_measure_stat = await service.get_pnm_measurement_statistics()
+
+        return SnmpResponse(
+            mac_address=str(request.mac_address),
+            status=ServiceStatusCode.SUCCESS,
+            message="Measurement Statistics for OFDM Constellation Display",
+            results=service_measure_stat)
+
 
 # ✅ Required for dynamic auto-registration
 router = ConstellationDisplayRouter().router
