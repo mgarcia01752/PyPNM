@@ -2,6 +2,7 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import asyncio
+from enum import Enum, auto
 import logging
 import math
 import os
@@ -9,7 +10,9 @@ from pathlib import Path
 import shutil
 from time import sleep
 import time
-from typing import Dict, List,  Optional, Tuple, Union
+from typing import Dict, List, Literal,  Optional, Tuple, Union
+
+from pydantic import BaseModel
 
 from pypnm.api.routes.common.extended.common_measure_schema import (
     DownstreamOfdmParameters, UpstreamOfdmaParameters)
@@ -22,6 +25,7 @@ from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import (
     DocsPnmBulkFileUploadStatus, DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType)
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.ftp.ftp_connector import FTPConnector
 from pypnm.lib.inet import Inet
@@ -33,6 +37,10 @@ from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 from pypnm.snmp.modules import DocsisIfType
 from pypnm.snmp.snmp_v2c import Snmp_v2c
+
+class MeasureServiceReturnTypes(Enum):
+    BASE_MODEL = auto()
+    DICT = auto()
 
 class CommonMeasureService(CommonMessagingService):
     """
@@ -259,6 +267,86 @@ class CommonMeasureService(CommonMessagingService):
             bool: True if the modem responds to SNMP queries, False otherwise.
         """
         return await self.cm.is_snmp_reachable()
+
+    async def get_pnm_measurement_statistics(self,
+        pnm_test_type: DocsPnmCmCtlTest = None,
+        return_type: MeasureServiceReturnTypes = MeasureServiceReturnTypes.DICT
+        ) -> Union[List[BaseModel], Dict[str, List[Dict]]]:
+        """
+        Retrieve PNM measurement statistics for the specified test type.
+
+        Args:
+            pnm_test_type (DocsPnmCmCtlTest, optional): The PNM test type to fetch statistics for.
+                Defaults to the instance's `pnm_test_type`.
+            return_type (MeasureServiceReturnTypes, optional): Return format type.
+                Defaults to DICT.
+
+        Returns:
+            Union[List[BaseModel], Dict[str, List[Dict]]]: List of BaseModels or
+            dictionary of serialized entries keyed by test type.
+        """
+        if not pnm_test_type:
+            pnm_test_type = self.pnm_test_type
+
+        self.logger.info(f"{self.log_prefix} - Requested MeasurementStatistic for {pnm_test_type.name}")
+
+        def build_response(tag: str, payload: Union[str, List[Dict]]) -> Dict[str, Union[Dict, List[Dict]]]:
+            if isinstance(payload, str):
+                return {tag: {"message": payload}}
+            return {tag: payload}
+
+        if pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: SPECTRUM_ANALYZER")
+            return build_response("SPECTRUM_ANALYZER", "Not implemented yet")
+
+        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_SYMBOL_CAPTURE:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_SYMBOL_CAPTURE")
+            return build_response("DS_OFDM_SYMBOL_CAPTURE", "Not implemented yet")
+
+        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_CHAN_EST_COEF")
+            return build_response("DS_OFDM_CHAN_EST_COEF", "Not implemented yet")
+
+        elif pnm_test_type == DocsPnmCmCtlTest.DS_CONSTELLATION_DISP:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_CONSTELLATION_DISP")
+            return build_response("DS_CONSTELLATION_DISP", "Not implemented yet")
+
+        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR:
+            self.logger.info(f"{self.log_prefix} - Running RXMER entry collection")
+
+            entries: List[DocsPnmCmDsOfdmRxMerEntry] = await self.cm.getDocsPnmCmDsOfdmRxMerEntry()
+
+            if return_type == MeasureServiceReturnTypes.DICT:
+                return build_response("DS_OFDM_RXMER_PER_SUBCAR", [e.model_dump() for e in entries])
+            return entries
+
+        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CODEWORD_ERROR_RATE:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_CODEWORD_ERROR_RATE")
+            return build_response("DS_OFDM_CODEWORD_ERROR_RATE", "Not implemented yet")
+
+        elif pnm_test_type == DocsPnmCmCtlTest.DS_HISTOGRAM:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_HISTOGRAM")
+            return build_response("DS_HISTOGRAM", "Not implemented yet")
+
+        elif pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: US_PRE_EQUALIZER_COEF")
+            return build_response("US_PRE_EQUALIZER_COEF", "Not implemented yet")
+
+        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_MODULATION_PROFILE:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_MODULATION_PROFILE")
+            return build_response("DS_OFDM_MODULATION_PROFILE", "Not implemented yet")
+
+        elif pnm_test_type == DocsPnmCmCtlTest.LATENCY_REPORT:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: LATENCY_REPORT")
+            return build_response("LATENCY_REPORT", "Not implemented yet")
+
+        elif pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: SPECTRUM_ANALYZER_SNMP_AMP_DATA")
+            return build_response("SPECTRUM_ANALYZER_SNMP_AMP_DATA", "Not implemented yet")
+
+        else:
+            self.logger.warning(f"{self.log_prefix} - Unknown PNM test type: {pnm_test_type}")
+            return build_response("UNKNOWN", f"Unhandled test type: {pnm_test_type}")
 
     ###################
     # Private Methods #

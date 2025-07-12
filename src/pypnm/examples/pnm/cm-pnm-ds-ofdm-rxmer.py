@@ -5,9 +5,13 @@
 
 import argparse
 import asyncio
+import json
 import logging
+from typing import List
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
+from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.utils import Utils
@@ -53,6 +57,16 @@ async def main():
                 logging.warning(f'Tesing in progress...')
                 continue
             break
+    
+    results: List[dict] = []
 
+    for entry in await cm.getDocsPnmCmDsOfdmRxMerEntry():
+        results.append(entry.model_dump())
+
+    filename = f".data/pnm/DocsPnmCmDsOfdmRxMerEntry-{args.mac}-{Utils.time_stamp()}.json"
+    json_data = json.dumps(results, indent=2)
+
+    FileProcessor(filename).write_file(json_data)
+    
 if __name__ == "__main__":
     asyncio.run(main())

@@ -13,7 +13,6 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
     PnmAnalysisRequest, PnmAnalysisResponse, PnmMeasurementResponse, PnmRequest)
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
 
-
 class BaseFastApiRouter(ABC):
 
     def __init__(self, prefix: str, tags: List[str|Enum], base_endpoint: str):
@@ -28,19 +27,21 @@ class PnmFastApiRouter(ABC):
 
     Subclasses must implement core logic for:
     - get_measurement_logic
-    - get_files_logic
     - get_analysis_logic
+    - get_measurement_statistics_logic
     """
 
     def __init__(self, prefix: str, tags: List[str|Enum], base_endpoint: str,
                  set_measurement_description:str=None,
-                 set_analysis_description:str=None):
+                 set_analysis_description:str=None,
+                 set_measurement_statistics_description:str=None):
         
         self.router = APIRouter(prefix=prefix, tags=tags)
         self.logger = logging.getLogger(f"{self.__class__.__name__}.{base_endpoint}")
         self._base_endpoint = base_endpoint.strip("/")
         self.set_measurement_description = set_measurement_description
         self.set_analysis_description = set_analysis_description
+        self.set_measurement_statistics_description = set_measurement_statistics_description
         
         self._add_routes()
         
@@ -71,20 +72,18 @@ class PnmFastApiRouter(ABC):
                 self.logger.exception(f"[getAnalysis] Error for MAC {request.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Analysis retrieval failed: {str(e)}")
 
-    def _add_stat_route(self):
-        
-        @self.router.post(f"/{self._base_endpoint}/stat", 
-                          response_model=Union[PnmAnalysisResponse, SnmpResponse], 
+        @self.router.post(f"/{self._base_endpoint}/getMeasurementStatistics", 
+                          response_model= Union[SnmpResponse], 
                           response_model_exclude_unset=True,
-                          description=self.set_stat_description)
-        async def get_stat(request: PnmAnalysisRequest):
+                          description=self.set_measurement_statistics_description)
+        async def get_measurement_statistics(request: PnmRequest):
             try:
-                return await self.get_stat_logic(request)
+                return await self.get_measurement_statistics_logic(request)
             except HTTPException:
                 raise
             except Exception as e:
-                self.logger.exception(f"[getStat] Error for MAC {request.mac_address}")
-                raise HTTPException(status_code=500, detail=f"Stat retrieval failed: {str(e)}")        
+                self.logger.exception(f"[getMeasurementStatistics] Error for MAC {request.mac_address}")
+                raise HTTPException(status_code=500, detail=f"Measurement Statistics retrieval failed: {str(e)}")        
             
     @abstractmethod
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:
@@ -94,4 +93,9 @@ class PnmFastApiRouter(ABC):
     @abstractmethod
     async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, SnmpResponse]:
         """Subclasses must implement this to provide analysis data"""
+        pass
+
+    @abstractmethod
+    async def get_measurement_statistics_logic(self, request: PnmRequest) -> Union[SnmpResponse]:
+        """Subclasses must implement this to provide measurement statistics data"""
         pass

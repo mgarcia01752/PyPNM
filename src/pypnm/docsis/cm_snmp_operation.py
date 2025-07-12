@@ -21,6 +21,7 @@ from pypnm.docsis.data_type.DocsIfSignalQualityEntry import DocsIfSignalQuality
 from pypnm.docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChannelEntry
 from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst
 from pypnm.docsis.data_type.InterfaceStats import InterfaceStats
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.docsis.lib.pnm_bulk_data import DocsPnmBulkDataGroup, DocsPnmBulkFileEntry
 from pypnm.lib.format_string import Format
@@ -1178,6 +1179,29 @@ class CmSnmpOperation:
                 stats[if_type.name] = [iface.model_dump() for iface in interfaces]
 
         return stats
+
+    async def getDocsPnmCmDsOfdmRxMerEntry(self) -> List[DocsPnmCmDsOfdmRxMerEntry]:
+        """
+        Retrieves RxMER data entries for all downstream OFDM channels.
+        
+        Returns:
+            List[DocsPnmCmDsOfdmRxMerEntry]: A list of RxMER entry models.
+        """
+        entries: List[DocsPnmCmDsOfdmRxMerEntry] = []
+
+        try:
+            indices = await self.getDocsIf31CmDsOfdmChannelIdIndex()
+
+            if not indices:
+                self.logger.warning("No DocsIf31CmDsOfdmChanChannelIdIndex indices found.")
+                return entries
+
+            entries = await DocsPnmCmDsOfdmRxMerEntry.get(snmp=self._snmp, indices=indices)
+
+        except Exception as e:
+            self.logger.exception("Failed to retrieve DocsPnmCmDsOfdmRxMerEntry entries")
+
+        return entries
 
 ####################
 # DOCSIS 4.0 - FDD #

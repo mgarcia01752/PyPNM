@@ -40,9 +40,6 @@ class CmDsOfdmRxMerService(CommonMeasureService):
         """
         super().__init__(
             DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR,
-            cable_modem,
-            tftp_servers,
-            tftp_path,
-            cable_modem.getWriteCommunity()
-        )
+            cable_modem,tftp_servers,
+            tftp_path,cable_modem.getWriteCommunity())
         self.logger = logging.getLogger(self.__class__.__name__)
