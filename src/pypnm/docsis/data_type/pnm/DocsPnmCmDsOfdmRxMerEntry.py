@@ -7,7 +7,6 @@ from pydantic import BaseModel
 
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
-
 class DocsPnmCmDsOfdmRxMerFields(BaseModel):
     docsPnmCmDsOfdmRxMerFileEnable: Optional[bool] = None
     docsPnmCmDsOfdmRxMerPercentile: Optional[int] = None
@@ -18,13 +17,13 @@ class DocsPnmCmDsOfdmRxMerFields(BaseModel):
     docsPnmCmDsOfdmRxMerMeasStatus: Optional[int] = None
     docsPnmCmDsOfdmRxMerFileName: Optional[str] = None
 
-class DocsPnmCmDsOfdmRxMerEntry(BaseModel):
+class class DocsPnmCmOfdmChanEstCoefEntry(BaseModel):
     index: int
     channel_id: int
     entry: DocsPnmCmDsOfdmRxMerFields
 
     @classmethod
-    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsPnmCmDsOfdmRxMerEntry":
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "class DocsPnmCmOfdmChanEstCoefEntry":
         logger = logging.getLogger(cls.__name__)
 
         async def fetch(oid: str, cast: Optional[Callable] = None) -> Union[str, int, bool, None]:
@@ -54,9 +53,9 @@ class DocsPnmCmDsOfdmRxMerEntry(BaseModel):
         return cls(index=index, channel_id=index, entry=entry)  # assuming channel_id == index unless otherwise specified
 
     @classmethod
-    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsPnmCmDsOfdmRxMerEntry"]:
+    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["class DocsPnmCmOfdmChanEstCoefEntry"]:
         logger = logging.getLogger(cls.__name__)
-        results: List[DocsPnmCmDsOfdmRxMerEntry] = []
+        results: List[class DocsPnmCmOfdmChanEstCoefEntry] = []
 
         if not indices:
             logger.warning("No RxMER indices found.")

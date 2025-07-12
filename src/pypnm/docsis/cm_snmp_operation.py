@@ -22,6 +22,7 @@ from pypnm.docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChan
 from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst
 from pypnm.docsis.data_type.InterfaceStats import InterfaceStats
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
+from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOfdmChanEstCoefEntry
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.docsis.lib.pnm_bulk_data import DocsPnmBulkDataGroup, DocsPnmBulkFileEntry
 from pypnm.lib.format_string import Format
@@ -1200,6 +1201,37 @@ class CmSnmpOperation:
 
         except Exception as e:
             self.logger.exception("Failed to retrieve DocsPnmCmDsOfdmRxMerEntry entries")
+
+        return entries
+
+    async def getDocsPnmCmOfdmChanEstCoefEntry(self) -> List[DocsPnmCmOfdmChanEstCoefEntry]:
+        """
+        Retrieves downstream OFDM Channel Estimation Coefficient entries from the cable modem via SNMP.
+
+        This method:
+        - Queries for all available downstream OFDM channel indices using `getDocsIf31CmDsOfdmChannelIdIndex()`.
+        - For each index, requests a structured set of coefficient data points including amplitude ripple,
+          group delay characteristics, mean values, and measurement status.
+        - Constructs a list of `DocsPnmCmOfdmChanEstCoefEntry` objects, each encapsulating the raw
+          coefficients for one OFDM channel.
+
+        Returns:
+            List[DocsPnmCmOfdmChanEstCoefEntry]: A list of populated OFDM channel estimation entries. Each entry
+            includes both metadata and coefficient fields defined in `DocsPnmCmOfdmChanEstCoefFields`.
+        """
+        entries: List[DocsPnmCmOfdmChanEstCoefEntry] = []
+
+        try:
+            indices = await self.getDocsIf31CmDsOfdmChannelIdIndex()
+
+            if not indices:
+                self.logger.warning("No DocsIf31CmDsOfdmChanChannelIdIndex indices found.")
+                return entries
+
+            entries = await DocsPnmCmOfdmChanEstCoefEntry.get(snmp=self._snmp, indices=indices)
+
+        except Exception as e:
+            self.logger.exception("Failed to retrieve DocsPnmCmOfdmChanEstCoefEntry entries")
 
         return entries
 

@@ -25,7 +25,7 @@ from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import (
     DocsPnmBulkFileUploadStatus, DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType)
-from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import class DocsPnmCmOfdmChanEstCoefEntry
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.ftp.ftp_connector import FTPConnector
 from pypnm.lib.inet import Inet
@@ -314,7 +314,7 @@ class CommonMeasureService(CommonMessagingService):
         elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR:
             self.logger.info(f"{self.log_prefix} - Running RXMER entry collection")
 
-            entries: List[DocsPnmCmDsOfdmRxMerEntry] = await self.cm.getDocsPnmCmDsOfdmRxMerEntry()
+            entries: List[class DocsPnmCmOfdmChanEstCoefEntry] = await self.cm.getDocsPnmCmDsOfdmRxMerEntry()
 
             if return_type == MeasureServiceReturnTypes.DICT:
                 return build_response("DS_OFDM_RXMER_PER_SUBCAR", [e.model_dump() for e in entries])
