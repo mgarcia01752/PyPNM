@@ -21,6 +21,7 @@ from pypnm.docsis.data_type.DocsIfSignalQualityEntry import DocsIfSignalQuality
 from pypnm.docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChannelEntry
 from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst
 from pypnm.docsis.data_type.InterfaceStats import InterfaceStats
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOfdmChanEstCoefEntry
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
@@ -1234,6 +1235,36 @@ class CmSnmpOperation:
             self.logger.exception("Failed to retrieve DocsPnmCmOfdmChanEstCoefEntry entries")
 
         return entries
+
+    async def getDocsPnmCmDsConstDispMeasEntry(self) -> List[DocsPnmCmDsConstDispMeasEntry]:
+        """
+        Retrieves Constellation Display measurement entries for all downstream OFDM channels.
+
+        This method:
+        - Discovers available downstream OFDM channel indices using SNMP via `getDocsIf31CmDsOfdmChannelIdIndex()`
+        - For each channel index, fetches constellation capture configuration, modulation info,
+          measurement status, and associated binary filename
+        - Returns the results as a structured list of `DocsPnmCmDsConstDispMeasEntry` models
+
+        Returns:
+            List[DocsPnmCmDsConstDispMeasEntry]: A list of Constellation Display SNMP measurement entries.
+        """
+        entries: List[DocsPnmCmDsConstDispMeasEntry] = []
+
+        try:
+            indices = await self.getDocsIf31CmDsOfdmChannelIdIndex()
+
+            if not indices:
+                self.logger.warning("No DocsIf31CmDsOfdmChanChannelIdIndex indices found.")
+                return entries
+
+            entries = await DocsPnmCmDsConstDispMeasEntry.get(snmp=self._snmp, indices=indices)
+
+        except Exception as e:
+            self.logger.exception("Failed to retrieve DocsPnmCmDsConstDispMeasEntry entries")
+
+        return entries
+
 
 ####################
 # DOCSIS 4.0 - FDD #
