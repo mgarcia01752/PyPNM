@@ -24,6 +24,7 @@ from pypnm.docsis.data_type.InterfaceStats import InterfaceStats
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOfdmChanEstCoefEntry
+from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEntry
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.docsis.lib.pnm_bulk_data import DocsPnmBulkDataGroup, DocsPnmBulkFileEntry
 from pypnm.lib.format_string import Format
@@ -521,16 +522,7 @@ class CmSnmpOperation:
         Returns:
             List[int]: A list of channel indices present on the device.
         """
-        oid = "docsIf31CmDsOfdmChanChannelId"
-        try:
-            results = await self._snmp.walk(oid)
-            if not results:
-                self.logger.warning(f"No results found for OID {oid}")
-                return []
-            return Snmp_v2c.extract_last_oid_index(results)
-        except Exception as e:
-            self.logger.error(f"Failed to retrieve OFDM channel indices from {oid}: {e}")
-            return []
+        return self.getIfTypeIndex(DocsisIfType.docsOfdmDownstream)
 
     async def getDocsIf31CmUsOfdmaChanChannelIdIndex(self) -> List[int]:
         """
@@ -918,7 +910,7 @@ class CmSnmpOperation:
             logging.error(f'[{test_type.name}] {result}')
             return MeasStatusType.ERROR
 
-    async def getDocsIf31DsOfdmChannelIdIndex(self) -> List[Tuple[int, int]]:
+    async def getDocsIf31CmDsOfdmChannelIdIndexStack(self) -> List[Tuple[int, int]]:
         """
         Retrieve a list of tuples representing OFDM channel index and their associated channel IDs
         for DOCSIS 3.1 downstream OFDM channels.
@@ -935,7 +927,7 @@ class CmSnmpOperation:
 
         return idx_channelId or []
         
-    async def getDocsIf31CmUsOfdmaChannelIdIndex(self) -> List[Tuple[int, int]]:
+    async def getDocsIf31CmUsOfdmaChannelIdIndexStack(self) -> List[Tuple[int, int]]:
         """
         Retrieve a list of tuples representing OFDMA channel index and their associated channel IDs
         for DOCSIS 3.1 upstream OFDMA channels.
@@ -1262,6 +1254,31 @@ class CmSnmpOperation:
 
         except Exception as e:
             self.logger.exception("Failed to retrieve DocsPnmCmDsConstDispMeasEntry entries")
+
+        return entries
+
+    async def getDocsPnmCmUsPreEqEntry(self) -> List[DocsPnmCmUsPreEqEntry]:
+        """
+        Retrieves upstream OFDMA Pre-Equalization measurement entries for all upstream OFDMA channels.
+
+        This method performs:
+        - SNMP index discovery via `getDocsIf31CmDsOfdmChannelIdIndex()` (may need to be updated to upstream index discovery)
+        - Per-index SNMP fetch of pre-equalization configuration and measurement metadata
+        - Returns structured list of `DocsPnmCmUsPreEqEntry` models
+        """
+        entries: List[DocsPnmCmUsPreEqEntry] = []
+
+        try:
+            indices = await self.getDocsIf31CmUsOfdmaChanChannelIdIndex()
+
+            if not indices:
+                self.logger.warning("No DocsIf31CmUsOfdmaChannelIdIndex indices found.")
+                return entries
+            
+            entries = await DocsPnmCmUsPreEqEntry.get(snmp=self._snmp, indices=indices)
+
+        except Exception as e:
+            self.logger.exception("Failed to retrieve DocsPnmCmUsPreEqEntry entries")
 
         return entries
 

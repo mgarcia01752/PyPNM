@@ -32,7 +32,7 @@ async def main():
 
     logging.info(f"Connected to: {await cm.getSysDescr()}")
     
-    results = await cm.getDocsIf31DsOfdmChannelIdIndex()
+    results = await cm.getDocsIf31CmDsOfdmChannelIdIndexStack()
 
     print(results)
     

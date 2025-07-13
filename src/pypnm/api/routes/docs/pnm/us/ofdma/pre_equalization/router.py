@@ -54,8 +54,12 @@ This endpoint enables advanced insight into upstream channel quality using stati
 
 🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/pre-equalization.md#get-analysis)
 """
+
         measurement_statistics_description = """
 **Analyze OFDMA Pre-Equalization Coefficients (DOCSIS 3.1)**
+
+This endpoint retrieves summary metrics for upstream pre-equalization, including amplitude ripple,
+group delay ripple, slope, mean values, and file references per OFDMA upstream channel.
 
 🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/pre-equalization.md#get-measurement-statistics)
 """
@@ -80,9 +84,7 @@ This endpoint enables advanced insight into upstream channel quality using stati
             self.logger.error(msg)
             return SnmpResponse(
                 mac_address=str(request.mac_address),
-                status=status,
-                message=msg
-            )       
+                status=status, message=msg)       
         
         service: CmUsOfdmaPreEqService = CmUsOfdmaPreEqService(cm)
         msg_rsp:MessageResponse = await service.set_and_go()

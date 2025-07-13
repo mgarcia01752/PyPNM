@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 from typing import Optional, Callable, Union, List
 from pydantic import BaseModel
 import logging
@@ -26,6 +29,17 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
     channel_id: int
     entry: DocsPnmCmUsPreEqFields
 
+    @staticmethod
+    def thousandth_db(value: Union[str, int, float]) -> float:
+        """
+        Converts a ThousandthdB value (integer or string) to a float in dB.
+        Example: 12345 -> 12.345 dB
+        """
+        try:
+            return float(value) / 1000
+        except (ValueError, TypeError):
+            return float("nan")
+
     @classmethod
     async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsPnmCmUsPreEqEntry":
         logger = logging.getLogger(cls.__name__)
@@ -36,17 +50,15 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
                 value = Snmp_v2c.get_result_value(result)
                 if value is None:
                     return None
-                if cast:
-                    return cast(value)
-                return value
+                return cast(value) if cast else value
             except Exception as e:
                 logger.warning(f"Fetch error for {oid}.{index}: {e}")
                 return None
 
         entry = DocsPnmCmUsPreEqFields(
             docsPnmCmUsPreEqFileEnable=await fetch("docsPnmCmUsPreEqFileEnable", Snmp_v2c.truth_value),
-            docsPnmCmUsPreEqAmpRipplePkToPk=await fetch("docsPnmCmUsPreEqAmpRipplePkToPk", float),
-            docsPnmCmUsPreEqAmpRippleRms=await fetch("docsPnmCmUsPreEqAmpRippleRms", float),
+            docsPnmCmUsPreEqAmpRipplePkToPk=await fetch("docsPnmCmUsPreEqAmpRipplePkToPk", cls.thousandth_db),
+            docsPnmCmUsPreEqAmpRippleRms=await fetch("docsPnmCmUsPreEqAmpRippleRms", cls.thousandth_db),
             docsPnmCmUsPreEqAmpSlope=await fetch("docsPnmCmUsPreEqAmpSlope", int),
             docsPnmCmUsPreEqGrpDelayRipplePkToPk=await fetch("docsPnmCmUsPreEqGrpDelayRipplePkToPk", int),
             docsPnmCmUsPreEqGrpDelayRippleRms=await fetch("docsPnmCmUsPreEqGrpDelayRippleRms", int),
@@ -54,7 +66,7 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
             docsPnmCmUsPreEqMeasStatus=await fetch("docsPnmCmUsPreEqMeasStatus", int),
             docsPnmCmUsPreEqLastUpdateFileName=await fetch("docsPnmCmUsPreEqLastUpdateFileName", str),
             docsPnmCmUsPreEqFileName=await fetch("docsPnmCmUsPreEqFileName", str),
-            docsPnmCmUsPreEqAmpMean=await fetch("docsPnmCmUsPreEqAmpMean", float),
+            docsPnmCmUsPreEqAmpMean=await fetch("docsPnmCmUsPreEqAmpMean", cls.thousandth_db),
             docsPnmCmUsPreEqGrpDelaySlope=await fetch("docsPnmCmUsPreEqGrpDelaySlope", int),
             docsPnmCmUsPreEqGrpDelayMean=await fetch("docsPnmCmUsPreEqGrpDelayMean", int),
         )

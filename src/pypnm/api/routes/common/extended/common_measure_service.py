@@ -10,7 +10,7 @@ from pathlib import Path
 import shutil
 from time import sleep
 import time
-from typing import Dict, List, Literal,  Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel
 
@@ -25,6 +25,7 @@ from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import (
     DocsPnmBulkFileUploadStatus, DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType)
+from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOfdmChanEstCoefEntry
@@ -341,8 +342,13 @@ class CommonMeasureService(CommonMessagingService):
             return build_response("DS_HISTOGRAM", "Not implemented yet")
 
         elif pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF:
-            self.logger.warning(f"{self.log_prefix} - Stub handler: US_PRE_EQUALIZER_COEF")
-            return build_response("US_PRE_EQUALIZER_COEF", "Not implemented yet")
+            self.logger.info(f"{self.log_prefix} - Running Upstream Pre-Equalization entry collection")
+
+            entries: List[DocsPnmCmUsPreEqEntry] = await self.cm.getDocsPnmCmUsPreEqEntry()
+
+            if return_type == MeasureServiceReturnTypes.DICT:
+                return build_response("US_PRE_EQUALIZER_COEF", [e.model_dump() for e in entries])
+            return entries
 
         elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_MODULATION_PROFILE:
             self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_MODULATION_PROFILE")
@@ -452,7 +458,7 @@ class CommonMeasureService(CommonMessagingService):
         '''
         if ifParameters.type == "ofdm":
             channel_id_list = ifParameters.channel_id
-            idx_channelId = await self.cm.getDocsIf31DsOfdmChannelIdIndex()            
+            idx_channelId = await self.cm.getDocsIf31CmDsOfdmChannelIdIndexStack()            
 
             if not idx_channelId:
                 self.logger.warning("No OFDM channel data found.")
@@ -469,7 +475,7 @@ class CommonMeasureService(CommonMessagingService):
                 
         elif ifParameters.type == "ofdma":
             channel_id_list = ifParameters.channel_id
-            idx_channelId = await self.cm.getDocsIf31CmUsOfdmaChannelIdIndex()
+            idx_channelId = await self.cm.getDocsIf31CmUsOfdmaChannelIdIndexStack()
 
             if not idx_channelId:
                 self.logger.warning("No OFDMA channel data found.")
