@@ -522,7 +522,7 @@ class CmSnmpOperation:
         Returns:
             List[int]: A list of channel indices present on the device.
         """
-        return self.getIfTypeIndex(DocsisIfType.docsOfdmDownstream)
+        return await self.getIfTypeIndex(DocsisIfType.docsOfdmDownstream)
 
     async def getDocsIf31CmUsOfdmaChanChannelIdIndex(self) -> List[int]:
         """
@@ -1124,14 +1124,14 @@ class CmSnmpOperation:
         """
         Retrieve the DOCSIS version capability reported by the device.
 
-        This method queries the SNMP OID `docsIf31DocsisBaseCapability`, which reflects
+        This method queries the SNMP OID `docsIf31CmDocsisBaseCapability`, which reflects
         the supported DOCSIS Radio Frequency specification version.
 
         Returns:
-            ClabsDocsisVersion: Enum indicating the DOCSIS version supported by the device.
+            ClabsDocsisVersion: Enum indicating the DOCSIS version supported by the device, or None if unavailable.
 
         SNMP MIB Reference:
-            - OID: docsIf31CmDocsisBaseCapability
+            - OID: docsIf31DocsisBaseCapability
             - SYNTAX: ClabsDocsisVersion (INTEGER enum from 0 to 6)
             - Affected Devices:
                 - CMTS: reports highest supported DOCSIS version.
@@ -1139,21 +1139,34 @@ class CmSnmpOperation:
 
             This attribute replaces `docsIfDocsisBaseCapability` from RFC 4546.
         """
-        self.logger.debug("Fetching docsIf31CmDocsisBaseCapability")
+        self.logger.debug("Fetching docsIf31DocsisBaseCapability")
 
-        oid = f"{'docsIf31CmDocsisBaseCapability'}.0"
-        rsp = await self._snmp.get(oid)
-        docsis_version:int = Snmp_v2c.get_result_value(rsp)
-        docsis_version = int(docsis_version)
+        try:
+            rsp = await self._snmp.get('docsIf31DocsisBaseCapability.0')
+            docsis_version_raw = Snmp_v2c.get_result_value(rsp)
 
-        cdv = ClabsDocsisVersion.from_value(int(docsis_version))
+            if docsis_version_raw is None:
+                self.logger.error("Failed to retrieve DOCSIS version: SNMP result is None")
+                return None
 
-        if cdv == ClabsDocsisVersion.OTHER:
-            self.logger.warning(f"Unknown DOCSIS version: {docsis_version} -> Enum: {cdv.name}")
-        else:
-            self.logger.info(f"DOCSIS version: {cdv.name}")
+            try:
+                docsis_version = int(docsis_version_raw)
+            except (ValueError, TypeError):
+                self.logger.error(f"Failed to cast DOCSIS version to int: {docsis_version_raw}")
+                return None
 
-        return cdv
+            cdv = ClabsDocsisVersion.from_value(docsis_version)
+
+            if cdv == ClabsDocsisVersion.OTHER:
+                self.logger.warning(f"Unknown DOCSIS version: {docsis_version} -> Enum: {cdv.name}")
+            else:
+                self.logger.info(f"DOCSIS version: {cdv.name}")
+
+            return cdv
+
+        except Exception as e:
+            self.logger.exception(f"Exception during DOCSIS version retrieval: {e}")
+            return None
 
     async def getInterfaceStatistics(self, interface_types: Type[Enum] = DocsisIfType) -> Dict[str, List[Dict]]:
         """
@@ -1189,7 +1202,7 @@ class CmSnmpOperation:
             if not indices:
                 self.logger.warning("No DocsIf31CmDsOfdmChanChannelIdIndex indices found.")
                 return entries
-
+            self.logger.info(f'Index: {indices}')
             entries = await DocsPnmCmDsOfdmRxMerEntry.get(snmp=self._snmp, indices=indices)
 
         except Exception as e:

@@ -41,7 +41,7 @@ class ServiceStatusCode(IntEnum):
     
     INVALID_DOCSIS_VERSION                  = 40
     NO_OFDMA_CHANNELS_EXIST                 = 41
-    NO_OFDM_CHANNELS_EXIST                  = 4
+    NO_OFDM_CHANNELS_EXIST                  = 42
     
     TRANSACTION_RECORD_GET_FAILED           = 200
     UNSUPPORTED_TEST_TYPE                   = 201

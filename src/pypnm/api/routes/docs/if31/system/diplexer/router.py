@@ -48,9 +48,7 @@ class DiplexerConfigResult:
                     self.logger.error(msg)
                     return SnmpResponse(
                         mac_address=str(request.mac_address),
-                        status=status,
-                        message=msg,
-                    )  
+                        status=status,message=msg)  
 
                 config = await DiplexerConfigService.fetch_diplexer_config(
                     mac_address=request.mac_address,
@@ -59,8 +57,7 @@ class DiplexerConfigResult:
                 response = DiplexerResponse(
                     mac_address=request.mac_address,
                     status=ServiceStatusCode.SUCCESS,
-                    results=config
-                )
+                    results=config)
                 
                 self.logger.debug(f"DiplexerResponse: {response}")
                 return response

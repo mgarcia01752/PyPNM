@@ -50,7 +50,7 @@ class DocsPnmCmDsOfdmRxMerEntry(BaseModel):
             docsPnmCmDsOfdmRxMerFileName=await fetch("docsPnmCmDsOfdmRxMerFileName", str)
         )
 
-        return cls(index=index, channel_id=index, entry=entry)  # assuming channel_id == index unless otherwise specified
+        return cls(index=index, channel_id=index, entry=entry) 
 
     @classmethod
     async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsPnmCmDsOfdmRxMerEntry"]:
