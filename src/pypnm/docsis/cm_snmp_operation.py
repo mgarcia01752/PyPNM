@@ -22,6 +22,7 @@ from pypnm.docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChan
 from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst
 from pypnm.docsis.data_type.InterfaceStats import InterfaceStats
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmMerMarEntry import DocsPnmCmDsOfdmMerMarEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOfdmChanEstCoefEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEntry
@@ -1295,6 +1296,34 @@ class CmSnmpOperation:
 
         return entries
 
+    async def getDocsPnmCmDsOfdmMerMarEntry(self) -> List[DocsPnmCmDsOfdmMerMarEntry]:
+        """
+        Retrieves DOCSIS 3.1 Downstream OFDM MER Margin entries.
+
+        This method queries the SNMP agent to collect MER Margin data for each downstream OFDM channel
+        using the ifIndex values retrieved from the modem. Each returned entry corresponds to a channel's
+        MER margin metrics, including required MER, measured MER, threshold offsets, and measurement status.
+
+        Returns:
+            List[DocsPnmCmDsOfdmMerMarEntry]: A list of populated MER margin entries for each OFDM channel.
+        """
+        entries: List[DocsPnmCmDsOfdmMerMarEntry] = []
+
+        try:
+            indices = await self.getDocsIf31CmDsOfdmChannelIdIndex()
+
+            if not indices:
+                self.logger.warning("No DocsIf31CmDsOfdmChanChannelIdIndex indices found.")
+                return entries
+
+            entries = await DocsPnmCmDsOfdmMerMarEntry.get(snmp=self._snmp, indices=indices)
+            self.logger.info(f'Number of DocsPnmCmDsOfdmMerMarEntry Found: {len(entries)}')
+            
+        except Exception as e:
+            self.logger.exception("Failed to retrieve DocsPnmCmDsOfdmMerMarEntry entries")
+
+        return entries
+      
 
 ####################
 # DOCSIS 4.0 - FDD #

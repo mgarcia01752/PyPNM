@@ -2,30 +2,49 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from typing import Tuple
-from pypnm.config.pnm_config_manager import PnmConfigManager
-from pypnm.lib.inet import Inet
+from typing import Dict, List
 
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 
-class CmDsOfdmMerMarginService():
+class CmDsOfdmMerMarginService:
     """
+    Service class for handling Downstream OFDM MER Margin measurement operations.
+
+    This class wraps methods to:
+    - Trigger MER Margin measurement on the cable modem
+    - Retrieve measurement statistics and results
     """
 
     def __init__(self, cable_modem: CableModem):
         """
-        Initializes the RxMER service with the provided cable modem and TFTP configuration.
+        Initialize the MER Margin service.
 
         Args:
-            cable_modem (CableModem): The target cable modem instance for which RxMER is to be measured.
-            tftp_servers (Tuple[Inet, Inet], optional): Tuple of (IPv4, IPv6) TFTP server addresses.
-                Defaults to the values loaded from PnmConfigManager.
-            tftp_path (str, optional): Remote directory path on the TFTP server where data will be stored.
-                Defaults to the value from PnmConfigManager.
+            cable_modem (CableModem): The cable modem instance to operate on.
         """
-        super().__init__(
-            DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR,
-            cable_modem,tftp_servers,
-            tftp_path,cable_modem.getWriteCommunity())
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.cable_modem = cable_modem
+
+    async def set(self) -> None:
+        """
+        Initiates the MER Margin measurement on the cable modem.
+
+        NOTE: Implementation pending—will configure SNMP set values for trigger params.
+        """
+        pass  # TODO: Implement SNMP set logic for trigger
+
+    async def getMeasurementStatus(self) -> Dict[str, List[Dict]]:
+        """
+        Retrieves MER Margin measurement entries from the cable modem.
+
+        Returns:
+            Dict[str, List[Dict]]: A dictionary containing a list of MER Margin entries,
+            keyed by "DS_MER_MARGIN".
+        """
+        try:
+            entries = await self.cable_modem.getDocsPnmCmDsOfdmMerMarEntry()
+            return {"DS_MER_MARGIN": [e.model_dump() for e in entries]}
+        
+        except Exception as e:
+            self.logger.exception("Failed to retrieve MER Margin entries")
+            return {"DS_MER_MARGIN": []}

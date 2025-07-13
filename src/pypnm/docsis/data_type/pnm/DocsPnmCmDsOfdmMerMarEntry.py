@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 from typing import Optional, List, Callable, Union
 from pydantic import BaseModel
 import logging
@@ -30,7 +33,7 @@ class DocsPnmCmDsOfdmMerMarEntry(BaseModel):
             try:
                 result = await snmp.get(f"{oid}.{index}")
                 value = Snmp_v2c.get_result_value(result)
-
+                
                 if value is None:
                     return None
 

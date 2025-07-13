@@ -4,7 +4,6 @@
 import logging
 from typing import Union
 from fastapi import APIRouter
-from pypnm.api.routes.common.classes.common_endpoint_classes.router import PnmFastApiRouter
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
     PnmAnalysisResponse, PnmRequest)
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
@@ -31,13 +30,40 @@ class RxMerMarginRouter:
         prefix = "/docs/pnm/ds/ofdm"
         tags = ["PNM Operations - Downstream OFDM MER Margin"]
         self.base_endpoint = "merMargin"
-
         self.router = APIRouter(prefix=prefix, tags=tags)  # type: ignore
         self.logger = logging.getLogger(f"RxMerMarginRouter.{self.base_endpoint}")
 
         self._add_routes()
 
     def _add_routes(self):
+        
+        @self.router.post(f"/{self.base_endpoint}/getMeasurementTemplate", response_model=Union[SnmpResponse])
+        async def get_measurement_template(request: PnmRequest) -> Union[SnmpResponse]:
+            """
+            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/mer-margin.md#get-measurement-template)
+            """
+            self.logger.info(f"Retrieving MER Margin measurement for MAC: {request.mac_address}")
+
+            cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
+
+            status, msg = await CableModemServicePreCheck(
+                cable_modem=cm,
+                validate_ofdm_exist=True).run_precheck()
+
+            if status != ServiceStatusCode.SUCCESS:
+                self.logger.error(msg)
+                return SnmpResponse(
+                    mac_address=str(request.mac_address),
+                    status=status, message=msg)
+
+            service = CmDsOfdmMerMarginService(cm)
+            await service.getMeasurementTemplate()
+
+            return SnmpResponse(
+                mac_address=str(request.mac_address),
+                status=ServiceStatusCode.SUCCESS,
+                message="MER Margin test triggered successfully")
+                
         @self.router.post(f"/{self.base_endpoint}/getMeasurement", response_model=Union[SnmpResponse])
         async def get_measurement(request: PnmMerMarginRequest) -> Union[SnmpResponse]:
             """
@@ -46,7 +72,7 @@ class RxMerMarginRouter:
             Triggers the modem to calculate MER margin statistics against a given modulation profile.
             This test measures subcarrier MER against required profile thresholds and computes available MER margin.
 
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/mer-margin.md#getmeasurement)
+            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/mer-margin.md#get-measurement)
             """
             self.logger.info(f"Retrieving MER Margin measurement for MAC: {request.mac_address}")
 
@@ -81,7 +107,7 @@ class RxMerMarginRouter:
             - Number of subcarriers below threshold
             - MER Margin (dB)
 
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/mer-margin.md#getanalysis)
+            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/mer-margin.md#get-analysis)
             """
             self.logger.info(f"Retrieving MER Margin analysis for MAC: {request.mac_address}")
 
@@ -111,7 +137,7 @@ class RxMerMarginRouter:
             - Measurement enable flag
             - Symbol averaging parameters
 
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/mer-margin.md#getmeasurementstatistics)
+            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/mer-margin.md#get-measurement-statistics)
             """
             self.logger.info(f"Fetching MER Margin measurement statistics for MAC: {request.mac_address}")
 
@@ -128,14 +154,13 @@ class RxMerMarginRouter:
                     status=status, message=msg)
 
             service = CmDsOfdmMerMarginService(cm)
-            results = await service.get()
+            results = await service.getMeasurementStatus()
 
             return SnmpResponse(
                 mac_address=str(request.mac_address),
                 status=ServiceStatusCode.SUCCESS,
                 message="Measurement Statistics for MER Margin",
                 results=results)
-
 
 # ✅ Required for dynamic auto-registration
 router = RxMerMarginRouter().router
