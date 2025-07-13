@@ -8,6 +8,7 @@ This reference serves as the **single-shot FastAPI REST API landing point** for 
 
 | Markdown                                                         | Description                                    |
 | ---------------------------------------------------------------- | ---------------------------------------------- |
+| [OFDM MER Margin](./ds/ofdm/mer-margin.md)                       | OFDM          |
 | [OFDM Channel Estimation](./ds/ofdm/channel-estimation.md)       | OFDM channel distortion/echo analysis          |
 | [OFDM Constellation Display](./ds/ofdm/constellation-display.md) | Visual representation of modulation symbols    |
 | [OFDM FEC Summary](./ds/ofdm/fec-summary.md)                     | OFDM Forward Error Correction analysis         |
