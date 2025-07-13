@@ -40,14 +40,12 @@ class DocsDevRouter:
 
             """
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
-                                                    ip_address=request.ip_address).run_precheck()
+                                                          ip_address=request.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 logger.error(msg)
                 return EventLogResponse(
                     mac_address=str(request.mac_address),
-                    status=status,
-                    message=msg,
-                    logs=[])                
+                    status=status, message=msg, logs=[])                
             
             try:
                 service = CmDocsDevService(
@@ -58,11 +56,11 @@ class DocsDevRouter:
                 return EventLogResponse(
                     mac_address=str(service.mac),
                     status=ServiceStatusCode.SUCCESS,
-                    logs=log_entries
-                )
+                    logs=log_entries)
                 
             except HTTPException:
                 raise
+            
             except Exception as e:
                 logger.exception("Failed to fetch event log")
                 raise HTTPException(status_code=500, detail=str(e))
@@ -99,8 +97,8 @@ class DocsDevRouter:
             try:
                 service = CmDocsDevService(
                     mac_address=request.mac_address,
-                    ip_address=request.ip_address
-                )
+                    ip_address=request.ip_address)
+                
                 result = await service.reset_cable_modem()
                 return JSONResponse(content=result.model_dump())
             

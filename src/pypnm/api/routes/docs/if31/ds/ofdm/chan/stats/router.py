@@ -26,6 +26,7 @@ class DsOfdmChannelStatsRouter:
         self._add_routes()
 
     def _add_routes(self):
+        
         @self.router.post("/stats", response_model=List[PnmChannelEntryResponse])
         async def get_ds_ofdm_channels(request: SnmpRequest):
             """
@@ -43,19 +44,18 @@ class DsOfdmChannelStatsRouter:
             🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/stats.md)
             """
             status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
-                                                    ip_address=request.ip_address).run_precheck()
+                                                          ip_address=request.ip_address,
+                                                          validate_ofdm_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return PnmChannelEntryResponse(
                     mac_address=str(request.mac_address),
-                    status=status,
-                    message=msg
-                )     
+                    status=status, message=msg)     
                          
             service = DsOfdmChannelService(
                 mac_address=request.mac_address,
-                ip_address=request.ip_address
-            )
+                ip_address=request.ip_address)
+            
             data = await service.get_ofdm_chan_entries()
             return JSONResponse(content=data)
         

@@ -25,6 +25,7 @@ class BaseCapabilityRouter:
         self._register_routes()
 
     def _register_routes(self) -> None:
+        
         @self.router.post("/baseCapability", response_model=SnmpResponse)
         async def base_capability(request: PnmRequest) -> SnmpResponse:
             """
