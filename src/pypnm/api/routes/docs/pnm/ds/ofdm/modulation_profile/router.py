@@ -50,12 +50,15 @@ Includes:
 
 📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-analysis)
 """
+        measurement_statistics_description = """"""
+    
         super().__init__(
             prefix="/docs/pnm/ds/ofdm",
             tags=["PNM Operations - Downstream OFDM Modulation Profile"],
             base_endpoint="/modulationProfile",
             set_measurement_description = measurement_description,
-            set_analysis_description = analysis_description)
+            set_analysis_description = analysis_description,
+            set_measurement_statistics_description=measurement_statistics_description)
         self.logger = logging.getLogger("ModulationProfileRouter")
 
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:
@@ -128,6 +131,27 @@ Includes:
         return PnmAnalysisResponse(mac_address=request.mac_address,
                                       status=ServiceStatusCode.SUCCESS,
                                       data=analysis.get_results()) 
+
+    async def get_measurement_statistics_logic(self, request: PnmRequest) -> Union[SnmpResponse]:
+        """
+        """
+        self.logger.info(f"Fetching OFDMA Pre-Equalization Measurement Statistics for MAC: {request.mac_address}")
+
+        cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
+        
+        status, msg = await CableModemServicePreCheck(cable_modem=cm,
+                                                        validate_ofdm_exist=True).run_precheck()
+        if status != ServiceStatusCode.SUCCESS:
+            self.logger.error(msg)
+            return SnmpResponse(
+                mac_address=str(request.mac_address),
+                status=status, message=msg)  
+
+        return SnmpResponse(
+            mac_address=str(request.mac_address),
+            status=ServiceStatusCode.SUCCESS,
+            message="Measurement Statistics for OFDMA Pre-Equalization",
+            results={})
 
 # Required for dynamic auto-registration
 router = ModulationProfileRouter().router

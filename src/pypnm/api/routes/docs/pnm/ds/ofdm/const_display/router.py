@@ -64,13 +64,13 @@ class ConstellationDisplayRouter:
             try:
                 cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
                 
-                status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
+                status, msg = await CableModemServicePreCheck(cable_modem=cm,
+                                                              validate_ofdm_exist=True).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
                         mac_address=str(request.mac_address),
-                        status=status,
-                        message=msg)                    
+                        status=status, message=msg)                    
                 
                 modulation_order_offset = request.modulation_order_offset
                 number_sample_symbol = request.number_sample_symbol
@@ -106,13 +106,15 @@ class ConstellationDisplayRouter:
                           response_model=Union[PnmAnalysisResponse, SnmpResponse])
         async def get_analysis(request: PnmAnalysisRequest):
             
-            status, msg = await CableModemServicePreCheck(mac_address=request.mac_address, 
-                                                          ip_address=request.ip_address).run_precheck()
+            cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
+            
+            status, msg = await CableModemServicePreCheck(cable_modem=cm,
+                                                          validate_ofdm_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
                     mac_address=str(request.mac_address),
-                    status=status, message=msg)               
+                    status=status, message=msg)             
             try:
                 pass
             except HTTPException:
@@ -129,27 +131,19 @@ class ConstellationDisplayRouter:
             This includes modulation order, symbol capture config, and measurement state metadata.
             """
             try:
-                # Initial precheck using MAC and IP
-                status, msg = await CableModemServicePreCheck(
-                    mac_address=request.mac_address,
-                    ip_address=request.ip_address
-                ).run_precheck()
+
+                self.logger.info(f"Fetching OFDM Constellation Display Statistics for MAC: {request.mac_address}")
+
+
+                cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
                 
+                status, msg = await CableModemServicePreCheck(cable_modem=cm,
+                                                              validate_ofdm_exist=True).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
                         mac_address=str(request.mac_address),
-                        status=status,
-                        message=msg
-                    )
-
-                self.logger.info(f"Fetching OFDM Constellation Display Statistics for MAC: {request.mac_address}")
-
-                # Build modem and invoke measurement service
-                cm: CableModem = CableModem(
-                    MacAddress(request.mac_address),
-                    Inet(request.ip_address)
-                )
+                        status=status, message=msg)  
 
                 service: CmDsOfdmConstDisplayService = CmDsOfdmConstDisplayService(cm)
                 service_measure_stat = await service.get_pnm_measurement_statistics()

@@ -94,16 +94,15 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
    
         self.logger.info(f"Retrieving RxMER measurement for MAC: {request.mac_address}")
 
-        cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
-
-        status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
+        cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
+        
+        status, msg = await CableModemServicePreCheck(cable_modem=cm,
+                                                        validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(
                 mac_address=str(request.mac_address),
-                status=status,
-                message=msg
-            )   
+                status=status, message=msg)  
         
         service: CmDsOfdmRxMerService = CmDsOfdmRxMerService(cm)
         msg_rsp: MessageResponse = await service.set_and_go()
@@ -130,16 +129,15 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
         """
         self.logger.info(f"Generating RxMER Analysis: {request.analysis.type} for MAC: {request.mac_address}")
 
-        cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
-
-        status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
+        cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
+        
+        status, msg = await CableModemServicePreCheck(cable_modem=cm,
+                                                        validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(
                 mac_address=str(request.mac_address),
-                status=status,
-                message=msg
-            )
+                status=status, message=msg)  
 
         service: CmDsOfdmRxMerService = CmDsOfdmRxMerService(cm)
         msg_rsp: MessageResponse = await service.set_and_go()
@@ -190,14 +188,15 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
         """
         self.logger.info(f"Fetching RxMER Measurement Statistics for MAC: {request.mac_address}")
 
-        cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
-
-        status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
+        cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
+        
+        status, msg = await CableModemServicePreCheck(cable_modem=cm,
+                                                        validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(
                 mac_address=str(request.mac_address),
-                status=status,message=msg)
+                status=status, message=msg)  
 
         service: CmDsOfdmRxMerService = CmDsOfdmRxMerService(cm)
         service_measure_stat = await service.get_pnm_measurement_statistics()

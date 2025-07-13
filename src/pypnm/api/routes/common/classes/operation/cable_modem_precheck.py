@@ -20,34 +20,20 @@ from pypnm.lib.mac_address import MacAddress
 
 class CableModemServicePreCheck:
     """
-    Performs preliminary connectivity checks against a DOCSIS Cable Modem.
+    Performs preliminary connectivity and validation checks against a DOCSIS Cable Modem.
 
-    Supports:
-    - Ping (ICMP) reachability
-    - SNMP reachability
-    - Optional DOCSIS version validation
+    This service supports:
+    - ICMP ping reachability check
+    - SNMP reachability check
+    - Optional DOCSIS version compatibility validation
+    - Optional validation that OFDM (DS) and/or OFDMA (US) channels exist
 
-    Can be initialized using:
-    - A `CableModem` object
-    - MAC address and IP address pair
+    Initialization methods:
+    - Provide a pre-constructed `CableModem` object
+    - Or specify a `mac_address` and `ip_address` pair
 
-    Example:
-        ```python
-        # Using CableModem instance
-        cm = CableModem(mac_address=MacAddress("00:11:22:33:44:55"), inet=Inet("192.168.0.100"))
-        precheck = CableModemServicePreCheck(cable_modem=cm)
-
-        # Using MAC and IP directly
-        precheck = CableModemServicePreCheck(
-            mac_address="00:11:22:33:44:55",
-            ip_address="192.168.0.100",
-            check_docsis_version=[ClabsDocsisVersion.DOCSIS_31]
-        )
-
-        status, msg = await precheck.run_precheck()
-        if status != ServiceStatusCode.SUCCESS:
-            print(f"Pre-check failed: {msg}")
-        ```
+    Parameters allow flexible diagnostics for network readiness prior to performing
+    PNM measurements or control operations.
     """
 
     def __init__(
@@ -55,19 +41,23 @@ class CableModemServicePreCheck:
         cable_modem: Optional[CableModem] = None,
         mac_address: Optional[str] = None,
         ip_address: Optional[str] = None,
-        check_docsis_version: Optional[List[ClabsDocsisVersion]] = None
+        check_docsis_version: Optional[List[ClabsDocsisVersion]] = None,
+        validate_ofdm_exist: Optional[bool] = False,
+        validate_ofdma_exist: Optional[bool] = False
     ) -> None:
         """
         Initialize the pre-check service.
 
         Args:
-            cable_modem: An existing CableModem instance (optional).
-            mac_address: The cable modem's MAC address (optional).
-            ip_address: The cable modem's IP address (optional).
-            check_docsis_version: Optional list of accepted DOCSIS versions.
+            cable_modem: An existing CableModem instance to use for queries (optional).
+            mac_address: MAC address of the target cable modem (optional).
+            ip_address: IP address of the target cable modem (optional).
+            check_docsis_version: Optional list of acceptable DOCSIS versions to validate.
+            validate_ofdm_exist: If True, verifies that one or more downstream OFDM channels exist.
+            validate_ofdma_exist: If True, verifies that one or more upstream OFDMA channels exist.
 
         Raises:
-            ValueError: If insufficient parameters are provided to construct the CableModem.
+            ValueError: If neither a `CableModem` object nor both `mac_address` and `ip_address` are provided.
         """
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -87,6 +77,9 @@ class CableModemServicePreCheck:
             self.check_docsis_version = list(check_docsis_version)
         else:
             self.check_docsis_version = []
+            
+        self.validate_ofdma_exist = validate_ofdma_exist
+        self.validate_ofdm_exist = validate_ofdm_exist
 
     async def run_precheck(self) -> Tuple[ServiceStatusCode, str]:
         """
@@ -117,6 +110,16 @@ class CableModemServicePreCheck:
             if status != ServiceStatusCode.SUCCESS:
                 return status, msg
 
+        if self.validate_ofdm_exist:
+            status, msg = await self.validate_ofdm_channel_exist()
+            if status != ServiceStatusCode.SUCCESS:
+                return status, msg  
+
+        if self.validate_ofdma_exist:
+            status, msg = await self.validate_ofdma_channel_exist()
+            if status != ServiceStatusCode.SUCCESS:
+                return status, msg            
+        
         msg = "Pre-check successful: CableModem reachable via ping and SNMP"
         self.logger.info(msg)
         return ServiceStatusCode.SUCCESS, msg
@@ -176,3 +179,43 @@ class CableModemServicePreCheck:
             msg = f"Error checking DOCSIS version: {e}"
             self.logger.error(msg, exc_info=True)
             return ServiceStatusCode.INVALID_DOCSIS_VERSION, msg
+
+    async def validate_ofdm_channel_exist(self) -> Tuple[ServiceStatusCode, str]:
+        """
+        Checks whether any OFDM downstream channels are present on the cable modem.
+
+        This method queries the cable modem for the DOCSIS 3.1 upstream OFDMA channel
+        index stack. If no indices are found, it returns a failure status.
+
+        Returns:
+            Tuple[ServiceStatusCode, str]: A tuple containing the status code and an explanatory message.
+                - ServiceStatusCode.SUCCESS if channels are found
+                - ServiceStatusCode.NO_OFDMA_CHANNELS_EXIST if no channels are detected
+        """
+        idx_chan_stack = await self.cm.getDocsIf31CmDsOfdmChannelIdIndexStack()
+
+        if not idx_chan_stack:
+            msg = "No OFDM channels found on the cable modem."
+            return ServiceStatusCode.NO_OFDMA_CHANNELS_EXIST, msg
+
+        return ServiceStatusCode.SUCCESS, "OFDMA upstream channels detected."
+
+    async def validate_ofdma_channel_exist(self) -> Tuple[ServiceStatusCode, str]:
+        """
+        Checks whether any OFDMA upstream channels are present on the cable modem.
+
+        This method queries the cable modem for the DOCSIS 3.1 upstream OFDMA channel
+        index stack. If no indices are found, it returns a failure status.
+
+        Returns:
+            Tuple[ServiceStatusCode, str]: A tuple containing the status code and an explanatory message.
+                - ServiceStatusCode.SUCCESS if channels are found
+                - ServiceStatusCode.NO_OFDMA_CHANNELS_EXIST if no channels are detected
+        """
+        idx_chan_stack = await self.cm.getDocsIf31CmUsOfdmaChannelIdIndexStack()
+
+        if not idx_chan_stack:
+            msg = "No OFDMA channels found on the cable modem."
+            return ServiceStatusCode.NO_OFDMA_CHANNELS_EXIST, msg
+
+        return ServiceStatusCode.SUCCESS, "OFDMA upstream channels detected."

@@ -79,7 +79,8 @@ group delay ripple, slope, mean values, and file references per OFDMA upstream c
 
         cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
 
-        status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
+        status, msg = await CableModemServicePreCheck(cable_modem=cm,
+                                                      validate_ofdma_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(
@@ -107,7 +108,8 @@ group delay ripple, slope, mean values, and file references per OFDMA upstream c
         
         cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
 
-        status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
+        status, msg = await CableModemServicePreCheck(cable_modem=cm,
+                                                      validate_ofdma_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(
@@ -144,7 +146,8 @@ group delay ripple, slope, mean values, and file references per OFDMA upstream c
 
         cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
 
-        status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
+        status, msg = await CableModemServicePreCheck(cable_modem=cm,
+                                                      validate_ofdma_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(

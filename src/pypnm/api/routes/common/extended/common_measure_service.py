@@ -476,7 +476,7 @@ class CommonMeasureService(CommonMessagingService):
         elif ifParameters.type == "ofdma":
             channel_id_list = ifParameters.channel_id
             idx_channelId = await self.cm.getDocsIf31CmUsOfdmaChannelIdIndexStack()
-
+            self.logger.error(f'Index-Chan-Stack: {idx_channelId}')
             if not idx_channelId:
                 self.logger.warning("No OFDMA channel data found.")
                 return ServiceStatusCode.NO_OFDMA_CHAN_ID_INDEX_FOUND, []

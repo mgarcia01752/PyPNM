@@ -43,15 +43,14 @@ class FecSummaryRouter:
                 self.logger.info(f'Mac: {request.mac_address}, Inet: {request.ip_address}, FEC Summary: {request.fec_summary_type}')
 
                 cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
-
-                status, msg = await CableModemServicePreCheck(mac_address=request.mac_address, 
-                                                        ip_address=request.ip_address).run_precheck()
+                
+                status, msg = await CableModemServicePreCheck(cable_modem=cm,
+                                                            validate_ofdm_exist=True).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
                         mac_address=str(request.mac_address),
-                        status=status,
-                        message=msg)               
+                        status=status, message=msg)               
             
                 fec_type = FecSummaryType.from_value(int(request.fec_summary_type))
                 service = CmDsOfdmFecSummaryService(cable_modem=cm, fec_summary_type=fec_type)
