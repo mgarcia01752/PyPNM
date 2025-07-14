@@ -7,7 +7,6 @@ import logging
 
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
-
 class DocsPnmCmDsOfdmMerMarFields(BaseModel):
     docsPnmCmDsOfdmMerMarProfileId: Optional[int] = None
     docsPnmCmDsOfdmMerMarThrshldOffset: Optional[int] = None
@@ -18,7 +17,6 @@ class DocsPnmCmDsOfdmMerMarFields(BaseModel):
     docsPnmCmDsOfdmMerMarMeasuredAvgMer: Optional[int] = None
     docsPnmCmDsOfdmMerMarAvgMerMargin: Optional[int] = None
     docsPnmCmDsOfdmMerMarMeasStatus: Optional[int] = None
-
 
 class DocsPnmCmDsOfdmMerMarEntry(BaseModel):
     index: int

@@ -21,6 +21,7 @@ from pypnm.docsis.data_type.DocsIfSignalQualityEntry import DocsIfSignalQuality
 from pypnm.docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChannelEntry
 from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst
 from pypnm.docsis.data_type.InterfaceStats import InterfaceStats
+from pypnm.docsis.data_type.OfdmProfiles import OfdmProfiles
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmMerMarEntry import DocsPnmCmDsOfdmMerMarEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
@@ -1324,6 +1325,42 @@ class CmSnmpOperation:
 
         return entries
       
+    async def getOfdmProfiles(self) -> List[Tuple[int, OfdmProfiles]]:
+        """
+        Retrieve provisioned OFDM profile bits for each downstream OFDM channel.
+
+        Returns:
+            List[Tuple[int, OfdmProfiles]]: A list of tuples where each tuple contains:
+                - SNMP index (int)
+                - Corresponding OfdmProfiles bitmask (OfdmProfiles enum)
+        """
+        BITS_16:int = 16
+        
+        entries: List[Tuple[int, OfdmProfiles]] = []
+
+        try:
+            indices = await self.getDocsIf31CmDsOfdmChannelIdIndex()
+
+            if not indices:
+                self.logger.warning("No DocsIf31CmDsOfdmChanChannelIdIndex indices found.")
+                return entries
+
+            for index in indices:
+                results = await self._snmp.get(f'docsIf31RxChStatusOfdmProfiles.{index}')
+                raw = Snmp_v2c.get_result_value(results)
+                
+                if isinstance(raw, bytes):
+                    value = int.from_bytes(raw, byteorder='little')
+                else:
+                    value = int(raw, BITS_16)
+                
+                profiles = OfdmProfiles(value)
+                entries.append((index, profiles))
+
+        except Exception as e:
+            self.logger.exception("Failed to retrieve OFDM profiles")
+
+        return entries     
 
 ####################
 # DOCSIS 4.0 - FDD #

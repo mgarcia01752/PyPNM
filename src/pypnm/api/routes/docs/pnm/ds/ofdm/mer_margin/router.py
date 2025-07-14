@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from typing import Union
+from typing import Dict, List, Union
 from fastapi import APIRouter
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
     PnmAnalysisResponse, PnmRequest)
@@ -30,21 +30,23 @@ class RxMerMarginRouter:
         prefix = "/docs/pnm/ds/ofdm"
         tags = ["PNM Operations - Downstream OFDM MER Margin"]
         self.base_endpoint = "merMargin"
-        self.router = APIRouter(prefix=prefix, tags=tags)  # type: ignore
+        self.router = APIRouter(prefix=prefix, tags=tags)
         self.logger = logging.getLogger(f"RxMerMarginRouter.{self.base_endpoint}")
 
         self._add_routes()
 
     def _add_routes(self):
         
-        @self.router.post(f"/{self.base_endpoint}/getMeasurementTemplate", response_model=Union[SnmpResponse])
+        @self.router.post(f"/{self.base_endpoint}/getMeasurementTemplate", 
+                          response_model=Union[SnmpResponse])
         async def get_measurement_template(request: PnmRequest) -> Union[SnmpResponse]:
             """
             📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/mer-margin.md#get-measurement-template)
             """
-            self.logger.info(f"Retrieving MER Margin measurement for MAC: {request.mac_address}")
+            self.logger.info(f"Compileing MER Margin measurement for MAC: {request.mac_address}")
 
-            cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
+            cm = CableModem(mac_address=MacAddress(request.mac_address), 
+                            inet=Inet(request.ip_address))
 
             status, msg = await CableModemServicePreCheck(
                 cable_modem=cm,
@@ -57,14 +59,16 @@ class RxMerMarginRouter:
                     status=status, message=msg)
 
             service = CmDsOfdmMerMarginService(cm)
-            await service.getMeasurementTemplate()
+            template:Dict[str, List[Dict]] = await service.getMeasurementTemplate()
 
             return SnmpResponse(
                 mac_address=str(request.mac_address),
                 status=ServiceStatusCode.SUCCESS,
-                message="MER Margin test triggered successfully")
+                message="MER Margin test triggered successfully",
+                results=template)
                 
-        @self.router.post(f"/{self.base_endpoint}/getMeasurement", response_model=Union[SnmpResponse])
+        @self.router.post(f"/{self.base_endpoint}/getMeasurement", 
+                          response_model=Union[SnmpResponse])
         async def get_measurement(request: PnmMerMarginRequest) -> Union[SnmpResponse]:
             """
             🎯 Initiates a MER Margin test on a specified OFDM channel/profile.
@@ -96,7 +100,8 @@ class RxMerMarginRouter:
                 status=ServiceStatusCode.SUCCESS,
                 message="MER Margin test triggered successfully")
 
-        @self.router.post(f"/{self.base_endpoint}/getAnalysis", response_model=Union[PnmAnalysisResponse, SnmpResponse])
+        @self.router.post(f"/{self.base_endpoint}/getAnalysis", 
+                          response_model=Union[PnmAnalysisResponse, SnmpResponse])
         async def get_analysis(request: PnmMerMarginRequest):
             """
             📊 Retrieves the MER Margin analysis results from the cable modem.
@@ -126,8 +131,9 @@ class RxMerMarginRouter:
             service = CmDsOfdmMerMarginService(cm)
             return await service.get_analysis()
 
-        @self.router.post(f"/{self.base_endpoint}/getMeasurementStatistics", response_model=Union[SnmpResponse])
-        async def get_statistics(request: PnmRequest):
+        @self.router.post(f"/{self.base_endpoint}/getMeasurementStatistics", 
+                          response_model=Union[SnmpResponse])
+        async def get_measurement_statistics(request: PnmRequest):
             """
             📋 Returns current MER Margin measurement configuration and status.
 

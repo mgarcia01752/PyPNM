@@ -2,9 +2,11 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
+from pypnm.api.routes.docs.pnm.ds.ofdm.mer_margin.schemas import MerMarginMeasurementProfile, MerMarginParams
 from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.data_type.OfdmProfiles import OfdmProfiles
 
 class CmDsOfdmMerMarginService:
     """
@@ -31,7 +33,39 @@ class CmDsOfdmMerMarginService:
 
         NOTE: Implementation pending—will configure SNMP set values for trigger params.
         """
-        pass  # TODO: Implement SNMP set logic for trigger
+        pass
+    
+    async def getMeasurementTemplate(self) -> Dict[str, List[Dict]]:
+        """
+        Creates a MER Margin measurement template for each OFDM profile found on each downstream channel.
+
+        Returns:
+            Dict[str, List[Dict]]: A dictionary where each key is a channel index and each value is a list of
+                                   profile measurement configurations.
+        """
+        template: Dict[str, List[Dict]] = {}
+
+        try:
+            profiles: List[Tuple[int, OfdmProfiles]] = await self.cable_modem.getOfdmProfiles()
+
+            for index, ofdm_profile in profiles:
+                template[str(index)] = []
+
+                for profile_id in ofdm_profile.list_profiles():
+                    self.logger.info(f'Idx: {index} - Profiles: {profile_id}')
+                    profile = MerMarginMeasurementProfile(
+                        channel_id=index,
+                        profile_id=profile_id,
+                        params=MerMarginParams(
+                                MerMarThrshldOffset=4, MerMarMeasEnable=True,
+                                MerMarNumSymPerSubCarToAvg=8, MerMarReqAvgMer=360))
+                    
+                    template[str(index)].append(profile.model_dump())
+
+        except Exception as e:
+            self.logger.exception("Failed to construct MER Margin measurement template")
+
+        return template
 
     async def getMeasurementStatus(self) -> Dict[str, List[Dict]]:
         """
