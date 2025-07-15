@@ -11,7 +11,10 @@ This table will have a row for each ifIndex for the modem.
 ## 📚 Table of Contents
 
 * [Get Measurement](#get-measurement)
+* [Get Measurement Template](#get-measurement-template)
 * [Get Measurement Status](#get-measurement-status)
+
+---
 
 ## Get Measurement
 
@@ -43,87 +46,3 @@ Initiates a MER margin measurement on a DOCSIS 3.1 downstream OFDM profile.
   "symbols_to_average": 8,
   "required_avg_mer": 360
 }
-```
-
-### 🔑 Request Fields
-
-| Field                | Type   | Description                                     |
-| -------------------- | ------ | ----------------------------------------------- |
-| `mac_address`        | string | MAC address of the cable modem                  |
-| `ip_address`         | string | IP address of the cable modem                   |
-| `snmp.*`             | object | SNMP credentials                                |
-| `profile_id`         | int    | Profile ID to test (0–15)                       |
-| `threshold_offset`   | int    | dB offset below required MER (quarter dB units) |
-| `symbols_to_average` | int    | Number of symbols to average per subcarrier     |
-| `required_avg_mer`   | int    | Required average MER (quarter dB units)         |
-
-## Get Measurement Status
-
-### 📡 Endpoint
-
-**POST** `/docs/pnm/ds/ofdm/merMargin/getMeasurementStatistics`
-
-Returns MER margin test status and results per OFDM profile.
-
-### 📒 Request Body (JSON)
-
-```json
-{
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "192.168.0.1",
-  "snmp": {
-    "snmpV2C": { "community": "private" },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
-    }
-  }
-}
-```
-
-### 📤 JSON Response Example
-
-```json
-{
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "status": 0,
-  "message": "Measurement Statistics for MER Margin",
-  "results": {
-    "DS_OFDM_MER_MARGIN": [
-      {
-        "index": 3,
-        "channel_id": 3,
-        "entry": {
-          "docsPnmCmDsOfdmMerMarProfileId": 2,
-          "docsPnmCmDsOfdmMerMarThrshldOffset": 2,
-          "docsPnmCmDsOfdmMerMarMeasEnable": false,
-          "docsPnmCmDsOfdmMerMarNumSymPerSubCarToAvg": 8,
-          "docsPnmCmDsOfdmMerMarReqAvgMer": 360,
-          "docsPnmCmDsOfdmMerMarNumSubCarBelowThrshld": 5,
-          "docsPnmCmDsOfdmMerMarMeasuredAvgMer": 387,
-          "docsPnmCmDsOfdmMerMarAvgMerMargin": 27,
-          "docsPnmCmDsOfdmMerMarMeasStatus": 3
-        }
-      }
-    ]
-  }
-}
-```
-
-### 📊 Response Field Breakdown
-
-| Field                             | Type | Description                                                         |
-| --------------------------------- | ---- | ------------------------------------------------------------------- |
-| `profile_id`                      | int  | Modulation profile ID                                               |
-| `threshold_offset`                | int  | Threshold offset below required MER                                 |
-| `meas_enable`                     | bool | Whether measurement is active                                       |
-| `symbols_to_average`              | int  | Number of symbols per subcarrier to average                         |
-| `required_avg_mer`                | int  | Required average MER (quarter dB)                                   |
-| `num_subcarriers_below_threshold` | int  | Subcarriers below MER threshold                                     |
-| `measured_avg_mer`                | int  | Actual measured average MER (hundredth dB)                          |
-| `avg_mer_margin`                  | int  | Difference between measured and required average MER (hundredth dB) |
-| `meas_status`                     | int  | Measurement status code                                             |
