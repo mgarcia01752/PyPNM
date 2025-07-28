@@ -27,8 +27,7 @@ class UsScQamChannelRouter:
 
     def _add_routes(self):
         @self.router.post("/stats", response_model=List[PnmChannelEntryResponse],
-                          summary="Get DOCSIS 3.0 Upstream ATDMA Channel Stats",
-                          name="get_us_scqam_upstream_channels")
+                          summary="Get DOCSIS 3.0 Upstream ATDMA Channel Stats")
         async def get_us_scqam_upstream_channels(request: SnmpRequest):
             """
             **DOCSIS 3.0 Upstream ATDMA Channel Stats**
