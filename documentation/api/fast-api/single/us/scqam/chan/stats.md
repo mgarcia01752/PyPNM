@@ -83,7 +83,7 @@ Each object in the response represents one upstream ATDMA channel.
 ### 📊 Key Response Fields
 
 | Field                                  | Type    | Description                             |
-| -- | - |  |
+|---|---|---|
 | index                                  | integer | SNMP index of the upstream channel      |
 | channel\_id                            | integer | Logical channel ID                      |
 | entry.docsIfUpChannelFrequency         | integer | Center frequency in Hz                  |
