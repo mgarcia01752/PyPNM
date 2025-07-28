@@ -26,7 +26,9 @@ class UsScQamChannelRouter:
         self._add_routes()
 
     def _add_routes(self):
-        @self.router.post("/stats", response_model=List[PnmChannelEntryResponse])
+        @self.router.post("/stats", response_model=List[PnmChannelEntryResponse],
+                          summary="Get DOCSIS 3.0 Upstream ATDMA Channel Stats",
+                          name=)
         async def get_us_scqam_upstream_channels(request: SnmpRequest):
             """
             **DOCSIS 3.0 Upstream ATDMA Channel Stats**
@@ -39,7 +41,7 @@ class UsScQamChannelRouter:
             - Transmit power
             - Ranging behavior
             
-            🔗 [API Guide - Upstream ATDMA Channel Stats](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/stats.md)
+            🔗 [API Guide - Upstream ATDMA Channel Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/stats.md)
 
             """
             mac = request.cable_modem.mac_address
