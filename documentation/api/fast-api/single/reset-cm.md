@@ -11,8 +11,9 @@ Initiates a remote reset (reboot) of the specified DOCSIS cable modem via SNMP.
 
 ```json
 {
-  "mac_address": "a1:b2:c3:d4:e5:f6",
-  "ip_address": "192.168.0.1",
+  "cable_modem": {
+  "mac_address": "aa:bb:cc:dd:ee:ff", 
+  "ip_address": "192.168.0.100",
   "snmp": {
     "snmpV2C": {
       "community": "private"

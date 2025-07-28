@@ -19,8 +19,8 @@ This data is useful for evaluating traffic utilization, identifying profile tran
 ```json
 {
   "cable_modem": {
-	"mac_address": "aa:bb:cc:dd:ee:ff",
-	"ip_address": "192.168.0.100",
+  "mac_address": "aa:bb:cc:dd:ee:ff", 
+  "ip_address": "192.168.0.100",
   "snmp": {
     "snmpV2C": {
       "community": "private"

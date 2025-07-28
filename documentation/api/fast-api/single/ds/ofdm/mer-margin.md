@@ -28,10 +28,13 @@ Initiates a MER margin measurement on a DOCSIS 3.1 downstream OFDM profile.
 
 ```json
 {
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "192.168.0.1",
+  "cable_modem": {
+  "mac_address": "aa:bb:cc:dd:ee:ff", 
+  "ip_address": "192.168.0.100",
   "snmp": {
-    "snmpV2C": { "community": "private" },
+    "snmpV2C": {
+      "community": "private"
+    },
     "snmpV3": {
       "username": "string",
       "securityLevel": "noAuthNoPriv",
@@ -40,9 +43,5 @@ Initiates a MER margin measurement on a DOCSIS 3.1 downstream OFDM profile.
       "privProtocol": "DES",
       "privPassword": "string"
     }
-  },
-  "profile_id": 2,
-  "threshold_offset": 2,
-  "symbols_to_average": 8,
-  "required_avg_mer": 360
+  }
 }

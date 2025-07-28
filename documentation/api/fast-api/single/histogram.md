@@ -11,8 +11,8 @@ Captures and returns histogram distribution data from a DOCSIS cable modem's dow
 ```json
 {
   "cable_modem": {
-	"mac_address": "aa:bb:cc:dd:ee:ff",
-	"ip_address": "192.168.0.100",
+  "mac_address": "aa:bb:cc:dd:ee:ff", 
+  "ip_address": "192.168.0.100",
   "snmp": {
     "snmpV2C": {
       "community": "private"
@@ -25,8 +25,7 @@ Captures and returns histogram distribution data from a DOCSIS cable modem's dow
       "privProtocol": "DES",
       "privPassword": "string"
     }
-  },
-  "sample_duration": 10
+  }
 }
 ```
 

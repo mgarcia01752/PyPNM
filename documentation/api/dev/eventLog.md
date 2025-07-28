@@ -16,8 +16,23 @@ The request body must contain the following JSON structure:
 
 ```json
 {
-  "mac_address": "00:11:22:33:44:55",
-  "ip_address": "192.168.100.1"
+  "cable_modem": {
+	"mac_address": "aa:bb:cc:dd:ee:ff",
+	"ip_address": "192.168.0.100",
+    "snmp": {
+      "snmpV2C": {
+        "community": "private"
+      },
+      "snmpV3": {
+        "username": "string",
+        "securityLevel": "noAuthNoPriv",
+        "authProtocol": "MD5",
+        "authPassword": "string",
+        "privProtocol": "DES",
+        "privPassword": "string"
+      }
+    }
+  }
 }
 ```
 

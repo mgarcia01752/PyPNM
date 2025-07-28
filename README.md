@@ -16,7 +16,7 @@
 
 **PyPNM** is a modular, Python-based toolkit for parsing, analyzing, and visualizing DOCSIS 3.x/4.0 Proactive Network Maintenance (PNM) telemetry. It is designed to support engineers and developers with real-time and offline diagnostic capabilities via both a programmatic API and an interactive web interface.
 
-## 🧰 Key Features
+## Key Features
 
 - **Structured SNMP Integration** — Poll DOCSIS modems for live telemetry (RxMER, modulation profiles, spectrum, equalization)
 - **Binary File Decoding** — Retrieve and parse modem-generated TFTP or SNMP-triggered binary capture files
@@ -46,7 +46,7 @@ sudo apt update
 sudo apt install -y git
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Step 1: Clone the repository
 
@@ -96,7 +96,7 @@ pypnm
 
 ⚠️ Tip: Use Postman for complex or large JSON payloads—Swagger UI can struggle with deeply nested schemas.
 
-## 📚 Full Documentation
+## Full Documentation
 
 Access in-depth guides, workflows, and examples:
 
@@ -104,7 +104,7 @@ Access in-depth guides, workflows, and examples:
 - [🧠 Python API Reference](documentation/api/python/index.md)
 - [⚙️  Example Scripts](documentation/examples/index.md)
 
-## 📦 Supported Standards & Specs
+## Supported Standards & Specs
 
 **DOCSIS 3.1 MIBs & PNM behavior** (CableLabs)
 
@@ -117,11 +117,11 @@ Access in-depth guides, workflows, and examples:
   * [CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)
   * [CM-GL-PNM-HFC & CM-GL-PNM-3.1](https://www.cablelabs.com/specifications/CM-GL-PNM-HFC)
 
-## 📜 License
+## License
 
 Released under the **MIT License**. See [LICENSE](LICENSE)
 
-## 👤 Maintainer
+## Maintainer
 
 **Maurice Garcia**
 ✉️ `mgarcia01752@outlook.com`

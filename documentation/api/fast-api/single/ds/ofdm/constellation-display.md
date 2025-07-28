@@ -16,10 +16,13 @@ Captures downstream OFDM constellation symbols from a DOCSIS cable modem for vis
 
 ```json
 {
-  "mac_address": "a1:b2:c3:d4:e5:f6",
-  "ip_address": "192.168.0.1",
+  "cable_modem": {
+  "mac_address": "aa:bb:cc:dd:ee:ff", 
+  "ip_address": "192.168.0.100",
   "snmp": {
-    "snmpV2C": { "community": "private" },
+    "snmpV2C": {
+      "community": "private"
+    },
     "snmpV3": {
       "username": "string",
       "securityLevel": "noAuthNoPriv",
@@ -28,9 +31,7 @@ Captures downstream OFDM constellation symbols from a DOCSIS cable modem for vis
       "privProtocol": "DES",
       "privPassword": "string"
     }
-  },
-  "modulation_order_offset": 0,
-  "number_sample_symbol": 8192
+  }
 }
 ```
 

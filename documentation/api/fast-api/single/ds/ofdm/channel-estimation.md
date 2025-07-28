@@ -46,8 +46,8 @@ Retrieves complex channel estimation coefficients from a DOCSIS 3.1 cable modem 
 ```json
 {
   "cable_modem": {
-	"mac_address": "aa:bb:cc:dd:ee:ff",
-	"ip_address": "192.168.0.100",
+  "mac_address": "aa:bb:cc:dd:ee:ff", 
+  "ip_address": "192.168.0.100",
   "snmp": {
     "snmpV2C": {
       "community": "private"

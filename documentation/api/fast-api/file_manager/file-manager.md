@@ -25,18 +25,18 @@ Returns a list of uploaded PNM measurement files for a given cable modem.
 ```json
 {
   "files": {
-    "38:ad:2b:12:49:4c": [
+    "a1:b2:c3:d4:e5:f6": [
       {
         "transaction_id": "9b261936786e6817",
-        "filename": "ds_ofdm_rxmer_per_subcar_38ad2b12494c_197_1751831579.bin",
+        "filename": "ds_ofdm_rxmer_per_subcar_a1b2c3d4e5f6_197_1751831579.bin",
         "pnm_test_type": "DS_OFDM_RXMER_PER_SUBCAR",
         "timestamp": "2025-07-06 13:52:59 UTC",
         "sys_descr": {
-          "HW_REV": "0A",
-          "VENDOR": "Hitron Technologies",
-          "BOOTR": "2022.01-MXL-v-4.0.350",
-          "SW_REV": "8.4.0.0.2b1",
-          "MODEL": "CODA60V"
+            "HW_REV": "1.0",
+            "VENDOR": "LANCity",
+            "BOOTR": "NONE",
+            "SW_REV": "1.0.0",
+            "MODEL": "LCPET-3"
         }
       },
       {...}
@@ -58,7 +58,7 @@ Downloads the raw binary PNM measurement file associated with the provided trans
 
 ```
 accept-ranges: bytes
-content-disposition: attachment; filename="ds_ofdm_chan_est_coef_38ad2b12494c_193_1751835927.bin"
+content-disposition: attachment; filename="ds_ofdm_chan_est_coef_a1b2c3d4e5f6_193_1751835927.bin"
 content-length: 15228
 content-type: application/octet-stream
 date: Mon,07 Jul 2025 00:38:05 GMT
@@ -77,7 +77,7 @@ Triggers an analysis pipeline on a specified PNM file.
 
 ```json
 {
-  "mac_address": "38:AD:2B:12:49:4C",
+  "mac_address": "a1:b2:c3:d4:e5:f6",
   "transaction_id": "7832a31a37eec15a",
   "analysis_type": "auto"
 } 
