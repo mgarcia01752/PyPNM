@@ -4,7 +4,7 @@
 from typing import Any, Dict, Optional
 from pydantic import Field, field_validator
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
-    CommonOutput, CommonAnalysisRequest, CommonRequest, CommonResponse)
+    CommonAnalysisRequest, CommonRequest, CommonResponse)
 
 class PnmRequest(CommonRequest):
     """Request model used to trigger measurement-related operations on a cable modem."""

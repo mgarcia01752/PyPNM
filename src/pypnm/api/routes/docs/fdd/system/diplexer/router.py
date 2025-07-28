@@ -6,8 +6,7 @@ from typing import Union, Dict, Any
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmRequest
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.fdd.system.diplexer.service import FddDiplexerConfigService
@@ -31,7 +30,7 @@ class FddDiplexerConfigResult:
 
     def _register_routes(self) -> None:
         @self.router.post("/diplexer/configuration", response_model=Union[SnmpResponse, Dict[str, Any]])
-        async def diplexer_config(request: PnmRequest) -> Union[SnmpResponse, JSONResponse]:
+        async def diplexer_config(request: SnmpRequest) -> Union[SnmpResponse, JSONResponse]:
             """
             **DOCSIS 4.0 FDD Diplexer Configuration**
 
@@ -48,7 +47,7 @@ class FddDiplexerConfigResult:
             status, msg = await CableModemServicePreCheck(
                 mac_address=request.cable_modem.mac_address, 
                 ip_address=request.cable_modem.ip_address,
-                check_docsis_version=ClabsDocsisVersion.DOCSIS_40).run_precheck()
+                check_docsis_version=[ClabsDocsisVersion.DOCSIS_40]).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
