@@ -45,7 +45,6 @@ This data is useful for evaluating traffic utilization, identifying profile tran
 | ip_address  | string    | IP address of the cable modem               |
 | snmp        | object    | SNMPv2c or SNMPv3 configuration credentials |
 
-
 ## 📤 Response Format (Abbreviated Example)
 
 ```json

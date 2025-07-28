@@ -63,7 +63,6 @@ Fetches the device event log from a DOCSIS modem using SNMP, which may include c
 | `docsDevEvId`        | int    | Numeric event identifier                                                    |
 | `docsDevEvText`      | string | Human-readable message text, typically includes MAC, CMTS, and version info |
 
-
 ## 📝 Notes
 
 * Event levels range from **0 (emergency)** to **7 (debug)** following syslog severity conventions.

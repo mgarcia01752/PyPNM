@@ -29,7 +29,6 @@ Initiates a remote reset (reboot) of the specified DOCSIS cable modem via SNMP.
 }
 ```
 
-
 ## 📤 JSON Response
 
 ```json
