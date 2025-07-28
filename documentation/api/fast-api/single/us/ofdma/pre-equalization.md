@@ -22,8 +22,9 @@ Retrieves OFDMA upstream pre-equalization complex coefficients from a DOCSIS 3.1
 
 ```json
 {
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "192.168.0.100",
+  "cable_modem": {
+	"mac_address": "aa:bb:cc:dd:ee:ff",
+	"ip_address": "192.168.0.100",
   "snmp": {
     "snmpV2C": {
       "community": "private"
@@ -122,8 +123,9 @@ Returns statistical analysis of decoded upstream OFDMA pre-equalization coeffici
 
 ```json
 {
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "192.168.0.100",
+  "cable_modem": {
+	"mac_address": "aa:bb:cc:dd:ee:ff",
+	"ip_address": "192.168.0.100",
   "snmp": {
     "snmpV2C": {
       "community": "private"

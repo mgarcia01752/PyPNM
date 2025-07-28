@@ -26,8 +26,9 @@ Retrieves subcarrier-level RxMER (Receive Modulation Error Ratio) measurements f
 
 ```json
 {
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "192.168.0.100",
+  "cable_modem": {
+	"mac_address": "aa:bb:cc:dd:ee:ff",
+	"ip_address": "192.168.0.100",
   "snmp": {
     "snmpV2C": {
       "community": "private"
@@ -117,8 +118,9 @@ Retrieves subcarrier-level RxMER (Receive Modulation Error Ratio) measurements f
 
 ```json
 {
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "192.168.0.100",
+  "cable_modem": {
+	"mac_address": "aa:bb:cc:dd:ee:ff",
+	"ip_address": "192.168.0.100",
   "snmp": {
     "snmpV2C": {
       "community": "private"

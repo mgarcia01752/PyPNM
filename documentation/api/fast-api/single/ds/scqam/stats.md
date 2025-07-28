@@ -14,8 +14,9 @@ Retrieves DOCSIS 3.0 downstream SC-QAM channel configuration and signal quality 
 
 ```json
 {
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "192.168.0.100",
+  "cable_modem": {
+	"mac_address": "aa:bb:cc:dd:ee:ff",
+	"ip_address": "192.168.0.100",
   "snmp": {
     "snmpV2C": {
       "community": "private"

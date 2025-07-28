@@ -12,8 +12,9 @@ Retrieves pre-equalization coefficients and tap configuration for DOCSIS 3.0 ups
 
 ```json
 {
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "192.168.0.100",
+  "cable_modem": {
+	"mac_address": "aa:bb:cc:dd:ee:ff",
+	"ip_address": "192.168.0.100",
   "snmp": {
     "snmpV2C": {
       "community": "private"

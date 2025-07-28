@@ -25,8 +25,9 @@ This endpoint retrieves the modulation profile used in DOCSIS 3.1 OFDM downstrea
 
 ```json
 {
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "192.168.0.100",
+  "cable_modem": {
+	"mac_address": "aa:bb:cc:dd:ee:ff",
+	"ip_address": "192.168.0.100",
   "snmp": {
     "snmpV2C": {
       "community": "private"
@@ -133,8 +134,9 @@ Performs analysis of the downstream OFDM modulation profile for DOCSIS 3.1, calc
 
 ```json
 {
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "192.168.0.100",
+  "cable_modem": {
+	"mac_address": "aa:bb:cc:dd:ee:ff",
+	"ip_address": "192.168.0.100",
   "snmp": {
     "snmpV2C": { "community": "private" },
     "snmpV3": {
