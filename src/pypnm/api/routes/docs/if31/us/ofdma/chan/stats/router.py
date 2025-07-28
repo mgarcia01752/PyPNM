@@ -6,8 +6,8 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from typing import List, Union
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmChannelEntryResponse, PnmRequest
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmChannelEntryResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.if31.us.ofdma.chan.stats.service import UsOfdmChannelService
@@ -26,7 +26,7 @@ class UsOfdmaChannelRouter:
 
     def _add_routes(self):
         @self.router.post("/stats", response_model=Union[List[PnmChannelEntryResponse], SnmpResponse])
-        async def get_us_ofdma_channels(request: PnmRequest):
+        async def get_us_ofdma_channels(request: SnmpRequest):
             """
             **Upstream OFDMA Channel Statistics (DOCSIS 3.1)**
 

@@ -4,8 +4,7 @@
 import logging
 from fastapi import APIRouter, HTTPException
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmRequest
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.if31.docsis.service import DocsisBaseCapabilityService
@@ -27,7 +26,7 @@ class BaseCapabilityRouter:
     def _register_routes(self) -> None:
         
         @self.router.post("/baseCapability", response_model=SnmpResponse)
-        async def base_capability(request: PnmRequest) -> SnmpResponse:
+        async def base_capability(request: SnmpRequest) -> SnmpResponse:
             """
             **DOCSIS 3.1 Base Capability**
 
