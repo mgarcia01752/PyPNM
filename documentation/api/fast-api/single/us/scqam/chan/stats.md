@@ -14,8 +14,8 @@ Retrieves statistics for upstream SC-QAM (ATDMA) channels on a DOCSIS 3.0 cable 
 ```json
 {
   "cable_modem": {
-	"mac_address": "aa:bb:cc:dd:ee:ff",
-	"ip_address": "192.168.0.100",
+  "mac_address": "aa:bb:cc:dd:ee:ff",
+  "ip_address": "192.168.0.100",
   "snmp": {
     "snmpV2C": {
       "community": "private"
@@ -35,7 +35,7 @@ Retrieves statistics for upstream SC-QAM (ATDMA) channels on a DOCSIS 3.0 cable 
 ### 🔑 Fields
 
 | Field        | Type   | Description                    |
-|  |  |  |
+|---|---|---|
 | mac\_address | string | MAC address of the cable modem |
 | ip\_address  | string | IP address of the cable modem  |
 | snmp         | object | SNMPv2c or SNMPv3 credentials  |
