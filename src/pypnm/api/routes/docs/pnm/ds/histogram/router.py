@@ -62,20 +62,20 @@ class DsHistogramRouter:
             """
             try:
                 self.logger.info(
-                    f"[getMeasurement] Mac: {request.mac_address}, "
-                    f"Inet: {request.ip_address}, Sample Duration: {request.sample_duration}"
+                    f"[getMeasurement] Mac: {request.cable_modem.mac_address}, "
+                    f"Inet: {request.cable_modem.ip_address}, Sample Duration: {request.sample_duration}"
                 )
 
                 cm = CableModem(
-                    mac_address=MacAddress(request.mac_address),
-                    inet=Inet(request.ip_address)
+                    mac_address=MacAddress(request.cable_modem.mac_address),
+                    inet=Inet(request.cable_modem.ip_address)
                 )
 
                 status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
-                        mac_address=str(request.mac_address),
+                        mac_address=str(request.cable_modem.mac_address),
                         status=status,
                         message=msg
                     )    
@@ -94,7 +94,7 @@ class DsHistogramRouter:
                 msg_rsp = cps.process()
 
                 return PnmHistogramResponse(
-                    mac_address=request.mac_address,
+                    mac_address=request.cable_modem.mac_address,
                     status=msg_rsp.status,
                     data=msg_rsp.payload_to_dict()
                 )
@@ -102,7 +102,7 @@ class DsHistogramRouter:
             except HTTPException:
                 raise
             except Exception as e:
-                self.logger.exception(f"[getMeasurement] Unexpected error for MAC {request.mac_address}")
+                self.logger.exception(f"[getMeasurement] Unexpected error for MAC {request.cable_modem.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}")
 
 # ✅ Required for dynamic auto-registration

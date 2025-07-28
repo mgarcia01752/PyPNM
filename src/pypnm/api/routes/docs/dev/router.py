@@ -39,18 +39,18 @@ class DocsDevRouter:
             📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/event-log.md)
 
             """
-            status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
-                                                          ip_address=request.ip_address).run_precheck()
+            status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address,
+                                                          ip_address=request.cable_modem.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 logger.error(msg)
                 return EventLogResponse(
-                    mac_address=str(request.mac_address),
+                    mac_address=str(request.cable_modem.mac_address),
                     status=status, message=msg, logs=[])                
             
             try:
                 service = CmDocsDevService(
-                    mac_address=request.mac_address,
-                    ip_address=request.ip_address)
+                    mac_address=request.cable_modem.mac_address,
+                    ip_address=request.cable_modem.ip_address)
                 
                 log_entries = await service.fetch_event_log()
                 return EventLogResponse(
@@ -85,19 +85,19 @@ class DocsDevRouter:
             🔐 SNMP Write Access Required
             """
 
-            status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
-                                                    ip_address=request.ip_address).run_precheck()
+            status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address,
+                                                    ip_address=request.cable_modem.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
-                    mac_address=str(request.mac_address),
+                    mac_address=str(request.cable_modem.mac_address),
                     status=status,
                     message=msg)               
             
             try:
                 service = CmDocsDevService(
-                    mac_address=request.mac_address,
-                    ip_address=request.ip_address)
+                    mac_address=request.cable_modem.mac_address,
+                    ip_address=request.cable_modem.ip_address)
                 
                 result = await service.reset_cable_modem()
                 return JSONResponse(content=result.model_dump())

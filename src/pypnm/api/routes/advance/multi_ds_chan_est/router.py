@@ -77,19 +77,19 @@ class MultiDsChanEstRouter(AbstractService):
             interval = request.capture.parameters.sample_interval
 
             self.logger.info(
-                f"Starting multi-ChannelEstimation capture for MAC={request.mac_address} "
+                f"Starting multi-ChannelEstimation capture for MAC={request.cable_modem.mac_address} "
                 f"(duration={duration}s, interval={interval}s)")
 
             cm = CableModem(
-                mac_address=MacAddress(request.mac_address),
-                inet=Inet(request.ip_address),
+                mac_address=MacAddress(request.cable_modem.mac_address),
+                inet=Inet(request.cable_modem.ip_address),
             )
 
             status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
-                    mac_address=str(request.mac_address),
+                    mac_address=str(request.cable_modem.mac_address),
                     status=status,
                     message=msg
                 )   
@@ -102,7 +102,7 @@ class MultiDsChanEstRouter(AbstractService):
             )
 
             return MultiChanEstimationStartResponse(
-                mac_address=request.mac_address,
+                mac_address=request.cable_modem.mac_address,
                 status=OperationState.RUNNING,
                 message=None,
                 group_id=group_id,
@@ -254,7 +254,7 @@ class MultiDsChanEstRouter(AbstractService):
                 capture_group_id:str = OperationManager.get_capture_group(request.operation_id)
             except KeyError:
                 return MultiChanEstimationAnalysisResponse(
-                    mac_address=request.mac_address,
+                    mac_address=request.cable_modem.mac_address,
                     status=ServiceStatusCode.CAPTURE_GROUP_NOT_FOUND,
                     message=f"No capture group found for operation {request.operation_id}",
                     data={}
@@ -265,7 +265,7 @@ class MultiDsChanEstRouter(AbstractService):
             pcollect: PnmCollection = aggregator.getPnmCollection()
             if not pcollect:
                 return MultiChanEstimationAnalysisResponse(
-                    mac_address=request.mac_address,
+                    mac_address=request.cable_modem.mac_address,
                     status=ServiceStatusCode.FAILURE,
                     message=f"Unable to collect PNM files for group {capture_group_id}",
                     data={}
@@ -305,7 +305,7 @@ class MultiDsChanEstRouter(AbstractService):
             message = error or f"Analysis {MultiChanEstimationAnalysisType(atype).name} completed for group {capture_group_id}"
 
             return MultiChanEstimationAnalysisResponse(
-                mac_address=request.mac_address,
+                mac_address=request.cable_modem.mac_address,
                 status=status,
                 message=message,
                 data=data

@@ -83,23 +83,23 @@ class MultiRxMerRouter(AbstractService):
             msg:str = ""
             
             self.logger.info(
-                f"Starting Multi-RxMER capture for MAC={request.mac_address} "
+                f"Starting Multi-RxMER capture for MAC={request.cable_modem.mac_address} "
                 f"(duration={duration}s, interval={interval}s)")
 
             cable_modem = CableModem(
-                mac_address=MacAddress(request.mac_address),
-                inet=Inet(request.ip_address),)
+                mac_address=MacAddress(request.cable_modem.mac_address),
+                inet=Inet(request.cable_modem.ip_address),)
 
             status, msg = await CableModemServicePreCheck(cable_modem=cable_modem).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
-                    mac_address=str(request.mac_address),
+                    mac_address=str(request.cable_modem.mac_address),
                     status=status,
                     message=msg)   
 
             if measure_modes == MeasureModes.CONTINUOUS:
-                msg=f'Starting Multi-RxMER capture for MAC={request.mac_address}'
+                msg=f'Starting Multi-RxMER capture for MAC={request.cable_modem.mac_address}'
                 self.logger.info(f'{msg}')
                 group_id, operation_id = await self.loadService(
                     MultiRxMerService,
@@ -108,7 +108,7 @@ class MultiRxMerRouter(AbstractService):
                     interval=interval,)
                 
             elif measure_modes == MeasureModes.OFDM_PERFORMANCE_1:
-                msg=f'Starting Multi-RxMER-OFDM-Performance-1 capture for MAC={request.mac_address}'
+                msg=f'Starting Multi-RxMER-OFDM-Performance-1 capture for MAC={request.cable_modem.mac_address}'
                 self.logger.info(f'{msg}')
                 group_id, operation_id = await self.loadService(
                     MultiRxMer_Ofdm_Performance_1_Service,
@@ -119,7 +119,7 @@ class MultiRxMerRouter(AbstractService):
             else:
                 self.logger.error(f'Invalid Measure Mode Selected: ({measure_modes})')
                 return MultiRxMerStartResponse(
-                    mac_address=request.mac_address,
+                    mac_address=request.cable_modem.mac_address,
                     status=ServiceStatusCode.MEASURE_MODE_INVALID,
                     message=f"{ServiceStatusCode.MEASURE_MODE_INVALID.name}",
                     group_id="",
@@ -127,7 +127,7 @@ class MultiRxMerRouter(AbstractService):
                 )
                                 
             return MultiRxMerStartResponse(
-                mac_address=request.mac_address,
+                mac_address=request.cable_modem.mac_address,
                 status=OperationState.RUNNING,
                 message=msg,
                 group_id=group_id,
@@ -277,7 +277,7 @@ class MultiRxMerRouter(AbstractService):
                 capture_group_id = OperationManager.get_capture_group(request.operation_id)
             except KeyError:
                 return MultiRxMerAnalysisResponse(
-                    mac_address=request.mac_address,
+                    mac_address=request.cable_modem.mac_address,
                     status=ServiceStatusCode.CAPTURE_GROUP_NOT_FOUND,
                     message=f"No capture group found for operation {request.operation_id}",
                     data={}
@@ -288,7 +288,7 @@ class MultiRxMerRouter(AbstractService):
             pcollect: PnmCollection = aggregator.getPnmCollection()
             if not pcollect:
                 return MultiRxMerAnalysisResponse(
-                    mac_address=request.mac_address,
+                    mac_address=request.cable_modem.mac_address,
                     status=ServiceStatusCode.FAILURE,
                     message=f"Unable to collect PNM files for group {capture_group_id}",
                     data={}
@@ -338,7 +338,7 @@ class MultiRxMerRouter(AbstractService):
             FileProcessor(f'output/ofdm-prof-1-{Utils.time_stamp()}.json').write_file(json.dumps(data))
             
             return MultiRxMerAnalysisResponse(
-                mac_address=request.mac_address,
+                mac_address=request.cable_modem.mac_address,
                 status=status,
                 message=message,
                 data=data

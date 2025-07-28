@@ -46,19 +46,19 @@ class FddDiplexerConfigResult:
             📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/fdd/fdd-system-diplexer-configuration.md)
             """
             status, msg = await CableModemServicePreCheck(
-                mac_address=request.mac_address, 
-                ip_address=request.ip_address,
+                mac_address=request.cable_modem.mac_address, 
+                ip_address=request.cable_modem.ip_address,
                 check_docsis_version=ClabsDocsisVersion.DOCSIS_40).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
-                    mac_address=str(request.mac_address),
+                    mac_address=str(request.cable_modem.mac_address),
                     status=status, message=msg)
 
             service = await FddDiplexerConfigService.fetch_fdd_diplexer_config(
-                mac_address=request.mac_address,
-                ip_address=request.ip_address)
+                mac_address=request.cable_modem.mac_address,
+                ip_address=request.cable_modem.ip_address)
 
             cfg = service.to_dict()
             return JSONResponse(content=cfg)

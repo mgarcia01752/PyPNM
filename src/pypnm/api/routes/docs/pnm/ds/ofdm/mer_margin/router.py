@@ -43,10 +43,10 @@ class RxMerMarginRouter:
             """
             📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/mer-margin.md#get-measurement-template)
             """
-            self.logger.info(f"Compileing MER Margin measurement for MAC: {request.mac_address}")
+            self.logger.info(f"Compileing MER Margin measurement for MAC: {request.cable_modem.mac_address}")
 
-            cm = CableModem(mac_address=MacAddress(request.mac_address), 
-                            inet=Inet(request.ip_address))
+            cm = CableModem(mac_address=MacAddress(request.cable_modem.mac_address), 
+                            inet=Inet(request.cable_modem.ip_address))
 
             status, msg = await CableModemServicePreCheck(
                 cable_modem=cm,
@@ -55,14 +55,14 @@ class RxMerMarginRouter:
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
-                    mac_address=str(request.mac_address),
+                    mac_address=str(request.cable_modem.mac_address),
                     status=status, message=msg)
 
             service = CmDsOfdmMerMarginService(cm)
             template:Dict[str, List[Dict]] = await service.getMeasurementTemplate()
 
             return SnmpResponse(
-                mac_address=str(request.mac_address),
+                mac_address=str(request.cable_modem.mac_address),
                 status=ServiceStatusCode.SUCCESS,
                 message="MER Margin test triggered successfully",
                 results=template)
@@ -78,9 +78,9 @@ class RxMerMarginRouter:
 
             📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/mer-margin.md#get-measurement)
             """
-            self.logger.info(f"Retrieving MER Margin measurement for MAC: {request.mac_address}")
+            self.logger.info(f"Retrieving MER Margin measurement for MAC: {request.cable_modem.mac_address}")
 
-            cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
+            cm = CableModem(mac_address=MacAddress(request.cable_modem.mac_address), inet=Inet(request.cable_modem.ip_address))
 
             status, msg = await CableModemServicePreCheck(
                 cable_modem=cm,
@@ -89,14 +89,14 @@ class RxMerMarginRouter:
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
-                    mac_address=str(request.mac_address),
+                    mac_address=str(request.cable_modem.mac_address),
                     status=status, message=msg)
 
             service = CmDsOfdmMerMarginService(cm)
             await service.set(request.mer_margin)
 
             return SnmpResponse(
-                mac_address=str(request.mac_address),
+                mac_address=str(request.cable_modem.mac_address),
                 status=ServiceStatusCode.SUCCESS,
                 message="MER Margin test triggered successfully")
 
@@ -114,9 +114,9 @@ class RxMerMarginRouter:
 
             📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/mer-margin.md#get-analysis)
             """
-            self.logger.info(f"Retrieving MER Margin analysis for MAC: {request.mac_address}")
+            self.logger.info(f"Retrieving MER Margin analysis for MAC: {request.cable_modem.mac_address}")
 
-            cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
+            cm = CableModem(mac_address=MacAddress(request.cable_modem.mac_address), inet=Inet(request.cable_modem.ip_address))
 
             status, msg = await CableModemServicePreCheck(
                 cable_modem=cm,
@@ -125,7 +125,7 @@ class RxMerMarginRouter:
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
-                    mac_address=str(request.mac_address),
+                    mac_address=str(request.cable_modem.mac_address),
                     status=status, message=msg)
 
             service = CmDsOfdmMerMarginService(cm)
@@ -145,9 +145,9 @@ class RxMerMarginRouter:
 
             📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/mer-margin.md#get-measurement-statistics)
             """
-            self.logger.info(f"Fetching MER Margin measurement statistics for MAC: {request.mac_address}")
+            self.logger.info(f"Fetching MER Margin measurement statistics for MAC: {request.cable_modem.mac_address}")
 
-            cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
+            cm = CableModem(mac_address=MacAddress(request.cable_modem.mac_address), inet=Inet(request.cable_modem.ip_address))
 
             status, msg = await CableModemServicePreCheck(
                 cable_modem=cm,
@@ -156,14 +156,14 @@ class RxMerMarginRouter:
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
-                    mac_address=str(request.mac_address),
+                    mac_address=str(request.cable_modem.mac_address),
                     status=status, message=msg)
 
             service = CmDsOfdmMerMarginService(cm)
             results = await service.getMeasurementStatus()
 
             return SnmpResponse(
-                mac_address=str(request.mac_address),
+                mac_address=str(request.cable_modem.mac_address),
                 status=ServiceStatusCode.SUCCESS,
                 message="Measurement Statistics for MER Margin",
                 results=results)

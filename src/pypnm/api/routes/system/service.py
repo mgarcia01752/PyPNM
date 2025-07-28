@@ -33,15 +33,15 @@ class SystemSnmpService:
               - on failure: status=FAILURE, message=error text, sys_descr=None
         """
         try:
-            logger.info(f"Fetching sysDescr for {request.mac_address}@{request.ip_address}")
+            logger.info(f"Fetching sysDescr for {request.cable_modem.mac_address}@{request.cable_modem.ip_address}")
             cm = CableModem(
-                mac_address=MacAddress(request.mac_address),
-                inet=Inet(request.ip_address)
+                mac_address=MacAddress(request.cable_modem.mac_address),
+                inet=Inet(request.cable_modem.ip_address)
             )
             sys_descr: SystemDescriptor = await cm.getSysDescr()
                         
             return SysDescrResponse(
-                mac_address=request.mac_address,
+                mac_address=request.cable_modem.mac_address,
                 status=ServiceStatusCode.SUCCESS,
                 results={"sysDescr":sys_descr},
             )
@@ -49,7 +49,7 @@ class SystemSnmpService:
         except Exception as e:
             logger.error(f"Failed to retrieve sysDescr: {e}", exc_info=True)
             return SysDescrResponse(
-                mac_address=request.mac_address,
+                mac_address=request.cable_modem.mac_address,
                 status=ServiceStatusCode.FAILURE,
                 message=str(e),
                 results={},
@@ -69,16 +69,16 @@ class SystemSnmpService:
               - on failure: status=FAILURE, message=error text, uptime=""
         """
         try:
-            logger.info(f"Fetching sysUpTime for {request.mac_address}@{request.ip_address}")
+            logger.info(f"Fetching sysUpTime for {request.cable_modem.mac_address}@{request.cable_modem.ip_address}")
             cm = CableModem(
-                mac_address=MacAddress(request.mac_address),
-                inet=Inet(request.ip_address)
+                mac_address=MacAddress(request.cable_modem.mac_address),
+                inet=Inet(request.cable_modem.ip_address)
             )
             
             raw_uptime: str = await cm.getSysUpTime()
             logger.debug("sysUpTime raw value: %r", raw_uptime)
             return SysUpTimeResponse(
-                mac_address=request.mac_address,
+                mac_address=request.cable_modem.mac_address,
                 status=ServiceStatusCode.SUCCESS,
                 results={"uptime": raw_uptime},
             )
@@ -86,7 +86,7 @@ class SystemSnmpService:
         except Exception as e:
             logger.error(f"Failed to retrieve sysUpTime: {e}", exc_info=True)
             return SysUpTimeResponse(
-                mac_address=request.mac_address,
+                mac_address=request.cable_modem.mac_address,
                 status=ServiceStatusCode.FAILURE,
                 message=str(e),
                 results={"uptime":""},

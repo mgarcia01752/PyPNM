@@ -42,24 +42,24 @@ class UsScQamChannelRouter:
             🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/stats.md)
 
             """
-            status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
-                                                          ip_address=request.ip_address).run_precheck()
+            status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address,
+                                                          ip_address=request.cable_modem.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return PnmChannelEntryResponse(
-                    mac_address=str(request.mac_address),
+                    mac_address=str(request.cable_modem.mac_address),
                     status=status,
                     message=msg)                  
             
             service = UsScQamChannelService(
-                mac_address=request.mac_address,
-                ip_address=request.ip_address)
+                mac_address=request.cable_modem.mac_address,
+                ip_address=request.cable_modem.ip_address)
             
             data = await service.get_upstream_entries()
             return JSONResponse(content=data)
         
         @self.router.post("/preEqualization", response_model=List[PnmChannelEntryResponse])
-        async def get_us_scqam_pre_equalizations(request: SnmpRequest):
+        async def get_us_scqam_pre_equalizations(request: SnmpRequest)  -> PnmChannelEntryResponse:
             """
             **DOCSIS 3.0 Upstream Pre-Equalization Coefficients**
 
@@ -75,18 +75,18 @@ class UsScQamChannelRouter:
             🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/pre-equalization.md)
 
             """
-            status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
-                                                    ip_address=request.ip_address).run_precheck()
+            status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address,
+                                                    ip_address=request.cable_modem.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return PnmChannelEntryResponse(
-                    mac_address=str(request.mac_address),
+                    mac_address=str(request.cable_modem.mac_address),
                     status=status,
                     message=msg)
                                   
             service = UsScQamChannelService(
-                mac_address=request.mac_address,
-                ip_address=request.ip_address)
+                mac_address=request.cable_modem.mac_address,
+                ip_address=request.cable_modem.ip_address)
             
             data = await service.get_upstream_pre_equalizations()
             return JSONResponse(content=data)        

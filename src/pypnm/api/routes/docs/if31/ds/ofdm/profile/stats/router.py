@@ -29,23 +29,23 @@ class OfdmProfileStatsRouter:
             """
             Retrieve DOCSIS 3.1 downstream OFDM profile statistics.
             """
-            status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
-                                                    ip_address=request.ip_address).run_precheck()
+            status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address,
+                                                    ip_address=request.cable_modem.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return OfdmProfileStatsResponse(
-                    mac_address=str(request.mac_address),
+                    mac_address=str(request.cable_modem.mac_address),
                     status=status,
                     message=msg
                 )
                                  
             stats_data = await OfdmProfileStatsService.fetch_profile_stats(
-                mac_address=request.mac_address,
-                ip_address=request.ip_address
+                mac_address=request.cable_modem.mac_address,
+                ip_address=request.cable_modem.ip_address
             )
             
             return OfdmProfileStatsResponse(
-                mac_address=request.mac_address,
+                mac_address=request.cable_modem.mac_address,
                 status=ServiceStatusCode.SUCCESS, 
                 data=stats_data)
         

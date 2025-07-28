@@ -62,14 +62,14 @@ class ConstellationDisplayRouter:
             Returns a list of I/Q samples per OFDM channel, including all relevant metadata.
             """
             try:
-                cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
+                cm = CableModem(mac_address=MacAddress(request.cable_modem.mac_address), inet=Inet(request.cable_modem.ip_address))
                 
                 status, msg = await CableModemServicePreCheck(cable_modem=cm,
                                                               validate_ofdm_exist=True).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
-                        mac_address=str(request.mac_address),
+                        mac_address=str(request.cable_modem.mac_address),
                         status=status, message=msg)                    
                 
                 modulation_order_offset = request.modulation_order_offset
@@ -92,35 +92,35 @@ class ConstellationDisplayRouter:
                 msg_rsp = cps.process()
 
                 return PnmConstellationDisplayResponse(
-                    mac_address=request.mac_address,
+                    mac_address=request.cable_modem.mac_address,
                     status=msg_rsp.status,
                     data=msg_rsp.payload_to_dict(),)
 
             except HTTPException:
                 raise
             except Exception as e:
-                self.logger.exception(f"[getMeasurement] Error for MAC {request.mac_address}")
+                self.logger.exception(f"[getMeasurement] Error for MAC {request.cable_modem.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}")
 
         @self.router.post(f"/{self.base_endpoint}/getAnalysis", 
                           response_model=Union[PnmAnalysisResponse, SnmpResponse])
         async def get_analysis(request: PnmAnalysisRequest):
             
-            cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
+            cm = CableModem(mac_address=MacAddress(request.cable_modem.mac_address), inet=Inet(request.cable_modem.ip_address))
             
             status, msg = await CableModemServicePreCheck(cable_modem=cm,
                                                           validate_ofdm_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
-                    mac_address=str(request.mac_address),
+                    mac_address=str(request.cable_modem.mac_address),
                     status=status, message=msg)             
             try:
                 pass
             except HTTPException:
                 raise
             except Exception as e:
-                self.logger.exception(f"[getAnalysis] Error for MAC {request.mac_address}")
+                self.logger.exception(f"[getAnalysis] Error for MAC {request.cable_modem.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Plot retrieval failed: {str(e)}")
 
 
@@ -132,24 +132,24 @@ class ConstellationDisplayRouter:
             """
             try:
 
-                self.logger.info(f"Fetching OFDM Constellation Display Statistics for MAC: {request.mac_address}")
+                self.logger.info(f"Fetching OFDM Constellation Display Statistics for MAC: {request.cable_modem.mac_address}")
 
 
-                cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
+                cm = CableModem(mac_address=MacAddress(request.cable_modem.mac_address), inet=Inet(request.cable_modem.ip_address))
                 
                 status, msg = await CableModemServicePreCheck(cable_modem=cm,
                                                               validate_ofdm_exist=True).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
-                        mac_address=str(request.mac_address),
+                        mac_address=str(request.cable_modem.mac_address),
                         status=status, message=msg)  
 
                 service: CmDsOfdmConstDisplayService = CmDsOfdmConstDisplayService(cm)
                 service_measure_stat = await service.get_pnm_measurement_statistics()
 
                 return SnmpResponse(
-                    mac_address=str(request.mac_address),
+                    mac_address=str(request.cable_modem.mac_address),
                     status=ServiceStatusCode.SUCCESS,
                     message="Measurement Statistics for OFDM Constellation Display",
                     results=service_measure_stat
@@ -158,7 +158,7 @@ class ConstellationDisplayRouter:
             except HTTPException:
                 raise
             except Exception as e:
-                self.logger.exception(f"[getMeasurementStatistics] Error for MAC {request.mac_address}")
+                self.logger.exception(f"[getMeasurementStatistics] Error for MAC {request.cable_modem.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Measurement statistics retrieval failed: {str(e)}")
 
 

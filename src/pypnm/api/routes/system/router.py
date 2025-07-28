@@ -44,19 +44,19 @@ class SystemRouter:
             - Returns structured metadata fields and `is_empty` flag if parsing fails
             """
             try:
-                status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
-                                                        ip_address=request.ip_address).run_precheck()
+                status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address,
+                                                        ip_address=request.cable_modem.ip_address).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
-                        mac_address=str(request.mac_address),
+                        mac_address=str(request.cable_modem.mac_address),
                         status=status,
                         message=msg,)                     
                 
                 return await SystemSnmpService.get_sysdescr(request)
             
             except Exception as exc:
-                self.logger.error(f"sysDescr error for {request.mac_address}@{request.ip_address}: {exc}")
+                self.logger.error(f"sysDescr error for {request.cable_modem.mac_address}@{request.cable_modem.ip_address}: {exc}")
                 # You can return more detailed errors based on exception type if you like
                 raise HTTPException(
                     status_code=500,
@@ -74,19 +74,19 @@ class SystemRouter:
 
             """
             try:
-                status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
-                                                        ip_address=request.ip_address).run_precheck()
+                status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address,
+                                                        ip_address=request.cable_modem.ip_address).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
-                        mac_address=str(request.mac_address),
+                        mac_address=str(request.cable_modem.mac_address),
                         status=status,
                         message=msg)                          
                 
                 return await SystemSnmpService.get_sys_up_time(request) 
             
             except Exception as exc:
-                self.logger.error(f"sysUpTime error for {request.mac_address}@{request.ip_address}: {exc}")
+                self.logger.error(f"sysUpTime error for {request.cable_modem.mac_address}@{request.cable_modem.ip_address}: {exc}")
                 raise HTTPException(
                     status_code=500,
                     detail="Failed to retrieve sysUpTime"

@@ -47,13 +47,13 @@ class SpectrumAnalyzerRouter:
             📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/spectrum-analyzer.md)
             """
             try:
-                cm = CableModem(mac_address=MacAddress(request.mac_address), inet=Inet(request.ip_address))
+                cm = CableModem(mac_address=MacAddress(request.cable_modem.mac_address), inet=Inet(request.cable_modem.ip_address))
                 
                 status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
-                        mac_address=str(request.mac_address),
+                        mac_address=str(request.cable_modem.mac_address),
                         status=status,
                         message=msg)                   
                 
@@ -68,14 +68,14 @@ class SpectrumAnalyzerRouter:
                 msg_rsp = cps.process()
 
                 return CmSpecAnaAnalysisResponse(
-                    mac_address=request.mac_address,
+                    mac_address=request.cable_modem.mac_address,
                     status=msg_rsp.status,
                     data=msg_rsp.payload_to_dict())
 
             except HTTPException:
                 raise
             except Exception as e:
-                self.logger.exception(f"[getMeasurement] Error for MAC {request.mac_address}")
+                self.logger.exception(f"[getMeasurement] Error for MAC {request.cable_modem.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}")
 
         @self.router.post(f"/{self.base_endpoint}/getAnalysis", 
@@ -84,20 +84,20 @@ class SpectrumAnalyzerRouter:
         async def get_analysis(request: CmSpecAnaAnalysisRequest):
             try:
                 
-                status, msg = await CableModemServicePreCheck(mac_address=request.mac_address,
-                                                                ip_address=request.ip_address).run_precheck()
+                status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address,
+                                                                ip_address=request.cable_modem.ip_address).run_precheck()
                 
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
-                        mac_address=str(request.mac_address),
+                        mac_address=str(request.cable_modem.mac_address),
                         status=status,
                         message=msg)
                          
             except HTTPException:
                 raise
             except Exception as e:
-                self.logger.exception(f"[getPlot] Error for MAC {request.mac_address}")
+                self.logger.exception(f"[getPlot] Error for MAC {request.cable_modem.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Plot retrieval failed: {str(e)}")
             
 # Required for dynamic auto-registration

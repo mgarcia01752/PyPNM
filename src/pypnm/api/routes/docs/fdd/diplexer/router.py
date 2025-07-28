@@ -56,19 +56,19 @@ class FddDiplexerBandEdgeCapability:
             """
             # Ensure modem is reachable and SNMP is operational
             status, msg = await CableModemServicePreCheck(
-                mac_address=request.mac_address,
-                ip_address=request.ip_address, 
+                mac_address=request.cable_modem.mac_address,
+                ip_address=request.cable_modem.ip_address, 
                 check_docsis_version=[ClabsDocsisVersion.DOCSIS_40]).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(mac_address=str(request.mac_address),
+                return SnmpResponse(mac_address=str(request.cable_modem.mac_address),
                     status=status, message=msg)
             
             # Fetch capability data from the cable modem
             service = FddDiplexerBandEdgeCapabilityService(
-                mac_address=request.mac_address,
-                ip_address=request.ip_address)
+                mac_address=request.cable_modem.mac_address,
+                ip_address=request.cable_modem.ip_address)
                         
             entry = await service.getFddDiplexerBandEdgeCapabilityEntries()
 

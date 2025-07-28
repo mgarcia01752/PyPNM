@@ -42,21 +42,21 @@ class BaseCapabilityRouter:
             try:
                 # Verify modem is reachable
                 status, msg = await CableModemServicePreCheck(
-                    mac_address=request.mac_address,
-                    ip_address=request.ip_address).run_precheck()
+                    mac_address=request.cable_modem.mac_address,
+                    ip_address=request.cable_modem.ip_address).run_precheck()
 
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
-                        mac_address=str(request.mac_address),
+                        mac_address=str(request.cable_modem.mac_address),
                         status=status,message=msg)
 
                 result = await DocsisBaseCapabilityService.fetch_docsis_base_capabilty(
-                    mac_address=request.mac_address,
-                    ip_address=request.ip_address)
+                    mac_address=request.cable_modem.mac_address,
+                    ip_address=request.cable_modem.ip_address)
 
                 return SnmpResponse(
-                    mac_address=str(request.mac_address),
+                    mac_address=str(request.cable_modem.mac_address),
                     status=ServiceStatusCode.SUCCESS,
                     message="DOCSIS Base Capability retrieved successfully.",
                     results=result.model_dump())

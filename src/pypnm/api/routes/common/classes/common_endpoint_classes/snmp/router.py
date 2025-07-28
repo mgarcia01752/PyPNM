@@ -37,7 +37,7 @@ class SnmpFastApiRouter(ABC):
             except HTTPException:
                 raise
             except Exception as e:
-                self.logger.exception(f"[getMeasurement] Error for MAC {request.mac_address}")
+                self.logger.exception(f"[getMeasurement] Error for MAC {request.cable_modem.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}")
 
         @self.router.post(f"/{self._base_endpoint}/getAnalysis", response_model=SnmpAnalysisResponse)
@@ -47,7 +47,7 @@ class SnmpFastApiRouter(ABC):
             except HTTPException:
                 raise
             except Exception as e:
-                self.logger.exception(f"[getPlot] Error for MAC {request.mac_address}")
+                self.logger.exception(f"[getPlot] Error for MAC {request.cable_modem.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Plot retrieval failed: {str(e)}")
 
     @abstractmethod
@@ -56,13 +56,13 @@ class SnmpFastApiRouter(ABC):
         
         Example:
         
-        self.logger.info(f"Retrieving RxMER measurement for MAC {request.mac_address}")
+        self.logger.info(f"Retrieving RxMER measurement for MAC {request.cable_modem.mac_address}")
         
         data = {
             "measurement": [35.2, 34.8, 36.0],  # Example RxMER values in dB
         }
         return PnmMeasurementResponse(status=ServiceStatusCode.SUCCESS, 
-                                      mac_address=MacAddress(request.mac_address), 
+                                      mac_address=MacAddress(request.cable_modem.mac_address), 
                                       measurement=data)
         
         """
@@ -74,7 +74,7 @@ class SnmpFastApiRouter(ABC):
         
         Example:
         
-        self.logger.info(f"Generating RxMER plot data for MAC {request.mac_address}")
+        self.logger.info(f"Generating RxMER plot data for MAC {request.cable_modem.mac_address}")
         
         # Placeholder plotting data
         plot_data = {
@@ -82,7 +82,7 @@ class SnmpFastApiRouter(ABC):
             "values": [35.2, 34.8, 36.0]
         }
         return PnmPlotResponse(status=ServiceStatusCode.SUCCESS, 
-                               mac_address=MacAddress(request.mac_address), 
+                               mac_address=MacAddress(request.cable_modem.mac_address), 
                                plot_data=plot_data)      
         
         """

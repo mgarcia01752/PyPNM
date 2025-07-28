@@ -75,45 +75,45 @@ group delay ripple, slope, mean values, and file references per OFDMA upstream c
 
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:
   
-        self.logger.info(f"Retrieving Upstream OFDMA Pre-Equalization measurement for MAC {request.mac_address}")
+        self.logger.info(f"Retrieving Upstream OFDMA Pre-Equalization measurement for MAC {request.cable_modem.mac_address}")
 
-        cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
+        cm: CableModem = CableModem(MacAddress(request.cable_modem.mac_address), Inet(request.cable_modem.ip_address))
 
         status, msg = await CableModemServicePreCheck(cable_modem=cm,
                                                       validate_ofdma_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(
-                mac_address=str(request.mac_address),
+                mac_address=str(request.cable_modem.mac_address),
                 status=status, message=msg)       
         
         service: CmUsOfdmaPreEqService = CmUsOfdmaPreEqService(cm)
         msg_rsp:MessageResponse = await service.set_and_go()
 
         if msg_rsp.status != ServiceStatusCode.SUCCESS:
-            return PnmMeasurementResponse(mac_address=request.mac_address,
+            return PnmMeasurementResponse(mac_address=request.cable_modem.mac_address,
                                           message="Unable to complete Upstream OFDMA Pre-Equalization measurement.",
                                           status=msg_rsp.status, measurement={})
 
         cps = CommonProcessService(msg_rsp)
         msg_rsp:MessageResponse = cps.process()
     
-        return PnmMeasurementResponse(mac_address=request.mac_address,
+        return PnmMeasurementResponse(mac_address=request.cable_modem.mac_address,
                                       status=msg_rsp.status, 
                                       measurement=msg_rsp.payload) # type: ignore
 
     async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, SnmpResponse]:
 
-        self.logger.info(f"Generating Upstream OFDMA Pre-Equalization Analysis Type: {request.analysis.type} for MAC {request.mac_address}")
+        self.logger.info(f"Generating Upstream OFDMA Pre-Equalization Analysis Type: {request.analysis.type} for MAC {request.cable_modem.mac_address}")
         
-        cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
+        cm: CableModem = CableModem(MacAddress(request.cable_modem.mac_address), Inet(request.cable_modem.ip_address))
 
         status, msg = await CableModemServicePreCheck(cable_modem=cm,
                                                       validate_ofdma_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(
-                mac_address=str(request.mac_address),
+                mac_address=str(request.cable_modem.mac_address),
                 status=status,
                 message=msg
             )       
@@ -126,11 +126,11 @@ group delay ripple, slope, mean values, and file references per OFDMA upstream c
         
         analysis = Analysis(AnalysisType.BASIC, msg_rsp)
                 
-        return PnmAnalysisResponse(mac_address=request.mac_address,
+        return PnmAnalysisResponse(mac_address=request.cable_modem.mac_address,
                                       status=ServiceStatusCode.SUCCESS,
                                       data=analysis.get_results()) 
 
-    async def get_measurement_statistics_logic(self, request: PnmRequest) -> Union[SnmpResponse]:
+    async def get_measurement_statistics_logic(self, request: PnmRequest) -> Union[SnmpResponse]:       # type: ignore
         """
         Retrieves upstream OFDMA Pre-Equalization measurement statistics for a DOCSIS 3.1 cable modem.
 
@@ -142,23 +142,23 @@ group delay ripple, slope, mean values, and file references per OFDMA upstream c
         - Associated capture and update filenames
         - SNMP measurement status codes
         """
-        self.logger.info(f"Fetching OFDMA Pre-Equalization Measurement Statistics for MAC: {request.mac_address}")
+        self.logger.info(f"Fetching OFDMA Pre-Equalization Measurement Statistics for MAC: {request.cable_modem.mac_address}")
 
-        cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
+        cm: CableModem = CableModem(MacAddress(request.cable_modem.mac_address), Inet(request.cable_modem.ip_address))
 
         status, msg = await CableModemServicePreCheck(cable_modem=cm,
                                                       validate_ofdma_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(
-                mac_address=str(request.mac_address),
+                mac_address=str(request.cable_modem.mac_address),
                 status=status,message=msg)
 
         service: CmUsOfdmaPreEqService = CmUsOfdmaPreEqService(cm)
         service_measure_stat = await service.get_pnm_measurement_statistics()
 
         return SnmpResponse(
-            mac_address=str(request.mac_address),
+            mac_address=str(request.cable_modem.mac_address),
             status=ServiceStatusCode.SUCCESS,
             message="Measurement Statistics for OFDMA Pre-Equalization",
             results=service_measure_stat)

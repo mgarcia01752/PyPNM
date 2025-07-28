@@ -78,30 +78,30 @@ This endpoint returns high-level channel estimation metrics per downstream OFDM 
         """
         Implement Channel-Estimation-Coefficent measurement retrieval logic.
         """    
-        self.logger.info(f"Retrieving Channel-Estimation-Coefficent measurement for MAC {request.mac_address}")
+        self.logger.info(f"Retrieving Channel-Estimation-Coefficent measurement for MAC {request.cable_modem.mac_address}")
 
-        cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
+        cm: CableModem = CableModem(MacAddress(request.cable_modem.mac_address), Inet(request.cable_modem.ip_address))
 
         status, msg = await CableModemServicePreCheck(cable_modem=cm,
                                                       validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(
-                mac_address=str(request.mac_address),
+                mac_address=str(request.cable_modem.mac_address),
                 status=status, message=msg)    
         
         service: CmDsOfdmChanEstCoefService = CmDsOfdmChanEstCoefService(cm)
         msg_rsp:MessageResponse = await service.set_and_go()
 
         if msg_rsp.status != ServiceStatusCode.SUCCESS:
-            return PnmMeasurementResponse(mac_address=request.mac_address,
+            return PnmMeasurementResponse(mac_address=request.cable_modem.mac_address,
                                           message="Unable to complete Channel-Estimation-Coefficent measurement.",
                                           status=msg_rsp.status, measurement={})
 
         cps = CommonProcessService(msg_rsp)
         msg_rsp:MessageResponse = cps.process()
     
-        return PnmMeasurementResponse(mac_address=request.mac_address,
+        return PnmMeasurementResponse(mac_address=request.cable_modem.mac_address,
                                       status=msg_rsp.status, 
                                       measurement=msg_rsp.payload) # type: ignore
 
@@ -109,16 +109,16 @@ This endpoint returns high-level channel estimation metrics per downstream OFDM 
         """
         Implement RxMER plotting data retrieval.
         """
-        self.logger.info(f"Generating Channel-Estimation-Coefficent Analysis Type: {request.analysis.type} for MAC {request.mac_address}")
+        self.logger.info(f"Generating Channel-Estimation-Coefficent Analysis Type: {request.analysis.type} for MAC {request.cable_modem.mac_address}")
         
-        cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
+        cm: CableModem = CableModem(MacAddress(request.cable_modem.mac_address), Inet(request.cable_modem.ip_address))
 
         status, msg = await CableModemServicePreCheck(cable_modem=cm,
                                                       validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(
-                mac_address=str(request.mac_address),
+                mac_address=str(request.cable_modem.mac_address),
                 status=status, message=msg) 
         
         service: CmDsOfdmChanEstCoefService = CmDsOfdmChanEstCoefService(cm)
@@ -129,7 +129,7 @@ This endpoint returns high-level channel estimation metrics per downstream OFDM 
         
         analysis = Analysis(AnalysisType.BASIC, msg_rsp)
                 
-        return PnmAnalysisResponse(mac_address=request.mac_address,
+        return PnmAnalysisResponse(mac_address=request.cable_modem.mac_address,
                                       status=ServiceStatusCode.SUCCESS,
                                       data=analysis.get_results()) 
 
@@ -140,23 +140,23 @@ This endpoint returns high-level channel estimation metrics per downstream OFDM 
         This includes values such as amplitude ripple (RMS & peak-to-peak), group delay ripple,
         group delay slope, and related channel estimation metrics across all downstream OFDM channels.
         """
-        self.logger.info(f"Fetching OFDM Channel Estimation Coefficient Statistics for MAC: {request.mac_address}")
+        self.logger.info(f"Fetching OFDM Channel Estimation Coefficient Statistics for MAC: {request.cable_modem.mac_address}")
 
-        cm: CableModem = CableModem(MacAddress(request.mac_address), Inet(request.ip_address))
+        cm: CableModem = CableModem(MacAddress(request.cable_modem.mac_address), Inet(request.cable_modem.ip_address))
 
         status, msg = await CableModemServicePreCheck(cable_modem=cm,
                                                       validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(
-                mac_address=str(request.mac_address),
+                mac_address=str(request.cable_modem.mac_address),
                 status=status, message=msg) 
 
         service: CmDsOfdmChanEstCoefService = CmDsOfdmChanEstCoefService(cm)
         service_measure_stat = await service.get_pnm_measurement_statistics()
 
         return SnmpResponse(
-            mac_address=str(request.mac_address),
+            mac_address=str(request.cable_modem.mac_address),
             status=ServiceStatusCode.SUCCESS,
             message="Measurement Statistics for OFDM Channel Estimation Coefficients",
             results=service_measure_stat)
