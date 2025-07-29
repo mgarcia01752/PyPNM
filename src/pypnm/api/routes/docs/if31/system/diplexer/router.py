@@ -36,29 +36,28 @@ class DiplexerConfigResult:
             - Diplexer capability codes
             - Configured and supported downstream frequency ranges
 
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/diplexer-configuration.md)
+            📘 [API Guide - System Diplexer Configuration](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/diplexer-configuration.md)
             """
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            self.logger.info(f"Retrieving diplexer configuration for MAC: {mac}, IP: {ip}")
+
+            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip,
+                                                          validate_ofdm_exist=True).run_precheck()
             try:
 
-                status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address, 
-                                                              ip_address=request.cable_modem.ip_address,
+                status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip,
                                                               check_docsis_version=[ClabsDocsisVersion.DOCSIS_31]).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
-                    return SnmpResponse(
-                        mac_address=str(request.cable_modem.mac_address),
-                        status=status,message=msg)  
+                    return SnmpResponse(mac_address=str(mac),
+                                        status=status,message=msg)  
 
-                config = await DiplexerConfigService.fetch_diplexer_config(
-                    mac_address=request.cable_modem.mac_address,
-                    ip_address=request.cable_modem.ip_address)
+                config = await DiplexerConfigService.fetch_diplexer_config(mac_address=mac, ip_address=ip)
 
-                response = DiplexerResponse(
-                    mac_address=request.cable_modem.mac_address,
-                    status=ServiceStatusCode.SUCCESS,
-                    results=config)
-                
-                self.logger.debug(f"DiplexerResponse: {response}")
+                response = DiplexerResponse(mac_address=mac,
+                                            status=ServiceStatusCode.SUCCESS,
+                                            results=config)
                 return response
 
             except HTTPException:

@@ -28,7 +28,7 @@ class UsOfdmaChannelRouter:
         @self.router.post("/stats", response_model=Union[List[PnmChannelEntryResponse], SnmpResponse])
         async def get_us_ofdma_channels(request: SnmpRequest):
             """
-            **Upstream OFDMA Channel Statistics (DOCSIS 3.1)**
+            **Upstream OFDMA Channel Statistics**
 
             Queries a cable modem for active upstream OFDMA channel configuration and health status.
             This includes subcarrier layout, transmission parameters, and timeout counters related to ranging.
@@ -39,24 +39,24 @@ class UsOfdmaChannelRouter:
             - Cyclic prefix, roll-off period, and symbols per frame
             - Ranging timeouts and mute status indicators
 
-            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/stats.md)
+            🔗 [API Guide - Upstream OFDMA Channel Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/stats.md)
             """
-        
-            status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address,
-                                                          ip_address=request.cable_modem.ip_address,
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            self.logger.info(f"Retrieving Upstream OFDMA Channel Statistics for MAC: {mac}, IP: {ip}")
+
+            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip,
                                                           validate_ofdma_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
-                    mac_address=str(request.cable_modem.mac_address),
+                    mac_address=str(mac),
                     status=status, message=msg)              
             
-            service = UsOfdmChannelService(
-                mac_address=request.cable_modem.mac_address,
-                ip_address=request.cable_modem.ip_address)
-            
+            service = UsOfdmChannelService(mac_address=mac, ip_address=ip)
             data = await service.get_ofdma_chan_entries()
+
             return JSONResponse(content=data)
         
-# ✅ Required for dynamic auto-registration
+# Required for dynamic auto-registration
 router = UsOfdmaChannelRouter().router

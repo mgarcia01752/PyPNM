@@ -46,7 +46,7 @@ from a DOCSIS cable modem. The response includes:
 
 Each entry corresponds to an active OFDM downstream channel found on the device.
 
-📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/rxmer.md#get-measurement)
+[API Guide - Capture Downstream OFDM RxMER Per-Subcarrier Values](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/rxmer.md#get-measurement)
 """
 
         analysis_description = """
@@ -61,7 +61,7 @@ It extracts subcarrier-level details such as:
 
 Supports multiple output types (`JSON`, `XLSX`) and future advanced analysis modes.
 
-📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/rxmer.md#get-analysis)
+[API Guide - Analyze Downstream OFDM RxMER Per-Subcarrier Values](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/rxmer.md#get-analysis)
 """
 
         measurement_statistics_description = """
@@ -78,7 +78,7 @@ retrieve raw per-subcarrier values, but instead provides high-level metrics incl
 
 Useful for quick health checks, threshold monitoring, and triggering further diagnostics.
 
-📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/rxmer.md#get-measurement-statistics)
+[API Guide - Downstream OFDM RxMER Measurement Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/rxmer.md#get-measurement-statistics)
 """
 
         super().__init__(
@@ -91,17 +91,17 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
         self.logger = logging.getLogger("RxMerRouter")
 
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:
-   
-        self.logger.info(f"Retrieving RxMER measurement for MAC: {request.cable_modem.mac_address}")
+        mac = request.cable_modem.mac_address
+        ip = request.cable_modem.ip_address   
+        self.logger.info(f"Starting RxMER measurement for MAC: {mac}, IP: {ip}")
 
-        cm = CableModem(mac_address=MacAddress(request.cable_modem.mac_address), inet=Inet(request.cable_modem.ip_address))
+        cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
         
-        status, msg = await CableModemServicePreCheck(cable_modem=cm,
-                                                        validate_ofdm_exist=True).run_precheck()
+        status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(
-                mac_address=str(request.cable_modem.mac_address),
+                mac_address=str(mac),
                 status=status, message=msg)  
         
         service: CmDsOfdmRxMerService = CmDsOfdmRxMerService(cm)
@@ -109,35 +109,30 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
 
         if msg_rsp.status != ServiceStatusCode.SUCCESS:
             return SnmpResponse(
-                mac_address=request.cable_modem.mac_address,
-                message="Unable to complete RxMER measurement.",
-                status=msg_rsp.status
-            )
+                mac_address=mac, message="Unable to complete RxMER measurement.",
+                status=msg_rsp.status)
 
         cps = CommonProcessService(msg_rsp)
         msg_rsp: MessageResponse = cps.process()
     
         return PnmMeasurementResponse(
-            mac_address=request.cable_modem.mac_address,
+            mac_address=mac,
             status=msg_rsp.status, 
-            measurement=msg_rsp.payload  # type: ignore
-        )
+            measurement=msg_rsp.payload)  # type: ignore
 
     async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, FileResponse, SnmpResponse]:
-        """
-        Implement RxMER Analysis data retrieval.
-        """
+        
+        mac = request.cable_modem.mac_address
+        ip = request.cable_modem.ip_address
         self.logger.info(f"Generating RxMER Analysis: {request.analysis.type} for MAC: {request.cable_modem.mac_address}")
 
-        cm = CableModem(mac_address=MacAddress(request.cable_modem.mac_address), inet=Inet(request.cable_modem.ip_address))
+        cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
         
-        status, msg = await CableModemServicePreCheck(cable_modem=cm,
-                                                        validate_ofdm_exist=True).run_precheck()
+        status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(
-                mac_address=str(request.cable_modem.mac_address),
-                status=status, message=msg)  
+                mac_address=str(mac), status=status, message=msg)  
 
         service: CmDsOfdmRxMerService = CmDsOfdmRxMerService(cm)
         msg_rsp: MessageResponse = await service.set_and_go()
@@ -151,10 +146,9 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
         
         if request.output.type == FileType.JSON.value:
             return PnmAnalysisResponse(
-                mac_address=request.cable_modem.mac_address,
+                mac_address=mac,
                 status=ServiceStatusCode.SUCCESS,
-                data=results
-            )
+                data=results)
 
         elif request.output.type == FileType.XLSX.value:
             xlsx_dir = SystemConfigSettings.xlsx_dir
@@ -179,33 +173,28 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
             return PnmAnalysisResponse(
                 mac_address=request.cable_modem.mac_address,
                 status=ServiceStatusCode.INVALID_OUTPUT_TYPE,
-                data=None
-            )
+                data=None )
 
     async def get_measurement_statistics_logic(self, request: PnmRequest) -> Union[SnmpResponse]:
-        """
-        Implement RxMER Measurement Statistic retrieval.
-        """
-        self.logger.info(f"Fetching RxMER Measurement Statistics for MAC: {request.cable_modem.mac_address}")
+        mac = request.cable_modem.mac_address
+        ip = request.cable_modem.ip_address
+        self.logger.info(f"Fetching RxMER Measurement Statistics for MAC: {mac}, IP: {ip}")
 
-        cm = CableModem(mac_address=MacAddress(request.cable_modem.mac_address), inet=Inet(request.cable_modem.ip_address))
+        cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
         
-        status, msg = await CableModemServicePreCheck(cable_modem=cm,
-                                                        validate_ofdm_exist=True).run_precheck()
+        status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
-            return SnmpResponse(
-                mac_address=str(request.cable_modem.mac_address),
-                status=status, message=msg)  
+            return SnmpResponse(mac_address=str(mac),status=status, message=msg)  
 
         service: CmDsOfdmRxMerService = CmDsOfdmRxMerService(cm)
         service_measure_stat = await service.get_pnm_measurement_statistics()
 
         return SnmpResponse(
-            mac_address=str(request.cable_modem.mac_address),
+            mac_address=str(mac),
             status=ServiceStatusCode.SUCCESS,
             message="Measurement Statistics for RxMER",
             results=service_measure_stat)
 
-# ✅ Required for dynamic auto-registration
+# Required for dynamic auto-registration
 router = RxMerRouter().router

@@ -76,7 +76,7 @@ class PnmFastApiRouter(ABC):
                           response_model= Union[SnmpResponse], 
                           response_model_exclude_unset=True,
                           description=self.set_measurement_statistics_description)
-        async def get_measurement_statistics(request: PnmRequest)   -> Union[SnmpResponse]:
+        async def get_measurement_statistics(request: PnmRequest) -> SnmpResponse:
             try:
                 return await self.get_measurement_statistics_logic(request)
             except HTTPException:
@@ -96,6 +96,6 @@ class PnmFastApiRouter(ABC):
         pass
 
     @abstractmethod
-    async def get_measurement_statistics_logic(self, request: PnmRequest) -> Union[SnmpResponse]: # type: ignore
+    async def get_measurement_statistics_logic(self, request: PnmRequest) -> SnmpResponse:
         """Subclasses must implement this to provide measurement statistics data"""
         pass

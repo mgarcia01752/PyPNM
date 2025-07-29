@@ -6,7 +6,8 @@ from typing import Union
 
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
 from pypnm.api.routes.common.classes.common_endpoint_classes.router import PnmFastApiRouter
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmAnalysisResponse, PnmMeasurementResponse, PnmRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
+    PnmAnalysisRequest, PnmAnalysisResponse, PnmMeasurementResponse, PnmRequest)
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
@@ -20,23 +21,22 @@ from pypnm.lib.mac_address import MacAddress
 
 class ModulationProfileRouter(PnmFastApiRouter):
     """
-    Concrete implementation of PnmFastApiRouter for handling Modulation Profile-related requests.
+    Concrete implementation of PnmFastApiRouter for handling Downstream OFDM Modulation Profile requests.
     """
     def __init__(self):
         
         measurement_description = """
 **Retrieve DOCSIS 3.1 Downstream OFDM Modulation Profile**
 
-Captures the raw modulation profile from a DOCSIS 3.1 cable modem’s downstream OFDM channel.
+Captures the raw modulation profile from a DOCSIS 3.1 cable modem's downstream OFDM channel.
 Includes metadata about profile ID, subcarrier spacing, and modulation schemes (e.g., QAM-16 to QAM-4096)
 assigned to subcarrier groups.
 
-⚠️ Note: This output reflects a direct conversion from the modem’s internal profile encoding.
+⚠️ Note: This output reflects a direct conversion from the modem's internal profile encoding.
 Additional decoding is required for full per-subcarrier modulation mapping or bit-loading visualizations.
 
-📄 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-measurement)
+[API Guide - Retrieve Downstream OFDM Modulation Profile](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-measurement)
 """
-  
         analysis_description = """
 **Analyze Downstream OFDM Modulation Profile**
 
@@ -48,7 +48,7 @@ Includes:
 - Subcarrier frequency map
 - Shannon limit estimates based on modulation order
 
-📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-analysis)
+[API Guide - Analyze Downstream OFDM Modulation Profile](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-analysis)
 """
         measurement_statistics_description = """"""
     
@@ -62,63 +62,44 @@ Includes:
         self.logger = logging.getLogger("ModulationProfileRouter")
 
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:
+        mac = request.cable_modem.mac_address
+        ip = request.cable_modem.ip_address
+        self.logger.info(f"Starting Modulation Profile measurement for MAC: {mac}, IP: {ip}")
 
-        self.logger.info(f"Retrieving Modulation Profile measurement for MAC {request.cable_modem.mac_address}")
-
-        cm: CableModem = CableModem(MacAddress(request.cable_modem.mac_address), Inet(request.cable_modem.ip_address))
+        cm: CableModem = CableModem(MacAddress(mac), Inet(ip))
 
         status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
+
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
-            return SnmpResponse(
-                mac_address=str(request.cable_modem.mac_address),
-                status=status,
-                message=msg
-            )         
+            return SnmpResponse(mac_address=str(mac), status=status, message=msg)         
   
         service: CmDsOfdmModProfileService = CmDsOfdmModProfileService(cm)
         msg_rsp:MessageResponse = await service.set_and_go()
 
         if msg_rsp.status != ServiceStatusCode.SUCCESS:
-            return PnmMeasurementResponse(mac_address=request.cable_modem.mac_address,
+            return PnmMeasurementResponse(mac_address=rmac,
                                           message="Unable to complete Modulation Profile measurement.",
                                           status=msg_rsp.status, measurement={})
 
         cps = CommonProcessService(msg_rsp)
         msg_rsp:MessageResponse = cps.process()
     
-        return PnmMeasurementResponse(mac_address=request.cable_modem.mac_address,
+        return PnmMeasurementResponse(mac_address=mac,
                                       status=msg_rsp.status, 
                                       measurement=msg_rsp.payload) # type: ignore
 
     async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, SnmpResponse]:
-        """
-        Retrieve and analyze the downstream OFDM modulation profile from the cable modem.
-
-        This analysis includes:
-        - Per-subcarrier modulation type (e.g., QAM-16, QAM-4096)
-        - Frequency mapping
-        - Shannon limit estimation per subcarrier
-
-        Supports output types:
-        - 0: JSON with modulation and Shannon analysis
-        - 1: XLSX formatted report for offline visualization
-
-        📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md#get-analysis)
-
-        """
-        self.logger.info(f"Generating Modulation Profile plot type: {request.analysis.type} for MAC {request.cable_modem.mac_address}")
+        mac = request.cable_modem.mac_address
+        ip = request.cable_modem.ip_address
+        self.logger.info(f"Starting Modulation Profile analysis for MAC: {mac}, IP: {ip}, Analysis Type: {request.analysis.type}")
         
-        cm: CableModem = CableModem(MacAddress(request.cable_modem.mac_address), Inet(request.cable_modem.ip_address))
+        cm: CableModem = CableModem(MacAddress(mac), Inet(ip))
 
         status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
-            return SnmpResponse(
-                mac_address=str(request.cable_modem.mac_address),
-                status=status,
-                message=msg
-            )         
+            return SnmpResponse(mac_address=str(mac), status=status,message=msg)         
 
         service: CmDsOfdmModProfileService = CmDsOfdmModProfileService(cm)
         msg_rsp:MessageResponse = await service.set_and_go()
@@ -128,27 +109,27 @@ Includes:
         
         analysis = Analysis(AnalysisType.BASIC, msg_rsp)
                 
-        return PnmAnalysisResponse(mac_address=request.cable_modem.mac_address,
+        return PnmAnalysisResponse(mac_address=mac,
                                       status=ServiceStatusCode.SUCCESS,
                                       data=analysis.get_results()) 
 
     async def get_measurement_statistics_logic(self, request: PnmRequest) -> Union[SnmpResponse]:
-        """
-        """
-        self.logger.info(f"Fetching OFDMA Pre-Equalization Measurement Statistics for MAC: {request.cable_modem.mac_address}")
+        mac = request.cable_modem.mac_address
+        ip = request.cable_modem.ip_address
+        self.logger.info(f"Fetching Modulation Profile measurement statistics for MAC: {mac}, IP: {ip}")
 
-        cm = CableModem(mac_address=MacAddress(request.cable_modem.mac_address), inet=Inet(request.cable_modem.ip_address))
+        cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
         
-        status, msg = await CableModemServicePreCheck(cable_modem=cm,
-                                                        validate_ofdm_exist=True).run_precheck()
+        status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
+
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(
-                mac_address=str(request.cable_modem.mac_address),
+                mac_address=str(mac),
                 status=status, message=msg)  
 
         return SnmpResponse(
-            mac_address=str(request.cable_modem.mac_address),
+            mac_address=str(mac),
             status=ServiceStatusCode.SUCCESS,
             message="Measurement Statistics for OFDMA Pre-Equalization",
             results={})

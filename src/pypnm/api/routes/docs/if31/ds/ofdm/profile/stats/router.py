@@ -19,35 +19,30 @@ class OfdmProfileStatsRouter:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.router = APIRouter(
             prefix="/docs/if31/ds/ofdm/profile",
-            tags=["DOCSIS 3.1 Downstream OFDM Modulation Profile Stats"]
-        )
+            tags=["DOCSIS 3.1 Downstream OFDM Modulation Profile Stats"])
+        
         self._add_routes()
 
     def _add_routes(self):
         @self.router.post("/stats", response_model=OfdmProfileStatsResponse)
         async def get_ofdm_profile_stats(request: SnmpRequest):
-            """
-            Retrieve DOCSIS 3.1 downstream OFDM profile statistics.
-            """
-            status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address,
-                                                    ip_address=request.cable_modem.ip_address).run_precheck()
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            self.logger.info(f"Retrieving DOCSIS 3.1 Downstream OFDM profile statistics for MAC: {mac}, IP: {ip}")
+
+            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip,
+                                                          validate_ofdm_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return OfdmProfileStatsResponse(
-                    mac_address=str(request.cable_modem.mac_address),
-                    status=status,
-                    message=msg
-                )
+                return OfdmProfileStatsResponse(mac_address=str(mac),
+                                                status=status, message=msg)
                                  
-            stats_data = await OfdmProfileStatsService.fetch_profile_stats(
-                mac_address=request.cable_modem.mac_address,
-                ip_address=request.cable_modem.ip_address
-            )
+            stats_data = await OfdmProfileStatsService.fetch_profile_stats(mac_address=mac, ip_address=ip)
             
             return OfdmProfileStatsResponse(
-                mac_address=request.cable_modem.mac_address,
+                mac_address=mac,
                 status=ServiceStatusCode.SUCCESS, 
-                data=stats_data)
+                data=stats_data) # type: ignore
         
-# ✅ Required for dynamic auto-registration
+# Required for dynamic auto-registration
 router = OfdmProfileStatsRouter().router

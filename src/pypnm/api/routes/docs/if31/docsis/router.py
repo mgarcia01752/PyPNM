@@ -36,13 +36,16 @@ class BaseCapabilityRouter:
 
             This attribute supersedes `docsIfDocsisBaseCapability` as defined in RFC 4546.
 
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/docsis-base-configuration.md)
+            📘 [API Guide - DOCSIS 3.1 Base Capability](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/docsis-base-configuration.md)
             """
+
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            self.logger.info(f"Retrieving DOCSIS 3.1 Base Capability for MAC: {mac}, IP: {ip}")
+
             try:
                 # Verify modem is reachable
-                status, msg = await CableModemServicePreCheck(
-                    mac_address=request.cable_modem.mac_address,
-                    ip_address=request.cable_modem.ip_address).run_precheck()
+                status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
 
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
@@ -50,12 +53,10 @@ class BaseCapabilityRouter:
                         mac_address=str(request.cable_modem.mac_address),
                         status=status,message=msg)
 
-                result = await DocsisBaseCapabilityService.fetch_docsis_base_capabilty(
-                    mac_address=request.cable_modem.mac_address,
-                    ip_address=request.cable_modem.ip_address)
+                result = await DocsisBaseCapabilityService.fetch_docsis_base_capabilty(mac_address=mac, ip_address=ip)
 
                 return SnmpResponse(
-                    mac_address=str(request.cable_modem.mac_address),
+                    mac_address=str(mac),
                     status=ServiceStatusCode.SUCCESS,
                     message="DOCSIS Base Capability retrieved successfully.",
                     results=result.model_dump())
@@ -69,5 +70,5 @@ class BaseCapabilityRouter:
                     status_code=500,
                     detail="Internal error retrieving DOCSIS base capability")
 
-# ✅ Required for dynamic FastAPI router registration
+# Required for dynamic FastAPI router registration
 router = BaseCapabilityRouter().router

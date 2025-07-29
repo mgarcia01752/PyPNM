@@ -41,23 +41,24 @@ class DsOfdmChannelStatsRouter:
             - Octet counters segmented by profile
             - Support for multiple OFDM channels per modem
 
-            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/stats.md)
+            🔗 [API Guide - Downstream OFDM Modulation Profile Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/stats.md)
             """
-            status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address,
-                                                          ip_address=request.cable_modem.ip_address,
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            self.logger.info(f"Retrieving Downstream OFDM Modulation Profile Statistics for MAC: {mac}, IP: {ip}")
+
+            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip,
                                                           validate_ofdm_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return PnmChannelEntryResponse(
-                    mac_address=str(request.cable_modem.mac_address),
+                    mac_address=str(mac),
                     status=status, message=msg)     
                          
-            service = DsOfdmChannelService(
-                mac_address=request.cable_modem.mac_address,
-                ip_address=request.cable_modem.ip_address)
+            service = DsOfdmChannelService(mac_address=mac, ip_address=ip)
             
             data = await service.get_ofdm_chan_entries()
             return JSONResponse(content=data)
         
-# ✅ Required for dynamic auto-registration
+# Required for dynamic auto-registration
 router = DsOfdmChannelStatsRouter().router

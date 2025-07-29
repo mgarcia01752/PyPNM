@@ -37,8 +37,8 @@ class FddDiplexerBandEdgeCapability:
         Defines the POST /bandEdgeCapability endpoint and attaches it to the router.
         """
 
-        @self.router.post(
-            "/bandEdgeCapability", response_model=SnmpResponse)
+        @self.router.post("/bandEdgeCapability", response_model=SnmpResponse,
+                          summary="Get DOCSIS 4.0 FDD Diplexer Band Edge Capabilities")
         async def get_band_edge_cap(request: SnmpRequest) -> SnmpResponse:
             """
             **DOCSIS 4.0 FDD Diplexer Band Edge Capabilities**
@@ -51,7 +51,7 @@ class FddDiplexerBandEdgeCapability:
             - Downstream Lower Band Edge Capability (TLV 5.82)
             - Downstream Upper Band Edge Capability (TLV 5.83)
 
-            [API Reference](https://github.com/mgarcia01752/PyPNM/tree/main/documentation/api/fast-api/single/fdd/fdd-diplexer-band-edge-cap.md)
+            [API Guide - FDD Diplexer Band Edge Capabilities](https://github.com/mgarcia01752/PyPNM/tree/main/documentation/api/fast-api/single/fdd/fdd-diplexer-band-edge-cap.md)
             """
             # Ensure modem is reachable and SNMP is operational
             status, msg = await CableModemServicePreCheck(

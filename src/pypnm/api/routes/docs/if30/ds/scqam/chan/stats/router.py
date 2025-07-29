@@ -22,6 +22,7 @@ class DsScQamChannelRouter:
         self.router = APIRouter(
             prefix="/docs/if30/ds/scqam/chan",
             tags=["DOCSIS 3.0 Downstream SC-QAM Channel Stats"])
+        
         self._add_routes()
 
     def _add_routes(self):
@@ -37,25 +38,24 @@ class DsScQamChannelRouter:
             This endpoint is used for monitoring downstream health and identifying RF impairments
             such high uncorrectable error rates.
 
-            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/scqam/stats.md)
+            🔗 [API Guide - Downstream SC-QAM Channel Stats](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/scqam/stats.md)
 
             """
-            status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address,
-                                                          ip_address=request.cable_modem.ip_address).run_precheck()
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            self.logger.info(f"Retrieving DOCSIS 3.0 SC-QAM downstream channel stats for MAC: {mac}, IP: {ip}")
+            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
             
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
-                    mac_address=str(request.cable_modem.mac_address),
-                    status=status,
-                    message=msg)              
+                    mac_address=str(mac),
+                    status=status, message=msg)              
             
-            service = DsScQamChannelService(
-                mac_address=request.cable_modem.mac_address,
-                ip_address=request.cable_modem.ip_address)
+            service = DsScQamChannelService(mac_address=mac, ip_address=ip)
             
             data = await service.get_scqam_chan_entries()
             return JSONResponse(content=data)  # type: ignore
 
-# ✅ Required for dynamic auto-registration
+# Required for dynamic auto-registration
 router = DsScQamChannelRouter().router

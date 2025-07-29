@@ -47,7 +47,8 @@ class DsHistogramRouter:
         self.router = APIRouter(prefix=prefix, tags=tags) # type: ignore
         self.logger = logging.getLogger(f"DsHistogramRouter.{self.base_endpoint}")
 
-        @self.router.post(f"/{self.base_endpoint}/getMeasurement", response_model=Union[PnmHistogramResponse, SnmpResponse])
+        @self.router.post(f"/{self.base_endpoint}/getMeasurement", response_model=Union[PnmHistogramResponse, SnmpResponse],
+                          summary="Capture a DOCSIS Downstream Histogram")
         async def get_measurement(request: PnmHistogramRequest):
             """
             **Capture a DOCSIS Downstream Histogram**
@@ -58,32 +59,21 @@ class DsHistogramRouter:
             - Returns per-bin hit counts representing downstream signal distribution
             - Includes total dwell time and histogram symmetry metadata
 
-            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/histogram.md)
+            🔗 [API Guide - Downstream Histogram](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/histogram.md)
             """
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            self.logger.info(f"Retrieving Downstream Histogram for MAC: {mac}, IP: {ip}, Sample Duration: {request.sample_duration}")
+
             try:
-                self.logger.info(
-                    f"[getMeasurement] Mac: {request.cable_modem.mac_address}, "
-                    f"Inet: {request.cable_modem.ip_address}, Sample Duration: {request.sample_duration}"
-                )
-
-                cm = CableModem(
-                    mac_address=MacAddress(request.cable_modem.mac_address),
-                    inet=Inet(request.cable_modem.ip_address)
-                )
-
+                cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
                 status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
+                
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
-                    return SnmpResponse(
-                        mac_address=str(request.cable_modem.mac_address),
-                        status=status,
-                        message=msg
-                    )    
+                    return SnmpResponse(mac_address=str(mac), status=status, message=msg)    
 
-                service = CmDsHistogramService(
-                    cable_modem=cm,
-                    sample_duration=int(request.sample_duration)
-                )
+                service = CmDsHistogramService(cable_modem=cm, sample_duration=int(request.sample_duration))
                 msg_rsp: MessageResponse = await service.set_and_go()
 
                 if msg_rsp.status != ServiceStatusCode.SUCCESS:
@@ -94,10 +84,9 @@ class DsHistogramRouter:
                 msg_rsp = cps.process()
 
                 return PnmHistogramResponse(
-                    mac_address=request.cable_modem.mac_address,
+                    mac_address=mac,
                     status=msg_rsp.status,
-                    data=msg_rsp.payload_to_dict()
-                )
+                    data=msg_rsp.payload_to_dict())
 
             except HTTPException:
                 raise
@@ -105,5 +94,5 @@ class DsHistogramRouter:
                 self.logger.exception(f"[getMeasurement] Unexpected error for MAC {request.cable_modem.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}")
 
-# ✅ Required for dynamic auto-registration
+# Required for dynamic auto-registration
 router = DsHistogramRouter().router

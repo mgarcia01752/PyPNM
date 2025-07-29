@@ -27,27 +27,24 @@ class InterfaceStatsRouter:
         @self.router.post("/stats", response_model=Union[SnmpResponse])
         async def get_interface_stats(request: SnmpRequest) -> SnmpResponse:
             """
-            📶 Retrieve DOCSIS interface statistics grouped by interface type.
+            Retrieve DOCSIS interface statistics grouped by interface type.
 
-            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/pnm/interface/stats.md)
+            [API Guide - Retrieve DOCSIS Interface Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/pnm/interface/stats.md)
             """
-            status, msg = await CableModemServicePreCheck(
-                mac_address=request.cable_modem.mac_address,
-                ip_address=request.cable_modem.ip_address).run_precheck()
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            self.logger.info(f"Retrieving interface statistics for MAC: {mac}, IP: {ip}")
+
+            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(
-                    mac_address=str(request.cable_modem.mac_address),
-                    status=status,
-                    message=msg)
+                return SnmpResponse( mac_address=str(mac), status=status, message=msg)
 
-            service = InterfaceStatsService(
-                mac_address=request.cable_modem.mac_address,
-                ip_address=request.cable_modem.ip_address)
+            service = InterfaceStatsService(mac_address=mac, ip_address=ip)
             data: Dict[str, List[Dict]] = await service.get_interface_stat_entries()
 
             return JSONResponse(content=data) # type: ignore
 
-# ✅ Required for dynamic auto-registration
+# Required for dynamic auto-registration
 router = InterfaceStatsRouter().router

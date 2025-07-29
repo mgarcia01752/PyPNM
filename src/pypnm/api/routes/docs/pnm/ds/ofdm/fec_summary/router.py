@@ -37,19 +37,21 @@ class FecSummaryRouter:
             This endpoint fetches FEC summary counters for each active OFDM downstream profile,
             including corrected and uncorrectable codewords over a defined interval.
 
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/fec-summary.md)
+            📘 [API Guide - OFDM FEC Summary Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/fec-summary.md)
             """
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            self.logger.info(f"Retrieving FEC Summary for MAC: {mac}, IP: {ip}, FEC Summary Type: {request.fec_summary_type}")            
             try:
-                self.logger.info(f'Mac: {request.cable_modem.mac_address}, Inet: {request.cable_modem.ip_address}, FEC Summary: {request.fec_summary_type}')
 
-                cm = CableModem(mac_address=MacAddress(request.cable_modem.mac_address), inet=Inet(request.cable_modem.ip_address))
+                cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
                 
                 status, msg = await CableModemServicePreCheck(cable_modem=cm,
-                                                            validate_ofdm_exist=True).run_precheck()
+                                                              validate_ofdm_exist=True).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
-                        mac_address=str(request.cable_modem.mac_address),
+                        mac_address=str(mac),
                         status=status, message=msg)               
             
                 fec_type = FecSummaryType.from_value(int(request.fec_summary_type))
@@ -64,15 +66,15 @@ class FecSummaryRouter:
                 msg_rsp = cps.process()
 
                 return PnmFecSummaryResponse(
-                    mac_address=request.cable_modem.mac_address,
+                    mac_address=mac,
                     status=msg_rsp.status,
                     data=msg_rsp.payload_to_dict())
 
             except HTTPException:
                 raise
             except Exception as e:
-                self.logger.exception(f"[getMeasurement] Error for MAC {request.cable_modem.mac_address}")
+                self.logger.exception(f"[getMeasurement] Error for MAC {mac}")
                 raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}")
 
-# ✅ Required for dynamic auto-registration
+# Required for dynamic auto-registration
 router = FecSummaryRouter().router

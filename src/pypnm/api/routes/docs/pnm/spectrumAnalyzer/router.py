@@ -44,18 +44,18 @@ class SpectrumAnalyzerRouter:
             ⚠️ **Note**: Ensure the configured start and end frequencies do not cross the diplexer boundary.
             Spectrum capture settings must respect diplexer constraints for DOCSIS 3.x and DOCSIS 4.0 (FDD).
 
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/spectrum-analyzer.md)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/spectrum-analyzer.md)
             """
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            self.logger.info(f"Retrieving Spectrum Analyzer data for MAC: {mac}, IP: {ip}")            
             try:
-                cm = CableModem(mac_address=MacAddress(request.cable_modem.mac_address), inet=Inet(request.cable_modem.ip_address))
+                cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
                 
                 status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
-                    return SnmpResponse(
-                        mac_address=str(request.cable_modem.mac_address),
-                        status=status,
-                        message=msg)                   
+                    return SnmpResponse(mac_address=str(mac), status=status, message=msg)                   
                 
                 service = CmSpectrumAnalysisService(cable_modem=cm, spec_analyzer_para=request.parameters)
                 msg_rsp: MessageResponse = await service.set_and_go()
@@ -68,7 +68,7 @@ class SpectrumAnalyzerRouter:
                 msg_rsp = cps.process()
 
                 return CmSpecAnaAnalysisResponse(
-                    mac_address=request.cable_modem.mac_address,
+                    mac_address=mac,
                     status=msg_rsp.status,
                     data=msg_rsp.payload_to_dict())
 
@@ -82,22 +82,22 @@ class SpectrumAnalyzerRouter:
                           response_model=Union[PnmAnalysisResponse, SnmpResponse], 
                           response_model_exclude_unset=True)
         async def get_analysis(request: CmSpecAnaAnalysisRequest):
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            self.logger.info(f"Retrieving Spectrum Analyzer Analysis for MAC: {mac}, IP: {ip}, Analysis Type: {request.analysis.type}")
+
             try:
-                
-                status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address,
-                                                                ip_address=request.cable_modem.ip_address).run_precheck()
+                status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
                 
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
-                        mac_address=str(request.cable_modem.mac_address),
-                        status=status,
-                        message=msg)
+                        mac_address=str(mac), status=status,message=msg)
                          
             except HTTPException:
                 raise
             except Exception as e:
-                self.logger.exception(f"[getPlot] Error for MAC {request.cable_modem.mac_address}")
+                self.logger.exception(f"[getPlot] Error for MAC {mac}")
                 raise HTTPException(status_code=500, detail=f"Plot retrieval failed: {str(e)}")
             
 # Required for dynamic auto-registration
