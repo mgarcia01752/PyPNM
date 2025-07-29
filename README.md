@@ -11,7 +11,7 @@
 
 # PyPNM (pre-alpha) — DOCSIS 3.x/4.0 Proactive Network Maintenance Toolkit
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue)
 ![Pre-Release](https://img.shields.io/badge/release-pre--alpha-lightgrey)
 
 **PyPNM** is a modular, Python-based toolkit for parsing, analyzing, and visualizing DOCSIS 3.x/4.0 Proactive Network Maintenance (PNM) telemetry. It is designed to support engineers and developers with real-time and offline diagnostic capabilities via both a programmatic API and an interactive web interface.
@@ -34,8 +34,8 @@ PyPNM runs on standard Linux environments—no custom kernel patches required.
 
 **Tested distributions:**
 
-* Ubuntu 22.04 LTS
-* Ubuntu 24.04 LTS
+- Ubuntu 22.04 LTS
+- Ubuntu 24.04 LTS
 
 ### Shell Dependencies
 
@@ -104,7 +104,7 @@ Access in-depth guides, workflows, and examples:
 - [Python API Reference](documentation/api/python/index.md)
 - [Example Scripts](documentation/examples/index.md)
 
-## Supported CableLabs Standards & Specs
+## CableLabs Standards & Specs
 
 **DOCSIS 3.1 MIBs & PNM behavior**
 
