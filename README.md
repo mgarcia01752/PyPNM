@@ -104,9 +104,9 @@ Access in-depth guides, workflows, and examples:
 - [Python API Reference](documentation/api/python/index.md)
 - [Example Scripts](documentation/examples/index.md)
 
-## Supported Standards & Specs
+## Supported CableLabs Standards & Specs
 
-**DOCSIS 3.1 MIBs & PNM behavior** (CableLabs)
+**DOCSIS 3.1 MIBs & PNM behavior**
 
 - [DOCSIS 3.1 Suite](https://www.cablelabs.com/specifications/search?category=DOCSIS&subcat=DOCSIS%203.1)
 - [CM-SP-CM-OSS Iv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
