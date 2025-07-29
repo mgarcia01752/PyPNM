@@ -90,9 +90,9 @@ pypnm
 
 ### Step 5: Explore the API
 
-* **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
-* **ReDoc**:     [http://localhost:8000/redoc](http://localhost:8000/redoc)
-* **Postman**:   [`Download Postman`](https://www.postman.com/downloads/)
+- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc**:     [http://localhost:8000/redoc](http://localhost:8000/redoc)
+- **Postman**:   [`Download Postman`](https://www.postman.com/downloads/)
 
 ⚠️ Tip: Use Postman for complex or large JSON payloads—Swagger UI can struggle with deeply nested schemas.
 
@@ -100,22 +100,22 @@ pypnm
 
 Access in-depth guides, workflows, and examples:
 
-- [📖 Master Index](documentation/master-index.md)
-- [🧠 Python API Reference](documentation/api/python/index.md)
-- [⚙️  Example Scripts](documentation/examples/index.md)
+- [Master Index](documentation/master-index.md)
+- [Python API Reference](documentation/api/python/index.md)
+- [Example Scripts](documentation/examples/index.md)
 
 ## Supported Standards & Specs
 
 **DOCSIS 3.1 MIBs & PNM behavior** (CableLabs)
 
-  * [DOCSIS 3.1 Suite](https://www.cablelabs.com/specifications/search?category=DOCSIS&subcat=DOCSIS%203.1)
-  * [CM-SP-CM-OSS Iv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
-  * [DOCSIS MIB Repository](https://mibs.cablelabs.com/MIBs/DOCSIS/)
+- [DOCSIS 3.1 Suite](https://www.cablelabs.com/specifications/search?category=DOCSIS&subcat=DOCSIS%203.1)
+- [CM-SP-CM-OSS Iv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
+- [DOCSIS MIB Repository](https://mibs.cablelabs.com/MIBs/DOCSIS/)
 
 **PNM Architecture & Guidelines**
 
-  * [CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)
-  * [CM-GL-PNM-HFC & CM-GL-PNM-3.1](https://www.cablelabs.com/specifications/CM-GL-PNM-HFC)
+- [CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)
+- [CM-GL-PNM-HFC & CM-GL-PNM-3.1](https://www.cablelabs.com/specifications/CM-GL-PNM-HFC)
 
 ## License
 
