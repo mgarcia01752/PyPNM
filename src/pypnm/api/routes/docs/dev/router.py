@@ -36,33 +36,30 @@ class DocsDevRouter:
             Entries typically include system-level events such as T3/T4 timeouts, partial service alerts, 
             reboots, and other diagnostic messages useful for proactive network maintenance.
 
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/event-log.md)
+            [API Guide - Cable Modem Event Log](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/event-log.md)
 
             """
-            status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address,
-                                                          ip_address=request.cable_modem.ip_address).run_precheck()
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            self.logger.info(f"Retrieving event log for MAC: {mac}, IP: {ip}")            
+            status, msg = await CableModemServicePreCheck(mac_address=mac,ip_address=ip).run_precheck()
+
             if status != ServiceStatusCode.SUCCESS:
                 logger.error(msg)
-                return EventLogResponse(
-                    mac_address=str(request.cable_modem.mac_address),
-                    status=status, message=msg, logs=[])                
+                return EventLogResponse(mac_address=str(mac), status=status, message=msg, logs=[])                
             
             try:
-                service = CmDocsDevService(
-                    mac_address=request.cable_modem.mac_address,
-                    ip_address=request.cable_modem.ip_address)
-                
+                service = CmDocsDevService(mac_address=mac,ip_address=ip)
                 log_entries = await service.fetch_event_log()
-                return EventLogResponse(
-                    mac_address=str(service.mac),
-                    status=ServiceStatusCode.SUCCESS,
-                    logs=log_entries)
+                return EventLogResponse(mac_address=str(service.mac), 
+                                        status=ServiceStatusCode.SUCCESS,
+                                        logs=log_entries)
                 
             except HTTPException:
                 raise
             
             except Exception as e:
-                logger.exception("Failed to fetch event log")
+                logger.exception("Failed to fetch event log, Mac: {mac}, IP: {ip}")
                 raise HTTPException(status_code=500, detail=str(e))
 
         @self.router.post("/reset", response_model=SnmpResponse)
@@ -75,37 +72,27 @@ class DocsDevRouter:
             This is typically used for maintenance, recovery from fault states, or in automated diagnostics
             workflows to bring the device back to an operational state.
 
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/reset-cm.md)
+            [API Guide - Reset DOCSIS Cable Modem](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/reset-cm.md)
 
-            ---
-            - Requires valid SNMPv2c or SNMPv3 credentials.
-            - Returns success status once the reset command has been sent.
-            - The actual modem reboot time will vary based on hardware and firmware.
-
-            🔐 SNMP Write Access Required
             """
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            self.logger.info(f"Resetting cable modem for MAC: {mac}, IP: {ip}")           
+            status, msg = await CableModemServicePreCheck(mac_address=mac,ip_address=ip).run_precheck()
 
-            status, msg = await CableModemServicePreCheck(mac_address=request.cable_modem.mac_address,
-                                                    ip_address=request.cable_modem.ip_address).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(
-                    mac_address=str(request.cable_modem.mac_address),
-                    status=status,
-                    message=msg)               
+                return SnmpResponse(mac_address=str(mac),status=status,message=msg)               
             
             try:
-                service = CmDocsDevService(
-                    mac_address=request.cable_modem.mac_address,
-                    ip_address=request.cable_modem.ip_address)
-                
+                service = CmDocsDevService(mac_address=mac,ip_address=ip)
                 result = await service.reset_cable_modem()
                 return JSONResponse(content=result.model_dump())
             
             except HTTPException:
                 raise
             except Exception as e:
-                logger.exception("Failed to reset cable modem")
+                logger.exception(f"Failed to reset cable modem, Mac: {mac}, IP: {ip}")
                 raise HTTPException(status_code=500, detail=str(e))
 
 router = DocsDevRouter().router
