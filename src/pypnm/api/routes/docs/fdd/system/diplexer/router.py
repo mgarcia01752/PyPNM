@@ -42,26 +42,21 @@ class FddDiplexerConfigResult:
             - Returns diplexer frequency configuration in MHz.
             - Returns an error response if the modem is unreachable or SNMP fails.
 
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/fdd/fdd-system-diplexer-configuration.md)
+            [API Guide - FDD Diplexer Configuration](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/fdd/fdd-system-diplexer-configuration.md)
             """
-            status, msg = await CableModemServicePreCheck(
-                mac_address=request.cable_modem.mac_address, 
-                ip_address=request.cable_modem.ip_address,
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+
+            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip,
                 check_docsis_version=[ClabsDocsisVersion.DOCSIS_40]).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(
-                    mac_address=str(request.cable_modem.mac_address),
-                    status=status, message=msg)
+                return SnmpResponse(mac_address=str(mac), status=status, message=msg)
 
-            service = await FddDiplexerConfigService.fetch_fdd_diplexer_config(
-                mac_address=request.cable_modem.mac_address,
-                ip_address=request.cable_modem.ip_address)
-
+            service = await FddDiplexerConfigService.fetch_fdd_diplexer_config(mac_address=mac, ip_address=ip)
             cfg = service.to_dict()
             return JSONResponse(content=cfg)
 
-
-# ✅ Required for dynamic FastAPI router registration
+# Required for dynamic FastAPI router registration
 router = FddDiplexerConfigResult().router

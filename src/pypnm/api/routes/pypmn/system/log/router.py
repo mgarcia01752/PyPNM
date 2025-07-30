@@ -19,7 +19,8 @@ class PyPnmSystemLog:
         """
         Initialize the PyPNM System Log API router and bind routes.
         """
-        self.router = APIRouter(prefix="/pypnm/system/log", tags=["PyPNM System Log"])
+        self.router = APIRouter(prefix="/pypnm/system/log", 
+                                tags=["PyPNM System Log"])
         self.router.add_api_route(
             path="/download",
             endpoint=self.get_pypnm_log,
@@ -33,7 +34,7 @@ class PyPnmSystemLog:
         This endpoint retrieves the current PyPNM system log as a downloadable text file.
         Useful for debugging, system monitoring, and auditing.
 
-        📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/system/log.md)
+        [API Guide -  PyPNM System Log](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/system/log.md)
         """
         try:
             log_path = os.path.join(SystemConfigSettings.log_dir, SystemConfigSettings.log_filename)
@@ -44,8 +45,7 @@ class PyPnmSystemLog:
             return FileResponse(
                 path=log_path,
                 filename=SystemConfigSettings.log_filename,
-                media_type="text/plain"
-            )
+                media_type="text/plain" )
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to retrieve log: {e}")

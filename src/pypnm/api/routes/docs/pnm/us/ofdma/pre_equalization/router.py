@@ -37,7 +37,7 @@ including detection of group delay, in-channel reflections, and frequency-depend
 - Subcarrier frequency spacing and zero-index frequency
 - Full PNM file metadata (timestamp, channel ID, file format)
 
-[API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/pre-equalization.md#get-measurement)
+[API Guide - OFDMA Pre-Equalization Measurement](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/pre-equalization.md#get-measurement)
 """
 
         analysis_description = """
@@ -52,7 +52,7 @@ This endpoint enables advanced insight into upstream channel quality using stati
 - Reconstructed complex values (Real/Imaginary)
 - Frequency mapping per subcarrier
 
-[API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/pre-equalization.md#get-analysis)
+[API Guide - OFDMA Pre-Equalization Coefficients Analysis](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/pre-equalization.md#get-analysis)
 """
 
         measurement_statistics_description = """
@@ -61,7 +61,7 @@ This endpoint enables advanced insight into upstream channel quality using stati
 This endpoint retrieves summary metrics for upstream pre-equalization, including amplitude ripple,
 group delay ripple, slope, mean values, and file references per OFDMA upstream channel.
 
-[API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/pre-equalization.md#get-measurement-statistics)
+[API Guide - OFDMA Pre-Equalization Coefficients Measurement](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/pre-equalization.md#get-measurement-statistics)
 """
 
         super().__init__(

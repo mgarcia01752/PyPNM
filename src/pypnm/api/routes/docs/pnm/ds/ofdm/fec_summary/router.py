@@ -37,7 +37,7 @@ class FecSummaryRouter:
             This endpoint fetches FEC summary counters for each active OFDM downstream profile,
             including corrected and uncorrectable codewords over a defined interval.
 
-            📘 [API Guide - OFDM FEC Summary Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/fec-summary.md)
+            [API Guide - OFDM FEC Summary Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/fec-summary.md)
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
@@ -45,14 +45,10 @@ class FecSummaryRouter:
             try:
 
                 cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
-                
-                status, msg = await CableModemServicePreCheck(cable_modem=cm,
-                                                              validate_ofdm_exist=True).run_precheck()
+                status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
-                    return SnmpResponse(
-                        mac_address=str(mac),
-                        status=status, message=msg)               
+                    return SnmpResponse(mac_address=str(mac), status=status, message=msg)               
             
                 fec_type = FecSummaryType.from_value(int(request.fec_summary_type))
                 service = CmDsOfdmFecSummaryService(cable_modem=cm, fec_summary_type=fec_type)

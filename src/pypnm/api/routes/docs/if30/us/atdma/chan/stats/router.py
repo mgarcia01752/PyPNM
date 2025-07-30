@@ -40,7 +40,7 @@ class UsScQamChannelRouter:
             - Transmit power
             - Ranging behavior
             
-            🔗 [API Guide - Upstream ATDMA Channel Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/stats.md)
+            [API Guide - Upstream ATDMA Channel Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/stats.md)
 
             """
             mac = request.cable_modem.mac_address
@@ -51,8 +51,7 @@ class UsScQamChannelRouter:
             status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return PnmChannelEntryResponse(
-                    mac_address=str(mac),status=status, message=msg)                  
+                return PnmChannelEntryResponse(mac_address=str(mac), status=status, message=msg)                  
             
             service = UsScQamChannelService(mac_address=mac, ip_address=ip)
             
@@ -73,24 +72,21 @@ class UsScQamChannelRouter:
 
             Used to analyze echo cancellation behavior and upstream plant quality.
 
-            🔗 [API Guide - Upstream Pre-Equalization Coefficients](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/pre-equalization.md)
+            [API Guide - Upstream Pre-Equalization Coefficients](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/pre-equalization.md)
 
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
             self.logger.info(f"Retrieving DOCSIS 3.0 SC-QAM upstream pre-equalization for MAC: {mac}, IP: {ip}")
+
             status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return PnmChannelEntryResponse(
-                    mac_address=str(mac),
-                    status=status, message=msg)
+                return PnmChannelEntryResponse(mac_address=str(mac), status=status, message=msg)
                                   
-            service = UsScQamChannelService(
-                mac_address=mac,
-                ip_address=ip)
-            
+            service = UsScQamChannelService(mac_address=mac, ip_address=ip)
             data = await service.get_upstream_pre_equalizations()
+            
             return JSONResponse(content=data)        
 
 # Required for dynamic auto-registration

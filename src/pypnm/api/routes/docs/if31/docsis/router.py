@@ -49,9 +49,7 @@ class BaseCapabilityRouter:
 
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
-                    return SnmpResponse(
-                        mac_address=str(request.cable_modem.mac_address),
-                        status=status,message=msg)
+                    return SnmpResponse(mac_address=str(mac), status=status, message=msg)
 
                 result = await DocsisBaseCapabilityService.fetch_docsis_base_capabilty(mac_address=mac, ip_address=ip)
 
@@ -68,7 +66,7 @@ class BaseCapabilityRouter:
                 self.logger.exception("Failed to fetch DOCSIS base capability")
                 raise HTTPException(
                     status_code=500,
-                    detail="Internal error retrieving DOCSIS base capability")
+                    detail=f"Internal error retrieving DOCSIS base capability, reason: {exc}")
 
 # Required for dynamic FastAPI router registration
 router = BaseCapabilityRouter().router

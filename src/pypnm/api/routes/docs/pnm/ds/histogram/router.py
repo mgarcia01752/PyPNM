@@ -59,7 +59,7 @@ class DsHistogramRouter:
             - Returns per-bin hit counts representing downstream signal distribution
             - Includes total dwell time and histogram symmetry metadata
 
-            🔗 [API Guide - Downstream Histogram](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/histogram.md)
+            [API Guide - Downstream Histogram](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/histogram.md)
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address

@@ -78,7 +78,7 @@ Includes:
         msg_rsp:MessageResponse = await service.set_and_go()
 
         if msg_rsp.status != ServiceStatusCode.SUCCESS:
-            return PnmMeasurementResponse(mac_address=rmac,
+            return PnmMeasurementResponse(mac_address=mac,
                                           message="Unable to complete Modulation Profile measurement.",
                                           status=msg_rsp.status, measurement={})
 
@@ -124,9 +124,7 @@ Includes:
 
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
-            return SnmpResponse(
-                mac_address=str(mac),
-                status=status, message=msg)  
+            return SnmpResponse(mac_address=str(mac), status=status, message=msg)  
 
         return SnmpResponse(
             mac_address=str(mac),

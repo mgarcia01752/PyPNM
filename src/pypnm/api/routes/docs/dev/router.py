@@ -26,8 +26,7 @@ class DocsDevRouter:
         self._add_routes()
 
     def _add_routes(self):
-        @self.router.post("/eventLog", 
-                          response_model=EventLogResponse)
+        @self.router.post("/eventLog", response_model=EventLogResponse)
         async def get_event_log(request: BaseDeviceConnectRequest):
             """
             **Retrieve DOCSIS Cable Modem Event Log**

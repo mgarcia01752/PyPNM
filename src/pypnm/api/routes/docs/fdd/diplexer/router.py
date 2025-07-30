@@ -18,8 +18,6 @@ class FddDiplexerBandEdgeCapability:
     This endpoint allows clients to retrieve the upstream and downstream diplexer edge capabilities
     from a cable modem, typically used to validate DOCSIS 4.0 spectrum configuration support.
 
-    Route:
-        POST /docs/fdd/diplexer/bandEdgeCapability
     """
 
     def __init__(self):
@@ -53,25 +51,24 @@ class FddDiplexerBandEdgeCapability:
 
             [API Guide - FDD Diplexer Band Edge Capabilities](https://github.com/mgarcia01752/PyPNM/tree/main/documentation/api/fast-api/single/fdd/fdd-diplexer-band-edge-cap.md)
             """
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            self.logger.info(f"Retrieving FDD diplexer band edge capabilities for MAC: {mac}, IP: {ip}")
+
             # Ensure modem is reachable and SNMP is operational
-            status, msg = await CableModemServicePreCheck(
-                mac_address=request.cable_modem.mac_address,
-                ip_address=request.cable_modem.ip_address, 
+            status, msg = await CableModemServicePreCheck(mac_address=mac,ip_address=ip, 
                 check_docsis_version=[ClabsDocsisVersion.DOCSIS_40]).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(mac_address=str(request.cable_modem.mac_address),
-                    status=status, message=msg)
+                return SnmpResponse(mac_address=str(mac), status=status, message=msg)
             
             # Fetch capability data from the cable modem
-            service = FddDiplexerBandEdgeCapabilityService(
-                mac_address=request.cable_modem.mac_address,
-                ip_address=request.cable_modem.ip_address)
+            service = FddDiplexerBandEdgeCapabilityService(mac_address=mac,ip_address=ip)
                         
             entry = await service.getFddDiplexerBandEdgeCapabilityEntries()
 
             return JSONResponse(content=entry)
 
-# ✅ Required for dynamic auto-registration
+# Required for dynamic auto-registration
 router = FddDiplexerBandEdgeCapability().router

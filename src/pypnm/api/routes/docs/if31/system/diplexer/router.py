@@ -36,7 +36,7 @@ class DiplexerConfigResult:
             - Diplexer capability codes
             - Configured and supported downstream frequency ranges
 
-            📘 [API Guide - System Diplexer Configuration](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/diplexer-configuration.md)
+            [API Guide - System Diplexer Configuration](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/diplexer-configuration.md)
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
@@ -50,8 +50,7 @@ class DiplexerConfigResult:
                                                               check_docsis_version=[ClabsDocsisVersion.DOCSIS_31]).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
-                    return SnmpResponse(mac_address=str(mac),
-                                        status=status,message=msg)  
+                    return SnmpResponse(mac_address=str(mac), status=status, message=msg)  
 
                 config = await DiplexerConfigService.fetch_diplexer_config(mac_address=mac, ip_address=ip)
 
@@ -67,7 +66,6 @@ class DiplexerConfigResult:
                 self.logger.exception("Failed to fetch diplexer configuration")
                 raise HTTPException(
                     status_code=500,
-                    detail="Internal error retrieving diplexer configuration"
-                )
+                    detail=f"Internal error retrieving diplexer configuration, Reason: {exc}")
 
 router = DiplexerConfigResult().router

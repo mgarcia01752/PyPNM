@@ -84,8 +84,7 @@ This endpoint returns high-level channel estimation metrics per downstream OFDM 
 
         cm: CableModem = CableModem(MacAddress(mac), Inet(ip))
 
-        status, msg = await CableModemServicePreCheck(cable_modem=cm,
-                                                      validate_ofdm_exist=True).run_precheck()
+        status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(mac_address=str(mac), status=status, message=msg)    
@@ -116,9 +115,7 @@ This endpoint returns high-level channel estimation metrics per downstream OFDM 
                                                       validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
-            return SnmpResponse(
-                mac_address=str(mac),
-                status=status, message=msg) 
+            return SnmpResponse(mac_address=str(mac), status=status, message=msg) 
         
         service: CmDsOfdmChanEstCoefService = CmDsOfdmChanEstCoefService(cm)
         msg_rsp:MessageResponse = await service.set_and_go()
@@ -149,9 +146,7 @@ This endpoint returns high-level channel estimation metrics per downstream OFDM 
                                                       validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
-            return SnmpResponse(
-                mac_address=str(mac),
-                status=status, message=msg) 
+            return SnmpResponse(mac_address=str(mac), status=status, message=msg) 
 
         service: CmDsOfdmChanEstCoefService = CmDsOfdmChanEstCoefService(cm)
         service_measure_stat = await service.get_pnm_measurement_statistics()

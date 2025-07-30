@@ -53,13 +53,6 @@ class ConstellationDisplayRouter:
             ⚠️ Due to large payloads, it is recommended to use Postman or CLI tools (e.g., `curl`) rather than SwaggerUI.
 
             [API Guide - Capture Downstream OFDM Constellation Symbol](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/constellation-display.md)
-
-            ---
-            - **Modulation Orders:** Supports QAM-16, QAM-64, QAM-1024, QAM-4096
-            - **Units:** `[Real(I), Imaginary(Q)]`
-            - **Usage:** Suitable for scatter plots to evaluate demodulation clarity
-
-            Returns a list of I/Q samples per OFDM channel, including all relevant metadata.
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
@@ -98,6 +91,7 @@ class ConstellationDisplayRouter:
 
             except HTTPException:
                 raise
+
             except Exception as e:
                 self.logger.exception(f"[getMeasurement] Error for MAC {request.cable_modem.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}")
@@ -125,7 +119,7 @@ class ConstellationDisplayRouter:
 
 
         @self.router.post(f"/{self.base_endpoint}/getMeasurementStatistics", response_model=Union[SnmpResponse])
-        async def get_analysis(request: PnmRequest):
+        async def get_measurement_statistics(request: PnmRequest):
             """
             Returns high-level Constellation Display measurement statistics for a DOCSIS 3.1 cable modem.
             This includes modulation order, symbol capture config, and measurement state metadata.

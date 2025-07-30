@@ -39,7 +39,7 @@ class UsOfdmaChannelRouter:
             - Cyclic prefix, roll-off period, and symbols per frame
             - Ranging timeouts and mute status indicators
 
-            🔗 [API Guide - Upstream OFDMA Channel Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/stats.md)
+            [API Guide - Upstream OFDMA Channel Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/ofdma/stats.md)
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
@@ -49,9 +49,7 @@ class UsOfdmaChannelRouter:
                                                           validate_ofdma_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(
-                    mac_address=str(mac),
-                    status=status, message=msg)              
+                return SnmpResponse(mac_address=str(mac), status=status, message=msg)              
             
             service = UsOfdmChannelService(mac_address=mac, ip_address=ip)
             data = await service.get_ofdma_chan_entries()

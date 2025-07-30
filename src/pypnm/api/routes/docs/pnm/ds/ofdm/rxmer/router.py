@@ -100,17 +100,15 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
         status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
-            return SnmpResponse(
-                mac_address=str(mac),
-                status=status, message=msg)  
+            return SnmpResponse(mac_address=str(mac), status=status, message=msg)  
         
         service: CmDsOfdmRxMerService = CmDsOfdmRxMerService(cm)
         msg_rsp: MessageResponse = await service.set_and_go()
 
         if msg_rsp.status != ServiceStatusCode.SUCCESS:
-            return SnmpResponse(
-                mac_address=mac, message="Unable to complete RxMER measurement.",
-                status=msg_rsp.status)
+            return SnmpResponse(mac_address=mac, 
+                                message="Unable to complete RxMER measurement.",
+                                status=msg_rsp.status)
 
         cps = CommonProcessService(msg_rsp)
         msg_rsp: MessageResponse = cps.process()
@@ -131,8 +129,7 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
         status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
-            return SnmpResponse(
-                mac_address=str(mac), status=status, message=msg)  
+            return SnmpResponse(mac_address=str(mac), status=status, message=msg)  
 
         service: CmDsOfdmRxMerService = CmDsOfdmRxMerService(cm)
         msg_rsp: MessageResponse = await service.set_and_go()
