@@ -6,8 +6,8 @@ from typing import List, Union
 
 from fastapi import APIRouter, HTTPException
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmAnalysisResponse, PnmRequest
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmAnalysisResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
@@ -117,9 +117,8 @@ class ConstellationDisplayRouter:
                 self.logger.exception(f"[getAnalysis] Error for MAC {mac}")
                 raise HTTPException(status_code=500, detail=f"Plot retrieval failed: {str(e)}")
 
-
         @self.router.post(f"/{self.base_endpoint}/getMeasurementStatistics", response_model=Union[SnmpResponse])
-        async def get_measurement_statistics(request: PnmRequest):
+        async def get_measurement_statistics(request: SnmpRequest):
             """
             Returns high-level Constellation Display measurement statistics for a DOCSIS 3.1 cable modem.
             This includes modulation order, symbol capture config, and measurement state metadata.

@@ -8,7 +8,7 @@ from pypnm.api.routes.common.classes.analysis.analysis import Analysis, Analysis
 from pypnm.api.routes.common.classes.common_endpoint_classes.router import PnmFastApiRouter
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
     PnmAnalysisRequest, PnmAnalysisResponse, PnmMeasurementResponse, PnmRequest)
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
@@ -129,7 +129,7 @@ This endpoint returns high-level channel estimation metrics per downstream OFDM 
                                       status=ServiceStatusCode.SUCCESS,
                                       data=analysis.get_results()) 
 
-    async def get_measurement_statistics_logic(self, request: PnmRequest) -> SnmpResponse:
+    async def get_measurement_statistics_logic(self, request: SnmpRequest) -> SnmpResponse:
         """
         Retrieves OFDM Channel Estimation Coefficient measurement statistics for a DOCSIS 3.1 cable modem.
 

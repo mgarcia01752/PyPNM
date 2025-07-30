@@ -6,12 +6,12 @@ __skip_autoregister__ = True
 from enum import Enum
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import List, Optional, Union
 from fastapi import APIRouter, HTTPException
 
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
     PnmAnalysisRequest, PnmAnalysisResponse, PnmMeasurementResponse, PnmRequest)
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
 
 class BaseFastApiRouter(ABC):
 
@@ -76,7 +76,7 @@ class PnmFastApiRouter(ABC):
                           response_model= Union[SnmpResponse], 
                           response_model_exclude_unset=True,
                           description=self.set_measurement_statistics_description)
-        async def get_measurement_statistics(request: PnmRequest) -> SnmpResponse:
+        async def get_measurement_statistics(request: SnmpRequest) -> SnmpResponse:
             try:
                 return await self.get_measurement_statistics_logic(request)
             except HTTPException:
@@ -96,6 +96,6 @@ class PnmFastApiRouter(ABC):
         pass
 
     @abstractmethod
-    async def get_measurement_statistics_logic(self, request: PnmRequest) -> SnmpResponse:
+    async def get_measurement_statistics_logic(self, request: SnmpRequest) -> SnmpResponse:
         """Subclasses must implement this to provide measurement statistics data"""
         pass
