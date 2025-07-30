@@ -11,29 +11,16 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import
 
 class SysRequest(BaseDeviceConnectRequest):
     """
-    Request model for SNMP system operations.
+    Request model for system SNMP operations.
 
-    Inherits:
-        mac_address (str): MAC address of the cable modem.
-        ip_address (str): IP address of the cable modem.
-        snmp (SNMPConfig): SNMP configuration block.
-
-    Usage:
-        ```python
-        req = SysRequest(
-            mac_address="00:11:22:33:44:55",
-            ip_address="192.168.1.100",
-            snmp={
-                "snmpV2c": {"community": "public"},
-                "snmpV3": {"username": "user", "securityLevel": "noAuthNoPriv"}
-            }
-        )
-        ```
-    """
-    # No additional fields; uses base connection parameters.
-
+    Inherits from BaseDeviceConnectRequest to include connection parameters.
+    """ 
 class SysDescrResponse(SnmpResponse):
-    ''''''
+    """
+    Response model for SNMP `sysDescr` query.
+
+    The `results` field is a dictionary containing the `sysDescr` key with OID→description map.
+    """
     
 class SysUpTimeResponse(SnmpResponse):
     """
