@@ -2,7 +2,7 @@
 
 This endpoint computes per‑channel codeword error statistics for DOCSIS 3.0 downstream SC‑QAM channels. It returns uncorrectable error counts, normalized error rates, and codeword throughput, helping you detect impairment or service‑level issues on legacy cable modems.
 
-## 📡 Endpoint
+## Endpoint
 
 ```text
 POST /docs/if30/ds/scqam/chan/codewordErrorRate
@@ -10,7 +10,7 @@ POST /docs/if30/ds/scqam/chan/codewordErrorRate
 
 Computes codeword error statistics over a sampling interval.
 
-## 📅 Request Body
+## Request Body
 
 ```json
 {
@@ -33,7 +33,7 @@ Computes codeword error statistics over a sampling interval.
 }
 ```
 
-### 🔑 Request Fields
+### Request Fields
 
 | Field                | Type    | Description                                             |
 | -------------------- | ------- | ------------------------------------------------------- |
@@ -43,7 +43,7 @@ Computes codeword error statistics over a sampling interval.
 | `snmp`               | object  | SNMP credentials (`snmpV2C` or `snmpV3`)                |
 | `sample_time_elapsed`| number  | Sampling interval in seconds (default: 5)               |
 
-## 📤 Response Body
+## Response Body
 
 ```json
 {
@@ -67,7 +67,7 @@ Computes codeword error statistics over a sampling interval.
 }
 ```
 
-### 📊 Key Response Fields
+### Key Response Fields
 
 | Field                           | Type    | Description                                               |
 | ------------------------------- | ------- | --------------------------------------------------------- |
@@ -85,9 +85,9 @@ Computes codeword error statistics over a sampling interval.
 | `codeword_totals.codewords_per_second` | number | Normalized codewords per second (s⁻¹)                |
 | `codeword_totals.errors_per_second`    | number | Normalized errors per second (s⁻¹)                   |
 
-> ℹ️ Rates use SI unit s⁻¹; multiply `error_rate` by 100 to get a percentage.
+> Rates use SI unit s⁻¹; multiply `error_rate` by 100 to get a percentage.
 
-## 📝 Notes
+## Notes
 
 - Ensure SNMP counters support 64‑bit to avoid overflow on high‑traffic channels.
 - `sample_time_elapsed` defaults to **5 seconds** if omitted; adjust to match your SNMP polling interval.
