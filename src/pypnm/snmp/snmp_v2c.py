@@ -3,7 +3,7 @@
 
 import logging
 import re
-from typing import List, Optional, Tuple, Type, Union
+from typing import List, Optional, Tuple, Type, TypeVar, Union
 from datetime import datetime, timedelta, timezone
 
 from pysnmp.hlapi.v3arch.asyncio import (
@@ -383,6 +383,49 @@ class Snmp_v2c:
             last_idx = int(str(oid).split('.')[-1])
             value = str(obj[1])
             result.append((last_idx, value))
+        return result
+
+    T = TypeVar("T", int, str)
+    @staticmethod
+    def snmp_get_result_last_idx_force_value_type(snmp_responses: List[ObjectType], 
+                                                  value_type: Type[T] = str) -> List[Tuple[int, T]]:
+        """
+        Extract the last index and value from each SNMP response,
+        casting the value to the requested type (int or str).
+
+        Args:
+            snmp_responses: List of SNMP ObjectType responses.
+            value_type: Type to cast the SNMP value to (int or str). Defaults to str.
+
+        Returns:
+            List of (last index, value) pairs, where `value` is of type `value_type`.
+        """
+        logger = logging.getLogger(__name__)
+        result: List[Tuple[int, T]] = []
+
+        for obj in snmp_responses:
+            # 1) extract index
+            try:
+                oid_str = str(obj[0])
+                last_idx = int(oid_str.rsplit(".", 1)[-1])
+            except Exception as e:
+                logger.warning(f"Could not parse index from OID {obj[0]!r}: {e}")
+                continue
+
+            # 2) cast value
+            raw_val = obj[1]
+            try:
+                if value_type is int:
+                    cast_val: Union[int, str] = int(raw_val)
+                else:
+                    cast_val = str(raw_val)
+            except Exception as e:
+                logger.warning(f"Failed to cast SNMP value {raw_val!r} to {value_type}: {e}")
+                # fallback: leave it in its raw form
+                cast_val = raw_val  # type: ignore
+
+            result.append((last_idx, cast_val))  # type: ignore
+
         return result
 
     @staticmethod

@@ -14,6 +14,7 @@ from typing import Iterable, List, Tuple, Optional
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
+from pypnm.docsis.data_type.InterfaceStats import DocsisIfType
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 
@@ -43,7 +44,8 @@ class CableModemServicePreCheck:
         ip_address: Optional[str] = None,
         check_docsis_version: Optional[List[ClabsDocsisVersion]] = None,
         validate_ofdm_exist: Optional[bool] = False,
-        validate_ofdma_exist: Optional[bool] = False
+        validate_ofdma_exist: Optional[bool] = False,
+        validate_scqam_exist: Optional[bool] = False
     ) -> None:
         """
         Initialize the pre-check service.
@@ -80,6 +82,7 @@ class CableModemServicePreCheck:
             
         self.validate_ofdma_exist = validate_ofdma_exist
         self.validate_ofdm_exist = validate_ofdm_exist
+        self.validate_scqam_exist = validate_scqam_exist
 
     async def run_precheck(self) -> Tuple[ServiceStatusCode, str]:
         """
@@ -117,6 +120,11 @@ class CableModemServicePreCheck:
 
         if self.validate_ofdma_exist:
             status, msg = await self.validate_ofdma_channel_exist()
+            if status != ServiceStatusCode.SUCCESS:
+                return status, msg
+
+        if self.validate_scqam_exist:
+            status, msg = await self.validate_scqam_channel_exist()
             if status != ServiceStatusCode.SUCCESS:
                 return status, msg            
         
@@ -219,3 +227,23 @@ class CableModemServicePreCheck:
             return ServiceStatusCode.NO_OFDMA_CHANNELS_EXIST, msg
 
         return ServiceStatusCode.SUCCESS, "OFDMA upstream channels detected."
+    
+    async def validate_scqam_channel_exist(self) -> Tuple[ServiceStatusCode, str]:
+        """
+        Checks whether any SC-QAM downstream channels are present on the cable modem.
+
+        This method queries the cable modem for the DOCSIS 3.0 SC-QAM downstream channel
+        index stack. If no indices are found, it returns a failure status.
+
+        Returns:
+            Tuple[ServiceStatusCode, str]: A tuple containing the status code and an explanatory message.
+                - ServiceStatusCode.SUCCESS if channels are found
+                - ServiceStatusCode.NO_SCQAM_CHAN_ID_INDEX_FOUND if no channels are detected
+        """
+        scqam_idx_list = await self.cm.getIfTypeIndex(DocsisIfType.docsCableDownstream)
+
+        if not scqam_idx_list:
+            msg = "No SC-QAM channels found on the cable modem."
+            return ServiceStatusCode.NO_SCQAM_CHAN_ID_INDEX_FOUND, msg
+
+        return ServiceStatusCode.SUCCESS, "SC-QAM downstream channels detected."

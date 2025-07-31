@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+import asyncio
 from enum import Enum
 import logging
 import time
-from typing import Dict, List, Tuple, Type, Union
+from typing import Any, Dict, List, Tuple, Type, Union
 from pysnmp.proto.rfc1902 import (OctetString, Counter32, Bits, 
                                   Counter64, Gauge32, Integer, 
                                   Integer32, IpAddress)
@@ -17,6 +18,7 @@ from pypnm.docsis.data_type.DocsIf31CmDsOfdmProfileStatsEntry import DocsIf31CmD
 from pypnm.docsis.data_type.DocsIf31CmSystemCfgState import DocsIf31CmSystemCfgDiplexState
 from pypnm.docsis.data_type.DocsIf31CmUsOfdmaChanEntry import DocsIf31CmUsOfdmaChanEntry
 from pypnm.docsis.data_type.DocsIfDownstreamChannel import DocsIfDownstreamChannelEntry
+from pypnm.docsis.data_type.DocsIfDownstreamChannelCwErrorRate import DocsIfDownstreamChannelCwErrorRate, DocsIfDownstreamCwErrorRateEntry
 from pypnm.docsis.data_type.DocsIfSignalQualityEntry import DocsIfSignalQuality
 from pypnm.docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChannelEntry
 from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst
@@ -681,13 +683,59 @@ class CmSnmpOperation:
                 self.logger.warning("No downstream SC-QAM channel indices found.")
                 return []
 
-            entries = await DocsIfDownstreamChannelEntry.get(snmp=self._snmp,indices=indices)
+            entries = await DocsIfDownstreamChannelEntry.get(snmp=self._snmp, indices=indices)
 
             return entries
 
         except Exception as e:
             self.logger.exception("Failed to retrieve downstream SC-QAM channel entries")
             return []
+
+    async def getDocsIfDownstreamChannelCwErrorRate(self, sample_time_elapsed: float = 5.0) -> \
+        Union[List[DocsIfDownstreamCwErrorRateEntry], Dict[str, Any]]:
+        """
+        Retrieves codeword error rate for all downstream SC-QAM channels.
+
+        1. Fetch initial SNMP snapshot for all channels.
+        2. Wait asynchronously for `sample_time_elapsed` seconds.
+        3. Fetch second SNMP snapshot.
+        4. Compute per-channel & aggregate CW error metrics.
+        """
+        try:
+            # 1) Discover all downstream SC-QAM (index, channel_id) indices
+            idx_chanid_indices:List[Tuple[int, int]] = await self.getDocsIfDownstreamChannelIdIndexStack()
+
+            if not idx_chanid_indices:
+                self.logger.warning("No downstream SC-QAM channel indices found.")
+                return {"entries": [], "aggregate_error_rate": 0.0}
+
+            self.logger.debug(f"Found {len(idx_chanid_indices)} downstream SC-QAM channel indices: {idx_chanid_indices}")
+            # Extract only the first element of each tuple
+            idx_indices:List[int] = [index[0] for index in idx_chanid_indices]  
+
+            # 2) First snapshot
+            initial_entry = await DocsIfDownstreamChannelEntry.get(snmp=self._snmp, indices=idx_indices)
+            self.logger.debug(f"Initial snapshot: {len(initial_entry)} channels")
+
+            # 3) Wait the sample interval
+            await asyncio.sleep(sample_time_elapsed)
+
+            # 4) Second snapshot
+            later_entry = await DocsIfDownstreamChannelEntry.get(snmp=self._snmp, indices=idx_indices)
+            self.logger.debug(f"Second snapshot after {sample_time_elapsed}s: {len(later_entry)} channels")
+
+            # 5) Calculate error rates
+            calculator = DocsIfDownstreamChannelCwErrorRate(
+                            entries_1=initial_entry,
+                            entries_2=later_entry,
+                            channel_id_index_stack=idx_chanid_indices,
+                            time_elapsed=sample_time_elapsed)
+            return calculator.get()
+
+        except Exception:
+            self.logger.exception("Failed to retrieve downstream SC-QAM codeword error rates")
+            return {"entries": [], "aggregate_error_rate": 0.0}
+
 
     async def getDocsIf31CmUsOfdmaChanEntry(self) -> List[DocsIf31CmUsOfdmaChanEntry]:
         """
@@ -912,6 +960,58 @@ class CmSnmpOperation:
             logging.error(f'[{test_type.name}] {result}')
             return MeasStatusType.ERROR
 
+    async def getDocsIfDownstreamChannelIdIndexStack(self) -> List[Tuple[int, int]]:
+        """
+        Retrieve SC-QAM channel index ↔ channelId tuples for DOCSIS 3.0 downstream channels,
+        ensuring we only return true SC-QAM channels ( skips OFDM / zero entries ).
+
+        Returns:
+            List[Tuple[int, int]]: (entryIndex, channelId) pairs, or [] if none found.
+        """
+        # 1) fetch indices of all SC-QAM interfaces
+        try:
+            scqam_if_indices = await self.getIfTypeIndex(DocsisIfType.docsCableDownstream)
+        except Exception:
+            self.logger.error("Failed to retrieve SC-QAM interface indices", exc_info=True)
+            return []
+        if not scqam_if_indices:
+            self.logger.debug("No SC-QAM interface indices found")
+            return []
+
+        # 2) do a single walk of the SC-QAM ChannelId table
+        try:
+            responses = await self._snmp.walk("docsIfDownChannelId")
+        except Exception:
+            self.logger.error("SNMP walk failed for docsIfDownChannelId", exc_info=True)
+            return []
+        if not responses:
+            self.logger.debug("No entries returned from docsIfDownChannelId walk")
+            return []
+
+        # 3) parse into (idx, chanId), forcing chanId → int
+        try:
+            raw_pairs: List[Tuple[int, int]] = Snmp_v2c.snmp_get_result_last_idx_force_value_type(responses, 
+                                                                                                  value_type=int)
+
+        except Exception:
+            self.logger.error("Failed to parse index/channel-ID pairs", exc_info=True)
+            return []
+
+        # 4) filter out non-SC-QAM and zero entries (likely OFDM)
+        scqam_set = set(scqam_if_indices)
+        filtered: List[Tuple[int, int]] = []
+        for idx, chan_id in raw_pairs:
+            if idx not in scqam_set:
+                self.logger.debug("Skipping idx %s not in SC-QAM interface list", idx)
+                continue
+            if chan_id == 0:
+                self.logger.debug("Skipping idx %s with channel_id=0 (likely OFDM)", idx)
+                continue
+            filtered.append((idx, chan_id))
+
+        return filtered
+
+
     async def getDocsIf31CmDsOfdmChannelIdIndexStack(self) -> List[Tuple[int, int]]:
         """
         Retrieve a list of tuples representing OFDM channel index and their associated channel IDs
@@ -928,7 +1028,7 @@ class CmSnmpOperation:
         idx_channelId = Snmp_v2c.snmp_get_result_last_idx_value(result)
 
         return idx_channelId or []
-        
+
     async def getDocsIf31CmUsOfdmaChannelIdIndexStack(self) -> List[Tuple[int, int]]:
         """
         Retrieve a list of tuples representing OFDMA channel index and their associated channel IDs
@@ -1162,7 +1262,7 @@ class CmSnmpOperation:
             if cdv == ClabsDocsisVersion.OTHER:
                 self.logger.warning(f"Unknown DOCSIS version: {docsis_version} -> Enum: {cdv.name}")
             else:
-                self.logger.info(f"DOCSIS version: {cdv.name}")
+                self.logger.debug(f"DOCSIS version: {cdv.name}")
 
             return cdv
 
@@ -1204,7 +1304,7 @@ class CmSnmpOperation:
             if not indices:
                 self.logger.warning("No DocsIf31CmDsOfdmChanChannelIdIndex indices found.")
                 return entries
-            self.logger.info(f'Index: {indices}')
+            self.logger.debug(f'Index: {indices}')
             entries = await DocsPnmCmDsOfdmRxMerEntry.get(snmp=self._snmp, indices=indices)
 
         except Exception as e:
@@ -1318,7 +1418,7 @@ class CmSnmpOperation:
                 return entries
 
             entries = await DocsPnmCmDsOfdmMerMarEntry.get(snmp=self._snmp, indices=indices)
-            self.logger.info(f'Number of DocsPnmCmDsOfdmMerMarEntry Found: {len(entries)}')
+            self.logger.debug(f'Number of DocsPnmCmDsOfdmMerMarEntry Found: {len(entries)}')
             
         except Exception as e:
             self.logger.exception("Failed to retrieve DocsPnmCmDsOfdmMerMarEntry entries")

@@ -31,7 +31,9 @@ class ServiceStatusCode(IntEnum):
     PING_FAILED                             = 19
     MISSING_PNM_FILENAME                    = 20
     TFTP_PNM_FILE_UPLOAD_FAILURE            = 21
-    
+    NO_SCQAM_CHAN_ID_INDEX_FOUND            = 22
+    NO_ATDMA_CHAN_ID_INDEX_FOUND            = 23
+
     SCP_PNM_FILE_FETCH_ERROR                = 30
     TFTP_PNM_FILE_FETCH_ERROR               = 31
     FTP_PNM_FILE_FETCH_ERROR                = 32
