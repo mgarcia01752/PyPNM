@@ -17,13 +17,11 @@ class PyPnmSystemWebServiceAPI:
         """
         self.router = APIRouter(
             prefix="/pypnm/system/webService",
-            tags=["PyPNM System Web Service"],
-        )
-        # Register a GET endpoint for triggering reload
+            tags=["PyPNM System Web Service"],)
+
         self.router.get(
             "/reload",
-            summary="Restart PyPNM System Web Service"
-        )(self.trigger_reload)
+            summary="Restart PyPNM System Web Service")(self.trigger_reload)
 
     async def trigger_reload(self) -> Dict[str, str]:
         """
@@ -32,7 +30,7 @@ class PyPnmSystemWebServiceAPI:
         This endpoint triggers a hot reload of the PyPNM web service.
         Useful for development to apply code changes without restarting the server.
 
-        [API Guide - Reload Web Serive](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/system/reload-web-service.md)
+        [API Guide - Reload FastAPI Web Service](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/system/reload-web-service.md)
         """
         try:
             Path(__file__).touch()
