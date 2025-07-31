@@ -52,8 +52,7 @@ class DsScQamChannelService:
         cw_error_rate = await self.cm.getDocsIfDownstreamChannelCwErrorRate(time_elapse)
         
         self.logger.info(
-            f"Retrieved [{len(cw_error_rate)}] SC-QAM channel codeword error rate entries "
-            f"over a sampling interval of {time_elapse} seconds.")
+            f"Retrieved [{len(cw_error_rate)}] SC-QAM channel codeword error rate entries over a sampling interval of {time_elapse} seconds.")
 
         if isinstance(cw_error_rate, list):
             return [entry.model_dump() for entry in cw_error_rate]
