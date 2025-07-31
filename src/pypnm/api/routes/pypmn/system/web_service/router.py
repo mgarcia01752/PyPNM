@@ -27,7 +27,7 @@ class PyPnmSystemWebServiceAPI:
 
     async def trigger_reload(self) -> Dict[str, str]:
         """
-        [API Guide - Reload Web Serive](documentation/api/fast-api/system/reload-web-service.md)
+        [API Guide - Reload Web Serive](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/system/reload-web-service.md)
         """
         try:
             Path(__file__).touch()
