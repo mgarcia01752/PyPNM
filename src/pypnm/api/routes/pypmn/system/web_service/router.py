@@ -27,6 +27,11 @@ class PyPnmSystemWebServiceAPI:
 
     async def trigger_reload(self) -> Dict[str, str]:
         """
+        **Trigger PyPNM System Web Service Reload**
+
+        This endpoint triggers a hot reload of the PyPNM web service.
+        Useful for development to apply code changes without restarting the server.
+
         [API Guide - Reload Web Serive](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/system/reload-web-service.md)
         """
         try:
