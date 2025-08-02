@@ -58,7 +58,7 @@ class MultiRxMerRouter(AbstractService):
             summary="Start a multi-sample RxMER capture",)
         async def start_multi_rxmer(request: MultiRxMerRequest) -> Union[MultiRxMerStartResponse, SnmpResponse]:
             """
-            🚀 **Start Multi-RxMER Capture**
+            **Start Multi-RxMER Capture**
 
             Initiates a threaded background RxMER capture session from a DOCSIS cable modem.
 
@@ -73,7 +73,7 @@ class MultiRxMerRouter(AbstractService):
             - Stop the session early
             - Run post-capture analysis
 
-            🔗 [Start Capture Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#1-start-capture)
+            [API Guide - Multi-RxMER Capture](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#1-start-capture)
 
             """
             duration = request.capture.parameters.measurement_duration
@@ -139,13 +139,13 @@ class MultiRxMerRouter(AbstractService):
             summary="Get status of a multi-sample RxMER capture",)
         def get_status(operation_id: str) -> MultiRxMerStatusResponse:
             """
-            📡 **Check Multi-RxMER Capture Status**
+            **Check Multi-RxMER Capture Status**
 
             Poll the status of an ongoing or completed Multi-RxMER capture session using the provided `operation_id`.
 
             This endpoint returns current state, collected sample count, and time remaining.
 
-            🔗 [Check Status Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#2-status-check)
+            [Check Status Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#2-status-check)
 
             """
             try:
@@ -181,13 +181,13 @@ class MultiRxMerRouter(AbstractService):
             },)
         def download_measurements_zip(operation_id: str) -> StreamingResponse:
             """
-            📥 **Download Captured RxMER Measurements (ZIP)**
+            **Download Captured RxMER Measurements (ZIP)**
 
             Streams a ZIP archive containing all RxMER `.bin` files collected during the specified capture session (`operation_id`).
 
             Useful for offline analysis or archival of raw measurement data.
 
-            🔗 [Download Measurement Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#3-download-measurements)
+            [Download Measurement Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#3-download-measurements)
 
             ---
             Returns a `StreamingResponse` with `Content-Type: application/zip`.
@@ -220,13 +220,13 @@ class MultiRxMerRouter(AbstractService):
             summary="Stop a running Multi-RxMER capture early",)
         def stop_capture(operation_id: str) -> MultiRxMerStatusResponse:
             """
-            🛑 **Stop a Multi-RxMER Capture Operation**
+            **Stop a Multi-RxMER Capture Operation**
 
             Gracefully ends an ongoing Multi-RxMER background capture session for the specified `operation_id`.
 
             This request signals the capture process to stop after the current sampling iteration completes.
 
-            🔗 [Stop Capture Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#4-stop-capture-early)
+            [Stop Capture Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#4-stop-capture-early)
             
             """
             try:
@@ -255,21 +255,21 @@ class MultiRxMerRouter(AbstractService):
             summary="Perform signal analysis on a previously executed Multi-RxMER",)
         def analysis(request: MultiRxMerAnalysisRequest) -> MultiRxMerAnalysisResponse:
             """
-            📊 **Multi-RxMER Analysis Endpoint**
+            **Multi-RxMER Analysis Endpoint**
 
             This endpoint performs post-capture analysis on collected RxMER data.
 
-            🔗 [Analysis Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#5-analysis)
+            [API Guide - Multi-RxMER Analysis](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#5-analysis)
 
-            ### 🧠 Analysis Types
+            ### Analysis Types
 
-            - **0 – Min/Avg/Max**  
+            - **0 - Min/Avg/Max**  
             [View Spec](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/rest/multi-rxmer-min-avg-max.md)
 
-            - **1 – OFDM Profile Performance**  
+            - **1 - OFDM Profile Performance**  
             *(Documentation link pending)*
 
-            - **2 – RxMER Heat Map**  
+            - **2 - RxMER Heat Map**  
             *(Documentation link pending)*
 
             """

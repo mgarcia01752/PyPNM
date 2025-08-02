@@ -69,7 +69,7 @@ class MultiDsChanEstRouter(AbstractService):
             4. **Stop**: Cancel an ongoing capture if needed.
             5. **Analyze**: Decode the captured files and perform DSP-style channel impairment analysis.
 
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-chan-est.md)
+            [API Guide - Multi-Channel Estimation Capture](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-chan-est.md)
 
             """
             
@@ -126,7 +126,7 @@ class MultiDsChanEstRouter(AbstractService):
             - `operation_id` corresponds to the unique identifier returned when starting the capture.
             - The response includes `start_time`, `sample_count`, and `status` (e.g., IN_PROGRESS, COMPLETE).
 
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-chan-est.md)
+            [API Guide - Multi-Channel Estimation Operation Retrive Status](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-chan-est.md)
             """
             try:
                 service:MultiChannelEstimationService = self.getService(operation_id) # type: ignore
