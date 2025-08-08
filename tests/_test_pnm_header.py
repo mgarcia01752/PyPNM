@@ -55,7 +55,7 @@ class TestPnmHeader(unittest.TestCase):
         hdr = PnmHeader(packet)
         pnm_type = hdr.get_pnm_file_type()
 
-        self.assertEqual(pnm_type, PnmFileType.PNN10)
+        self.assertEqual(pnm_type, PnmFileType.OFDM_MODULATION_PROFILE)
 
     def test_get_pnm_file_type_unrecognized(self):
         header_bytes = struct.pack("<3sBBB", b"ZZZ", 99, 1, 8)

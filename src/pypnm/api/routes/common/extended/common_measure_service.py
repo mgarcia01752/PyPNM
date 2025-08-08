@@ -142,7 +142,7 @@ class CommonMeasureService(CommonMessagingService):
         if not await self.is_snmp_ready():
             self.logger.error(f"{self.log_prefix} - Unreachable via SNMP")
             return self.build_send_msg(ServiceStatusCode.UNREACHABLE_SNMP)
-
+        
         #########################################################################
         #                   Spectrum Analysis SNMP Return                       #
         #########################################################################
@@ -207,8 +207,7 @@ class CommonMeasureService(CommonMessagingService):
         if not await self.cm.setDocsPnmBulk(tftp_server.inet, self.tftp_path):
             self.logger.error(
                 f"{self.log_prefix} - Unable to set TFTP server {tftp_server.inet} "
-                f"or TFTP path: {self.tftp_path}"
-            )
+                f"or TFTP path: {self.tftp_path}")
             return self.build_send_msg(ServiceStatusCode.TFTP_SERVER_PATH_SET_FAIL)
 
         ##############################################################################################
@@ -217,13 +216,14 @@ class CommonMeasureService(CommonMessagingService):
 
         status_index_channelId = await self._get_indexes_via_pnm_test_type(interface_parameters)
         if status_index_channelId[0] != ServiceStatusCode.SUCCESS:
-            self.logger.error(f'{self.log_prefix} - Unable to aquire index from ChannelID')
-            return self.build_send_msg(status_index_channelId)
+            self.logger.error(f'{self.log_prefix} - Unable to aquire index from ChannelID, reason: {status_index_channelId[0]}')
+            return self.build_send_msg(status_index_channelId[0])
 
         ##############################################################################################
         # This section runs through all the indexes, build PNM file, run measurement and check status
-        ##############################################################################################                   
-        return self.build_send_msg(await self._pnm_measure_status_and_pnm_file_transfer(status_index_channelId[1], max_wait_count))
+        ##############################################################################################
+        index_channelId: List[Tuple[int, int]] = status_index_channelId[1]                    # type: ignore
+        return self.build_send_msg(await self._pnm_measure_status_and_pnm_file_transfer(index_channelId, max_wait_count))
     
     def getInterfaceParameters(self,
         interface_type: DocsisIfType) -> Union[DownstreamOfdmParameters, UpstreamOfdmaParameters]:

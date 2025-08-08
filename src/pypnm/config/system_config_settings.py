@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+from pathlib import Path
 from pypnm.config.config_manager import ConfigManager
 
 class classproperty:
@@ -73,7 +74,7 @@ class SystemConfigSettings:
     def bulk_https_port(cls) -> int:
         return int(cls._cfg.get("PnmBulkDataTransfer", "https", "port"))
 
-    # PNM file retrieval settings
+    # PNM file retrieval/storage settings
     @classproperty
     def save_dir(cls) -> str:
         return cls._cfg.get("PnmFileRetrieval", "pnm_dir")
@@ -89,6 +90,18 @@ class SystemConfigSettings:
     @classproperty
     def xlsx_dir(cls) -> str:
         return cls._cfg.get("PnmFileRetrieval", "xlsx_dir") 
+
+    @classproperty
+    def png_dir(cls) -> str:
+        return cls._cfg.get("PnmFileRetrieval", "png_dir") 
+
+    @classproperty
+    def zip_dir(cls) -> str:
+        return cls._cfg.get("PnmFileRetrieval", "zip_dir")
+    
+    @classproperty
+    def message_response_dir(cls) -> str:
+        return cls._cfg.get("PnmFileRetrieval", "msg_rsp_dir") 
 
     @classproperty
     def transaction_db(cls) -> str:
@@ -263,3 +276,29 @@ class SystemConfigSettings:
     @classproperty
     def log_filename(cls) -> str:
         return cls._cfg.get("logging", "log_filename")
+
+    @classproperty
+    def initialize_directories(cls) -> None:
+        """
+        Create necessary directories if they do not exist.
+        """
+        directories = [
+            cls.save_dir, 
+            cls.csv_dir, 
+            cls.json_dir, 
+            cls.xlsx_dir,
+            cls.png_dir, 
+            cls.zip_dir, 
+            cls.message_response_dir,
+            cls.log_dir,
+        ]
+        for directory in directories:
+            Path(directory).mkdir(parents=True, exist_ok=True)
+
+    @classmethod
+    def reload(cls) -> None:
+        """
+        Reload the configuration settings.
+        """
+        cls._cfg.reload()
+        cls.initialize_directories()

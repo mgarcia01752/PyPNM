@@ -64,6 +64,7 @@ class PnmFileTransaction:
 
     PNM_TEST_TYPE = 'pnm_test_type'
     FILE_NAME = 'filename'
+    DEVICE_DETAILS = 'device_details'
 
     def __init__(self):
         """Initializes the transaction manager and prepares the transaction database path."""

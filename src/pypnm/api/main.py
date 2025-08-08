@@ -7,8 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from pypnm.api.utils.auto_load import RouterRegistrar
-from pypnm.config.log_config import LoggerConfigurator
-from pypnm.config.system_config_settings import SystemConfigSettings
+from pypnm.startup.startup import StartUp
 
 project_root = pathlib.Path(__file__).resolve()
 while project_root.name != "src" and project_root != project_root.parent:
@@ -17,9 +16,7 @@ while project_root.name != "src" and project_root != project_root.parent:
 if project_root.name == "src" and str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-LoggerConfigurator(SystemConfigSettings.log_dir,
-                   SystemConfigSettings.log_filename,
-                   SystemConfigSettings.log_level)
+StartUp.initialize()
 
 fast_api_description = """
 **Proactive Network Maintenance (PNM) API for DOCSIS devices**

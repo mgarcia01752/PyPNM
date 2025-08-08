@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+import csv
 import json
 import logging
-from typing import Union
+from typing import Any, Dict, List, Optional, Union
 
 
 class FileProcessor:
@@ -113,3 +114,77 @@ class FileProcessor:
             print("Hex Preview:", snippet)
         else:
             self.logger.warning("No hex data to display.")
+
+    def write_csv(
+        self,
+        data: List[Union[Dict[str, Any], List[Any]]],
+        headers: Optional[List[str]] = None,
+        append: bool = False,
+        filepath: Optional[str] = None
+    ) -> bool:
+        """
+        Writes tabular data to a CSV file.
+
+        Supports both list of dicts and list of lists.
+
+        Args:
+            data (List[dict] | List[list]): Rows to write.
+            headers (List[str], optional): Column headers (required for list of lists).
+            append (bool): If True, appends to existing CSV, else overwrites.
+            filepath (str, optional): Path to CSV file. Uses self.filepath if None.
+
+        Returns:
+            bool: Success status.
+        """
+        target = filepath or self.filepath
+        mode = 'a' if append else 'w'
+        try:
+            with open(target, mode, newline='', encoding='utf-8') as csvfile:
+                if not data:
+                    self.logger.warning("No data provided for CSV write.")
+                    return False
+
+                first = data[0]
+                # Write dict rows
+                if isinstance(first, dict):
+                    fieldnames = list(first.keys())
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                    if not append:
+                        writer.writeheader()
+                    writer.writerows(data)  # type: ignore
+                else:
+                    writer = csv.writer(csvfile)
+                    # Write headers for list rows if provided
+                    if headers and not append:
+                        writer.writerow(headers)
+                    # Write all rows
+                    writer.writerows(data)  # type: ignore
+
+                self.logger.info(f"Wrote {len(data)} rows to CSV at {target}")
+                return True
+        except Exception as e:
+            self.logger.error(f"Failed to write CSV to {target}: {e}")
+        return False
+    
+    def close(self) -> None:
+        """
+        Placeholder for any cleanup actions if needed.
+        Currently does nothing but can be overridden in subclasses.
+        """
+        self.logger.debug("FileProcessor close called, no action taken.")
+
+    def __str__(self) -> str:
+        return f"FileProcessor({self.filepath})"
+
+    def __repr__(self) -> str:
+        return f"FileProcessor(filepath={self.filepath})"
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+        if exc_type:
+            self.logger.error(f"Exception in FileProcessor: {exc_value}")
+        else:
+            self.logger.debug("FileProcessor exited cleanly.")
+        return False

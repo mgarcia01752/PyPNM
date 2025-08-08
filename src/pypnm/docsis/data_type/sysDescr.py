@@ -77,9 +77,35 @@ class SystemDescriptor:
         return json.dumps(self.to_dict())
 
     @classmethod
+    def load_from_dict(cls, data: Dict[str, str]) -> "SystemDescriptor":
+        """
+        Load a SysDescr from a dictionary.
+        """
+        return cls(
+            hw_rev=data.get('HW_REV', ''),
+            vendor=data.get('VENDOR', ''),
+            boot_rev=data.get('BOOTR', ''),
+            sw_rev=data.get('SW_REV', ''),
+            model=data.get('MODEL', '')
+        )
+    
+    @classmethod
     def empty(cls) -> "SystemDescriptor":
         """
         Return an empty SysDescr (all fields blank).
         """
         cls.is_empty = True
         return cls(hw_rev="", vendor="", boot_rev="", sw_rev="", model="")
+
+    def __str__(self) -> str:
+        """
+        Return a string representation of the SysDescr.
+        """
+        return f"<< HW_REV: {self.hw_rev}; VENDOR: {self.vendor}; BOOTR: {self.boot_rev}; SW_REV: {self.sw_rev}; MODEL: {self.model} >>"
+
+    def __hash__(self) -> int:
+        return hash((self.hw_rev, self.vendor, self.boot_rev, self.sw_rev, self.model))
+
+    def __repr__(self) -> str:
+        return f"SystemDescriptor(hw_rev={self.hw_rev!r}, vendor={self.vendor!r}, boot_rev={self.boot_rev!r}, sw_rev={self.sw_rev!r}, model={self.model!r})"
+    

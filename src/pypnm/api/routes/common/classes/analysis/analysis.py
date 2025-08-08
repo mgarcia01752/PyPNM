@@ -7,6 +7,9 @@ from typing import Callable, List, Dict, Any
 
 import numpy as np
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
+from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
+from pypnm.docsis.cm_snmp_operation import Utils
+from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.shannon.series import ShannonSeries
 from pypnm.lib.shannon.shannon import Shannon
 from pypnm.pnm.lib.signal_statistics import SignalStatistics
@@ -35,6 +38,11 @@ class Analysis:
         self.msg_response = msg_response
         self.measurement_data = self.msg_response.payload_to_dict().get("data", [])
         self.analysis: List[Dict[str, Any]] = []
+        
+        # how to check to see if logger.DEBUG is enable
+        if self.logger.isEnabledFor(logging.DEBUG):
+            self.save_message_response(self.msg_response)
+
         self._process()
 
     def _process(self):
@@ -49,6 +57,7 @@ class Analysis:
                 self._basic_analysis(pnm_file_type, measurement)
 
     def _basic_analysis(self, pnm_file_type: str, measurement):
+
         if pnm_file_type == PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT.value:
             self.logger.info("Processing OFDM_CHANNEL_ESTIMATE_COEFFICIENT")
             self.analysis.append(self.basic_analysis_ds_chan_est(measurement))
@@ -152,6 +161,7 @@ class Analysis:
         ss = ShannonSeries(magnitudes)
         
         result = {
+            "device_details": measurement.get("device_details"),
             "pnm_header": measurement.get("pnm_header"),
             "mac_address": measurement.get("mac_address"),
             "channel_id": measurement.get("channel_id"),
@@ -388,7 +398,28 @@ class Analysis:
     def get_results(self, full_dict = True) -> Dict[str, Any]:
         """
         Returns the list of processed analysis results.
+        If full_dict is True, returns the entire analysis dictionary.
+        
+        Args    :
+            full_dict (bool): If True, returns the full analysis dictionary.
+                              If False, returns only the analysis list.
+
+        Returns:
+            Dict[str, Any]: The analysis results. 
+              {
+                "analysis": Dict[str, Any]
+            }    
         """
         return {"analysis": self.analysis}
     
-    
+    def save_message_response(self, msg_response: MessageResponse) -> None:
+        msg_rsp_dict:Dict[Any, Any] = msg_response.payload_to_dict()
+        mac = msg_rsp_dict.get('mac_address')
+        fname = f'{SystemConfigSettings().message_response_dir}/{mac}_{Utils.time_stamp()}.msg'
+        self.logger.debug(f'Saving Message Response: {fname}')
+
+        fp = FileProcessor(fname)
+        fp.write_file(msg_rsp_dict)
+        fp.close()
+
+        

@@ -4,10 +4,10 @@
 import logging
 from pathlib import Path
 from typing import Union
-
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 
+from pypnm.api.routes.basic.rxmer_analysis_report import RxMerAnalysisReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
 from pypnm.api.routes.common.classes.analysis.report.excel.basic.rxmer_excel_basic import RxMerExcelBasic
 from pypnm.api.routes.common.classes.common_endpoint_classes.router import PnmFastApiRouter
@@ -106,17 +106,14 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
         msg_rsp: MessageResponse = await service.set_and_go()
 
         if msg_rsp.status != ServiceStatusCode.SUCCESS:
-            return SnmpResponse(mac_address=mac, 
-                                message="Unable to complete RxMER measurement.",
-                                status=msg_rsp.status)
+            msg = 'Unable to complete RxMER measurement.'
+            return SnmpResponse(mac_address=mac, message=msg, status=msg_rsp.status)
 
         cps = CommonProcessService(msg_rsp)
         msg_rsp: MessageResponse = cps.process()
     
         return PnmMeasurementResponse(
-            mac_address=mac,
-            status=msg_rsp.status, 
-            measurement=msg_rsp.payload)  # type: ignore
+            mac_address=mac, status=msg_rsp.status, measurement=msg_rsp.payload)  # type: ignore
 
     async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, FileResponse, SnmpResponse]:
         
@@ -138,14 +135,11 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
         msg_rsp: MessageResponse = cps.process()
 
         analysis = Analysis(AnalysisType.BASIC, msg_rsp)
-
         results = analysis.get_results() or {}  # Ensure it's a valid dictionary
         
         if request.output.type == FileType.JSON.value:
             return PnmAnalysisResponse(
-                mac_address=mac,
-                status=ServiceStatusCode.SUCCESS,
-                data=results)
+                mac_address=mac, status=ServiceStatusCode.SUCCESS, data=results)
 
         elif request.output.type == FileType.XLSX.value:
             xlsx_dir = SystemConfigSettings.xlsx_dir
@@ -166,11 +160,19 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
 
             return PnmFileService().get_file(FileType.XLSX, excel.get_filename())
 
+        elif request.output.type == FileType.ARCHIVE.value:
+            
+            analysis_rpt = RxMerAnalysisReport(analysis)
+
+            # fname = ""
+            # return PnmFileService().get_file(FileType.ARCHIVE,fname)
+            msg = 'Test Response'
+            return SnmpResponse(mac_address=str(mac), status=ServiceStatusCode.SUCCESS, message=msg)
+        
         else:
             return PnmAnalysisResponse(
                 mac_address=request.cable_modem.mac_address,
-                status=ServiceStatusCode.INVALID_OUTPUT_TYPE,
-                data=None )
+                status=ServiceStatusCode.INVALID_OUTPUT_TYPE, data=None )
 
     async def get_measurement_statistics_logic(self, request: SnmpRequest) -> SnmpResponse:
         mac = request.cable_modem.mac_address

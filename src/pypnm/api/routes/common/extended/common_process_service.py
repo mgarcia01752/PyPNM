@@ -4,6 +4,7 @@
 
 import json
 import logging
+from typing import Dict
 
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
 from pypnm.api.routes.common.extended.common_messaging_service import (
@@ -94,76 +95,61 @@ class CommonProcessService(CommonMessagingService):
         """
         pnm_test_type = transaction_record[PnmFileTransaction().PNM_TEST_TYPE]
 
+        if not pnm_test_type:
+            self.logger.error("PNM test type is missing in the transaction record.")
+            return ServiceStatusCode.MISSING_PNM_TEST_TYPE
+        
+        self.logger.debug(f"Processing PNM test type: {pnm_test_type}") 
+        if not transaction_record.get(PnmFileTransaction.FILE_NAME):
+            self.logger.error("Filename is missing in the transaction record.")
+            return ServiceStatusCode.MISSING_PNM_FILENAME
+
+        # Check to make sure taht pnm_test_type is in the DocsPnmCmCtlTest enum
+        if pnm_test_type not in DocsPnmCmCtlTest.__members__:
+            self.logger.error(f"Unsupported PNM test type: {pnm_test_type}")
+            return ServiceStatusCode.UNSUPPORTED_TEST_TYPE
+
+        file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
+        device_details:Dict[str, str] = transaction_record[PnmFileTransaction.DEVICE_DETAILS]
+        pnm_data = FileProcessor(file_name_dst).read_file()
+
         if pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR.name:
-            self.logger.debug(f"Processing {pnm_test_type} PNM data")
+            pnm_dict = self._add_device_details(CmDsOfdmRxMer(binary_data=pnm_data).to_dict(), device_details)
+            self.build_msg(ServiceStatusCode.SUCCESS, pnm_dict)
             
-            file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
-            data = FileProcessor(file_name_dst).read_file()
-            pnm_obj = CmDsOfdmRxMer(binary_data=data)            
-            self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())
+        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CODEWORD_ERROR_RATE.name:     
+            pnm_dict = self._add_device_details(CmDsOfdmFecSummary(binary_data=pnm_data).to_dict(), device_details)
+            self.build_msg(ServiceStatusCode.SUCCESS, pnm_dict)
             
-        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CODEWORD_ERROR_RATE.name:
-            self.logger.debug(f"Processing {pnm_test_type} PNM data")
+        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF.name:       
+            pnm_dict = self._add_device_details(CmDsOfdmChanEstimateCoef(binary_data=pnm_data).to_dict(), device_details)
+            self.build_msg(ServiceStatusCode.SUCCESS, pnm_dict)
             
-            file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
-            data = FileProcessor(file_name_dst).read_file()
-            pnm_obj = CmDsOfdmFecSummary(binary_data=data)            
-            self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())
+        elif pnm_test_type == DocsPnmCmCtlTest.DS_CONSTELLATION_DISP.name:         
+            pnm_dict = self._add_device_details(CmDsConstDispMeas(binary_data=pnm_data).to_dict(), device_details)
+            self.build_msg(ServiceStatusCode.SUCCESS, pnm_dict)
             
-        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF.name:
-            self.logger.debug(f"Processing {pnm_test_type} PNM data")
+        elif pnm_test_type == DocsPnmCmCtlTest.DS_HISTOGRAM.name:        
+            pnm_dict = self._add_device_details(CmDsHist(binary_data=pnm_data).to_dict(), device_details)
+            self.build_msg(ServiceStatusCode.SUCCESS, pnm_dict)
             
-            file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
-            data = FileProcessor(file_name_dst).read_file()
-            pnm_obj = CmDsOfdmChanEstimateCoef(binary_data=data)            
-            self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())
-            
-        elif pnm_test_type == DocsPnmCmCtlTest.DS_CONSTELLATION_DISP.name:
-            self.logger.debug(f"Processing {pnm_test_type} PNM data")
-            
-            file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
-            data = FileProcessor(file_name_dst).read_file()
-            pnm_obj = CmDsConstDispMeas(binary_data=data)            
-            self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())
-            
-        elif pnm_test_type == DocsPnmCmCtlTest.DS_HISTOGRAM.name:
-            self.logger.debug(f"Processing {pnm_test_type} PNM data")
-            
-            file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
-            data = FileProcessor(file_name_dst).read_file()
-            pnm_obj = CmDsHist(binary_data=data)            
-            self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())
-            
-        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_MODULATION_PROFILE.name:
-            self.logger.debug(f"Processing {pnm_test_type} PNM data")
-            
-            file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
-            data = FileProcessor(file_name_dst).read_file()
-            pnm_obj = CmDsOfdmModulationProfile(binary_data=data)            
-            self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())
+        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_MODULATION_PROFILE.name:      
+            pnm_dict = self._add_device_details(CmDsOfdmModulationProfile(binary_data=pnm_data).to_dict(), device_details)
+            self.build_msg(ServiceStatusCode.SUCCESS, pnm_dict)
             
         elif pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER.name:
             self.logger.debug("Processing DS_SPECTRUM_ANALYZER PNM data")
-
-            file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
-            data = FileProcessor(file_name_dst).read_file()
-            pnm_obj = CmSpectrumAnalysis(binary_data=data)            
-            self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())            
+            pnm_obj = CmSpectrumAnalysis(binary_data=pnm_data)            
+            self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())           
             
         elif pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF.name:
-            self.logger.debug(f"Processing {pnm_test_type} PNM data")
-            
-            file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
-            data = FileProcessor(file_name_dst).read_file()
-            pnm_obj = CmUsPreEq(binary_data=data)            
-            self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())
+            self.logger.debug(f"Processing {pnm_test_type} PNM data")         
+            pnm_dict = self._add_device_details(CmUsPreEq(binary_data=pnm_data).to_dict(), device_details)
+            self.build_msg(ServiceStatusCode.SUCCESS, pnm_dict)
         
         elif pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA.name:
             self.logger.debug(f"Processing {pnm_test_type} PNM data")
-
-            file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
-            data = FileProcessor(file_name_dst).read_file()
-            pnm_obj = CmSpectrumAnalysisSnmp(data)
+            pnm_obj = CmSpectrumAnalysisSnmp(pnm_data)
             FileProcessor(f'output/spec-ana-{Utils.time_stamp()}.json').write_file(json.dumps(pnm_obj.to_dict()))
             self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict(include_raw=False))
             
@@ -172,3 +158,19 @@ class CommonProcessService(CommonMessagingService):
             return ServiceStatusCode.UNSUPPORTED_TEST_TYPE
 
         return ServiceStatusCode.SUCCESS
+
+    def _add_device_details(self, pnm_data: dict, device_details: Dict[str, str]) -> dict:
+        """
+        Adds device details to the PNM data dictionary.
+
+        Args:
+            pnm_data (dict): The PNM data dictionary.
+            device_details (Dict[str, str]): Device details to be added.
+
+        Returns:
+            dict: Updated PNM data dictionary with device details.
+        """
+        if PnmFileTransaction.DEVICE_DETAILS not in pnm_data:
+            pnm_data[PnmFileTransaction.DEVICE_DETAILS] = {}
+        pnm_data[PnmFileTransaction.DEVICE_DETAILS].update(device_details)
+        return pnm_data

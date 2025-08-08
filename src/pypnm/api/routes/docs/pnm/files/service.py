@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from datetime import datetime
 import os
 import logging
 from pathlib import Path
@@ -190,20 +189,25 @@ class PnmFileService:
         if file_type == FileType.CSV:
             base_dir = SystemConfigSettings.csv_dir
             media_type = "text/csv"
+
         elif file_type == FileType.JSON:
             base_dir = SystemConfigSettings.json_dir
             media_type = "application/json"
+        
         elif file_type == FileType.XLSX:
             base_dir = SystemConfigSettings.xlsx_dir
             media_type = (
                 "application/vnd.openxmlformats-officedocument."
-                "spreadsheetml.sheet"
-            )
+                "spreadsheetml.sheet")
+        
+        elif file_type == FileType.ARCHIVE:
+            base_dir = SystemConfigSettings.zip_dir
+            media_type = "application/zip"
+                       
         else:
             self.logger.error(f"Unsupported file type requested: {file_type.name}")
             raise HTTPException(status_code=400, detail=f"Unsupported file type: {file_type.name}")
 
-        # Build full path and check existence
         file_path = Path(base_dir) / safe_name
         if not file_path.is_file():
             self.logger.warning(f"File not found: {file_path}")

@@ -16,6 +16,7 @@ dist/
 # IDE/editor settings
 .vscode/
 .idea/
+*.code-workspace
 
 # Test and coverage artifacts
 .pytest_cache/
