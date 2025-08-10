@@ -138,8 +138,8 @@ class Analysis:
             raise ValueError("No complex channel estimation values provided in measurement.")
 
         base_freq = (spacing * active_index) + zero_freq
-        freqs = [base_freq + (i * spacing) for i in range(len(values))]
-        magnitudes = values
+        freqs:List[int] = [base_freq + (i * spacing) for i in range(len(values))]
+        magnitudes:List[float] = values
 
         classify: Callable[[float], int] = lambda v: int(
             RxMerCarrierType.EXCLUSION.value
