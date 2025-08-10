@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 import unittest
 import numpy as np
 from pypnm.lib.math import LinearRegression1D  # re-exported, namespace-safe
