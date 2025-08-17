@@ -3,8 +3,7 @@
 
 import json
 from typing import Sequence, List, Dict, Any
-
-from pypnm.lib.shannon.shannon import Shannon
+from .shannon import Shannon
 
 class ShannonSeries:
     """
@@ -42,6 +41,7 @@ class ShannonSeries:
         # Extract bits and modulations
         self.bits_list: List[int] = [inst.bits for inst in self._instances]
         self.modulations: List[str] = [inst.get_modulation() for inst in self._instances]
+        self.snr_db_limit: List[float] = self.limit()
 
     def supported_modulation_counts(self) -> Dict[str, int]:
         """
@@ -69,18 +69,22 @@ class ShannonSeries:
 
         Returns
         -------
+
         dict
             {
               'snr_db_values'              : [...],
               'bits_per_symbol'            : [...],
               'modulations'                : [...],
+              'snr_db_limit'               : [...],
               'supported_modulation_counts': {mod: count, ...}
             }
+
         """
         return {
             'snr_db_values': self.snr_db_values,
             'bits_per_symbol': self.bits_list,
             'modulations': self.modulations,
+            'snr_db_limit': self.limit(),
             'supported_modulation_counts': self.supported_modulation_counts()
         }
 
@@ -122,3 +126,20 @@ class ShannonSeries:
             if inst.bits == max_bits:
                 return inst.get_modulation()
         return "UNKNOWN"
+
+    def limit(self) -> List[float]:
+        """
+        Compute the Shannon limit for each SNR value in the series.
+
+        Returns
+        -------
+        List[float]
+            List of Shannon limits corresponding to each SNR in dB.
+        """
+        return Shannon.snr_to_snr_limit(self.snr_db_values)
+
+    def __repr__(self) -> str:
+        return f"ShannonSeries(snr_db_values={self.snr_db_values})"
+
+    def __str__(self) -> str:
+        return f"ShannonSeries with {len(self.snr_db_values)} SNR values: {self.snr_db_values}"

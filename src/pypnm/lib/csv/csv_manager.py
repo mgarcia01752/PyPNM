@@ -2,22 +2,19 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from pathlib import Path
-from typing import List, Union, Optional, Any
+from typing import List, Union, Any
 from enum import Enum
 import csv
 import pandas as pd
-
 
 class CSVOrientation(Enum):
     """CSV data orientation"""
     VERTICAL = "vertical"      # Headers as columns, data as rows
     HORIZONTAL = "horizontal"  # Headers as rows, data as columns
 
-
 class CSVValidationError(Exception):
     """Custom exception for CSV validation errors"""
     pass
-
 
 class CSVManager:
     """
@@ -38,8 +35,9 @@ class CSVManager:
         self.headers: List[str] = []
         self.data: List[List[Any]] = []
         self._header_set = False
-    
-    def add_header(self, headers: Union[List[str], str]) -> None:
+        self._file_path: Path
+
+    def set_header(self, headers: Union[List[str], str]) -> None:
         """
         Add headers to the CSV.
         
@@ -137,9 +135,27 @@ class CSVManager:
         self.data = []
         self._header_set = False
     
-    def create_csv(self, file_path: Union[str, Path], 
-                   include_index: bool = False,
-                   delimiter: str = ',') -> Path:
+    def set_path_fname(self, file_path: Union[str, Path]) -> None:
+        """
+        Set the file path for saving the CSV.
+        
+        Args:
+            file_path: Path where CSV will be saved
+        """
+        self._file_path = Path(file_path)
+
+    def get_path_fname(self) -> Path:
+        """Get the file path where the CSV will be saved.
+        
+        Returns:
+            Path object of the file path
+        """
+        if not hasattr(self, '_file_path'):
+            raise CSVValidationError("File path not set. Use set_path_fname() to specify a path.")
+
+        return self._file_path
+
+    def write(self, include_index: bool = False, delimiter: str = ',') -> bool:
         """
         Write CSV data to file based on orientation.
         
@@ -157,10 +173,9 @@ class CSVManager:
         if not self._header_set:
             raise CSVValidationError("Cannot create CSV: no headers have been set")
         
-        file_path = Path(file_path)
-        file_path.parent.mkdir(parents=True, exist_ok=True)
+        self._file_path.parent.mkdir(parents=True, exist_ok=True)
         
-        with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+        with open(self._file_path, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile, delimiter=delimiter)
             
             if self.orientation == CSVOrientation.VERTICAL:
@@ -168,7 +183,7 @@ class CSVManager:
             else:
                 self._write_horizontal_csv(writer)
         
-        return file_path
+        return True
     
     def _write_vertical_csv(self, writer: csv.writer, include_index: bool = False) -> None:
         """Write CSV in vertical orientation (traditional format)"""
@@ -227,7 +242,7 @@ class CSVManager:
         self.clear()
         
         # Set headers
-        self.add_header(list(df.columns))
+        self.set_header(list(df.columns))
         
         # Add data rows
         for _, row in df.iterrows():
@@ -296,3 +311,4 @@ class CSVManager:
                 )
         
         return True
+    

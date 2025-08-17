@@ -112,3 +112,26 @@ class Shannon:
         limits = np.floor(capacity).astype(int)
 
         return limits.tolist()
+
+    @staticmethod
+    def snr_to_snr_limit(snr_db:List[float]) -> List[float]:
+        """
+        Take the SNR and Calculate the closest supported modulation limit.
+        Returns:
+            The Shannon limit in dB for the current SNR.
+        """
+        if not isinstance(snr_db, list):
+            raise TypeError("Input must be a list of SNR values in dB.")
+
+        # Convert to numpy array for vectorized operations
+        snr_array = np.array(snr_db, dtype=float)
+
+        # Calculate Shannon limits for each SNR value
+        limits = Shannon.snr_to_limit(snr_array)
+
+        # Convert bits back to dB
+        shannon_limits = [Shannon.bits_to_snr(bits) for bits in limits]
+
+        return shannon_limits
+
+

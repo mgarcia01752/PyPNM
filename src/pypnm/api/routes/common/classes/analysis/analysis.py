@@ -10,10 +10,9 @@ from pypnm.api.routes.common.extended.common_messaging_service import MessageRes
 from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import Utils
 from pypnm.lib.file_processor import FileProcessor
-from pypnm.lib.shannon.series import ShannonSeries
-from pypnm.lib.shannon.shannon import Shannon
 from pypnm.pnm.lib.signal_statistics import SignalStatistics
 from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.lib.signal.shan.series import ShannonSeries
 
 class RxMerCarrierType(Enum):
     EXCLUSION   = "0"

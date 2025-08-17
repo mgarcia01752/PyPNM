@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from enum import Enum
+from enum import IntEnum
 
-class FileType(Enum):
+class FileType(IntEnum):
     """
     Enumeration of supported file output types:
 

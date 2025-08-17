@@ -12,7 +12,7 @@ from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.api.routes.common.classes.collection.ds_modulation_profile_aggregator import DsModulationProfileAggregator
 from pypnm.api.routes.common.classes.collection.ds_rxmer_aggregator import DsRxMerAggregator
 from pypnm.api.routes.common.classes.collection.fec_summary_aggregator import FecSummaryAggregator
-from pypnm.lib.shannon.shannon import Shannon
+from pypnm.lib.signal.shan.shannon import Shannon
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
 from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
 from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile

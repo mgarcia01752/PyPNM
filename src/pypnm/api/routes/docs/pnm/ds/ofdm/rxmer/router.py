@@ -163,8 +163,8 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
         elif request.output.type == FileType.ARCHIVE.value:
             
             analysis_rpt = RxMerAnalysisReport(analysis)
+            analysis_rpt.build_report()
 
-            # fname = ""
             # return PnmFileService().get_file(FileType.ARCHIVE,fname)
             msg = 'Test Response'
             return SnmpResponse(mac_address=str(mac), status=ServiceStatusCode.SUCCESS, message=msg)
