@@ -4,11 +4,12 @@
 import csv
 import json
 import logging
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-
 class FileProcessor:
-    def __init__(self, filepath: str):
+
+    def __init__(self, filepath: Union[str, Path]):
         """
         A utility class to handle reading/writing files and hex conversion.
 
@@ -18,6 +19,15 @@ class FileProcessor:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.filepath = filepath
         self.logger.debug(f"Initialized FileProcessor with path: {self.filepath}")
+
+    def file_exists(self) -> bool:
+        """
+        Checks if the file exists.
+
+        Returns:
+            bool: True if the file exists, False otherwise.
+        """
+        return Path(self.filepath).exists()
 
     def read_file(self) -> bytes:
         """
@@ -178,6 +188,7 @@ class FileProcessor:
 
     def __repr__(self) -> str:
         return f"FileProcessor(filepath={self.filepath})"
+    
     def __enter__(self):
         return self
 

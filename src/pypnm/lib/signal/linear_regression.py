@@ -9,7 +9,7 @@ import numpy as np
 __all__: Final = ["LinearRegression1D"]  # explicit public surface
 
 # Internal numeric-like alias (kept private)
-_NumLike = Union[int, float, np.number]
+Number = Union[int, float, np.number]
 
 
 class LinearRegression1D:
@@ -22,13 +22,14 @@ class LinearRegression1D:
     - Filters out non-finite (NaN/Inf) pairs before fitting.
     - Clear errors for length mismatch, insufficient points, or near-zero x-variance.
     - Provides slope, intercept, R², RMSE, residuals, fitted values, and predictions.
+    - Convenience accessors for the regression line (full series or just endpoints).
     - Namespace-safe: only `LinearRegression1D` is exported via `__all__`.
 
     Parameters
     ----------
-    y_values : Iterable[_NumLike]
+    y_values : Iterable[Number]
         Sequence of y-values.
-    x_values : Iterable[_NumLike] | None, optional
+    x_values : Iterable[Number] | None, optional
         Sequence of x-values. If None, uses range(len(y_values)).
     dtype : type, optional
         Numpy dtype for coercion (default: np.float64).
@@ -55,8 +56,8 @@ class LinearRegression1D:
 
     def __init__(
         self,
-        y_values: Iterable[_NumLike],
-        x_values: Iterable[_NumLike] | None = None,
+        y_values: Iterable[Number],
+        x_values: Iterable[Number] | None = None,
         *,
         dtype: type = np.float64,
     ) -> None:
@@ -132,7 +133,7 @@ class LinearRegression1D:
             "n": float(self.n),
         }
 
-    def predict(self, x_new: _NumLike | Sequence[_NumLike] | np.ndarray) -> np.ndarray:
+    def predict(self, x_new: Number | Sequence[Number] | np.ndarray) -> np.ndarray:
         """Predict y for new x values."""
         x_arr = np.asarray(x_new, dtype=np.float64)
         return self.slope * x_arr + self.intercept
@@ -148,6 +149,32 @@ class LinearRegression1D:
     def params(self) -> Tuple[float, float]:
         """Return `(slope, intercept)`."""
         return self.slope, self.intercept
+
+    def regression_line(self, y_axis_only:bool=True) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+        """
+        Return the fitted regression line as `(x, y_hat)` over the training domain.
+
+        """
+        if y_axis_only:
+            return self.fitted_values()
+        else:
+            return self.x, self.fitted_values()
+
+    def regression_endpoints(self) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+        """
+        Return two endpoints of the fitted line at the min and max of training x.
+
+        Useful when you want to draw the line with just two points instead of
+        plotting the entire series.
+
+        Returns
+        -------
+        ((float, float), (float, float))
+            (x_min, y_hat_min), (x_max, y_hat_max)
+        """
+        x0 = float(self.x.min())
+        x1 = float(self.x.max())
+        return (x0, self.slope * x0 + self.intercept), (x1, self.slope * x1 + self.intercept)
 
     def __repr__(self) -> str:
         return (

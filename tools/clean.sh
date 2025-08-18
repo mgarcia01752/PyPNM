@@ -107,6 +107,12 @@ clean_excel() {
   safe_rm "$ROOT_DIR/.data/csv/"*
 }
 
+clean_png() {
+  echo "📦 Cleaning matplot.png ..."
+  safe_rm "$ROOT_DIR/.data/png/"*
+}
+
+
 safe_rm "$ROOT_DIR/.data/db/"*
 
 clean_output() {
@@ -128,6 +134,7 @@ for action in "${ACTIONS[@]}"; do
       clean_pnm
       clean_excel
       clean_output
+      clean_png
       ;;
 
     --logs)

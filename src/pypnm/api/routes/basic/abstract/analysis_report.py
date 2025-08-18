@@ -13,11 +13,12 @@ import zipfile
 
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.api.routes.docs.pnm.files.service import MacAddress
+from pypnm.api.routes.docs.pnm.files.service import FileProcessor, MacAddress
 from pypnm.config.system_config_settings import SystemConfigSettings
 
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor
-from pypnm.lib.csv.csv_manager import CSVManager
+from pypnm.lib.csv.manager import CSVManager
+from pypnm.lib.matplot.manager import MatplotManager
 from pypnm.lib.utils import Utils
 
 class AnalysisOutputModel(BaseModel):
@@ -128,7 +129,8 @@ class AnalysisReport(ABC):
             raise TypeError("model must be an instance of CommonAnalysis")
         
         if channel_id in self._common_analysis_model:
-            raise ValueError(f"Channel ID {channel_id} already exists in results.")
+            self.logger.warning(f"Channel ID {channel_id} already exists. Overwriting the existing model.")
+            self._common_analysis_model[channel_id] = model
         
         self._common_analysis_model[channel_id] = model
     
@@ -174,15 +176,19 @@ class AnalysisReport(ABC):
         Build the analysis report.
         """
         self._process()
-        csv_mrg_list:List[CSVManager] = self.create_csv()
 
-        for csv_mgr in csv_mrg_list:
+        for csv_mgr in self.create_csv():
             if not csv_mgr.write():
                 self.logger.error(f"Failed to write CSV: {csv_mgr.get_path_fname()}")
                 continue
+
             self.logger.debug(f'Wrote CSV File: {csv_mgr.get_path_fname()}')
 
-        # self.create_png_plot()
+        for matplot_mgr in self.create_matplot():
+            self.logger.info(f'{matplot_mgr}')
+            for fn in matplot_mgr.get_png_files():
+                self.logger.debug(f'Wrote Matplotlib Figure: {fn}')
+
 
     @abstractmethod
     def _process(self) -> None:
@@ -198,7 +204,7 @@ class AnalysisReport(ABC):
         pass
 
     @abstractmethod
-    def create_png_plot(self, **kwargs) -> None:
+    def create_matplot(self, **kwargs) -> List[MatplotManager]:
         """
         """
         pass

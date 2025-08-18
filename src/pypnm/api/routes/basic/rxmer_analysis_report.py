@@ -4,14 +4,17 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, cast
+import math
+from typing import Any, Dict, Iterable, List, Tuple, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.lib.csv.csv_manager import CSVManager
+from pypnm.lib.csv.manager import CSVManager
+from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
+from pypnm.lib.numeric_scaler import NumericScaler
 from pypnm.lib.signal.linear_regression import LinearRegression1D
 
 class RxMerAnalysisParameters(BaseModel):
@@ -24,7 +27,7 @@ class RxMerAnalysisParameters(BaseModel):
     """
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
     shannon_limit_db: List[float] = Field(default_factory=list, description="Shannon/SNR limit per subcarrier (dB)")
-    regression_basis: List[float] = Field(..., description="")
+    regression_line: List[float] = Field(..., description="The regression line over subcarrier")
 
 class RxMerAnalysis(CommonAnalysis):
     """
@@ -53,72 +56,108 @@ class RxMerAnalysisReport(AnalysisReport):
 
     def create_csv(self, **kwargs) -> List[CSVManager]:
         """
-        Create and write per-channel RxMER CSVs.
+        Create and write per-channel RxMER CSV files.
 
-        Returns:
-            List[CSVManager]: CSV managers for channels that were successfully written.
+        Returns
+        -------
+        List[CSVManager]
+            One CSVManager per channel successfully produced.
+
+        Notes
+        -----
+        - This function assumes that ``CSVManager`` supports:
+            * set_header(List[str])
+            * insert_row(List[Any])
+            * set_path_fname(PathLike)
+        - ``_compile_analysis_data()`` guarantees aligned lengths and finite floats.
+
+        Examples
+        --------
+        >>> csvs = self.create_csv(include_channel_id=True, include_basis=True)
+        >>> for mgr in csvs:
+        ...     print(mgr.filepath)  # or equivalent accessor
         """
+
         csv_mgr_list: List[CSVManager] = []
 
-        for common_analysis_model in self.get_common_analysis_model():
-            model = cast(RxMerAnalysis, common_analysis_model)
+        compiled = self._compile_analysis_data()
+        if not compiled:
+            self.logger.info("No analysis data available; no CSVs created.")
+            return csv_mgr_list
 
-            # Basic presence checks
-            params = getattr(model, "parameters", None)
-            if params is None:
-                self.logger.error(f"Missing parameters for channel {model.channel_id}")
+        for channel_id, segments in compiled.items():
+            
+            if not segments:
+                self.logger.info("No segments for channel %s; skipping.", channel_id)
                 continue
 
-            raw_x = getattr(model, "raw_x", [0])
-            raw_y = getattr(model, "raw_y", [0])
-            shannon = getattr(params, "shannon_limit_db", [0])
-            basis = getattr(params, "regression_basis", [0])
+            try:
+                csv_mgr: CSVManager = self.get_csv_manager()
 
-            missing = [name for name, val in [
-                ("raw_x", raw_x), ("raw_y", raw_y),
-                ("parameters.shannon_limit_db", shannon),
-                ("parameters.regression_basis", basis)
-            ] if val is None]
+                csv_mgr.set_header(['channel_id', 'raw_x', 'raw_y', 'shannon_limit_db', 'regression_line'])
 
-            if missing:
-                self.logger.error(f"Required data missing for channel {model.channel_id}: {', '.join(missing)}")
+                # Write rows: concatenate all segments for this channel 
+                total_rows = 0
+                for seg_idx, (freq, mer_amplitude, shannon, regress_line) in enumerate(segments):
+
+                    for rx, ry, s, rl in zip(freq, mer_amplitude, shannon, regress_line):
+                        row = ([channel_id]) + [rx, ry, s, rl]
+                        csv_mgr.insert_row(row)
+                        total_rows += 1
+
+                csv_fname = self.create_csv_fname(tags=[str(channel_id)])
+                csv_mgr.set_path_fname(csv_fname)
+
+                self.logger.info(
+                    "CSV created for channel %s: %s (rows=%d, segments=%d)", channel_id, csv_fname, total_rows, len(segments))
+                
+                csv_mgr_list.append(csv_mgr)
+
+            except Exception as e:
+                self.logger.exception("Failed to create CSV for channel %s: %s", channel_id, e)
                 continue
-
-            # Length validation
-            if not (len(raw_x) == len(raw_y) == len(shannon)):
-                self.logger.warning(
-                    "Length mismatch for channel %s: raw_x=%d raw_y=%d shannon=%d basis=%d",
-                    model.channel_id, len(raw_x), len(raw_y), len(shannon), len(basis))
-                continue
-
-            # Prepare CSV
-            csv_mgr: CSVManager = self.get_csv_manager()
-            csv_mgr.set_header(["channel_id", "raw_x", "raw_y", "shannon_limit_db"])
-
-            # Populate rows
-            for rx, ry, s in zip(raw_x, raw_y, shannon):
-                csv_mgr.insert_row([model.channel_id, rx, ry, s])
-
-            # Write file
-            csv_fname = self.create_csv_fname(tags=[f"{model.channel_id}"])
-            csv_mgr.set_path_fname(csv_fname)
-
-            self.logger.info(f"CSV file created: {csv_fname}")
-            csv_mgr_list.append(csv_mgr)
 
         return csv_mgr_list
 
-
-    def create_png_plot(self, **kwargs) -> None:
+    def create_matplot(self, **kwargs) -> List[MatplotManager]:
         """
-        Stub for PNG plot creation (left to concrete plotting lib).
+        Stub for Matplotlib plot creation (left to concrete plotting lib).
         Intended to iterate self.results and generate figures.
         """
-        # Example idea (pseudo):
-        # for r in self.results:
-        #     fig = plot_rxmer(r.raw_x, r.raw_y, r.linear_regression, ...)
-        #     save_fig(fig, path)
-        pass
+        matplot_mgr:List[MatplotManager] = []
+
+        compiled = self._compile_analysis_data()
+        if not compiled:
+            self.logger.info("No analysis data available; no CSVs created.")
+            return matplot_mgr
+
+        for channel_id, segments in compiled.items():
+            
+            if not segments:
+                self.logger.info("No segments for channel %s; skipping.", channel_id)
+                continue
+            
+            for seg_idx, (freq, mer_amplitude, shannon, regression_line) in enumerate(segments):
+
+                freq = cast(List[float], freq)
+                mer_amplitude = cast(List[float], mer_amplitude)
+                shannon = cast(List[float], shannon)
+                regression_line = cast(List[float], regression_line)
+
+                png_fname = self.create_png_fname(tags=[f"{channel_id}"])
+                self.logger.info(f"Creating MatPlot ({seg_idx}): {png_fname} for channel: {channel_id}")
+
+                freq , _ = NumericScaler().to_prefix(values=freq, target="k")
+
+                config = PlotConfig(x=freq, y=mer_amplitude, 
+                                    xlabel="Frequency (Hz)", ylabel="Magnitude (dB)",
+                                    title=f"RxMER OFDM Channel {channel_id}",)
+                mat_mgr_tmp = MatplotManager(default_cfg=config)
+                mat_mgr_tmp.plot_line(filename=png_fname)
+
+                matplot_mgr.append(mat_mgr_tmp)
+        
+        return matplot_mgr
 
     def _process(self) -> None:
         """
@@ -139,6 +178,7 @@ class RxMerAnalysisReport(AnalysisReport):
         data_list: List[Dict[str, Any]] = self.get_analysis_data() or []
 
         for idx, data in enumerate(data_list):
+
             try:
                 # Defensive extraction with clear fallbacks
                 channel_id: int = int(data.get("channel_id", self.INVALID_CHANNEL_ID))
@@ -152,7 +192,7 @@ class RxMerAnalysisReport(AnalysisReport):
                 # Parameters: default to regression vs index (0..N-1).
                 params = RxMerAnalysisParameters(
                     shannon_limit_db=shannon_limit_db,
-                    regression_basis=LinearRegression1D(raw_y).to_list())
+                    regression_line=LinearRegression1D(raw_y).regression_line())        # type: ignore
 
                 # Build validated model (CommonAnalysis ensures x/y length & finiteness)
                 model = RxMerAnalysis(channel_id=channel_id, 
@@ -161,7 +201,128 @@ class RxMerAnalysisReport(AnalysisReport):
                 
                 self.add_common_analysis_model(channel_id, model)
 
-
             except Exception as exc:
                 self.logger.exception(f"Failed to process RxMER item {idx}: reason: {exc}")
                 continue
+
+    def _compile_analysis_data(self) -> Dict[int, List[Tuple[List[float], List[float], List[float], List[float]]]]:
+        """
+        Compile, validate, and normalize RxMER analysis data for downstream use.
+
+        Returns:
+            Dict[int, List[Tuple[List[float], List[float], List[float], List[float]]]]:
+                Mapping of channel_id -> list of (freq, mer_db, shannon_db, regression_basis)
+                where every list is the same length per tuple and all values are finite floats.
+
+        Behavior:
+            - Requires presence of model.parameters and core arrays: raw_x, raw_y, parameters.shannon_limit_db.
+            - Lengths: len(raw_x) == len(raw_y) == len(shannon_limit_db) must hold.
+            - parameters.regression_basis:
+                * None or empty    → filled with zeros (len == len(raw_x))
+                * length == 1      → broadcast scalar to len(raw_x)
+                * length == len(x) → accepted as-is
+                * otherwise        → entry skipped (warning logged)
+            - Any non-finite (NaN/Inf) value in a series causes the entry to be skipped.
+            - One bad model does not abort the batch.
+
+        Logging:
+            - error: missing parameters/core data, invalid channel_id, non-finite values
+            - warning: length mismatches (core or basis)
+            - info: regression_basis auto-filled or broadcast
+        """
+
+        def _to_float_list(seq: Iterable[Any], name: str) -> List[float]:
+            out: List[float] = []
+            try:
+                for v in seq:
+                    fv = float(v)
+                    if not math.isfinite(fv):
+                        self.logger.error("Non-finite value in %s: %r", name, v)
+                        raise ValueError(f"non-finite {name}")
+                    out.append(fv)
+            except Exception as e:
+                raise ValueError(f"Failed to coerce {name} to floats: {e}") from e
+            return out
+
+        data: Dict[int, List[Tuple[List[float], List[float], List[float], List[float]]]] = {}
+
+        for common_analysis_model in self.get_common_analysis_model():
+            try:
+                model = cast(RxMerAnalysis, common_analysis_model)
+
+                # Presence checks
+                params = getattr(model, "parameters", None)
+                if params is None:
+                    self.logger.error("Missing parameters for channel %s", getattr(model, "channel_id", "<?>"))
+                    continue
+
+                freq_raw     = getattr(model, "raw_x", None)
+                mer_raw      = getattr(model, "raw_y", None)
+                shan_raw     = getattr(params, "shannon_limit_db", None)
+                regress_line_raw    = getattr(params, "regression_line", None)
+
+                missing = [n for n, v in [
+                    ("raw_x", freq_raw),
+                    ("raw_y", mer_raw),
+                    ("parameters.shannon_limit_db", shan_raw),
+                ] if v is None]
+                if missing:
+                    self.logger.error("Required data missing for channel %s: %s",
+                                    getattr(model, "channel_id", "<?>"), ", ".join(missing))
+                    continue
+
+                # Coerce and validate core vectors
+                x    = _to_float_list(freq_raw,  "raw_x")
+                y    = _to_float_list(mer_raw,   "raw_y")
+                shan = _to_float_list(shan_raw,  "parameters.shannon_limit_db")
+
+                if not (len(x) == len(y) == len(shan)):
+                    self.logger.warning("Length mismatch for channel %s: raw_x=%d raw_y=%d shannon=%d",
+                                        getattr(model, "channel_id", "<?>"), len(x), len(y), len(shan))
+                    continue
+
+                # Normalize regression_basis
+                if regress_line_raw is None:
+                    basis = [0.0] * len(x)
+                    self.logger.info("regression_basis missing for channel %s; filling zeros (n=%d)",
+                                    getattr(model, "channel_id", "<?>"), len(x))
+                else:
+                    try:
+                        basis_list = _to_float_list(regress_line_raw, "parameters.regression_line")
+                    except ValueError:
+                        # Treat uncoercible basis as missing → zeros
+                        basis_list = []
+                    if len(basis_list) == 0:
+                        basis = [0.0] * len(x)
+                        self.logger.info("regression_basis empty for channel %s; filling zeros (n=%d)",
+                                        getattr(model, "channel_id", "<?>"), len(x))
+                    elif len(basis_list) == 1:
+                        basis = [basis_list[0]] * len(x)
+                        self.logger.info("Broadcasting regression_basis scalar for channel %s to length %d",
+                                        getattr(model, "channel_id", "<?>"), len(x))
+                    elif len(basis_list) == len(x):
+                        basis = basis_list
+                    else:
+                        self.logger.warning("Length mismatch for regression_basis on channel %s: basis=%d raw_x=%d",
+                                            getattr(model, "channel_id", "<?>"), len(basis_list), len(x))
+                        continue
+
+                # Normalize channel id
+                try:
+                    chan_id = int(getattr(model, "channel_id"))
+                except Exception:
+                    self.logger.error("Invalid channel_id: %r", getattr(model, "channel_id", None))
+                    continue
+
+                data.setdefault(chan_id, []).append((x, y, shan, basis))
+
+            except ValueError as e:
+                self.logger.error("Skipping channel %s due to data error: %s",
+                                getattr(common_analysis_model, "channel_id", "<?>"), e)
+                continue
+            except Exception as e:
+                self.logger.exception("Unexpected error compiling data for channel %s: %s",
+                                    getattr(common_analysis_model, "channel_id", "<?>"), e)
+                continue
+
+        return data

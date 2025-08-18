@@ -3,7 +3,6 @@
 
 import string
 
-
 class Format:
     @staticmethod
     def hex_string(hex_string: str, delimiter: str = ':', grouping: int = 2) -> str:

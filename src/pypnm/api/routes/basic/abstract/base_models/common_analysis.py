@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 from typing import List, Union
 from pydantic import BaseModel, ConfigDict, Field
 
