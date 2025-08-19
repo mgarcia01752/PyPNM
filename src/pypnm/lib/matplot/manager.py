@@ -197,17 +197,58 @@ class MatplotManager:
 
     def plot_multi_line(
         self,
-        series: Iterable[Tuple[ArrayLike, ArrayLike, Optional[str]]],
         filename: Union[str, Path],
         *,
+        series: Optional[Iterable[Tuple[ArrayLike, ArrayLike, Optional[str]]]] = None,
+        linewidth: Optional[float] = None,
+        marker: Optional[str] = None,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """
+        Create and save a multi-line plot.
+
+        Precedence (like plot_line):
+        - If cfg.y_multi is provided, it overrides `series` entirely; uses cfg.x and cfg.y_multi_label.
+        - Else, use `series`; if cfg.x is provided, it overrides each tuple's x.
+        - If neither is provided, plot an empty axes and warn.
+
+        Styling parity with plot_line: supports `linewidth` and `marker`.
+        """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         fig, ax = self._new_fig()
-        for x, y, label in series:
-            x, y = self._coerce_xy(x, y)
-            ax.plot(x, y, label=label)
+
+        # Case 1: cfg provides the data for all lines (overrides `series`)
+        if cfg and cfg.y_multi:
+            X = self._to_1d(cfg.x)
+            ys = list(cfg.y_multi)
+            labels = list(cfg.y_multi_label or [])
+            # pad/truncate labels to match y-series count
+            if len(labels) < len(ys):
+                labels += [None] * (len(ys) - len(labels))
+            else:
+                labels = labels[:len(ys)]
+
+            for Y, lab in zip(ys, labels):
+                x_i, y_i = self._coerce_xy(X, Y)
+                ax.plot(x_i, y_i, label=lab, linewidth=linewidth, marker=marker)
+            return self._finish(fig, ax, self._resolve_path(filename), cfg)
+
+        # Case 2: use provided series; cfg.x (if present) overrides per-series x
+        if series:
+            override_x = (cfg.x is not None)
+            X_override = self._to_1d(cfg.x) if override_x else None
+            cfg_labels = list(cfg.y_multi_label or [])
+
+            for idx, (sx, sy, slabel) in enumerate(series):
+                label = cfg_labels[idx] if idx < len(cfg_labels) else slabel
+                x_src = X_override if override_x else sx
+                x_i, y_i = self._coerce_xy(x_src, sy)
+                ax.plot(x_i, y_i, label=label, linewidth=linewidth, marker=marker)
+            return self._finish(fig, ax, self._resolve_path(filename), cfg)
+
+        # Case 3: nothing to plot
+        self.logger.warning("plot_multi_line: no data provided (neither cfg.y_multi nor series).")
         return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
     def plot_multi_line_from_cfg(
