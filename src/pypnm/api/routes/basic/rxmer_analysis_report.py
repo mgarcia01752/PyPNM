@@ -16,7 +16,7 @@ from pypnm.api.routes.basic.common.signal_capture_agg import SignalCaptureAggreg
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
-from pypnm.lib.numeric_scaler import ArrayLike, NumericScaler
+from pypnm.lib.numeric_scaler import NumericScaler
 from pypnm.lib.signal.linear_regression import LinearRegression1D
 from pypnm.lib.signal.shan.series import Shannon
 from pypnm.lib.types import IntSeries
@@ -153,7 +153,7 @@ class RxMerAnalysisReport(AnalysisReport):
                 self.logger.exception("Failed to create plot for channel %s: %s", chan, exc)
 
             try:
-                bpsym, order_count = self._modulation_order_count_to_series(mc)
+                bpsym, order_count = self.__modulation_order_count_to_series(mc)
                 
                 cfg = PlotConfig(
                     title=f"RxMER OFDM Channel: {chan} - Modulation Order Count",
@@ -280,7 +280,7 @@ class RxMerAnalysisReport(AnalysisReport):
         # Finalize signal capture aggregation
         self._sig_cap_agg.reconstruct()
 
-    def _modulation_order_count_to_series(self, mod_count: Mapping[str, int]) -> Tuple[IntSeries, IntSeries]:
+    def __modulation_order_count_to_series(self, mod_count: Mapping[str, int]) -> Tuple[IntSeries, IntSeries]:
         """
         Convert {"qam_<M>": count} → (bits_per_symbol_series, count_series),
         sorted by ascending QAM order M. Skips malformed entries with warnings.
