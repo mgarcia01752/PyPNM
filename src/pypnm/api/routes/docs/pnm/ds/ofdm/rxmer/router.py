@@ -135,7 +135,7 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
         msg_rsp: MessageResponse = cps.process()
 
         analysis = Analysis(AnalysisType.BASIC, msg_rsp)
-        results = analysis.get_results() or {}  # Ensure it's a valid dictionary
+        results = analysis.get_results() or {}
         
         if request.output.type == FileType.JSON.value:
             return PnmAnalysisResponse(

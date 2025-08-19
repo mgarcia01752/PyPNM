@@ -8,7 +8,7 @@ from pathlib import Path
 import pandas as pd
 import csv
 
-from pypnm.lib.csv.csv_manager import CSVManager, CSVOrientation, CSVValidationError
+from pypnm.lib.csv.manager import CSVManager, CSVOrientation, CSVValidationError
 
 class TestCSVManager(unittest.TestCase):
     """Unit tests for CSVManager class"""

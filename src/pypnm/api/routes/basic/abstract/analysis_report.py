@@ -13,7 +13,7 @@ import zipfile
 
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.api.routes.docs.pnm.files.service import FileProcessor, MacAddress
+from pypnm.api.routes.docs.pnm.files.service import MacAddress
 from pypnm.config.system_config_settings import SystemConfigSettings
 
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor
@@ -31,8 +31,9 @@ class AnalysisOutputModel(BaseModel):
     archive_file: str = Field(..., description="File name of archive file containging analysis files")
     
 class AnalysisReport(ABC):
-    """
-    """
+
+    INVALID_CHANNEL_ID: int = -1
+
     def __init__(self, analysis: Analysis):
         self.logger = logging.getLogger("AnalysisReport")
         self._analysis = analysis
@@ -108,7 +109,7 @@ class AnalysisReport(ABC):
         """
         return self._generate_fname(tags=tags, ext=ext)
 
-    def get_csv_manager(self) -> CSVManager:
+    def csv_manager_factory(self) -> CSVManager:
         return CSVManager()
 
     def get_base_filename(self) -> str:
@@ -117,7 +118,7 @@ class AnalysisReport(ABC):
         """
         return self._generate_fname()
 
-    def add_common_analysis_model(self, channel_id:int, model: CommonAnalysis) -> None:
+    def register_common_analysis_model(self, channel_id:int, model: CommonAnalysis) -> None:
         """
         Add a common analysis model to the report.
 
@@ -185,10 +186,9 @@ class AnalysisReport(ABC):
             self.logger.debug(f'Wrote CSV File: {csv_mgr.get_path_fname()}')
 
         for matplot_mgr in self.create_matplot():
-            self.logger.info(f'{matplot_mgr}')
+
             for fn in matplot_mgr.get_png_files():
                 self.logger.debug(f'Wrote Matplotlib Figure: {fn}')
-
 
     @abstractmethod
     def _process(self) -> None:

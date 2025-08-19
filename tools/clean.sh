@@ -128,7 +128,6 @@ for action in "${ACTIONS[@]}"; do
 
     --all)
       echo "🚀 Performing full cleanup..."
-      clean_logs
       clean_python
       clean_build
       clean_pnm

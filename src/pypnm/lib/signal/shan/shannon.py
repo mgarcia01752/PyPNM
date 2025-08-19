@@ -57,6 +57,16 @@ class Shannon:
         snr_db = 10 * math.log10(snr_linear)
 
         return cls(snr_db)
+    
+    @staticmethod
+    def bits_from_symbol_count(symbol_count:int) -> int:
+        """
+        Convert the number of symbols to bits per symbol using the Shannon formula.
+        """
+        if symbol_count <= 0:
+            raise ValueError("Symbol count must be positive.")
+        
+        return int(math.floor(math.log2(float(symbol_count))))
 
     @staticmethod
     def snr_from_modulation(modulation_name: str) -> float:
