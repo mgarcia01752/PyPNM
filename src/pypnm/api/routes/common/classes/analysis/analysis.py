@@ -13,7 +13,7 @@ from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.signal.linear_regression import LinearRegression1D
 from pypnm.pnm.lib.signal_statistics import SignalStatistics
 from pypnm.pnm.process.pnm_file_type import PnmFileType
-from pypnm.lib.signal.shan.series import ShannonSeries
+from pypnm.lib.signal.shan.series import Shannon, ShannonSeries
 
 class RxMerCarrierType(Enum):
     EXCLUSION   = "0"
@@ -221,7 +221,7 @@ class Analysis:
 
         signal_stats = SignalStatistics(magnitudes_db.tolist()).compute()
         complex_arr = np.asarray(values, dtype=complex)
-        
+
         result = {
             "pnm_header": measurement.get("pnm_header"),
             "mac_address": measurement.get("mac_address"),
@@ -307,7 +307,7 @@ class Analysis:
                 for _ in range(count):
                     if mod_type in ("continuous_pilot", "exclusion"):
                         s_limit = 0.0
-                    elif mod_type == "plc":           # treat as 16-QAM
+                    elif mod_type == "plc":                                 # treat as 16-QAM
                         s_limit = Shannon.bits_to_snr(4)
                     else:
                         s_limit = Shannon.snr_from_modulation(mod_type)

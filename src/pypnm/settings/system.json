@@ -31,7 +31,7 @@
         "json_dir": ".data/json",
         "xlsx_dir": ".data/xlsx",
         "png_dir":  ".data/png",
-        "zip_dir":  ".data/zip",
+        "archive_dir":  ".data/archive",
         "msg_rsp_dir":  ".data/msg_rsp",
         "transaction_db": ".data/db/transactions.json",
         "capture_group_db": ".data/db/capture_group.json",

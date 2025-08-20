@@ -4,7 +4,7 @@
 from abc import ABC, abstractmethod
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Field
 
 import pandas as pd
@@ -17,8 +17,10 @@ from pypnm.api.routes.docs.pnm.files.service import MacAddress
 from pypnm.config.system_config_settings import SystemConfigSettings
 
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor
+from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager
+from pypnm.lib.types import PathLike
 from pypnm.lib.utils import Utils
 
 class AnalysisOutputModel(BaseModel):
@@ -84,23 +86,29 @@ class AnalysisReport(ABC):
             archive_file=self.archive_file,
         )
 
-    def create_csv_fname(self, tags: List[str]) -> str:
+    def create_csv_fname(self, tags: List[str] = []) -> PathLike:
         '''
         <csv_dir_path>/<mac_address>_<sys_descr.model>_<YYYYMMDD_HHMMSS>_<TAGS>.csv
         '''
         return f"{self._csv_dir}/{self.create_generic_fname(tags=tags, ext='csv')}"
 
-    def create_png_fname(self, tags: List[str]) -> str:
+    def create_png_fname(self, tags: List[str] = []) -> PathLike:
         '''
         <png_dir_path>/<mac_address>_<sys_descr.model>_<YYYYMMDD_HHMMSS>_<TAGS>.png
         '''        
         return f"{self._png_dir}/{self.create_generic_fname(tags=tags, ext='png')}"
 
+    def create_archive_fname(self, tags: List[str] = []) -> PathLike:
+        '''
+        <png_dir_path>/<mac_address>_<sys_descr.model>_<YYYYMMDD_HHMMSS>_<TAGS>.zip
+        '''        
+        return f"{self._archive_dir}/{self.create_generic_fname(tags=tags, ext='zip')}"
+
     def create_generic_fname(self, tags: List[str], ext: str = "") -> str:
         """
         Generate a generic filename with the specified tags and extension.
         
-        Args:
+        Args:           
             tags (List[str]): List of tags to include in the filename.
             ext (str): File extension to append to the filename.
         
@@ -172,23 +180,35 @@ class AnalysisReport(ABC):
         """
         return list(self._common_analysis_model.keys())
 
-    def build_report(self) -> None:
+    def build_report(self) -> PathLike:
         """
         Build the analysis report.
         """
         self._process()
 
+        f:List[PathLike] = []
+        arc_file:PathLike = self._archive_dir
+
         for csv_mgr in self.create_csv():
+
             if not csv_mgr.write():
                 self.logger.error(f"Failed to write CSV: {csv_mgr.get_path_fname()}")
                 continue
 
             self.logger.debug(f'Wrote CSV File: {csv_mgr.get_path_fname()}')
+            f.append(csv_mgr.get_path_fname())
 
         for matplot_mgr in self.create_matplot():
-
             for fn in matplot_mgr.get_png_files():
                 self.logger.debug(f'Wrote Matplotlib Figure: {fn}')
+                f.append(fn)
+
+        try:
+            arc_file = ArchiveManager().zip_files(files=f, archive_path=self.create_archive_fname())
+        except Exception as e:
+            self.logger.error(f"Failed to create archive: {e}")
+
+        return arc_file
 
     @abstractmethod
     def _process(self) -> None:
@@ -215,6 +235,8 @@ class AnalysisReport(ABC):
 
         self._png_dir = SystemConfigSettings.png_dir
         self._csv_dir = SystemConfigSettings.csv_dir
+        self._archive_dir = SystemConfigSettings.archive_dir
+
         self._group_time = Utils.time_stamp()        
         self._base_filename:str = ""
         self._common_analysis_model:Dict[int, BaseModel] = {}

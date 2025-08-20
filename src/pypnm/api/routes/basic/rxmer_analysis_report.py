@@ -32,6 +32,7 @@ class RxMerAnalysisParameters(BaseModel):
     shannon_limit_db: List[float]       = Field(..., description="Shannon/SNR limit per subcarrier (dB)")
     regression_line: List[float]        = Field(..., description="Regression fitted values per subcarrier")
     modulation_count: Dict[str, int]    = Field(..., description="Number of supported modulation schemes")
+
 class RxMerAnalysis(CommonAnalysis):
     """
     Analysis view over RxMER data (extends CommonAnalysis).
@@ -65,7 +66,7 @@ class RxMerAnalysisReport(AnalysisReport):
             rl:List[float]  = model.parameters.regression_line
 
             """
-                Single Channel Capture
+            Single Channel Capture
             """
             try:
 
@@ -73,7 +74,7 @@ class RxMerAnalysisReport(AnalysisReport):
                 csv_fname = self.create_csv_fname(tags=[str(chan)])
                 csv_mgr.set_path_fname(csv_fname)
                 
-                csv_mgr.set_header(["channel_id", "Frequency(Hz)", "Magnitude(dB)", "shannon Limit(dB)", "Regression Line(dB)"])
+                csv_mgr.set_header(["ChannelID", "Frequency(Hz)", "Magnitude(dB)", "Shannon Limit(dB)", "Regression Line(dB)"])
                 for rx, ry, s, r in zip(x, y, sh, rl):
                     csv_mgr.insert_row([chan, rx, ry, s, r])
 
@@ -84,7 +85,7 @@ class RxMerAnalysisReport(AnalysisReport):
                 self.logger.exception("Failed to create CSV for channel %s: %s", chan, exc)
 
             """
-                Signal Capture Aggregation - All OFDM DS Channels
+            Signal Capture Aggregation - All OFDM DS Channels
             """
             try:
 
@@ -130,6 +131,9 @@ class RxMerAnalysisReport(AnalysisReport):
 
             x_khz, _ = NumericScaler().to_prefix(values=x_hz, target="k")
 
+            '''
+            RxMER with Regression Line - All OFDM DS Channels
+            '''
             try:
 
                 cfg = PlotConfig(
@@ -137,14 +141,12 @@ class RxMerAnalysisReport(AnalysisReport):
                     x=x_khz, xlabel="Frequency (kHz)",
                     y_multi=[y_db, rl],
                     y_multi_label=["RxMER", "Regression Line"],
-                    grid=True, legend=True, transparent=False,
-                )
+                    grid=True, legend=True, transparent=False,)
 
-                mod_count_fname = self.create_png_fname(tags=[f"{chan}"])
-                self.logger.info("Creating MatPlot: %s for channel: %s", mod_count_fname, chan)
+                multi = self.create_png_fname(tags=[str(chan), 'rxmer'])
+                self.logger.info("Creating MatPlot: %s for channel: %s", multi, chan)
 
                 mgr = MatplotManager(default_cfg=cfg)
-                multi = self.create_png_fname(tags=[str(chan)])
                 mgr.plot_multi_line(filename=multi)
 
                 out.append(mgr)
@@ -152,6 +154,9 @@ class RxMerAnalysisReport(AnalysisReport):
             except Exception as exc:
                 self.logger.exception("Failed to create plot for channel %s: %s", chan, exc)
 
+            '''
+            Modulation Order Count - All OFDM DS Channels
+            '''
             try:
                 bpsym, order_count = self.__modulation_order_count_to_series(mc)
                 
@@ -159,8 +164,7 @@ class RxMerAnalysisReport(AnalysisReport):
                     title=f"RxMER OFDM Channel: {chan} - Modulation Order Count",
                     x=bpsym,                  xlabel="Bits Per Symbol (bps)",
                     y=order_count,            ylabel="Order Count",
-                    grid=True, legend=True, transparent=False,
-                )
+                    grid=True, legend=True, transparent=False,)
 
                 mod_count_fname = self.create_png_fname(tags=[str(chan), 'modulation_count'])
                 self.logger.info("Creating MatPlot: %s for channel: %s", mod_count_fname, chan)
@@ -173,24 +177,27 @@ class RxMerAnalysisReport(AnalysisReport):
             except Exception as exc:
                 self.logger.exception("Failed to create plot for channel %s: %s", chan, exc)
 
+            '''
+            Signal Capture Aggregation - All OFDM DS Channels
+            '''
             try:
                 x, y = self._sig_cap_agg.get_series()
                 cfg = PlotConfig(
                     title=f"RxMER OFDM Channels: ({chan_id_list})",
-                    x=x,    xlabel="Frequency(Hz)",
-                    y=y,    ylabel="Magnitude(dB)",
+                    x=x,            xlabel="Frequency(Hz)",
+                    y=y,            ylabel="Magnitude(dB)",
                     grid=True, legend=True, transparent=False,)
 
-                mod_count_fname = self.create_png_fname(tags=['signal_agg'])
-                self.logger.info(f"Creating MatPlot: {mod_count_fname} for aggregated signal capture")
+                signal_aggregate_fname = self.create_png_fname(tags=['signal_aggregate'])
+                self.logger.info(f"Creating MatPlot: {signal_aggregate_fname} for aggregated RxMER capture")
 
                 mgr = MatplotManager(default_cfg=cfg)
-                mgr.plot_line(filename=mod_count_fname)
+                mgr.plot_line(filename=signal_aggregate_fname)
 
                 out.append(mgr)
 
             except Exception as exc:
-                self.logger.exception(f"Failed to create plot")
+                self.logger.exception(f"Failed to create aggregated RxMER capture plot")
 
         if not any_models:
             self.logger.info("No analysis data available; no plots created.")

@@ -96,8 +96,8 @@ class SystemConfigSettings:
         return cls._cfg.get("PnmFileRetrieval", "png_dir") 
 
     @classproperty
-    def zip_dir(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "zip_dir")
+    def archive_dir(cls) -> str:
+        return cls._cfg.get("PnmFileRetrieval", "archive_dir")
     
     @classproperty
     def message_response_dir(cls) -> str:
@@ -288,7 +288,7 @@ class SystemConfigSettings:
             cls.json_dir, 
             cls.xlsx_dir,
             cls.png_dir, 
-            cls.zip_dir, 
+            cls.archive_dir, 
             cls.message_response_dir,
             cls.log_dir,
         ]

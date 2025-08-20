@@ -181,10 +181,10 @@ class PnmFileService:
         safe_name = Path(filename).name
 
         # Optional: Further sanitize the filename, ensure it's safe and has a valid extension.
-        valid_extensions = ['.csv', '.json', '.xlsx']
+        valid_extensions = ['.csv', '.json', '.xlsx', '.zip']
         if not any(safe_name.endswith(ext) for ext in valid_extensions):
-            raise HTTPException(status_code=400, detail="Invalid file extension.")
-        
+            raise HTTPException(status_code=400, detail=f"Invalid file extension, file: {safe_name}")
+
         # Choose directory and media type per FileType
         if file_type == FileType.CSV:
             base_dir = SystemConfigSettings.csv_dir
@@ -201,7 +201,7 @@ class PnmFileService:
                 "spreadsheetml.sheet")
         
         elif file_type == FileType.ARCHIVE:
-            base_dir = SystemConfigSettings.zip_dir
+            base_dir = SystemConfigSettings.archive_dir
             media_type = "application/zip"
                        
         else:
@@ -216,5 +216,4 @@ class PnmFileService:
         return FileResponse(
             path=str(file_path),
             filename=safe_name,
-            media_type=media_type
-        )
+            media_type=media_type)

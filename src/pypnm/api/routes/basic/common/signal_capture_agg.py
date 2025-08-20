@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 import logging
 from typing import Dict, List, Callable, Optional, Tuple, Literal
 

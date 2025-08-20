@@ -3,13 +3,11 @@
 
 import logging
 from pathlib import Path
-from typing import Union
-from fastapi import HTTPException
+from typing import Union, cast
 from fastapi.responses import FileResponse
 
 from pypnm.api.routes.basic.rxmer_analysis_report import RxMerAnalysisReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
-from pypnm.api.routes.common.classes.analysis.report.excel.basic.rxmer_excel_basic import RxMerExcelBasic
 from pypnm.api.routes.common.classes.common_endpoint_classes.router import PnmFastApiRouter
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
     PnmAnalysisRequest, PnmAnalysisResponse, PnmMeasurementResponse, PnmRequest)
@@ -21,7 +19,6 @@ from pypnm.api.routes.common.extended.common_process_service import CommonProces
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.ds.ofdm.rxmer.service import CmDsOfdmRxMerService
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
-from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -141,38 +138,18 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
             return PnmAnalysisResponse(
                 mac_address=mac, status=ServiceStatusCode.SUCCESS, data=results)
 
-        elif request.output.type == FileType.XLSX.value:
-            xlsx_dir = SystemConfigSettings.xlsx_dir
-            
-            # Check if the XLSX directory exists
-            if not Path(xlsx_dir).exists():
-                self.logger.error(f"XLSX directory not found: {xlsx_dir}")
-                raise HTTPException(status_code=500, detail="XLSX directory not found.")
-            
-            excel = RxMerExcelBasic(analysis, Path(xlsx_dir))
-            excel.build()
-            self.logger.info(f'Excel Filename: {excel.get_filename()}')
-
-            # Ensure the file was created successfully
-            if not Path(xlsx_dir, excel.get_filename()).exists():
-                self.logger.error(f"Failed to create Excel file: {excel.get_filename()}")
-                raise HTTPException(status_code=500, detail="Failed to create Excel file.")
-
-            return PnmFileService().get_file(FileType.XLSX, excel.get_filename())
-
         elif request.output.type == FileType.ARCHIVE.value:
             
             analysis_rpt = RxMerAnalysisReport(analysis)
-            analysis_rpt.build_report()
+            rpt:Path = cast(Path, analysis_rpt.build_report())
 
-            # return PnmFileService().get_file(FileType.ARCHIVE,fname)
-            msg = 'Test Response'
-            return SnmpResponse(mac_address=str(mac), status=ServiceStatusCode.SUCCESS, message=msg)
-        
+            return PnmFileService().get_file(FileType.ARCHIVE,rpt.name)
+
         else:
             return PnmAnalysisResponse(
-                mac_address=request.cable_modem.mac_address,
-                status=ServiceStatusCode.INVALID_OUTPUT_TYPE, data=None )
+                mac_address=mac,
+                status=ServiceStatusCode.INVALID_OUTPUT_TYPE, 
+                data={})
 
     async def get_measurement_statistics_logic(self, request: SnmpRequest) -> SnmpResponse:
         mac = request.cable_modem.mac_address
