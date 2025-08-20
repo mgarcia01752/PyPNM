@@ -4,6 +4,7 @@
 import logging
 from pathlib import Path
 from typing import Union, cast
+
 from fastapi.responses import FileResponse
 
 from pypnm.api.routes.basic.rxmer_analysis_report import RxMerAnalysisReport
@@ -12,6 +13,8 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.router import PnmFa
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
     PnmAnalysisRequest, PnmAnalysisResponse, PnmMeasurementResponse, PnmRequest)
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.types import (
+    AnalysisCommonResponse, MeasurementCommonResponse, MeasurementStatsCommonResponse)
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
@@ -132,11 +135,10 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
         msg_rsp: MessageResponse = cps.process()
 
         analysis = Analysis(AnalysisType.BASIC, msg_rsp)
-        results = analysis.get_results() or {}
         
         if request.output.type == FileType.JSON.value:
             return PnmAnalysisResponse(
-                mac_address=mac, status=ServiceStatusCode.SUCCESS, data=results)
+                mac_address=mac, status=ServiceStatusCode.SUCCESS, data=analysis.get_results())
 
         elif request.output.type == FileType.ARCHIVE.value:
             
@@ -151,7 +153,7 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
                 status=ServiceStatusCode.INVALID_OUTPUT_TYPE, 
                 data={})
 
-    async def get_measurement_statistics_logic(self, request: SnmpRequest) -> SnmpResponse:
+    async def get_measurement_statistics_logic(self, request: SnmpRequest) -> MeasurementStatsCommonResponse:
         mac = request.cable_modem.mac_address
         ip = request.cable_modem.ip_address
         self.logger.info(f"Fetching RxMER Measurement Statistics for MAC: {mac}, IP: {ip}")

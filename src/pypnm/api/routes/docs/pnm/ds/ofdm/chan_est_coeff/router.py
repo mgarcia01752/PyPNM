@@ -2,18 +2,24 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from typing import Union
+from pathlib import Path
+from typing import Union, cast
 
+from fastapi.responses import FileResponse
+
+from pypnm.api.routes.basic.chan_est_analysis_report import ChanEstimationReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
 from pypnm.api.routes.common.classes.common_endpoint_classes.router import PnmFastApiRouter
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
     PnmAnalysisRequest, PnmAnalysisResponse, PnmMeasurementResponse, PnmRequest)
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.types import AnalysisCommonResponse, MeasurementCommonResponse, MeasurementStatsCommonResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.ds.ofdm.chan_est_coeff.service import CmDsOfdmChanEstCoefService
+from pypnm.api.routes.docs.pnm.files.service import FileType, PnmFileService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -103,7 +109,7 @@ This endpoint returns high-level channel estimation metrics per downstream OFDM 
         return PnmMeasurementResponse(mac_address=mac,status=msg_rsp.status, 
                                       measurement=msg_rsp.payload) # type: ignore
 
-    async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, SnmpResponse]:
+    async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, FileResponse, SnmpResponse]:
 
         mac = request.cable_modem.mac_address
         ip = request.cable_modem.ip_address
@@ -124,10 +130,23 @@ This endpoint returns high-level channel estimation metrics per downstream OFDM 
         msg_rsp:MessageResponse = cps.process()
         
         analysis = Analysis(AnalysisType.BASIC, msg_rsp)
-                
-        return PnmAnalysisResponse(mac_address=mac,
-                                      status=ServiceStatusCode.SUCCESS,
-                                      data=analysis.get_results()) 
+
+        if request.output.type == FileType.JSON.value:
+            return PnmAnalysisResponse(
+                mac_address=mac, 
+                status=ServiceStatusCode.SUCCESS, data=analysis.get_results())
+
+        elif request.output.type == FileType.ARCHIVE.value:
+            
+            analysis_rpt = ChanEstimationReport(analysis)
+            rpt:Path = cast(Path, analysis_rpt.build_report())
+
+            return PnmFileService().get_file(FileType.ARCHIVE,rpt.name)
+
+        else:
+            return PnmAnalysisResponse(
+                mac_address=mac,
+                status=ServiceStatusCode.INVALID_OUTPUT_TYPE, data={})
 
     async def get_measurement_statistics_logic(self, request: SnmpRequest) -> SnmpResponse:
         """

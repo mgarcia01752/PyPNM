@@ -6,12 +6,14 @@ __skip_autoregister__ = True
 from enum import Enum
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union
+from typing import List, Union
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
 
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
     PnmAnalysisRequest, PnmAnalysisResponse, PnmMeasurementResponse, PnmRequest)
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.types import AnalysisCommonResponse
 
 class BaseFastApiRouter(ABC):
 
@@ -73,7 +75,7 @@ class PnmFastApiRouter(ABC):
                 raise HTTPException(status_code=500, detail=f"Analysis retrieval failed: {str(e)}")
 
         @self.router.post(f"/{self._base_endpoint}/getMeasurementStatistics", 
-                          response_model= Union[SnmpResponse], 
+                          response_model= SnmpResponse, 
                           response_model_exclude_unset=True,
                           description=self.set_measurement_statistics_description)
         async def get_measurement_statistics(request: SnmpRequest) -> SnmpResponse:
@@ -91,7 +93,7 @@ class PnmFastApiRouter(ABC):
         pass
 
     @abstractmethod
-    async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, SnmpResponse]:
+    async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, FileResponse, SnmpResponse]:
         """Subclasses must implement this to provide analysis data"""
         pass
 
