@@ -13,7 +13,6 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.router import PnmFa
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
     PnmAnalysisRequest, PnmAnalysisResponse, PnmMeasurementResponse, PnmRequest)
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
-from pypnm.api.routes.common.classes.common_endpoint_classes.types import AnalysisCommonResponse, MeasurementCommonResponse, MeasurementStatsCommonResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
@@ -78,6 +77,7 @@ This endpoint returns high-level channel estimation metrics per downstream OFDM 
             set_measurement_description = measurement_description,
             set_analysis_description = analysis_description,
             set_measurement_statistics_description=measurement_statistics_description)
+        
         self.logger = logging.getLogger("ChannelEstimationCoefficentRouter")
 
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:

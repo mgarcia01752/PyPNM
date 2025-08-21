@@ -49,6 +49,7 @@ ComplexArray = List[Complex]
 # Paths / filesystem
 # ────────────────────────────────────────────────────────────────────────────────
 PathLike = Union[str, Path]
+PathArray = List[PathLike]
 
 # ────────────────────────────────────────────────────────────────────────────────
 # JSON-like structures for REST I/O

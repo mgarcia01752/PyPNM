@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 from pypnm.lib.types import PathLike
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Union, Literal
+from typing import Dict, Iterable, List, Optional, Literal
 
 import tarfile
 import zipfile
@@ -94,6 +94,7 @@ class ArchiveManager:
         preserve_tree: bool = False,
         arcname_map: Optional[Dict[PathLike, str]] = None,
         skip_missing: bool = True,
+        remove_duplicate_files: bool = True,
     ) -> Path:
         """
         Write (or append) files to a ZIP archive.
@@ -104,6 +105,9 @@ class ArchiveManager:
         comp = ArchiveManager._ZIP_COMP[compression]
         ap = Path(archive_path)
         ap.parent.mkdir(parents=True, exist_ok=True)
+
+        if remove_duplicate_files:
+            files = ArchiveManager.__remove_duplicates(files)   
 
         with zipfile.ZipFile(ap, mode=mode, compression=comp) as zf:
             for f in files:
@@ -263,3 +267,18 @@ class ArchiveManager:
             return extracted
 
         raise ValueError(f"Unsupported or undetected archive format for: {archive_path}")
+
+    @staticmethod
+    def __remove_duplicates(files: Iterable[PathLike]) -> List[Path]:
+        """Ensure each path exists and appears only once (order preserved)."""
+        seen: set[Path] = set()
+        out: List[Path] = []
+        for f in files:
+            p = Path(f)
+            if not p.exists():
+                raise FileNotFoundError(p)
+            rp = p.resolve()
+            if rp not in seen:
+                seen.add(rp)
+                out.append(rp)
+        return out

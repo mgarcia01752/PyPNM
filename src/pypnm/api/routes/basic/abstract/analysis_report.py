@@ -33,7 +33,9 @@ class AnalysisOutputModel(BaseModel):
     archive_file: str = Field(..., description="File name of archive file containging analysis files")
     
 class AnalysisReport(ABC):
-
+    '''
+    Abstract base class for generating analysis reports.
+    '''
     INVALID_CHANNEL_ID: int = -1
 
     def __init__(self, analysis: Analysis):
@@ -205,6 +207,7 @@ class AnalysisReport(ABC):
 
         try:
             arc_file = ArchiveManager().zip_files(files=f, archive_path=self.create_archive_fname())
+
         except Exception as e:
             self.logger.error(f"Failed to create archive: {e}")
 
