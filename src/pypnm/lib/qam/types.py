@@ -14,6 +14,17 @@ QamSymCwLut = Dict[str, CodeWordLut]
 HardDecisionArray = List[QamSymbol]
 SymbolArray = List[QamSymbol]
 
+__all__ = [
+    "LutDict",
+    "CodeWord",
+    "QamSymbol",
+    "CodeWordLut",
+    "QamSymCwLut",
+    "HardDecisionArray",
+    "SymbolArray",
+    "QamModulation",
+]
+
 class QamModulation(IntEnum):
     """Enumeration of supported QAM modulation orders."""
 
@@ -47,15 +58,3 @@ class QamModulation(IntEnum):
     def __str__(self) -> str:
         """Return lowercase name like 'qam_64'."""
         return f"qam_{self.value}"
-
-
-__all__ = [
-    "LutDict",
-    "CodeWord",
-    "QamSymbol",
-    "CodeWordLut",
-    "QamSymCwLut",
-    "HardDecisionArray",
-    "SymbolArray",
-    "QamModulation",
-]

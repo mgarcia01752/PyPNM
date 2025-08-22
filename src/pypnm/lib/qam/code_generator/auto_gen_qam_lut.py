@@ -2,10 +2,11 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from datetime import datetime
+import math
+from datetime import datetime, timezone
 from pathlib import Path
 import pprint
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional
 
 from pydantic import BaseModel
 
@@ -18,23 +19,11 @@ from pypnm.lib.qam.types import QamModulation
 QamLutDict = Dict[str, Dict[Any, Any]]
 Hard = List[Tuple[float, float]]
 
+
 class GenerateQamLut:
     """
     High-level entry point to generate a QAM Lookup Table (LUT).
-
-    This class wraps around :class:`QamLut` and handles:
-    - Validating that the source QAM table directory exists.
-    - Compiling QAM tables into a LUT.
-    - Writing the resulting LUT Python file to the destination directory.
-
-    Attributes
-    ----------
-    path_to_qam_table : Path
-        Path to the directory containing raw QAM table `.txt` files.
-    path_to_qam_lut : Path
-        Path to the directory where the compiled LUT file will be written.
-    logger : logging.Logger
-        Logger instance for reporting progress and errors.
+    Validates inputs, compiles QAM tables, and writes a Python LUT module.
     """
 
     def __init__(
@@ -43,28 +32,32 @@ class GenerateQamLut:
         dst_qam_lut: Path = Path("src/pypnm/lib/qam"),
     ) -> None:
         self.logger = logging.getLogger("GenerateQamLut")
-        self.path_to_qam_table = src_qam_table
-        self.path_to_qam_lut = dst_qam_lut
+        self.path_to_qam_table = Path(src_qam_table)
+        self.path_to_qam_lut = Path(dst_qam_lut)
+
+        # Build immediately to preserve original behavior
         self.build()
 
-    def build(self) -> None:
+    def build(self) -> Optional[Path]:
         """
-        Compile the QAM LUT from the specified QAM table files.
+        Compile the QAM LUT from the specified QAM table files and write it.
 
-        The compiled LUT is written into a generated Python file
-        (default: ``qam-lut.py``) inside the configured destination directory.
+        Returns:
+            The path to the generated LUT file on success; otherwise None.
         """
         if not self.path_to_qam_table.exists():
             self.logger.error("QAM table path does not exist: %s", self.path_to_qam_table)
-            return
-        QamLut(src_qam_table=self.path_to_qam_table,
-               dst_qam_lut=self.path_to_qam_lut).write()
-        self.logger.info("QAM LUT generated successfully at %s", self.path_to_qam_lut)
+            return None
+
+        lut = QamLut(src_qam_table=self.path_to_qam_table, dst_qam_lut=self.path_to_qam_lut)
+        out_path = lut.write()
+        self.logger.info("QAM LUT generated successfully at %s", out_path)
+        return out_path
 
 
 class QamLutDb(BaseModel):
     """
-    Pydantic model representation of a single QAM LUT entry.
+    Pydantic model for a single QAM LUT entry.
 
     Attributes
     ----------
@@ -73,8 +66,7 @@ class QamLutDb(BaseModel):
     hard : ComplexArray
         List of symbol points as (real, imag) coordinates.
     code_words : Dict[int, Complex]
-        Dictionary mapping encoded codeword integers to their
-        corresponding constellation coordinates.
+        Mapping of encoded codeword integers to constellation coordinates.
     """
     symbol_count: int
     hard: ComplexArray
@@ -85,170 +77,174 @@ class QamLut:
     """
     Compiler for QAM Lookup Tables (LUTs).
 
-    The QAM LUT is built from raw text-based constellation tables and
-    converted into a Python dictionary structure suitable for runtime lookup.
-
-    Workflow
-    --------
-    1. Parse all QAM table text files in the source directory.
-    2. For each table:
-       - Store points in a :class:`ComplexCollector`.
-       - Determine QAM order (e.g., QAM_16, QAM_64).
-    3. Assemble structured LUTs (symbol count, hard-decision coordinates,
-       and placeholder codewords).
-    4. Emit a Python file (``qam_lut.py``) with the LUT dictionary.
-
-    Attributes
-    ----------
-    QAM_LUT_FNAME : str
-        Default filename of the generated LUT (``qam-lut.py``).
-    logger : logging.Logger
-        Logger instance for reporting compilation steps and errors.
-    _path_to_qam_table : PathLike
-        Source directory containing QAM constellation definition files.
-    _qam_cc : Dict[QamModulation, ComplexCollector]
-        Mapping of QAM order to its collected constellation points.
-    _qam_lut : QamLutDict
-        Final LUT data structure keyed by QAM order name.
-    _lut_path : Path
-        Destination path of the generated LUT Python file.
+    Reads raw text-based constellation tables, applies per-order scaling from
+    ConstellationScalingFactors.txt, and emits a Python module with the LUT.
     """
 
-    QAM_LUT_FNAME = 'qam_lut.py'
+    QAM_LUT_FNAME = "qam_lut.py"
 
-    def __init__(self, 
-                 src_qam_table: PathLike,
-                 dst_qam_lut: PathLike):
+    def __init__(self, src_qam_table: PathLike, dst_qam_lut: PathLike):
         self.logger = logging.getLogger("QamLut")
-        self._path_to_qam_table = src_qam_table
+        self._path_to_qam_table: Path = Path(src_qam_table)
+        self._lut_dir: Path = Path(dst_qam_lut)
+        self._lut_path: Path = self._lut_dir / self.QAM_LUT_FNAME
+
         self._qam_cc: Dict[QamModulation, ComplexCollector] = {}
         self._qam_lut: QamLutDict = {}
-        self._lut_path: Path = Path(f'{dst_qam_lut}/{self.QAM_LUT_FNAME}')
+        self._scaling_factors: Dict[int, float] = self._load_scaling_factors()
 
         self._compile()
 
-    def write(self):
+    # ---------------- Public API ----------------
+
+    def write(self) -> Path:
         """
         Write the compiled QAM LUT to a Python file.
 
-        The file contains a top-level dictionary called ``QAM_LUT``,
-        which maps QAM order names to their LUT definitions.
+        The file defines a global variable ``QAM_SYMBOL_CODEWORD_LUT`` that maps
+        QAM order names (e.g., "QAM_16") to their LUT dict.
         """
+        self._lut_dir.mkdir(parents=True, exist_ok=True)
         fp = FileProcessor(self._lut_path)
         fp.write_file(self._lut_template())
+        return self._lut_path
 
-    def _update_qam_lut(self, order: QamModulation, cc: ComplexCollector) -> None:
-        """
-        Update internal storage with a new QAM constellation collector.
+    # ---------------- Compilation Steps ----------------
 
-        Parameters
-        ----------
-        order : QamModulation
-            The modulation type (e.g., QAM_16, QAM_64).
-        cc : ComplexCollector
-            Collector containing all symbol points for this modulation order.
-        """
-        self._qam_cc[order] = cc
-
-    def _compile(self):
-        """
-        Compile all QAM tables into the LUT.
-
-        Steps
-        -----
-        - Locate valid QAM table files in the source directory.
-        - Load each table into a :class:`ComplexCollector`.
-        - Store results for subsequent LUT generation.
-        """
+    def _compile(self) -> None:
+        """Compile all QAM tables into the internal LUT structure."""
         for f in self._get_qam_tables():
-            self.logger.info(f'Loading {f} to compile QAM LUT')
-            cc, qm = self._load_table(f)  # type: ignore
+            self.logger.info("Loading %s to compile QAM LUT", f)
+            cc, qm = self._load_table(f)
             self._update_qam_lut(qm, cc)
 
         self._build_qam_lut()
 
+    def _update_qam_lut(self, order: QamModulation, cc: ComplexCollector) -> None:
+        """Update internal storage with a new QAM constellation collector."""
+        self._qam_cc[order] = cc
+
+    # ---------------- I/O Helpers ----------------
+
+    def _get_qam_tables(self, skip_files: Optional[List[str]] = None) -> PathArray:
+        """
+        Discover available QAM table files.
+        Skips ConstellationScalingFactors.txt by default.
+        """
+        if skip_files is None:
+            skip_files = ["ConstellationScalingFactors.txt"]
+        return [
+            p
+            for p in self._path_to_qam_table.glob("*.txt")
+            if p.is_file() and p.name not in skip_files
+        ]
+
+    def _load_scaling_factors(self) -> Dict[int, float]:
+        """
+        Load bits-per-symbol -> scaling factor (Es) from ConstellationScalingFactors.txt.
+        Ignores blank lines and comments ('#', '//'). Returns {} if missing.
+        """
+        factors_path = self._path_to_qam_table / "ConstellationScalingFactors.txt"
+        factors: Dict[int, float] = {}
+        if not factors_path.exists():
+            self.logger.warning("Scaling factors file not found: %s (defaulting to no scaling)", factors_path)
+            return factors
+
+        with open(factors_path, "r") as f:
+            for line in f:
+                s = line.strip()
+                if not s or s.startswith("#") or s.startswith("//"):
+                    continue
+                parts = s.split()
+                if len(parts) != 2:
+                    self.logger.warning("Malformed scaling row: %s", s)
+                    continue
+                try:
+                    bps = int(parts[0])
+                    factor = float(parts[1])
+                    factors[bps] = factor
+                except ValueError:
+                    self.logger.warning("Invalid numeric scaling row: %s", s)
+                    continue
+        return factors
+
     def _load_table(self, path_to_qam_table: Path) -> Tuple[ComplexCollector, QamModulation]:
         """
-        Load a single QAM table file.
+        Load a single QAM table file and scale points per ConstellationScalingFactors.txt.
 
-        File Format
-        -----------
-        Each line must contain exactly two floating-point numbers
-        representing the (real, imag) coordinates of one constellation symbol.
-
-        Example (16QAM_table.txt)
-        -------------------------
-            3   3
-            3   1
-            1   3
-            1   1
-            ...
-
-        Returns
-        -------
-        Tuple[ComplexCollector, QamModulation]
-            A collector with all parsed symbols and the detected modulation type.
+        File format: each non-comment, non-empty line contains two floats: "<real> <imag>"
         """
-        cc: ComplexCollector = ComplexCollector()
+        raw_cc = ComplexCollector()
 
         with open(path_to_qam_table, "r") as f:
             for line in f:
-                parts = line.strip().split()
+                s = line.strip()
+                if not s or s.startswith("#") or s.startswith("//"):
+                    continue
+                parts = s.split()
                 if len(parts) != 2:
-                    self.logger.warning(f"Malformed line in QAM table: {line.strip()}")
-                    continue  # skip malformed lines
+                    self.logger.warning(
+                        "Malformed line in QAM table %s: %s",
+                        path_to_qam_table.name, s
+                    )
+                    continue
                 r, i = map(float, parts)
-                cc.add(r, i)
+                raw_cc.add(r, i)
 
-        qm = eval(f'QamModulation.QAM_{len(cc)}')
-        self.logger.info(f'Loaded {qm} with {len(cc)} symbols from {path_to_qam_table}')
-        return cc, qm
+        symbol_count = len(raw_cc)
+        try:
+            qm = QamModulation(symbol_count)  # avoids eval; enum-by-value
+        except ValueError as e:
+            raise ValueError(
+                f"Unsupported QAM order from {path_to_qam_table.name}: {symbol_count}"
+            ) from e
 
-    def _get_qam_tables(self, skip_files: List[str] = ['ConstellationScalingFactors.txt']) -> PathArray:
+        # Determine bits-per-symbol and scale by 1/sqrt(Es) if provided
+        bps = int(math.log2(symbol_count))
+        Es = self._scaling_factors.get(bps)
+        if Es is None:
+            self.logger.info(
+                "No scaling factor for %d bits/symbol; leaving points unscaled.", bps
+            )
+            return raw_cc, qm
+
+        scale = 1.0 / math.sqrt(Es)
+
+        scaled_cc = ComplexCollector()
+        for r, i in raw_cc.to_complex_array():
+            scaled_cc.add(r * scale, i * scale)
+
+        self.logger.info(
+            "Loaded %s with %d symbols from %s (scaled by 1/sqrt(%s))",
+            qm, symbol_count, path_to_qam_table, Es
+        )
+        return scaled_cc, qm
+
+    # ---------------- LUT Assembly & Emission ----------------
+
+    def _build_qam_lut(self) -> QamLutDict:
         """
-        Discover available QAM table files.
+        Construct the internal LUT dictionary:
 
-        Parameters
-        ----------
-        skip_files : List[str], optional
-            Filenames to exclude from processing.
-
-        Returns
-        -------
-        PathArray
-            List of table file paths ready for compilation.
-        """
-        return [p for p in self._path_to_qam_table.glob("*.txt") # type: ignore
-                if p.is_file() and p.name not in skip_files]  
-
-    def _build_qam_lut(self) -> 'QamLutDict':
-        """
-        Construct the internal LUT dictionary.
-
-        Output Structure
-        ----------------
         {
-            "<QAM_ORDER>": {
-                "symbol_count": int,
-                "hard": [(real, imag), ...],
-                "code_words": {int: (real, imag), ...}
-            },
-            ...
+          "<QAM_ORDER>": {
+            "symbol_count": int,
+            "hard": [(real, imag), ...],
+            "code_words": {int: (real, imag), ...}
+          },
+          ...
         }
-
-        Returns
-        -------
-        QamLutDict
-            Dictionary representation of the compiled LUT.
         """
         for order, cc in self._qam_cc.items():
-            self.logger.info(f'Compiling QAM LUT for {order}')
+            self.logger.info("Compiling QAM LUT for %s", order)
 
             cw_lut = CodeWordLutGenerator(cc.to_complex_array()).build().to_dict()
 
-            qld = QamLutDb(symbol_count=len(cc),
-                           hard=cc.to_complex_array(),
-                           code_words=cw_lut)
+            qld = QamLutDb(
+                symbol_count=len(cc),
+                hard=cc.to_complex_array(),
+                code_words=cw_lut,
+            )
 
             self._qam_lut[order.name] = qld.model_dump()
 
@@ -258,16 +254,13 @@ class QamLut:
         """
         Render the Python source template for the LUT file.
 
-        The file defines a global variable ``QAM_SYMBOL_CODEWORD_LUT`` with
-        the compiled dictionary, pretty-printed for readability.
-
-        Returns
-        -------
-        str
-            The full source text of the LUT file.
+        Defines a global ``QAM_SYMBOL_CODEWORD_LUT`` with the compiled dict.
         """
         formatted = pprint.pformat(self._qam_lut, indent=2, width=100, sort_dicts=True)
-        lut =  f'# Do not modify manually. AutoGenerated: {datetime.now()}\n'
-        lut += f'QAM_SYMBOL_CODEWORD_LUT = {formatted}\n'
-        return lut
-
+        header = (
+            f"# Do not modify manually. AutoGenerated: "
+            f"{datetime.now(timezone.utc).isoformat()}\n"
+        )
+        header += "# SPDX-License-Identifier: MIT\n"
+        header += "# Generated by QamLut compiler\n"
+        return f"{header}QAM_SYMBOL_CODEWORD_LUT = {formatted}\n"
