@@ -10,27 +10,16 @@ from typing import Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import matplotlib
-matplotlib.use("Agg")  # Headless rendering for servers/CI
+matplotlib.use("Agg")  # Headless backend for servers/CI
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers '3d' projection)
 
-Number = Union[int, float, np.number]
-ArrayLike = Union[Sequence[Number], np.ndarray]
+from pypnm.lib.code_word.cw_generator import QamModulation
+from pypnm.lib.types import ArrayLike, ComplexArray, Number
 
 
 @dataclass(frozen=True)
 class PlotConfig:
-    """
-    Lightweight, reusable plot options and optional shared data vectors.
-
-    Precedence (for any overlapping option/data):
-        method arg > cfg.field > manager.default_cfg.field > method default
-
-    Legend handling:
-      - legend=None  -> auto (show if any labeled artists exist)
-      - legend=True  -> force show
-      - legend=False -> force hide
-    """
     # Optional shared data
     x: Optional[ArrayLike] = None
     y: Optional[ArrayLike] = None
@@ -52,6 +41,11 @@ class PlotConfig:
     grid: Optional[bool] = None
     legend: Optional[bool] = None
     transparent: Optional[bool] = None
+
+    # Constellation (new)
+    qam: Optional[QamModulation] = None
+    soft: Optional[ComplexArray] = None
+    hard: Optional[ComplexArray] = None
 
     def update(self, **kwargs) -> "PlotConfig":
         return replace(self, **kwargs)
@@ -104,7 +98,6 @@ class MatplotManager:
 
     def _merge_cfg(self, user_cfg: Optional[PlotConfig], method_defaults: PlotConfig) -> PlotConfig:
         base = self.default_cfg
-
         def pick(top, mid, low):
             return top if top is not None else (mid if mid is not None else low)
 
@@ -123,6 +116,9 @@ class MatplotManager:
             z           = pick(user_cfg.z           if user_cfg else None, base.z,           method_defaults.z),
             y_multi     = pick(user_cfg.y_multi     if user_cfg else None, base.y_multi,     method_defaults.y_multi),
             y_multi_label = pick(user_cfg.y_multi_label if user_cfg else None, base.y_multi_label, method_defaults.y_multi_label),
+            qam         = pick(user_cfg.qam         if user_cfg else None, base.qam,         method_defaults.qam),   # NEW
+            soft        = pick(user_cfg.soft        if user_cfg else None, base.soft,        method_defaults.soft),  # NEW
+            hard        = pick(user_cfg.hard        if user_cfg else None, base.hard,        method_defaults.hard),  # NEW
         )
 
     def _finish(self, fig, ax, path: Path, cfg: PlotConfig) -> Path:
@@ -164,7 +160,6 @@ class MatplotManager:
         xa = self._to_1d(x)
         ya = self._to_1d(y)
         if ya.size == 0 and xa.size > 0:
-            # No Y but we have X: create zeros
             ya = np.zeros_like(xa, dtype=float)
             self.logger.warning("Y missing; using zeros (len=%d).", ya.size)
         if xa.size == 0 and ya.size > 0:
@@ -175,6 +170,21 @@ class MatplotManager:
             self.logger.warning("Length mismatch x=%d, y=%d; truncating to %d.", xa.size, ya.size, n)
             xa, ya = xa[:n], ya[:n]
         return xa, ya
+
+    def _split_complex_array(self, arr: Optional[ComplexArray]) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Convert ComplexArray[List[Tuple[float, float]]] -> (I, Q) float arrays.
+        Returns empty arrays if arr is None or empty.
+        """
+        if not arr:
+            return np.array([], dtype=float), np.array([], dtype=float)
+        a = np.asarray(arr, dtype=float)
+        if a.ndim != 2 or a.shape[-1] != 2:
+            a = np.asarray(arr, dtype=float).ravel()
+            if a.size % 2:
+                a = a[:-1]
+            a = a.reshape(-1, 2)
+        return a[:, 0], a[:, 1]
 
     # ──────────────────────────── plots ────────────────────────────
     def plot_line(
@@ -290,11 +300,110 @@ class MatplotManager:
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
         fig, ax = self._new_fig()
-        sc = ax.scatter(x, y,
-                        c=None if c is None else np.asarray(c).ravel()[:len(x)],
-                        s=None if s is None else np.asarray(s).ravel()[:len(x)])
+        sc = ax.scatter(
+            x, y,
+            c=None if c is None else np.asarray(c).ravel()[:len(x)],
+            s=None if s is None else np.asarray(s).ravel()[:len(x)]
+        )
         if add_colorbar and c is not None:
             fig.colorbar(sc, ax=ax)
+        return self._finish(fig, ax, self._resolve_path(filename), cfg)
+
+    def plot_constellation(
+        self,
+        soft: Optional[ComplexArray],
+        filename: Union[str, Path],
+        *,
+        hard: Optional[ComplexArray] = None,
+        show_boundaries: bool = True,
+        boundary_alpha: float = 0.25,
+        crosshair_size: float = 80.0,
+        crosshair_lw: float = 1.8,
+        cfg: Optional[PlotConfig] = None,
+    ) -> Path:
+        """
+        Constellation plot (DOCSIS-style):
+        - Soft decisions (I/Q samples) as points
+        - Hard decisions as red '+' crosshairs
+        - Decision boundaries (midpoints between unique hard I/Q levels)
+
+        Data precedence: args.soft/args.hard > cfg.soft/cfg.hard
+        """
+        defaults = PlotConfig(grid=True, legend=None, transparent=False)
+        cfg = self._merge_cfg(cfg, defaults)
+
+        # Fallback to cfg if args not provided
+        if soft is None:
+            soft = cfg.soft
+        if hard is None:
+            hard = cfg.hard
+
+        # Split soft/hard into I (x) and Q (y)
+        x_soft, y_soft = self._split_complex_array(soft)
+        x_hard, y_hard = self._split_complex_array(hard)
+
+        if x_soft.size == 0 or y_soft.size == 0:
+            self.logger.warning("plot_constellation: no soft samples provided; producing empty axes.")
+
+        fig, ax = self._new_fig()
+
+        # Soft cloud
+        if x_soft.size and y_soft.size:
+            ax.scatter(x_soft, y_soft, alpha=0.75, label="Soft")
+
+        # Hard centroids as red crosshairs + decision boundaries
+        if x_hard.size and y_hard.size:
+            n = min(x_hard.size, y_hard.size)
+            ax.scatter(
+                x_hard[:n], y_hard[:n],
+                marker="+",
+                c="red",
+                s=crosshair_size,
+                linewidths=crosshair_lw,
+                label="Hard",
+            )
+
+            if show_boundaries:
+                # Unique decision levels and midpoints
+                levels_i = np.unique(x_hard[:n])
+                levels_q = np.unique(y_hard[:n])
+                mids_i = (levels_i[1:] + levels_i[:-1]) / 2.0 if levels_i.size >= 2 else np.array([])
+                mids_q = (levels_q[1:] + levels_q[:-1]) / 2.0 if levels_q.size >= 2 else np.array([])
+
+                # Determine extents with small padding
+                all_x = np.concatenate([x_soft, x_hard[:n]]) if x_soft.size else x_hard[:n]
+                all_y = np.concatenate([y_soft, y_hard[:n]]) if y_soft.size else y_hard[:n]
+                if all_x.size:
+                    x_min, x_max = float(np.min(all_x)), float(np.max(all_x))
+                    x_pad = 0.05 * (x_max - x_min if x_max > x_min else 1.0)
+                    x_lo, x_hi = x_min - x_pad, x_max + x_pad
+                else:
+                    x_lo, x_hi = -1.0, 1.0
+                if all_y.size:
+                    y_min, y_max = float(np.min(all_y)), float(np.max(all_y))
+                    y_pad = 0.05 * (y_max - y_min if y_max > y_min else 1.0)
+                    y_lo, y_hi = y_min - y_pad, y_max + y_pad
+                else:
+                    y_lo, y_hi = -1.0, 1.0
+
+                # Draw vertical (I) and horizontal (Q) decision midlines
+                for mx in mids_i:
+                    ax.axvline(mx, linestyle="--", linewidth=1.0, alpha=boundary_alpha, zorder=0)
+                for my in mids_q:
+                    ax.axhline(my, linestyle="--", linewidth=1.0, alpha=boundary_alpha, zorder=0)
+
+                # Respect explicit cfg.xlim/ylim; otherwise apply computed limits
+                if cfg.xlim is None:
+                    ax.set_xlim(x_lo, x_hi)
+                if cfg.ylim is None:
+                    ax.set_ylim(y_lo, y_hi)
+
+        # Square aspect for constellation geometry
+        try:
+            ax.set_aspect("equal", adjustable="datalim")
+        except Exception:
+            pass
+
         return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
     def plot_bar(
@@ -374,7 +483,7 @@ class MatplotManager:
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
         fig, ax = self._new_fig()
-        markerline, stemlines, baseline = ax.stem(x, y, use_line_collection=use_line_collection)
+        ax.stem(x, y, use_line_collection=use_line_collection)
         return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
     def plot_errorbar(
@@ -441,7 +550,6 @@ class MatplotManager:
         defaults = PlotConfig(grid=False, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
 
-        # Use provided or cfg-based extents if available
         x = self._to_1d(x if x is not None else cfg.x)
         y = self._to_1d(y if y is not None else cfg.y)
 
@@ -487,7 +595,6 @@ class MatplotManager:
             x = np.arange(nx, dtype=float)
         if not y.size:
             y = np.arange(ny, dtype=float)
-        # If lengths mismatch, truncate
         if x.size != nx:
             n = min(x.size, nx)
             self.logger.warning("3D: x len=%d, nx=%d; truncating to %d.", x.size, nx, n)
