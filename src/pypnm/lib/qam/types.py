@@ -2,10 +2,12 @@
 # Copyright (c) 2025 Maurice Garcia
 from enum import IntEnum
 import math
-from typing import Dict, List, Union
+from typing import Dict, List, Mapping, Union
 from pypnm.lib.types import Complex
 
+LutDict = Mapping[str, Mapping[str, object]]
 CodeWord = Union[int]
+CodeWordArray = List[CodeWord]
 QamSymbol = Complex
 CodeWordLut = Dict[CodeWord, QamSymbol]
 QamSymCwLut = Dict[str, CodeWordLut]
@@ -48,6 +50,7 @@ class QamModulation(IntEnum):
 
 
 __all__ = [
+    "LutDict",
     "CodeWord",
     "QamSymbol",
     "CodeWordLut",

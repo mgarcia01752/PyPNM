@@ -2,9 +2,9 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from pypnm.lib.qam.qam_lut import QAM_SYMBOL_CODEWORD_LUT
-from typing import List, Literal, Mapping
+from typing import List, Literal
 
-from pypnm.lib.qam.types import CodeWord, HardDecisionArray, QamModulation, SymbolArray
+from pypnm.lib.qam.types import CodeWord, HardDecisionArray, LutDict, QamModulation, SymbolArray
 
 class QamLutManager:
     """
@@ -22,7 +22,7 @@ class QamLutManager:
     """
 
     def __init__(self) -> None:
-        self.qam_lut: Mapping[str, Mapping[str, object]] = QAM_SYMBOL_CODEWORD_LUT
+        self.qam_lut: LutDict = QAM_SYMBOL_CODEWORD_LUT
 
     def get_hard_decisions(self, qam_mod: QamModulation) -> HardDecisionArray:
         """
@@ -37,7 +37,8 @@ class QamLutManager:
         HardDecisionArray
             List of (I, Q) tuples for the modulation's constellation.
         """
-        return self.qam_lut[qam_mod.name.__str__()]["hard"]
+        hd = self.qam_lut[qam_mod.name.__str__()].get('hard', [])
+        return list(hd)  # Ensure the result is a list
 
     def get_codeword_symbol(
         self,

@@ -27,6 +27,7 @@ from numpy.typing import NDArray
 # ────────────────────────────────────────────────────────────────────────────────
 Number = Union[int, float, np.number]
 Float64 = np.float64
+ByteArray = List[np.uint8]
 
 # Generic array-likes (inputs)
 ArrayLike = Union[Sequence[Number], NDArray[Any]]
@@ -107,6 +108,7 @@ ShannonSeriesdB   = FloatSeries
 # Explicit public surface
 # ────────────────────────────────────────────────────────────────────────────────
 __all__ = [
+    "ByteArray",
     # numerics
     "Number", "Float64", "ArrayLike", "ArrayLikeF64", "NDArrayF64", "NDArrayI64",
     "FloatSeries", "IntSeries", "TwoDFloatSeries",
