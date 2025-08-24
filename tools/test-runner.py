@@ -474,7 +474,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-    python test_runner.py                          # Run tests in ./tests directory
+    python test_runner.py # Run tests in ./tests directory
     python test_runner.py --tests-dir /path/to/tests --verbose
     python test_runner.py --pattern "*test*.py" --failfast
     python test_runner.py --html-report --quiet

@@ -2,6 +2,7 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from enum import Enum
+import json
 import logging
 from typing import Callable, List, Dict, Any
 
@@ -10,10 +11,13 @@ from pypnm.api.routes.common.extended.common_messaging_service import MessageRes
 from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import Utils
 from pypnm.lib.file_processor import FileProcessor
-from pypnm.lib.signal.linear_regression import LinearRegression1D
+from pypnm.lib.signal_processing.complex_array_ops import ComplexArrayOps
+from pypnm.lib.signal_processing.group_delay import GroupDelay
+from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
+from pypnm.lib.types import ComplexArray
 from pypnm.pnm.lib.signal_statistics import SignalStatistics
 from pypnm.pnm.process.pnm_file_type import PnmFileType
-from pypnm.lib.signal.shan.series import Shannon, ShannonSeries
+from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
 
 class RxMerCarrierType(Enum):
     EXCLUSION   = "0"
@@ -205,24 +209,27 @@ class Analysis:
         if active_index < 0 or zero_freq < 0 or spacing <0:
             raise ValueError(f"Active index: {active_index} or zero frequency: {zero_freq} or spacing: {spacing} must be non-negative")
 
-        values = measurement.get("values", []) # Complex Values
+        values:ComplexArray = measurement.get("values", []) # Complex Values
         if not values:
             raise ValueError("No complex channel estimation values provided in measurement.")
         
-        base_freq = (spacing * active_index) + zero_freq
-        complex_values = np.array([complex(r, i) for r, i in values])
-        magnitudes_db = 20 * np.log10(np.abs(complex_values) + 1e-12)
+        start_freq = (spacing * active_index) + zero_freq
+        freqs:List[int] = [start_freq + (i * spacing) for i in range(len(values))]
 
-        # Group delay calculation: derivative of unwrapped phase
-        phase = np.unwrap(np.angle(complex_values))
-        group_delay = -np.gradient(phase, spacing) * 1e6
+        # Group delay calculation
+        gd = GroupDelay.from_channel_estimate(Hhat=values, df_hz=spacing, f0_hz=start_freq)
+        gd_results = gd.to_result()
+       
+        # Calculate Per-subcarrer Complex Numerbers
+        cao = ComplexArrayOps(values)
 
-        freqs = [base_freq + (i * spacing) for i in range(len(complex_values))]
+        logging.info(f'Power: {cao.to_list(cao.power_db())}')
 
-        signal_stats = SignalStatistics(magnitudes_db.tolist()).compute()
+        signal_stats = SignalStatistics(cao.power_db()).compute()
         complex_arr = np.asarray(values, dtype=complex)
 
         result = {
+            "device_details": measurement.get("device_details"),
             "pnm_header": measurement.get("pnm_header"),
             "mac_address": measurement.get("mac_address"),
             "channel_id": measurement.get("channel_id"),
@@ -234,8 +241,8 @@ class Analysis:
                 "occupied_channel_bandwidth": occupied_channel_bandwidth,
                 "carrier_count": len(freqs),
                 "frequency": freqs,
-                "magnitude": magnitudes_db.tolist(),
-                "group_delay": group_delay.tolist(),
+                "magnitude": cao.to_list(cao.power_db()),
+                "group_delay": ComplexArrayOps.to_list(gd_results.group_delay_us),
                 "complex": values,
                 "complex_dimension": f"{complex_arr.ndim}"
             },

@@ -16,8 +16,8 @@ from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.numeric_scaler import NumericScaler
-from pypnm.lib.signal.linear_regression import LinearRegression1D
-from pypnm.lib.types import ArrayLike, ComplexArray
+from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
+from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries
 
 
 class ChanEstimationParameters(BaseModel):
@@ -25,9 +25,9 @@ class ChanEstimationParameters(BaseModel):
     Parameters that augment channel estimation analysis output.
     - regression_line : Per-subcarrier fitted values (ŷ) from linear regression over index domain
     """
-    model_config                        = ConfigDict(populate_by_name=True, extra="ignore")
-    regression_line: List[float]        = Field(..., description="Regression fitted values per subcarrier")
-    group_delay:List[float]             = Field(..., description="Group Delay")
+    model_config                    = ConfigDict(populate_by_name=True, extra="ignore")
+    regression_line: FloatSeries    = Field(..., description="Regression fitted values per subcarrier")
+    group_delay:FloatSeries         = Field(..., description="Group Delay")
 
 class ChanEstimationAnalysis(CommonAnalysis):
     """
@@ -37,6 +37,8 @@ class ChanEstimationAnalysis(CommonAnalysis):
 
 class ChanEstimationReport(AnalysisReport):
     """Concrete report builder for channel estimation measurements."""
+
+    FNAME_TAG = 'chanest'
 
     def __init__(self, analysis: Analysis):
         super().__init__(analysis)
@@ -56,23 +58,23 @@ class ChanEstimationReport(AnalysisReport):
             model = cast(ChanEstimationAnalysis, common_model)
             chan = int(model.channel_id)
 
-            x:ArrayLike     = model.raw_x
-            y:ArrayLike     = model.raw_y
-            ca:ComplexArray = model.raw_complex
-            rl:ArrayLike    = model.parameters.regression_line
+            x:ArrayLike         = model.raw_x
+            y:ArrayLike         = model.raw_y
+            ca:ComplexArray     = model.raw_complex
+            rl:FloatSeries      = model.parameters.regression_line
 
             """
             Single Channel Capture
             """
             try:
-
                 csv_mgr: CSVManager = self.csv_manager_factory()
-                csv_fname = self.create_csv_fname(tags=[str(chan)])
+                csv_fname = self.create_csv_fname(tags=[str(chan), self.FNAME_TAG])
                 csv_mgr.set_path_fname(csv_fname)
                 
                 csv_mgr.set_header(["ChannelID", "Frequency(Hz)", "Magnitude(Linear)", "Regression(Linear)", "Real(Linear)", "Imaginary(Linear)"])
                 for rx, ry, reg, cmp in zip(x, y, rl, ca):
-                    csv_mgr.insert_row([chan, rx, ry, reg, cmp])
+                    real,img = cmp
+                    csv_mgr.insert_row([chan, rx, ry, reg, real, img])
 
                 self.logger.info(f"CSV created for channel {chan}: {csv_fname} (rows={len(x)})")
                 csv_mgr_list.append(csv_mgr)
@@ -89,7 +91,7 @@ class ChanEstimationReport(AnalysisReport):
         """
         Generate per-channel line and multi-line plots from validated models.
         """
-        out: List[MatplotManager] = []
+        matplot_mgr: List[MatplotManager] = []
         any_models = False
         chan_id_list:List[int] = []
 
@@ -100,9 +102,10 @@ class ChanEstimationReport(AnalysisReport):
             chan_id_list.append(chan)
 
             x_hz:ArrayLike      = model.raw_x
-            y_db:ArrayLike      = model.raw_y
+            y_ln:ArrayLike      = model.raw_y
             cplex:ComplexArray  = model.raw_complex
-            rl:ArrayLike        = model.parameters.regression_line
+            rl:FloatSeries      = model.parameters.regression_line
+            gd_us:FloatSeries   = model.parameters.group_delay
             
             x_khz, _ = NumericScaler().to_prefix(values=x_hz, target="k")
 
@@ -112,19 +115,39 @@ class ChanEstimationReport(AnalysisReport):
             try:
 
                 cfg = PlotConfig(
-                    title=f"Channel Estimation OFDM Channel: {chan}",
-                    x=x_khz, xlabel="Frequency (kHz)",
-                    y_multi=[y_db, rl],
-                    y_multi_label=["Channel Estimation", "Regression Line"],
+                    title=f"Channel Estimation - OFDM Channel: {chan}",
+                    x=x_khz,            xlabel="Frequency (kHz)",
+                    y_multi=[y_ln, rl], y_multi_label=["Channel Estimation", "Regression Line"],
                     grid=True, legend=True, transparent=False,)
 
-                multi = self.create_png_fname(tags=[str(chan), 'chan_est'])
+                multi = self.create_png_fname(tags=[str(chan), self.FNAME_TAG])
                 self.logger.info("Creating MatPlot: %s for channel: %s", multi, chan)
 
                 mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_multi_line(filename=multi)
 
-                out.append(mgr)
+                matplot_mgr.append(mgr)
+
+            except Exception as exc:
+                self.logger.exception("Failed to create plot for channel %s: %s", chan, exc)
+
+            '''
+            Channel Estimation with Group Delay - All OFDM DS Channels
+            '''
+            try:
+
+                cfg = PlotConfig(
+                    title=f"Group Delay - OFDM Channel: {chan}",
+                    x=x_khz,                xlabel="Frequency (kHz)",
+                    y=gd_us,                ylabel="uS",
+                    grid=True, legend=True, transparent=False,)
+
+                multi = self.create_png_fname(tags=[str(chan), self.FNAME_TAG, 'groupdelay'])
+                self.logger.info("Creating Group Delay MatPlot: %s for channel: %s", multi, chan)
+
+                mgr = MatplotManager(default_cfg=cfg)
+                mgr.plot_line(filename=multi)
+                matplot_mgr.append(mgr)
 
             except Exception as exc:
                 self.logger.exception("Failed to create plot for channel %s: %s", chan, exc)
@@ -132,7 +155,7 @@ class ChanEstimationReport(AnalysisReport):
         if not any_models:
             self.logger.info("No analysis data available; no plots created.")
 
-        return out
+        return matplot_mgr
 
     def _process(self) -> None:
         """
@@ -167,11 +190,11 @@ class ChanEstimationReport(AnalysisReport):
 
             try:
                 channel_id = int(data.get("channel_id", self.INVALID_CHANNEL_ID))
-                cv:Dict             = data.get("carrier_values") or {}
-                x_raw:ArrayLike     = list(cv.get("frequency") or [])
-                y_raw:ArrayLike     = list(cv.get("magnitude") or [])
-                cplex:ComplexArray  = list(cv.get("complex") or [])
-                grp_delay:ArrayLike = list(cv.get("group_delay") or [])
+                cv:Dict                 = data.get("carrier_values") or {}
+                x_raw:ArrayLike         = list(cv.get("frequency") or [])
+                y_raw:ArrayLike         = list(cv.get("magnitude") or [])
+                cplex:ComplexArray      = list(cv.get("complex") or [])
+                group_delay:FloatSeries = list(cv.get("group_delay") or [])
 
                 # coerce -> float (and finiteness)
                 def coerce_finite(seq, name: str) -> List[float]:
@@ -189,8 +212,8 @@ class ChanEstimationReport(AnalysisReport):
 
                 params = ChanEstimationParameters(
                     regression_line = y_hat,
-                    group_delay     = coerce_finite(grp_delay, "group_delay"))       
-
+                    group_delay     = group_delay)
+                
                 model = ChanEstimationAnalysis(
                         channel_id  =   channel_id,
                         raw_x=x,        raw_y=y,

@@ -6,7 +6,7 @@ import logging
 import struct
 from typing import Dict, List, Optional, Tuple
 
-from pypnm.lib.signal.shan.series import ShannonSeries
+from pypnm.lib.signal_processing.shan.series import ShannonSeries
 from pypnm.pnm.lib.signal_statistics import SignalStatistics
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader

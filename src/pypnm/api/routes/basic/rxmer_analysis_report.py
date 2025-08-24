@@ -17,8 +17,8 @@ from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.numeric_scaler import NumericScaler
-from pypnm.lib.signal.linear_regression import LinearRegression1D
-from pypnm.lib.signal.shan.series import Shannon
+from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
+from pypnm.lib.signal_processing.shan.series import Shannon
 from pypnm.lib.types import IntSeries
 
 class RxMerAnalysisParameters(BaseModel):

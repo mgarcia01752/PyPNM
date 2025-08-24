@@ -88,6 +88,8 @@ class CSVManager:
             raise CSVValidationError(
                 f"Row data length ({len(row_data)}) does not match header count ({len(self.headers)}). "
                 f"Expected {len(self.headers)} elements, got {len(row_data)}"
+                f"Header: {self.headers}"
+                f"RowIdx: {row_data}"
             )
         
         # Convert all data to appropriate types and add row

@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+from typing import Any, Dict
 import numpy as np
-from typing import Sequence, Dict, Any
+from pypnm.lib.types import ArrayLikeF64
 
 class SignalStatistics:
     """
@@ -23,9 +24,11 @@ class SignalStatistics:
       - zero_crossing_rate: Fraction of successive sample sign changes, indicates signal frequency content.
       - zero_crossings: Total count of sign changes in the signal.
     """
-    def __init__(self, data: Sequence[float]) -> None:
+    def __init__(self, data: ArrayLikeF64) -> None:
+        
         # ensure data is a 1-D float array
         self.data = np.asarray(data, dtype=float).flatten()
+
         if self.data.size == 0:
             raise ValueError("Input data must contain at least one sample.")
     

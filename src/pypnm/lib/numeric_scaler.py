@@ -2,11 +2,9 @@
 # (c) 2025 Maurice Garcia
 
 from __future__ import annotations
-from typing import Iterable, Tuple, Dict, Any, Optional, Union, Sequence
+from typing import Tuple, Dict, Any, Optional
+from pypnm.lib.types import ArrayLike
 import numpy as np
-
-Number = Union[int, float, np.number]
-ArrayLike = Union[Sequence[Number], np.ndarray]
 
 class NumericScaler:
     """
@@ -138,7 +136,7 @@ class NumericScaler:
             "factor": factor if factor else 1.0,
             "style": "prefix",
             "label": self._exp_to_prefix(exp, sys),
-            "power_label": self._power_label(exp if sys == "si" else 0 if exp == 0 else None) if sys == "si" else None,
+            "power_label": self._power_label(exp if sys == "si" else 0) if sys == "si" else None,
         }
         return arr, meta
 
