@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from typing import List, Optional, Tuple, Union
+from typing import List,Tuple, Union
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.lib.types import ComplexArray
-
+from pypnm.lib.types import ArrayLike
 
 class CommonAnalysis(BaseModel):
     """
@@ -27,7 +26,7 @@ class CommonAnalysis(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
-    channel_id: int = Field(..., description="Channel ID")
-    raw_x: List[Union[int , float]] = Field(..., description="Typically Frequency or index")
-    raw_y: List[Union[int , float]] = Field(..., description="Typically Magnitude (dB/sec)")
-    raw_complex: List[Tuple[float, float]] = Field(default=[], description="Optional complex series aligned to raw_x/raw_y")
+    channel_id: int                         = Field(..., description="Channel ID")
+    raw_x: List[Union[int , float]]         = Field(..., description="Typically Frequency or index")
+    raw_y: List[Union[int , float]]         = Field(..., description="Typically Magnitude (dB/sec)")
+    raw_complex: List[Tuple[float, float]]  = Field(default=[], description="Optional complex series aligned to raw_x/raw_y")

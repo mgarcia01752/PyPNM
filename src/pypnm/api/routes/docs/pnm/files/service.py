@@ -14,6 +14,7 @@ from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlTest
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.file_processor import FileProcessor
+from pypnm.lib.types import PathLike
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 from pypnm.pnm.process.pnm_type_header_mapper import PnmFileTypeMapper
@@ -164,7 +165,7 @@ class PnmFileService:
             summary="Auto analysis complete"
         )
 
-    def get_file(self, file_type: FileType, filename: str) -> FileResponse:
+    def get_file(self, file_type: FileType, filename: PathLike) -> FileResponse:
         """
         Serve a generated file from its configured directory.
 

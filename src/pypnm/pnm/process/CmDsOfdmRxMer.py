@@ -4,13 +4,16 @@
 import json
 import logging
 import struct
-from typing import Dict, List, Optional, Tuple
 
+from typing import Dict, Optional, Tuple
+
+from pypnm.lib.constants import KHZ
+from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.signal_processing.shan.series import ShannonSeries
 from pypnm.pnm.lib.signal_statistics import SignalStatistics
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
-
+from pypnm.lib.types import FloatSeries
 
 class CmDsOfdmRxMer(PnmHeader):
     """
@@ -30,14 +33,14 @@ class CmDsOfdmRxMer(PnmHeader):
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
 
-        self.channel_id: Optional[int] = None
-        self.mac_address: Optional[str] = None
-        self.subcarrier_zero_frequency: Optional[int] = None
-        self.first_active_subcarrier_index: Optional[int] = None
-        self.subcarrier_spacing: Optional[int] = None
-        self.rxmer_data_length: Optional[int] = None
-        self.rxmer_data: Optional[bytes] = None
-        self.rx_mer_float_data: Optional[List[float]] = None
+        self.channel_id: Optional[int]                      = 0
+        self.mac_address: Optional[str]                     = MacAddress.null()
+        self.subcarrier_zero_frequency: Optional[int]       = 0
+        self.first_active_subcarrier_index: Optional[int]   = 0
+        self.subcarrier_spacing: Optional[int]              = 0
+        self.rxmer_data_length: Optional[int]               = 0
+        self.rxmer_data: Optional[bytes]
+        self.rx_mer_float_data: Optional[FloatSeries]       = []
 
         self._process_rxmer_data()
 
@@ -58,13 +61,13 @@ class CmDsOfdmRxMer(PnmHeader):
 
             unpacked_data = struct.unpack(rxmer_data_format, self.pnm_data[:head_len])
 
-            self.channel_id = unpacked_data[0]
-            self.mac_address = ':'.join(f'{b:02x}' for b in unpacked_data[1])
-            self.subcarrier_zero_frequency = unpacked_data[2]
-            self.first_active_subcarrier_index = unpacked_data[3]
-            self.subcarrier_spacing = unpacked_data[4] * 1000 # Khz
-            self.rxmer_data_length = unpacked_data[5]
-            self.rxmer_data = self.pnm_data[head_len:head_len + self.rxmer_data_length]
+            self.channel_id                     = unpacked_data[0]
+            self.mac_address                    = ':'.join(f'{b:02x}' for b in unpacked_data[1])
+            self.subcarrier_zero_frequency      = unpacked_data[2]
+            self.first_active_subcarrier_index  = unpacked_data[3]
+            self.subcarrier_spacing             = unpacked_data[4] * KHZ
+            self.rxmer_data_length              = unpacked_data[5]
+            self.rxmer_data                     = self.pnm_data[head_len:head_len + self.rxmer_data_length]
 
             if len(self.rxmer_data) < self.rxmer_data_length:
                 raise ValueError(f"Insufficient RxMER data length: {len(self.rxmer_data)} based on header field: {self.rxmer_data_length}")
@@ -73,32 +76,34 @@ class CmDsOfdmRxMer(PnmHeader):
                               f"channel_id={self.channel_id}, mac={self.mac_address}, "
                               f"zero_freq={self.subcarrier_zero_frequency}, active_idx={self.first_active_subcarrier_index}, "
                               f"spacing={self.subcarrier_spacing}, data_len={self.rxmer_data_length}")
+            
         except struct.error as e:
             self.logger.error(f"Struct unpack error: {e}")
             raise
+
         except Exception as e:
             self.logger.error(f"Error processing RxMER data: {e}")
             raise
 
-    def get_rxmer_values(self) -> List[float]:
+    def get_rxmer_values(self) -> FloatSeries:
         """
         Converts raw RxMER bytes to float values in quarter-dB steps.
 
         Returns:
             List[float]: Decoded RxMER values.
         """
-        if self.rx_mer_float_data is not None:
+        if self.rx_mer_float_data:
+            self.logger.info(f"RxMER Float Data: {self.rx_mer_float_data}")
             return self.rx_mer_float_data
 
         if not self.rxmer_data:
             self.logger.error("RxMER data is empty or uninitialized.")
             return []
 
-        self.rx_mer_float_data = [
-            min(max(byte / 4.0, 0.0), 63.5)
-            for byte in self.rxmer_data
-        ]
-        self.logger.debug(f"Decoded {len(self.rx_mer_float_data)} RxMER float values.")
+        self.rx_mer_float_data = [min(max(byte / 4.0, 0.0), 63.5) for byte in self.rxmer_data]
+
+        self.logger.info(f"Decoded {len(self.rx_mer_float_data)} RxMER float values.")
+
         return self.rx_mer_float_data
 
     def get_raw_data(self) -> Tuple[Optional[int], Optional[str], Optional[int],
@@ -144,8 +149,8 @@ class CmDsOfdmRxMer(PnmHeader):
         
         if not header_only:
             data["value_units"] = "dB"
-            values:List[float] = self.get_rxmer_values()
-            data["values"]= values
+            values:FloatSeries = self.get_rxmer_values()
+            data["values"] = values
             data["signal_statistics"] = SignalStatistics(values).compute()
             data["modulation_statistics"] = ShannonSeries(values).to_dict()
 

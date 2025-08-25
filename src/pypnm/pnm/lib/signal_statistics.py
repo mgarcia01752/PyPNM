@@ -3,6 +3,7 @@
 
 from typing import Any, Dict
 import numpy as np
+
 from pypnm.lib.types import ArrayLikeF64
 
 class SignalStatistics:
@@ -28,7 +29,7 @@ class SignalStatistics:
         
         # ensure data is a 1-D float array
         self.data = np.asarray(data, dtype=float).flatten()
-
+        
         if self.data.size == 0:
             raise ValueError("Input data must contain at least one sample.")
     

@@ -3,20 +3,24 @@
 
 import logging
 from struct import unpack, calcsize
-from typing import List, Optional, Tuple, Dict
+from typing import Optional, Dict
 import json
 
+from pypnm.lib.constants import KHZ
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
+from pypnm.lib.types import ComplexArray
 
 
 class CmDsConstDispMeas(PnmHeader):
     """
     Parses and processes Downstream Constellation Display Measurement (CmDsConstDispMeas) data.
     Inherits from PnmHeader to handle binary SNMP-based CM measurement data.
-    """    
+    """
+    CONST_DISPLAY_DATA_COMPLEX_LENGTH:int = 4
+
     def __init__(self, binary_data: bytes):
         """
         Initializes the CmDsConstDispMeas instance and parses the binary payload.
@@ -35,23 +39,23 @@ class CmDsConstDispMeas(PnmHeader):
         self.subcarrier_spacing: Optional[int] = None
         self.display_data_length: Optional[int] = None
         self.constellation_display_data: Optional[bytes] = None
-        self.parsed_constellation_data: Optional[List[Tuple[float, float]]] = None
+        self.parsed_constellation_data: Optional[ComplexArray] = None
 
-        self._process_const_disp_meas()
+        self.__process()
 
-    def _process_const_disp_meas(self) -> None:
+    def __process(self) -> None:
         """
         Parses the binary payload for constellation display measurement.
 
         Expected binary format:
             - 1 byte: channel ID
             - 6 bytes: CM MAC address
-            - 4 bytes: subcarrier zero frequency (Hz)
-            - 2 bytes: actual modulation order
+            - 4 bytes: subcarrier zero frequency    (Hz)
+            - 2 bytes: actual modulation order      (DsOfdmModulationType)
             - 2 bytes: number of sample symbols
-            - 1 byte: subcarrier spacing (kHz)
-            - 4 bytes: display data length (bytes)
-            - N bytes: constellation display data (complex samples)
+            - 1 byte:  subcarrier spacing           (kHz)
+            - 4 bytes: display data length          (bytes)
+            - N bytes: constellation display data   (complex samples)
         """
         
         if self.get_pnm_file_type() != PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY:
@@ -62,18 +66,17 @@ class CmDsConstDispMeas(PnmHeader):
         const_disp_meas_size = calcsize(const_disp_meas_format)
         unpacked_data = unpack(const_disp_meas_format, self.pnm_data[:const_disp_meas_size])
 
-        self.channel_id = unpacked_data[0]
-        self.mac_address = unpacked_data[1].hex(':')
-        self.subcarrier_zero_frequency = unpacked_data[2]
-        self.actual_modulation_order = unpacked_data[3]
-        self.num_sample_symbols = unpacked_data[4]
-        self.subcarrier_spacing = unpacked_data[5]
-        self.display_data_length = unpacked_data[6]
+        self.channel_id                 = unpacked_data[0]
+        self.mac_address                = unpacked_data[1].hex(':')
+        self.subcarrier_zero_frequency  = unpacked_data[2]
+        self.actual_modulation_order    = unpacked_data[3]
+        self.num_sample_symbols         = unpacked_data[4]
+        self.subcarrier_spacing         = unpacked_data[5] * KHZ
+        self.display_data_length        = unpacked_data[6]
         self.constellation_display_data = self.pnm_data[const_disp_meas_size:]
+        self.parsed_constellation_data  = self._process_constellation_display_data()
 
-        self.parsed_constellation_data = self._process_constellation_display_data()
-
-    def _process_constellation_display_data(self) -> List[List[float]]:
+    def _process_constellation_display_data(self) -> ComplexArray:
         """
         Decodes the constellation display binary data into a list of [i, q] float pairs.
 
@@ -83,11 +86,10 @@ class CmDsConstDispMeas(PnmHeader):
             List of [i, q] float pairs.
         """
         offset = 0
-        raw = self.constellation_display_data
+        raw:bytes = self.constellation_display_data
         decode_list = []
 
-        while offset + 4 <= len(raw):
-            # Assuming this returns a list of complex numbers
+        while offset + self.CONST_DISPLAY_DATA_COMPLEX_LENGTH <= len(raw):
             decoded = FixedPointDecoder.decode_complex_data(raw[offset:offset + 4], (2, 13))
             
             for pt in decoded:
@@ -103,20 +105,26 @@ class CmDsConstDispMeas(PnmHeader):
 
         Returns:
             dict: Parsed data including metadata and I/Q constellation points.
+        
+        Notes:
+            actual_modulation_order ---Convert--> DsOfdmModulationType
+            
         """
         data = self.getPnmHeader(header_only=True)
         
-        data.update ({
-            'channel_id': self.channel_id,
-            'mac_address': self.mac_address,
-            'subcarrier_zero_frequency': self.subcarrier_zero_frequency,
-            'actual_modulation_order': DsOfdmModulationType.get_name(self.actual_modulation_order),
-            'num_sample_symbols': self.num_sample_symbols,
-            'subcarrier_spacing': self.subcarrier_spacing *1000,
-            'sample_length': self.display_data_length,
-            "value_units":"[Real(I), Imaginary(Q)]",
-            "values": self.parsed_constellation_data,
-        })
+        data.update (
+            {
+                'channel_id': self.channel_id,
+                'mac_address': self.mac_address,
+                'subcarrier_zero_frequency': self.subcarrier_zero_frequency,
+                'actual_modulation_order': self.actual_modulation_order,
+                'num_sample_symbols': self.num_sample_symbols,
+                'subcarrier_spacing': self.subcarrier_spacing,
+                'sample_length': self.display_data_length,
+                "sample_units":"[Real(I), Imaginary(Q)]",
+                "samples": self.parsed_constellation_data,
+            }
+        )
         
         return data
 

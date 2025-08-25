@@ -2,21 +2,27 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from typing import List, Union
+from pathlib import Path
+from typing import List, Union, cast
 
 from fastapi import APIRouter, HTTPException
 
+from pypnm.api.routes.basic.abstract.analysis_report import Analysis
+from pypnm.api.routes.basic.constellation_display_analysis_report import ConstellationDisplayReport
+from pypnm.api.routes.common.classes.analysis.analysis import AnalysisType
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmAnalysisResponse
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.api.routes.docs.pnm.ds.ofdm.const_display.schemas import PnmConstellationDisplayRequest, PnmConstellationDisplayResponse
+from pypnm.api.routes.docs.pnm.ds.ofdm.const_display.schemas import PnmConstellationDisplayAnalysisRequest, PnmConstellationDisplayRequest, PnmConstellationDisplayResponse
 from pypnm.api.routes.docs.pnm.ds.ofdm.const_display.service import CmDsOfdmConstDisplayService
+from pypnm.api.routes.docs.pnm.files.service import FileType, PnmFileService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import PathLike
 
 
 class ConstellationDisplayRouter:
@@ -66,8 +72,60 @@ class ConstellationDisplayRouter:
                     self.logger.error(msg)
                     return SnmpResponse(mac_address=str(mac), status=status, message=msg)                    
                 
-                modulation_order_offset = request.modulation_order_offset
-                number_sample_symbol = request.number_sample_symbol
+                modulation_order_offset = request.capture_settings.modulation_order_offset
+                number_sample_symbol = request.capture_settings.number_sample_symbol
+
+                service = CmDsOfdmConstDisplayService(
+                    cable_modem=cm,
+                    modulation_order_offset=modulation_order_offset,
+                    number_sample_symbol=number_sample_symbol,)
+                
+                msg_rsp: MessageResponse = await service.set_and_go()
+
+                if msg_rsp.status != ServiceStatusCode.SUCCESS:
+                    self.logger.error(
+                        f"[getMeasurement] Constellation Display failed with status: {msg_rsp.status.name}")
+                    raise HTTPException(status_code=500, detail="Constellation Display SNMP execution failed")
+
+                cps = CommonProcessService(msg_rsp)
+                msg_rsp = cps.process()
+                                
+                return PnmConstellationDisplayResponse(
+                    mac_address=request.cable_modem.mac_address,
+                    status=msg_rsp.status,
+                    data=msg_rsp.payload_to_dict(),)
+
+            except HTTPException:
+                raise
+
+            except Exception as e:
+                self.logger.exception(f"[getMeasurement] Error for MAC {request.cable_modem.mac_address}")
+                raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}")
+
+        @self.router.post(f"/{self.base_endpoint}/getAnalysis", 
+                          response_model=Union[PnmAnalysisResponse, SnmpResponse])
+        async def get_analysis(request: PnmConstellationDisplayAnalysisRequest):
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            self.logger.info(f"Retrieving Constellation Display Analysis for MAC: {mac}, IP: {ip}, Analysis Type: {request.analysis.type}")
+
+            cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
+            
+            status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
+            if status != ServiceStatusCode.SUCCESS:
+                self.logger.error(msg)
+                return SnmpResponse(mac_address=str(mac), status=status, message=msg)
+                         
+            try:
+                cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
+                
+                status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
+                if status != ServiceStatusCode.SUCCESS:
+                    self.logger.error(msg)
+                    return SnmpResponse(mac_address=str(mac), status=status, message=msg)                    
+                
+                modulation_order_offset = request.capture_settings.modulation_order_offset
+                number_sample_symbol = request.capture_settings.number_sample_symbol
 
                 service = CmDsOfdmConstDisplayService(
                     cable_modem=cm,
@@ -84,33 +142,24 @@ class ConstellationDisplayRouter:
                 cps = CommonProcessService(msg_rsp)
                 msg_rsp = cps.process()
 
-                return PnmConstellationDisplayResponse(
-                    mac_address=request.cable_modem.mac_address,
-                    status=msg_rsp.status,
-                    data=msg_rsp.payload_to_dict(),)
+                analysis = Analysis(AnalysisType.BASIC, msg_rsp)
 
-            except HTTPException:
-                raise
+                if request.output.type == FileType.JSON.value:
+                    return PnmAnalysisResponse(
+                        mac_address=mac, 
+                        status=ServiceStatusCode.SUCCESS, data=analysis.get_results())
 
-            except Exception as e:
-                self.logger.exception(f"[getMeasurement] Error for MAC {request.cable_modem.mac_address}")
-                raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}")
+                elif request.output.type == FileType.ARCHIVE.value:
+                    
+                    analysis_rpt = ConstellationDisplayReport(analysis)
+                    rpt:Path = analysis_rpt.build_report()
+                    return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)
 
-        @self.router.post(f"/{self.base_endpoint}/getAnalysis", 
-                          response_model=Union[PnmAnalysisResponse, SnmpResponse])
-        async def get_analysis(request: PnmAnalysisRequest):
-            mac = request.cable_modem.mac_address
-            ip = request.cable_modem.ip_address
-            self.logger.info(f"Retrieving Constellation Display Analysis for MAC: {mac}, IP: {ip}, Analysis Type: {request.analysis.type}")
-
-            cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
+                else:
+                    return PnmAnalysisResponse(
+                        mac_address=mac,
+                        status=ServiceStatusCode.INVALID_OUTPUT_TYPE, data={})
             
-            status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
-            if status != ServiceStatusCode.SUCCESS:
-                self.logger.error(msg)
-                return SnmpResponse(mac_address=str(mac), status=status, message=msg)             
-            try:
-                pass
             except HTTPException:
                 raise
             except Exception as e:

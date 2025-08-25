@@ -21,6 +21,9 @@ from typing import (
 
 import numpy as np
 from numpy.typing import NDArray
+ 
+String = str
+StringArray = List[String]
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Core numerics
@@ -30,7 +33,10 @@ Float64 = np.float64
 ByteArray = List[np.uint8]
 
 # Generic array-likes (inputs)
-ArrayLike = Union[Sequence[Number], NDArray[Any]]
+# TODO: Review to remove -> _ArrayLike = Union[Sequence[Number], NDArray[Any]]
+_ArrayLike = Union[Sequence[Number], NDArray[Any]]
+
+ArrayLike = List[Number]
 ArrayLikeF64 = Union[Sequence[float], NDArray[np.float64]]
 
 # Canonical ndarray outputs (internal processing should normalize to these)

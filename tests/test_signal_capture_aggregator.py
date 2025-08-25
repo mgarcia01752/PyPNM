@@ -35,7 +35,7 @@ class TestSignalCaptureAggregator(unittest.TestCase):
 
     def test_add_coordinate_skips_non_numeric_and_non_finite(self):
         with self.assertLogs(_LOGGER_NAME, level="DEBUG") as cm:
-            self.agg.add_coordinate("NaN", 1.0)          # non-numeric
+            self.agg.add_coordinate("NaN", 1.0)          # type: ignore # non-numeric
             self.agg.add_coordinate(1.0, float("inf"))   # non-finite
             self.agg.add_coordinate(np.nan, 1.0)         # non-finite
         self.assertEqual(len(self.agg), 0)
@@ -73,7 +73,7 @@ class TestSignalCaptureAggregator(unittest.TestCase):
         ]
         for name, expected in cases:
             with self.subTest(reducer=name):
-                agg = SignalCaptureAggregator(reducer=name)
+                agg = SignalCaptureAggregator(reducer=name) # type: ignore
                 agg.add_coordinate(0.0, 10.0)
                 agg.add_coordinate(0.0, 14.0)
                 gx, gy = agg.reconstruct(step=1.0)

@@ -1,20 +1,26 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from enum import Enum
-import json
 import logging
+import numpy as np
+
+from enum import Enum
 from typing import Callable, List, Dict, Any
 
-import numpy as np
+from pypnm.api.routes.common.classes.analysis.model.schema import ConstellationDisplayAnalysisModel
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
-from pypnm.docsis.cm_snmp_operation import Utils
+from pypnm.docsis.cm_snmp_operation import SystemDescriptor, Utils
+from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.file_processor import FileProcessor
+from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.qam.lut_mgr import QamLutManager
+from pypnm.lib.qam.types import QamModulation
 from pypnm.lib.signal_processing.complex_array_ops import ComplexArrayOps
 from pypnm.lib.signal_processing.group_delay import GroupDelay
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
 from pypnm.lib.types import ComplexArray
+from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
@@ -67,8 +73,8 @@ class Analysis:
             self.analysis.append(self.basic_analysis_ds_chan_est(measurement))
 
         elif pnm_file_type == PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY.value:
-            self.logger.debug("Stub: Processing DOWNSTREAM_CONSTELLATION_DISPLAY")
-            pass
+            self.logger.debug("Processing DOWNSTREAM_CONSTELLATION_DISPLAY")
+            self.analysis.append(self.basic_analysis_ds_constellation_display(measurement).model_dump())
 
         elif pnm_file_type == PnmFileType.RECEIVE_MODULATION_ERROR_RATIO.value:
             self.logger.debug("Processing RECEIVE_MODULATION_ERROR_RATIO")
@@ -404,7 +410,49 @@ class Analysis:
         }
 
         return result
-     
+
+    @classmethod
+    def basic_analysis_ds_constellation_display(cls,measurement: Dict[str, Any],) -> ConstellationDisplayAnalysisModel:
+        """
+        Build a minimal constellation analysis payload from a downstream OFDM
+        measurement dictionary.
+
+        Expected keys in `measurement`
+        ------------------------------
+        - values : ComplexArray                  # required; list of (real, imag)
+        - pnm_header : dict                      # optional
+        - mac_address : str                      # optional
+        - channel_id : int                       # optional
+        - num_sample_symbols : int               # optional; defaults to len(values)
+        - actual_modulation_order : int|str      # optional; 'QAM-256' normalized → 256
+
+        Returns
+        -------
+        ConstellationDisplayAnalysisModel
+        """
+        samples: ComplexArray = measurement.get("samples") or []
+        if not samples:
+            raise ValueError("measurement['values'] is required and must be a non-empty ComplexArray.")
+
+        amo:int = measurement.get("actual_modulation_order", DsOfdmModulationType.UNKNOWN)
+        num_sample_symbols = int(measurement.get("num_sample_symbols", len(samples)))
+
+        #Get Hard/Soft Decsions
+        qm:QamModulation    = QamModulation.from_DsOfdmModulationType(amo)
+        hard                = QamLutManager().get_hard_decisions(qm)
+        soft                = QamLutManager().scale_soft_decisions(qm, samples)
+
+        return ConstellationDisplayAnalysisModel(
+            device_details      = measurement.get("device_details", SystemDescriptor.empty()),
+            pnm_header          = measurement.get("pnm_header", {}),
+            mac_address         = measurement.get("mac_address", MacAddress.null()),
+            channel_id          = measurement.get("channel_id", INVALID_CHANNEL_ID),
+            num_sample_symbols  = num_sample_symbols,
+            modulation_order    = qm,           # QamModulation 
+            hard                = hard,         # Scaled
+            soft                = soft          # Scaled
+        )
+
     def get_results(self, full_dict = True) -> Dict[str, Any]:
         """
         Returns the list of processed analysis results.

@@ -6,8 +6,8 @@ from __future__ import annotations
 import logging
 import math
 import re
-from typing import Any, Dict, List, Mapping, Tuple, cast
 
+from typing import Any, Dict, List, Mapping, Tuple, cast
 from pydantic import BaseModel, ConfigDict, Field
 
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport
@@ -19,7 +19,7 @@ from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.numeric_scaler import NumericScaler
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
 from pypnm.lib.signal_processing.shan.series import Shannon
-from pypnm.lib.types import IntSeries
+from pypnm.lib.types import FloatSeries, IntSeries
 
 class RxMerAnalysisParameters(BaseModel):
     """
@@ -60,10 +60,10 @@ class RxMerAnalysisReport(AnalysisReport):
             model = cast(RxMerAnalysis, common_model)
             chan = int(model.channel_id)
 
-            x:List[float]   = model.raw_x
-            y:List[float]   = model.raw_y
-            sh:List[float]  = model.parameters.shannon_limit_db
-            rl:List[float]  = model.parameters.regression_line
+            x:FloatSeries   = model.raw_x
+            y:FloatSeries   = model.raw_y
+            sh:FloatSeries  = model.parameters.shannon_limit_db
+            rl:FloatSeries  = model.parameters.regression_line
 
             """
             Single Channel Capture
@@ -120,16 +120,15 @@ class RxMerAnalysisReport(AnalysisReport):
 
         for common_model in self.get_common_analysis_model():
             any_models = True
-            model = cast(RxMerAnalysis, common_model)
-            chan = int(model.channel_id)
-            chan_id_list.append(chan)
-
-            x_hz = model.raw_x
-            y_db = model.raw_y
-            rl   = model.parameters.regression_line
-            mc   = model.parameters.modulation_count 
+            model       = cast(RxMerAnalysis, common_model)
+            channel_id  = int(model.channel_id)
+            x_hz        = model.raw_x
+            y_db        = model.raw_y
+            rl          = model.parameters.regression_line
+            mc          = model.parameters.modulation_count 
 
             x_khz, _ = NumericScaler().to_prefix(values=x_hz, target="k")
+            chan_id_list.append(channel_id)
 
             '''
             RxMER with Regression Line - All OFDM DS Channels
@@ -137,14 +136,14 @@ class RxMerAnalysisReport(AnalysisReport):
             try:
 
                 cfg = PlotConfig(
-                    title=f"RxMER OFDM Channel: {chan}",
+                    title=f"RxMER OFDM Channel: {channel_id}",
                     x=x_khz, xlabel="Frequency (kHz)",
                     y_multi=[y_db, rl],
                     y_multi_label=["RxMER", "Regression Line"],
                     grid=True, legend=True, transparent=False,)
 
-                multi = self.create_png_fname(tags=[str(chan), 'rxmer'])
-                self.logger.info("Creating MatPlot: %s for channel: %s", multi, chan)
+                multi = self.create_png_fname(tags=[str(channel_id), 'rxmer'])
+                self.logger.info("Creating MatPlot: %s for channel: %s", multi, channel_id)
 
                 mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_multi_line(filename=multi)
@@ -152,7 +151,7 @@ class RxMerAnalysisReport(AnalysisReport):
                 out.append(mgr)
 
             except Exception as exc:
-                self.logger.exception("Failed to create plot for channel %s: %s", chan, exc)
+                self.logger.exception("Failed to create plot for channel %s: %s", channel_id, exc)
 
             '''
             Modulation Order Count - All OFDM DS Channels
@@ -161,13 +160,13 @@ class RxMerAnalysisReport(AnalysisReport):
                 bpsym, order_count = self.__modulation_order_count_to_series(mc)
                 
                 cfg = PlotConfig(
-                    title=f"RxMER OFDM Channel: {chan} - Modulation Order Count",
+                    title=f"RxMER OFDM Channel: {channel_id} - Modulation Order Count",
                     x=bpsym,                  xlabel="Bits Per Symbol (bps)",
                     y=order_count,            ylabel="Order Count",
                     grid=True, legend=True, transparent=False,)
 
-                mod_count_fname = self.create_png_fname(tags=[str(chan), 'modulation_count'])
-                self.logger.info("Creating MatPlot: %s for channel: %s", mod_count_fname, chan)
+                mod_count_fname = self.create_png_fname(tags=[str(channel_id), 'modulation_count'])
+                self.logger.info("Creating MatPlot: %s for channel: %s", mod_count_fname, channel_id)
 
                 mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_line(filename=mod_count_fname)
@@ -175,7 +174,7 @@ class RxMerAnalysisReport(AnalysisReport):
                 out.append(mgr)
 
             except Exception as exc:
-                self.logger.exception("Failed to create plot for channel %s: %s", chan, exc)
+                self.logger.exception("Failed to create plot for channel %s: %s", channel_id, exc)
 
             '''
             Signal Capture Aggregation - All OFDM DS Channels
@@ -230,15 +229,13 @@ class RxMerAnalysisReport(AnalysisReport):
         for idx, data in enumerate(data_list):
 
             try:
-                # channel id
-                channel_id = int(data.get("channel_id", self.INVALID_CHANNEL_ID))
 
-                # extract raw
-                cv = data.get("carrier_values") or {}
-                ms = data.get("modulation_statistics") or {}
-                x_raw = list(cv.get("frequency") or [])
-                y_raw = list(cv.get("magnitude") or [])
-                sh_raw = list(ms.get("snr_db_limit") or [])
+                channel_id  = int(data.get("channel_id", self.INVALID_CHANNEL_ID))
+                cv          = data.get("carrier_values") or {}
+                ms          = data.get("modulation_statistics") or {}
+                x_raw       = list(cv.get("frequency") or [])
+                y_raw       = list(cv.get("magnitude") or [])
+                sh_raw      = list(ms.get("snr_db_limit") or [])
                 mod_count:Dict[str,int] = ms.get("supported_modulation_counts") or {}
 
                 # coerce -> float (and finiteness)
@@ -265,14 +262,14 @@ class RxMerAnalysisReport(AnalysisReport):
                 y_hat = LinearRegression1D(y).fitted_values()
 
                 params = RxMerAnalysisParameters(
-                    shannon_limit_db=sh, 
-                    regression_line=y_hat,              # type: ignore
-                    modulation_count=mod_count) 
+                    shannon_limit_db    =   sh, 
+                    regression_line     =   y_hat,              # type: ignore
+                    modulation_count    =   mod_count) 
 
                 model = RxMerAnalysis(
-                    channel_id=channel_id,
-                    raw_x=x, raw_y=y,
-                    parameters=params,)
+                    channel_id  =   channel_id,
+                    raw_x=x,        raw_y=y,
+                    parameters  =   params,)
                 
                 # Must register Model
                 self.register_common_analysis_model(channel_id, model)

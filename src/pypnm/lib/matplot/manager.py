@@ -20,7 +20,6 @@ from pypnm.lib.types import ArrayLike, ComplexArray, Number
 
 @dataclass(frozen=True)
 class PlotConfig:
-    # Optional shared data
     x: Optional[ArrayLike] = None
     y: Optional[ArrayLike] = None
     z: Optional[ArrayLike] = None
@@ -80,6 +79,7 @@ class MatplotManager:
         self._png_files: List[Path] = []
 
     # ──────────────────────────── internals ────────────────────────────
+    
     def _new_fig(self, projection: Optional[str] = None):
         fig = plt.figure(figsize=self.figsize, dpi=self.dpi)
         ax = fig.add_subplot(111, projection=projection) if projection else fig.add_subplot(111)
@@ -116,9 +116,9 @@ class MatplotManager:
             z           = pick(user_cfg.z           if user_cfg else None, base.z,           method_defaults.z),
             y_multi     = pick(user_cfg.y_multi     if user_cfg else None, base.y_multi,     method_defaults.y_multi),
             y_multi_label = pick(user_cfg.y_multi_label if user_cfg else None, base.y_multi_label, method_defaults.y_multi_label),
-            qam         = pick(user_cfg.qam         if user_cfg else None, base.qam,         method_defaults.qam),   # NEW
-            soft        = pick(user_cfg.soft        if user_cfg else None, base.soft,        method_defaults.soft),  # NEW
-            hard        = pick(user_cfg.hard        if user_cfg else None, base.hard,        method_defaults.hard),  # NEW
+            qam         = pick(user_cfg.qam         if user_cfg else None, base.qam,         method_defaults.qam),   
+            soft        = pick(user_cfg.soft        if user_cfg else None, base.soft,        method_defaults.soft),  
+            hard        = pick(user_cfg.hard        if user_cfg else None, base.hard,        method_defaults.hard), 
         )
 
     def _finish(self, fig, ax, path: Path, cfg: PlotConfig) -> Path:
@@ -150,6 +150,7 @@ class MatplotManager:
         return path
 
     # ---- tolerant array helpers (less validation) ----
+
     def _to_1d(self, a: Optional[ArrayLike]) -> np.ndarray:
         if a is None:
             return np.array([], dtype=float)
@@ -187,6 +188,7 @@ class MatplotManager:
         return a[:, 0], a[:, 1]
 
     # ──────────────────────────── plots ────────────────────────────
+
     def plot_line(
         self,
         filename: Union[str, Path],
@@ -311,10 +313,10 @@ class MatplotManager:
 
     def plot_constellation(
         self,
-        soft: Optional[ComplexArray],
         filename: Union[str, Path],
         *,
         hard: Optional[ComplexArray] = None,
+        soft: Optional[ComplexArray] = None,
         show_boundaries: bool = True,
         boundary_alpha: float = 0.25,
         crosshair_size: float = 80.0,
@@ -349,7 +351,9 @@ class MatplotManager:
 
         # Soft cloud
         if x_soft.size and y_soft.size:
-            ax.scatter(x_soft, y_soft, alpha=0.75, label="Soft")
+            ax.scatter(x_soft, y_soft, marker='.', s=8, linewidths=0,
+                    edgecolors='none', alpha=0.75, label='Soft', rasterized=True)
+
 
         # Hard centroids as red crosshairs + decision boundaries
         if x_hard.size and y_hard.size:

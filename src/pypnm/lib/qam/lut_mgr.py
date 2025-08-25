@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+import numpy as np
+from pypnm.lib.qam.code_generator.auto_gen_qam_lut import QamScale
 from pypnm.lib.qam.qam_lut import QAM_SYMBOL_CODEWORD_LUT
-from typing import List, Literal
+from typing import List, Literal, cast
 
-from pypnm.lib.qam.types import CodeWord, HardDecisionArray, LutDict, QamModulation, SymbolArray
+from pypnm.lib.qam.types import (
+    CodeWord, HardDecisionArray, SoftDecisionArray, LutDict, QamModulation, SymbolArray)
 
 class QamLutManager:
     """
@@ -15,7 +18,7 @@ class QamLutManager:
     - self.qam_lut[qam_mod.name] is a dict with at least:
         {
           "hard": HardDecisionArray,            # list of (I,Q)
-          "code_words": { int: (I,Q), ... }    # codeword -> (I,Q)
+          "code_words": { int: (I,Q), ... }     # codeword -> (I,Q)
         }
     - 'code_words' keys ideally form a dense range [0 .. 2^k - 1] so that
       k = bits-per-symbol can be inferred unambiguously.
@@ -37,12 +40,10 @@ class QamLutManager:
         HardDecisionArray
             List of (I, Q) tuples for the modulation's constellation.
         """
-        hd = self.qam_lut[qam_mod.name.__str__()].get('hard', [])
-        return list(hd)  # Ensure the result is a list
+        hd:HardDecisionArray = self.qam_lut[qam_mod.name.__str__()].get('hard', [])
+        return hd
 
-    def get_codeword_symbol(
-        self,
-        qam_mod: QamModulation,
+    def get_codeword_symbol(self, qam_mod: QamModulation,
         code_word: CodeWord,
         *,
         bit_order: Literal["msb", "lsb"] = "msb",) -> SymbolArray:
@@ -113,6 +114,37 @@ class QamLutManager:
 
         return symbols
 
+    def get_scale_factor(self,qam_mod: QamModulation) -> QamScale:
+        entry = self.qam_lut.get(qam_mod.name)
+        return cast(QamScale, entry['scale_factor'])
+
+    def scale_soft_decisions(self, qam_mod: QamModulation, soft: SoftDecisionArray) -> SoftDecisionArray:
+        """
+        Scale soft-decision IQ points by the modulation-specific factor.
+
+        Parameters
+        ----------
+        qam_mod : QamModulation
+            Modulation used to derive the scale factor.
+        soft : SoftDecisionArray
+            List of (I, Q) float pairs.
+
+        Returns
+        -------
+        SoftDecisionArray
+            New list with each pair scaled by `scale`.
+        """
+        if not soft:
+            return []
+        
+        scale = float(self.get_scale_factor(qam_mod))
+
+        a = np.asarray(soft, dtype=np.float64)
+        if a.ndim != 2 or a.shape[1] != 2:
+            raise ValueError(f"soft must be a sequence of (I, Q) pairs; got shape {a.shape}")
+        a = a * scale
+        return [(float(re), float(im)) for re, im in a]
+
     # ----------------------------
     # Helpers
     # ----------------------------
@@ -146,3 +178,6 @@ class QamLutManager:
             return lut[cw]
         except KeyError:
             raise KeyError(f"Codeword {cw} not found in LUT")  # re-raise with context
+
+
+

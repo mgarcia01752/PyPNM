@@ -1,36 +1,35 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from abc import ABC, abstractmethod
 import logging
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseModel, Field
 
 import pandas as pd
 import matplotlib.pyplot as plt
 import zipfile
 
+from abc import ABC, abstractmethod
+from pathlib import Path
+from typing import Any, Dict, List, Union
+from pydantic import BaseModel, Field
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.api.routes.docs.pnm.files.service import MacAddress
 from pypnm.config.system_config_settings import SystemConfigSettings
-
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager
-from pypnm.lib.types import PathLike
+from pypnm.lib.types import PathArray, PathLike
 from pypnm.lib.utils import Utils
 
 class AnalysisOutputModel(BaseModel):
     """
     Pydantic model for SingleChannelAnalysisOutput data.
     """
-    time: str = Field(..., description="Time")
-    csv_file: List[str] = Field(..., description="List of CSV file(s)")
-    plot_file: List[str] = Field(..., description="List of PNG plot file(s)")
-    archive_file: str = Field(..., description="File name of archive file containging analysis files")
+    time: int               = Field(..., description="Ephoc Time")
+    csv_file: List[str]     = Field(..., description="List of CSV file(s)")
+    plot_file: List[str]    = Field(..., description="List of PNG plot file(s)")
+    archive_file: str       = Field(..., description="File name of archive file containging analysis files")
     
 class AnalysisReport(ABC):
     '''
@@ -182,14 +181,14 @@ class AnalysisReport(ABC):
         """
         return list(self._common_analysis_model.keys())
 
-    def build_report(self) -> PathLike:
+    def build_report(self) -> Path:
         """
         Build the analysis report.
         """
         self._process()
 
-        f:List[PathLike] = []
-        arc_file:PathLike = self._archive_dir
+        f:PathArray = [Path('')]
+        archive_file:Path = Path('')
 
         for csv_mgr in self.create_csv():
 
@@ -206,12 +205,12 @@ class AnalysisReport(ABC):
                 f.append(fn)
 
         try:
-            arc_file = ArchiveManager().zip_files(files=f, archive_path=self.create_archive_fname())
+            archive_file = ArchiveManager().zip_files(files=f, archive_path=self.create_archive_fname())
 
         except Exception as e:
             self.logger.error(f"Failed to create archive: {e}")
 
-        return arc_file
+        return archive_file
 
     @abstractmethod
     def _process(self) -> None:
@@ -236,11 +235,11 @@ class AnalysisReport(ABC):
 
         self._data_list:List[Dict[str, Any]] = self._analysis.get_results().get('analysis') # type: ignore
 
-        self._png_dir = SystemConfigSettings.png_dir
-        self._csv_dir = SystemConfigSettings.csv_dir
-        self._archive_dir = SystemConfigSettings.archive_dir
+        self._png_dir       = SystemConfigSettings.png_dir
+        self._csv_dir       = SystemConfigSettings.csv_dir
+        self._archive_dir   = SystemConfigSettings.archive_dir
 
-        self._group_time = Utils.time_stamp()        
+        self._group_time        = Utils.time_stamp()        
         self._base_filename:str = ""
         self._common_analysis_model:Dict[int, BaseModel] = {}
 

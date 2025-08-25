@@ -6,6 +6,7 @@ import json
 from struct import calcsize, unpack
 from typing import List, Optional, Tuple, Dict
 
+from pypnm.lib.constants import KHZ
 from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
@@ -107,7 +108,7 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
             for c in coeffs
         ]
         
-        sub_car_spacing:int = int(self.subcarrier_spacing) * 1000   # Hz
+        sub_car_spacing:int = int(self.subcarrier_spacing) * KHZ
         
         data = self.getPnmHeader(header_only=True)
         
