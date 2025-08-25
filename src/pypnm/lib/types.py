@@ -22,35 +22,35 @@ from typing import (
 import numpy as np
 from numpy.typing import NDArray
  
-String = str
+String      = str
 StringArray = List[String]
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Core numerics
 # ────────────────────────────────────────────────────────────────────────────────
-Number = Union[int, float, np.number]
-Float64 = np.float64
-ByteArray = List[np.uint8]
+Number      = Union[int, float, np.number]
+Float64     = np.float64
+ByteArray   = List[np.uint8]
 
 # Generic array-likes (inputs)
 # TODO: Review to remove -> _ArrayLike = Union[Sequence[Number], NDArray[Any]]
 _ArrayLike = Union[Sequence[Number], NDArray[Any]]
 
-ArrayLike = List[Number]
-ArrayLikeF64 = Union[Sequence[float], NDArray[np.float64]]
+ArrayLike       = List[Number]
+ArrayLikeF64    = Union[Sequence[float], NDArray[np.float64]]
 
 # Canonical ndarray outputs (internal processing should normalize to these)
-NDArrayF64 = NDArray[np.float64]
-NDArrayI64 = NDArray[np.int64]
+NDArrayF64      = NDArray[np.float64]
+NDArrayI64      = NDArray[np.int64]
 
 # Simple series types
-FloatSeries = List[float]
-IntSeries = List[int]
+FloatSeries     = List[float]
+IntSeries       = List[int]
 TwoDFloatSeries = List[FloatSeries]  # e.g., heatmaps
 
 # Complex Number
-Complex = Tuple[float, float]
-ComplexArray = List[Complex]
+Complex         = Tuple[float, float]
+ComplexArray    = List[Complex]
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Paths / filesystem
@@ -81,6 +81,7 @@ PowerdBmV    = NewType("PowerdBmV", float)
 PowerdB      = NewType("PowerdB", float)        # generic dB (e.g., MER/SNR)
 MERdB        = NewType("MERdB", float)
 SNRdB        = NewType("SNRdB", float)
+SNRln        = NewType("SNRln", float)
 
 # DOCSIS identifiers
 ChannelId    = NewType("ChannelId", int)        # downstream/upstream logical channel id

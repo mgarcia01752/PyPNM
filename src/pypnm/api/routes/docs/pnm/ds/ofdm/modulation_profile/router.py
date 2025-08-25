@@ -2,8 +2,12 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from typing import Union
+from pathlib import Path
+from typing import Union, cast
 
+from fastapi.responses import FileResponse
+
+from pypnm.api.routes.basic.modulation_profile_analysis_report import ModulationProfileReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
 from pypnm.api.routes.common.classes.common_endpoint_classes.router import PnmFastApiRouter
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
@@ -14,6 +18,7 @@ from pypnm.api.routes.common.extended.common_messaging_service import MessageRes
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.ds.ofdm.modulation_profile.service import CmDsOfdmModProfileService
+from pypnm.api.routes.docs.pnm.files.service import FileType, PnmFileService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -68,7 +73,7 @@ Includes:
 
         cm: CableModem = CableModem(MacAddress(mac), Inet(ip))
 
-        status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
+        status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
 
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
@@ -89,14 +94,14 @@ Includes:
                                       status=msg_rsp.status, 
                                       measurement=msg_rsp.payload) # type: ignore
 
-    async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, SnmpResponse]:
+    async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, FileResponse, SnmpResponse]:
         mac = request.cable_modem.mac_address
         ip = request.cable_modem.ip_address
         self.logger.info(f"Starting Modulation Profile analysis for MAC: {mac}, IP: {ip}, Analysis Type: {request.analysis.type}")
         
         cm: CableModem = CableModem(MacAddress(mac), Inet(ip))
 
-        status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
+        status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(mac_address=str(mac), status=status,message=msg)         
@@ -109,11 +114,24 @@ Includes:
         
         analysis = Analysis(AnalysisType.BASIC, msg_rsp)
                 
-        return PnmAnalysisResponse(mac_address=mac,
-                                      status=ServiceStatusCode.SUCCESS,
-                                      data=analysis.get_results()) 
+        if request.output.type == FileType.JSON.value:
+            return PnmAnalysisResponse(
+                mac_address=mac, 
+                status=ServiceStatusCode.SUCCESS, data=analysis.get_results())
 
-    async def get_measurement_statistics_logic(self, request: PnmRequest) -> Union[SnmpResponse]:
+        elif request.output.type == FileType.ARCHIVE.value:
+            
+            analysis_rpt = ModulationProfileReport(analysis)
+            rpt:Path = cast(Path, analysis_rpt.build_report())
+
+            return PnmFileService().get_file(FileType.ARCHIVE,rpt.name)
+
+        else:
+            return PnmAnalysisResponse(
+                mac_address=mac,
+                status=ServiceStatusCode.INVALID_OUTPUT_TYPE, data={})
+
+    async def get_measurement_statistics_logic(self, request: PnmRequest) -> SnmpResponse:
         mac = request.cable_modem.mac_address
         ip = request.cable_modem.ip_address
         self.logger.info(f"Fetching Modulation Profile measurement statistics for MAC: {mac}, IP: {ip}")
@@ -129,8 +147,7 @@ Includes:
         return SnmpResponse(
             mac_address=str(mac),
             status=ServiceStatusCode.SUCCESS,
-            message="Measurement Statistics for OFDMA Pre-Equalization",
-            results={})
+            message="Measurement Statistics for OFDMA Pre-Equalization", results={})
 
 # Required for dynamic auto-registration
 router = ModulationProfileRouter().router

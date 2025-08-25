@@ -22,13 +22,15 @@ from pypnm.lib.matplot.manager import MatplotManager
 from pypnm.lib.types import PathArray, PathLike
 from pypnm.lib.utils import Utils
 
+AnalysisData    = List[Dict[str, Any]]
+
 class AnalysisOutputModel(BaseModel):
     """
     Pydantic model for SingleChannelAnalysisOutput data.
     """
     time: int               = Field(..., description="Ephoc Time")
     csv_file: List[str]     = Field(..., description="List of CSV file(s)")
-    plot_file: List[str]    = Field(..., description="List of PNG plot file(s)")
+    plot_file: List[str]    = Field(..., description="List of PNG Matplot file(s)")
     archive_file: str       = Field(..., description="File name of archive file containging analysis files")
     
 class AnalysisReport(ABC):
@@ -46,7 +48,7 @@ class AnalysisReport(ABC):
         self.csv_files: Dict[str, Union[str, CSVManager]] = {}
         self.plot_files: Dict[str, Union[str, bytes]] = {}
 
-    def get_analysis_data(self) -> List[Dict[str, Any]]:
+    def get_analysis_data(self) -> AnalysisData:
         return self._data_list
 
     def get_mac_address(self) -> MacAddress:    
@@ -233,19 +235,18 @@ class AnalysisReport(ABC):
 
     def __init(self):
 
-        self._data_list:List[Dict[str, Any]] = self._analysis.get_results().get('analysis') # type: ignore
+        self._data_list:AnalysisData        = self._analysis.get_results().get('analysis') # type: ignore
 
-        self._png_dir       = SystemConfigSettings.png_dir
-        self._csv_dir       = SystemConfigSettings.csv_dir
-        self._archive_dir   = SystemConfigSettings.archive_dir
+        self._png_dir:PathLike              = SystemConfigSettings.png_dir
+        self._csv_dir:PathLike              = SystemConfigSettings.csv_dir
+        self._archive_dir:PathLike          = SystemConfigSettings.archive_dir
 
-        self._group_time        = Utils.time_stamp()        
-        self._base_filename:str = ""
+        self._group_time                    = Utils.time_stamp()        
+        self._base_filename:str             = ""
         self._common_analysis_model:Dict[int, BaseModel] = {}
 
-        data = self._data_list[0]
-        self._mac_address:MacAddress = MacAddress(data.get('mac_address'))
-        self._sys_descr:SystemDescriptor = SystemDescriptor.load_from_dict(data['device_details']['sys_descr'])
+        self._mac_address:MacAddress        = MacAddress(self._data_list[0].get('mac_address'))
+        self._sys_descr:SystemDescriptor    = SystemDescriptor.load_from_dict(self._data_list[0]['device_details']['sys_descr'])
 
     def _generate_fname(self, tags: List[str] = [], ext: str = "") -> str:
         """

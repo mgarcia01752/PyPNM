@@ -19,7 +19,7 @@ from pypnm.lib.qam.types import QamModulation
 from pypnm.lib.signal_processing.complex_array_ops import ComplexArrayOps
 from pypnm.lib.signal_processing.group_delay import GroupDelay
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
-from pypnm.lib.types import ComplexArray
+from pypnm.lib.types import ComplexArray, FloatSeries, IntSeries, StringArray
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics
 from pypnm.pnm.process.pnm_file_type import PnmFileType
@@ -259,12 +259,9 @@ class Analysis:
         return result
 
     @classmethod
-    def basic_analysis_ds_modulation_profile(
-        cls,
-        measurement: Dict[str, Any],
-        split_carriers: bool = True) -> Dict[str, Any]:
+    def basic_analysis_ds_modulation_profile(cls, measurement: Dict[str, Any], split_carriers: bool = True) -> Dict[str, Any]:
         """
-        Analyze the downstream OFDM modulation profile.
+        Analyze the Downstream OFDM Modulation Profile.
 
         Args:
             measurement: Parsed profile measurement dict.
@@ -282,40 +279,39 @@ class Analysis:
                   * profile_id
                   * carrier_values (see above)
         """
-        spacing      = measurement.get("subcarrier_spacing", -1)
-        active_index = measurement.get("first_active_subcarrier_index", -1)
-        zero_freq    = measurement.get("zero_frequency", -1)
+        spacing:int      = measurement.get("subcarrier_spacing", -1)
+        active_index:int = measurement.get("first_active_subcarrier_index", -1)
+        zero_freq:int    = measurement.get("zero_frequency", -1)
+
         if active_index < 0 or zero_freq < 0 or spacing < 0:
-            raise ValueError(
-                f"Invalid parameters: spacing={spacing}, "
-                f"active_index={active_index}, zero_freq={zero_freq}"
-            )
+            raise ValueError(f"Invalid parameters: spacing={spacing}, "
+                             f"active_index={active_index}, zero_freq={zero_freq}")
 
         start_freq = zero_freq + spacing * active_index
 
         result: Dict[str, Any] = {
-            "pnm_header": measurement.get("pnm_header"),
-            "mac_address": measurement.get("mac_address"),
-            "channel_id": measurement.get("channel_id"),
-            "frequency_unit": "Hz",
-            "shannon_limit_unit": "dB",
-            "profiles": []
+            "device_details":       measurement.get("device_details"),
+            "pnm_header":           measurement.get("pnm_header"),
+            "mac_address":          measurement.get("mac_address"),
+            "channel_id":           measurement.get("channel_id"),
+            "frequency_unit":       "Hz",
+            "shannon_limit_unit":   "dB",
+            "profiles":             [] 
         }
 
         for profile in measurement.get("profiles", []):
-            pid     = profile.get("profile_id")
-            schemes = profile.get("schemes", [])
+            profile_id  = profile.get("profile_id")
+            schemes     = profile.get("schemes", [])
 
-            # always initialize both styles
-            freqs:    List[int]    = []
-            mods:     List[str]    = []
-            shannons: List[float]  = []
-            carriers: List[Dict[str, Any]] = []
+            freqs:    IntSeries             = []
+            mods:     StringArray           = []
+            shannons: FloatSeries           = []
+            carriers: List[Dict[str, Any]]  = []
 
             freq_ptr = start_freq
             for scheme in schemes:
-                mod_type = scheme.get("modulation_order")
-                count    = scheme.get("num_subcarriers", 0)
+                mod_type:str = scheme.get("modulation_order")
+                count:int    = scheme.get("num_subcarriers", 0)
 
                 for _ in range(count):
                     if mod_type in ("continuous_pilot", "exclusion"):
@@ -334,19 +330,19 @@ class Analysis:
                         shannons.append(s_limit)
                     else:
                         carriers.append({
-                            "frequency": f_val,
-                            "modulation": mod_type,
-                            "shannon_limit": s_limit
+                            "frequency":        f_val,
+                            "modulation":       mod_type,
+                            "shannon_min_mer":  s_limit
                         })
 
                     freq_ptr += spacing
 
-            entry: Dict[str, Any] = {"profile_id": pid}
+            entry: Dict[str, Any] = {"profile_id": profile_id}
             if split_carriers:
                 entry["carrier_values"] = {
                     "frequency": freqs,
                     "modulation": mods,
-                    "shannon_limit": shannons
+                    "shannon_min_mer": shannons
                 }
             else:
                 entry["carrier_values"] = {
