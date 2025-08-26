@@ -3,21 +3,18 @@
 
 from __future__ import annotations
 
-import json
 import logging
-from typing import Any, Dict, List, Literal, Tuple, TypeVar, Iterable, cast
+from typing import Any, Dict, List, Iterable, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.lib.constants import INVALID_CHANNEL_ID, ArrayLike
+from pypnm.lib.constants import INVALID_CHANNEL_ID, T
 from pypnm.lib.csv.manager import CSVManager
-from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.types import IntSeries
-
 
 class DsHistrogramParameters(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
@@ -167,8 +164,6 @@ class DsHistrogramReport(AnalysisReport):
         """
         data_list: List[Dict[str, Any]] = self.get_analysis_data() or []
 
-        FileProcessor(f'logs/error.json').write_file(json.dumps(data_list))
-
         for idx, data in enumerate(data_list):
             try:
                 channel_id  = int(data.get("channel_id", INVALID_CHANNEL_ID))
@@ -190,13 +185,8 @@ class DsHistrogramReport(AnalysisReport):
                 )
                 self.register_common_analysis_model(channel_id, model)
 
-                
-
             except Exception as exc:
                 self.logger.exception(f"Failed to process DS Histogram item {idx}: {exc}", exc_info=True)
-
-    # ---------- Helpers ----------
-    T = TypeVar("T")
 
     @staticmethod
     def _align_len(seq: Iterable[T] | List[T], n: int, *, fill: T) -> List[T]:
