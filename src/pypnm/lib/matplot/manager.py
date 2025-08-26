@@ -25,12 +25,12 @@ class PlotConfig:
     """Lightweight configuration for Matplotlib plots.
 
     Only common options are exposed to keep the API small. Data can be provided
-    either via method parameters or directly on the config (`x`, `y`, `y_multi`, etc.).
+    either via method parameters or directly on the config (e.g., ``x``, ``y``, ``y_multi``).
 
     Theme:
         Set ``theme`` to ``"dark"`` (or ``True``) to render with Matplotlib's
         ``dark_background`` style. Use ``None``/``"light"``/``False`` for the default style.
-        No other behavior is changed by the theme.
+        The theme only affects styling; it does not change any data behavior.
     """
 
     x: Optional[ArrayLike] = None
@@ -64,6 +64,7 @@ class PlotConfig:
     theme: Optional[ThemeType] = None
 
     def update(self, **kwargs) -> "PlotConfig":
+        """Return a copy of this config with the provided fields replaced."""
         return replace(self, **kwargs)
 
 
@@ -73,7 +74,7 @@ class MatplotManager:
 
     - Uses the headless Agg backend (safe for servers/CI).
     - Accepts a PlotConfig for shared options / data.
-    - All methods save and return the output `pathlib.Path`.
+    - All methods save and return the output ``pathlib.Path``.
     """
 
     def __init__(
@@ -98,22 +99,31 @@ class MatplotManager:
     # ──────────────────────────── internals ────────────────────────────
 
     def _new_fig(self, projection: Optional[str] = None):
+        """Create a new figure/axes pair. If ``projection`` is provided (e.g., "3d"),
+        the axes are created with that projection.
+        """
         fig = plt.figure(figsize=self.figsize, dpi=self.dpi)
         ax = fig.add_subplot(111, projection=projection) if projection else fig.add_subplot(111)
         return fig, ax
 
     def _resolve_path(self, filename: Union[str, Path]) -> Path:
+        """Resolve ``filename`` under the manager's output directory, ensuring an absolute path."""
         p = Path(filename)
         return p if p.is_absolute() else (self.output_dir / p)
 
     def _update_png_file(self, fname: Path) -> Path:
+        """Record a saved PNG path internally and return it."""
         self._png_files.append(fname)
         return fname
 
     def get_png_files(self) -> List[Path]:
+        """Return the list of saved PNG files for this manager instance."""
         return self._png_files
 
     def _merge_cfg(self, user_cfg: Optional[PlotConfig], method_defaults: PlotConfig) -> PlotConfig:
+        """Merge user/config defaults with method defaults. ``user_cfg`` has highest precedence,
+        then the manager's ``default_cfg``, then ``method_defaults``.
+        """
         base = self.default_cfg
         def pick(top, mid, low):
             return top if top is not None else (mid if mid is not None else low)
@@ -140,12 +150,17 @@ class MatplotManager:
         )
 
     def _theme_context(self, cfg: Optional[PlotConfig]):
+        """Return a context manager that applies the configured theme. When ``cfg.theme`` is
+        ``"dark"`` or ``True``, the context switches to Matplotlib's ``dark_background`` style.
+        Otherwise this is a no-op context.
+        """
         theme = getattr(cfg, "theme", None) if cfg is not None else None
         if theme in ("dark", True):
             return plt.style.context("dark_background")
         return nullcontext()
 
     def _finish(self, fig, ax, path: Path, cfg: PlotConfig) -> Path:
+        """Apply common labels/limits/legend and save the figure to ``path`` as PNG."""
         if cfg.title:  ax.set_title(cfg.title)
         if cfg.xlabel: ax.set_xlabel(cfg.xlabel)
         if cfg.ylabel: ax.set_ylabel(cfg.ylabel)
@@ -176,12 +191,14 @@ class MatplotManager:
     # ---- tolerant array helpers (less validation) ----
 
     def _to_1d(self, a: Optional[ArrayLike]) -> np.ndarray:
+        """Coerce ``a`` to a 1-D float NumPy array; return empty array if ``None``."""
         if a is None:
             return np.array([], dtype=float)
         arr = np.asarray(a, dtype=float).ravel()
         return arr
 
     def _coerce_xy(self, x: Optional[ArrayLike], y: Optional[ArrayLike]) -> Tuple[np.ndarray, np.ndarray]:
+        """Normalize/align X and Y arrays (auto-generate the missing axis and truncate to min length)."""
         xa = self._to_1d(x)
         ya = self._to_1d(y)
         if ya.size == 0 and xa.size > 0:
@@ -198,8 +215,8 @@ class MatplotManager:
 
     def _split_complex_array(self, arr: Optional[ComplexArray]) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Convert ComplexArray[List[Tuple[float, float]]] -> (I, Q) float arrays.
-        Returns empty arrays if arr is None or empty.
+        Convert ``ComplexArray`` (e.g., list of ``(I, Q)``) into separate I and Q float arrays.
+        Returns empty arrays if ``arr`` is ``None`` or empty.
         """
         if not arr:
             return np.array([], dtype=float), np.array([], dtype=float)
@@ -224,6 +241,18 @@ class MatplotManager:
         marker: Optional[str] = None,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """Line plot (y vs. x).
+
+        Args:
+            filename: Output PNG path.
+            x, y: Series to plot; if omitted, falls back to ``cfg.x``/``cfg.y``. Lengths are aligned/truncated.
+            label: Optional legend label.
+            linewidth: Line width.
+            marker: Optional point marker (e.g., "o").
+            cfg: Plot configuration (supports ``theme``).
+        Returns:
+            Path to the saved image.
+        """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
@@ -244,12 +273,12 @@ class MatplotManager:
         """
         Create and save a multi-line plot.
 
-        Precedence (like plot_line):
-        - If cfg.y_multi is provided, it overrides `series` entirely; uses cfg.x and cfg.y_multi_label.
-        - Else, use `series`; if cfg.x is provided, it overrides each tuple's x.
-        - If neither is provided, plot an empty axes and warn.
+        Precedence (like ``plot_line``):
+            - If ``cfg.y_multi`` is provided, it overrides ``series`` entirely; uses ``cfg.x`` and ``cfg.y_multi_label``.
+            - Else, use ``series``; if ``cfg.x`` is provided, it overrides each tuple's x.
+            - If neither is provided, an empty axes is saved and a warning is logged.
 
-        Styling parity with plot_line: supports `linewidth` and `marker`.
+        Styling parity with ``plot_line``: supports ``linewidth`` and ``marker``.
         """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
@@ -293,6 +322,11 @@ class MatplotManager:
         *,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """Convenience wrapper to plot multiple lines using only fields from ``cfg``.
+
+        Uses ``cfg.x`` for all series and ``cfg.y_multi`` as the list of Y series.
+        ``cfg.y_multi_label`` can provide optional labels aligned to each series.
+        """
         if cfg is None:
             cfg = PlotConfig()
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
@@ -323,6 +357,18 @@ class MatplotManager:
         add_colorbar: bool = True,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """Scatter plot with optional color/size mappings.
+
+        Args:
+            x, y: Coordinates; fall back to ``cfg.x``/``cfg.y`` if omitted.
+            filename: Output PNG path.
+            c: Optional color values array (len >= len(x)). Enables a colorbar if ``add_colorbar``.
+            s: Optional size values array (len >= len(x)).
+            add_colorbar: Whether to append a colorbar when ``c`` is provided.
+            cfg: Plot configuration (supports ``theme``).
+        Returns:
+            Path to the saved image.
+        """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
@@ -351,11 +397,12 @@ class MatplotManager:
     ) -> Path:
         """
         Constellation plot (DOCSIS-style):
-        - Soft decisions (I/Q samples) as points
-        - Hard decisions as red '+' crosshairs
-        - Decision boundaries (midpoints between unique hard I/Q levels)
 
-        Data precedence: args.soft/args.hard > cfg.soft/cfg.hard
+        - Soft decisions (I/Q samples) as dots.
+        - Hard decisions as red '+' crosshairs.
+        - Optional decision boundaries at midpoints between unique hard I/Q levels.
+
+        Data precedence: ``soft``/``hard`` args override ``cfg.soft``/``cfg.hard``.
         """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
@@ -411,9 +458,9 @@ class MatplotManager:
                         y_lo, y_hi = -1.0, 1.0
 
                     for mx in mids_i:
-                        ax.axvline(mx, linestyle="--", linewidth=1.0, alpha=boundary_alpha, zorder=0)
+                        ax.axvline(mx, linestyle="--", linewidth=1.0, alpha=0.25, zorder=0)
                     for my in mids_q:
-                        ax.axhline(my, linestyle="--", linewidth=1.0, alpha=boundary_alpha, zorder=0)
+                        ax.axhline(my, linestyle="--", linewidth=1.0, alpha=0.25, zorder=0)
 
                     if cfg.xlim is None:
                         ax.set_xlim(x_lo, x_hi)
@@ -436,6 +483,17 @@ class MatplotManager:
         orientation: str = "vertical",
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """Categorical bar or horizontal bar plot.
+
+        Args:
+            categories: Category labels for each bar.
+            values: Numeric values for bar heights/lengths.
+            filename: Output PNG path.
+            orientation: "vertical" (default) or "horizontal".
+            cfg: Plot configuration (supports ``theme``).
+        Returns:
+            Path to the saved image.
+        """
         vals = np.asarray(values, dtype=float).ravel()
         cats = list(categories)
         if len(cats) != len(vals):
@@ -475,30 +533,23 @@ class MatplotManager:
         label: Optional[str] = None,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
-        """
-        Plot a 1D histogram and save as a PNG.
+        """1D histogram plot using Matplotlib's ``hist``.
 
         Args:
-            data: Sequence of numeric values (any array-like). Will be flattened.
-            filename: Output image path.
+            data: Array-like of numeric samples (flattened internally).
+            filename: Output PNG path.
             bins: Number of bins or explicit bin edges.
-            range: Lower/upper range of the bins. If not provided, uses data min/max.
-            density: If True, normalize to form a probability density.
-            weights: Optional weights for each data point; length will be aligned to data if mismatched.
-            orientation: "vertical" (default) or "horizontal".
-            cumulative: If True, draw a cumulative histogram.
+            range: Lower/upper bin range. If omitted, computed from data.
+            density: If ``True``, normalize to probability density.
+            weights: Optional point weights (aligned to data length).
+            orientation: "vertical" or "horizontal".
+            cumulative: If ``True``, draw cumulative histogram.
             histtype: One of {"bar", "step", "stepfilled", "barstacked"}.
-            align: Bin alignment ("mid", "left", "right").
+            align: "mid" | "left" | "right" alignment.
             label: Optional legend label.
-            cfg: Plot configuration. Merged with defaults.
-
+            cfg: Plot configuration (supports ``theme``).
         Returns:
             Path to the saved image.
-
-        Examples:
-            >>> self.plot_histogram(data, "hist.png", bins=50)
-            >>> self.plot_histogram(data, "hist.png", bins=[0, 1, 2, 3], density=True)
-            >>> self.plot_histogram(data, "hist.png", orientation="horizontal", cumulative=True)
         """
         import numpy as np
         from pathlib import Path as _Path
@@ -552,6 +603,16 @@ class MatplotManager:
         where: str = "pre",
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """Step plot (staircase) via Matplotlib's ``step``.
+
+        Args:
+            x, y: Series; fall back to ``cfg.x``/``cfg.y`` if omitted.
+            filename: Output PNG path.
+            where: Step alignment ("pre", "mid", or "post").
+            cfg: Plot configuration (supports ``theme``).
+        Returns:
+            Path to the saved image.
+        """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
@@ -569,6 +630,16 @@ class MatplotManager:
         use_line_collection: bool = True,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """Stem plot (discrete markers with vertical lines).
+
+        Args:
+            x, y: Series; fall back to ``cfg.x``/``cfg.y`` if omitted.
+            filename: Output PNG path.
+            use_line_collection: Matplotlib optimization flag for large data.
+            cfg: Plot configuration (supports ``theme``).
+        Returns:
+            Path to the saved image.
+        """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
@@ -587,6 +658,17 @@ class MatplotManager:
         capsize: float = 3.0,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """Errorbar plot.
+
+        Args:
+            x, y: Series; fall back to ``cfg.x``/``cfg.y`` if omitted.
+            yerr: Symmetric/asymmetric errors; length aligned to ``y``.
+            filename: Output PNG path.
+            capsize: Cap size in points.
+            cfg: Plot configuration (supports ``theme``).
+        Returns:
+            Path to the saved image.
+        """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
@@ -606,6 +688,17 @@ class MatplotManager:
         baseline: float = 0.0,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """Area/filled plot via Matplotlib's ``fill_between``.
+
+        Args:
+            x, y: Primary series; fall back to ``cfg.x``/``cfg.y`` if omitted.
+            filename: Output PNG path.
+            y2: Optional second series to fill between; if omitted, fills to ``baseline``.
+            baseline: Scalar baseline for single-series fill.
+            cfg: Plot configuration (supports ``theme``).
+        Returns:
+            Path to the saved image.
+        """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
@@ -633,6 +726,20 @@ class MatplotManager:
         vmax: Optional[float] = None,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """2D heatmap using ``imshow``.
+
+        Args:
+            Z: 2D array-like (will be squeezed to 2D if necessary).
+            filename: Output PNG path.
+            x, y: Optional axes values for extent; if provided, set image extent accordingly.
+            interpolation: Matplotlib interpolation.
+            origin: "lower" or "upper".
+            add_colorbar: Whether to append a colorbar.
+            vmin, vmax: Optional color scale limits.
+            cfg: Plot configuration (supports ``theme``).
+        Returns:
+            Path to the saved image.
+        """
         Z = np.asarray(Z, dtype=float)
         if Z.ndim > 2:
             self.logger.warning("Z has ndim=%d; squeezing to 2D.", Z.ndim)
@@ -671,6 +778,20 @@ class MatplotManager:
         zlabel: Optional[str] = None,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """3D surface/wireframe plot from a 2D grid ``Z``.
+
+        Args:
+            Z: 2D array-like height field (will be squeezed to 2D if necessary).
+            filename: Output PNG path.
+            x, y: Optional x/y axes; autogenerated if omitted.
+            rstride, cstride: Row/column step size.
+            antialiased: Matplotlib surface smoothing flag.
+            wireframe: If ``True``, draw a wireframe instead of a surface.
+            zlabel: Optional z-axis label (overrides ``cfg.zlabel`` if provided).
+            cfg: Plot configuration (supports ``theme``).
+        Returns:
+            Path to the saved image.
+        """
         Z = np.asarray(Z, dtype=float)
         if Z.ndim > 2:
             self.logger.warning("Z has ndim=%d; squeezing to 2D.", Z.ndim)
