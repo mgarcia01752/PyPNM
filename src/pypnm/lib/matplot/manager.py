@@ -6,20 +6,33 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Iterable, List, Literal, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import matplotlib
-matplotlib.use("Agg")  # Headless backend for servers/CI
+matplotlib.use("Agg")                       # Headless backend for servers/CI
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers '3d' projection)
+from mpl_toolkits.mplot3d import Axes3D     # noqa: F401  (registers '3d' projection)
+from contextlib import nullcontext
 
 from pypnm.lib.code_word.cw_generator import QamModulation
 from pypnm.lib.types import ArrayLike, ComplexArray, Number
 
+ThemeType = Literal["dark", "light", True, False]
 
 @dataclass(frozen=True)
 class PlotConfig:
+    """Lightweight configuration for Matplotlib plots.
+
+    Only common options are exposed to keep the API small. Data can be provided
+    either via method parameters or directly on the config (`x`, `y`, `y_multi`, etc.).
+
+    Theme:
+        Set ``theme`` to ``"dark"`` (or ``True``) to render with Matplotlib's
+        ``dark_background`` style. Use ``None``/``"light"``/``False`` for the default style.
+        No other behavior is changed by the theme.
+    """
+
     x: Optional[ArrayLike] = None
     y: Optional[ArrayLike] = None
     z: Optional[ArrayLike] = None
@@ -41,10 +54,14 @@ class PlotConfig:
     legend: Optional[bool] = None
     transparent: Optional[bool] = None
 
-    # Constellation (new)
+    # Constellation
     qam: Optional[QamModulation] = None
     soft: Optional[ComplexArray] = None
     hard: Optional[ComplexArray] = None
+
+    # Theme (minimal addition)
+    # Set to "dark" (or True) for dark background plotting; "light"/False/None keeps default style.
+    theme: Optional[ThemeType] = None
 
     def update(self, **kwargs) -> "PlotConfig":
         return replace(self, **kwargs)
@@ -79,7 +96,7 @@ class MatplotManager:
         self._png_files: List[Path] = []
 
     # ──────────────────────────── internals ────────────────────────────
-    
+
     def _new_fig(self, projection: Optional[str] = None):
         fig = plt.figure(figsize=self.figsize, dpi=self.dpi)
         ax = fig.add_subplot(111, projection=projection) if projection else fig.add_subplot(111)
@@ -116,10 +133,17 @@ class MatplotManager:
             z           = pick(user_cfg.z           if user_cfg else None, base.z,           method_defaults.z),
             y_multi     = pick(user_cfg.y_multi     if user_cfg else None, base.y_multi,     method_defaults.y_multi),
             y_multi_label = pick(user_cfg.y_multi_label if user_cfg else None, base.y_multi_label, method_defaults.y_multi_label),
-            qam         = pick(user_cfg.qam         if user_cfg else None, base.qam,         method_defaults.qam),   
-            soft        = pick(user_cfg.soft        if user_cfg else None, base.soft,        method_defaults.soft),  
-            hard        = pick(user_cfg.hard        if user_cfg else None, base.hard,        method_defaults.hard), 
+            qam         = pick(user_cfg.qam         if user_cfg else None, base.qam,         method_defaults.qam),
+            soft        = pick(user_cfg.soft        if user_cfg else None, base.soft,        method_defaults.soft),
+            hard        = pick(user_cfg.hard        if user_cfg else None, base.hard,        method_defaults.hard),
+            theme       = pick(user_cfg.theme       if user_cfg else None, base.theme,       method_defaults.theme),
         )
+
+    def _theme_context(self, cfg: Optional[PlotConfig]):
+        theme = getattr(cfg, "theme", None) if cfg is not None else None
+        if theme in ("dark", True):
+            return plt.style.context("dark_background")
+        return nullcontext()
 
     def _finish(self, fig, ax, path: Path, cfg: PlotConfig) -> Path:
         if cfg.title:  ax.set_title(cfg.title)
@@ -203,9 +227,10 @@ class MatplotManager:
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
-        fig, ax = self._new_fig()
-        ax.plot(x, y, label=label, linewidth=linewidth, marker=marker)
-        return self._finish(fig, ax, self._resolve_path(filename), cfg)
+        with self._theme_context(cfg):
+            fig, ax = self._new_fig()
+            ax.plot(x, y, label=label, linewidth=linewidth, marker=marker)
+            return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
     def plot_multi_line(
         self,
@@ -228,40 +253,39 @@ class MatplotManager:
         """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
-        fig, ax = self._new_fig()
+        with self._theme_context(cfg):
+            fig, ax = self._new_fig()
 
-        # Case 1: cfg provides the data for all lines (overrides `series`)
-        if cfg and cfg.y_multi:
-            X = self._to_1d(cfg.x)
-            ys = list(cfg.y_multi)
-            labels = list(cfg.y_multi_label or [])
-            # pad/truncate labels to match y-series count
-            if len(labels) < len(ys):
-                labels += [None] * (len(ys) - len(labels))
-            else:
-                labels = labels[:len(ys)]
+            # Case 1: cfg provides the data for all lines (overrides `series`)
+            if cfg and cfg.y_multi:
+                X = self._to_1d(cfg.x)
+                ys = list(cfg.y_multi)
+                labels = list(cfg.y_multi_label or [])
+                if len(labels) < len(ys):
+                    labels += [None] * (len(ys) - len(labels))
+                else:
+                    labels = labels[:len(ys)]
 
-            for Y, lab in zip(ys, labels):
-                x_i, y_i = self._coerce_xy(X, Y)
-                ax.plot(x_i, y_i, label=lab, linewidth=linewidth, marker=marker)
+                for Y, lab in zip(ys, labels):
+                    x_i, y_i = self._coerce_xy(X, Y)
+                    ax.plot(x_i, y_i, label=lab, linewidth=linewidth, marker=marker)
+                return self._finish(fig, ax, self._resolve_path(filename), cfg)
+
+            # Case 2: use provided series; cfg.x (if present) overrides per-series x
+            if series:
+                override_x = (cfg.x is not None)
+                X_override = self._to_1d(cfg.x) if override_x else None
+                cfg_labels = list(cfg.y_multi_label or [])
+
+                for idx, (sx, sy, slabel) in enumerate(series):
+                    label = cfg_labels[idx] if idx < len(cfg_labels) else slabel
+                    x_src = X_override if override_x else sx
+                    x_i, y_i = self._coerce_xy(x_src, sy)
+                    ax.plot(x_i, y_i, label=label, linewidth=linewidth, marker=marker)
+                return self._finish(fig, ax, self._resolve_path(filename), cfg)
+
+            self.logger.warning("plot_multi_line: no data provided (neither cfg.y_multi nor series).")
             return self._finish(fig, ax, self._resolve_path(filename), cfg)
-
-        # Case 2: use provided series; cfg.x (if present) overrides per-series x
-        if series:
-            override_x = (cfg.x is not None)
-            X_override = self._to_1d(cfg.x) if override_x else None
-            cfg_labels = list(cfg.y_multi_label or [])
-
-            for idx, (sx, sy, slabel) in enumerate(series):
-                label = cfg_labels[idx] if idx < len(cfg_labels) else slabel
-                x_src = X_override if override_x else sx
-                x_i, y_i = self._coerce_xy(x_src, sy)
-                ax.plot(x_i, y_i, label=label, linewidth=linewidth, marker=marker)
-            return self._finish(fig, ax, self._resolve_path(filename), cfg)
-
-        # Case 3: nothing to plot
-        self.logger.warning("plot_multi_line: no data provided (neither cfg.y_multi nor series).")
-        return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
     def plot_multi_line_from_cfg(
         self,
@@ -281,11 +305,12 @@ class MatplotManager:
         labels = (cfg.y_multi_label or []) + [None] * max(0, len(ys) - len(cfg.y_multi_label or []))
         labels = labels[:len(ys)]
 
-        fig, ax = self._new_fig()
-        for i, (Y, lab) in enumerate(zip(ys, labels)):
-            x_i, y_i = self._coerce_xy(X, Y)
-            ax.plot(x_i, y_i, label=lab)
-        return self._finish(fig, ax, self._resolve_path(filename), cfg)
+        with self._theme_context(cfg):
+            fig, ax = self._new_fig()
+            for i, (Y, lab) in enumerate(zip(ys, labels)):
+                x_i, y_i = self._coerce_xy(X, Y)
+                ax.plot(x_i, y_i, label=lab)
+            return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
     def plot_scatter(
         self,
@@ -301,15 +326,16 @@ class MatplotManager:
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
-        fig, ax = self._new_fig()
-        sc = ax.scatter(
-            x, y,
-            c=None if c is None else np.asarray(c).ravel()[:len(x)],
-            s=None if s is None else np.asarray(s).ravel()[:len(x)]
-        )
-        if add_colorbar and c is not None:
-            fig.colorbar(sc, ax=ax)
-        return self._finish(fig, ax, self._resolve_path(filename), cfg)
+        with self._theme_context(cfg):
+            fig, ax = self._new_fig()
+            sc = ax.scatter(
+                x, y,
+                c=None if c is None else np.asarray(c).ravel()[:len(x)],
+                s=None if s is None else np.asarray(s).ravel()[:len(x)]
+            )
+            if add_colorbar and c is not None:
+                fig.colorbar(sc, ax=ax)
+            return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
     def plot_constellation(
         self,
@@ -334,81 +360,72 @@ class MatplotManager:
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
 
-        # Fallback to cfg if args not provided
         if soft is None:
             soft = cfg.soft
         if hard is None:
             hard = cfg.hard
 
-        # Split soft/hard into I (x) and Q (y)
         x_soft, y_soft = self._split_complex_array(soft)
         x_hard, y_hard = self._split_complex_array(hard)
 
         if x_soft.size == 0 or y_soft.size == 0:
             self.logger.warning("plot_constellation: no soft samples provided; producing empty axes.")
 
-        fig, ax = self._new_fig()
+        with self._theme_context(cfg):
+            fig, ax = self._new_fig()
 
-        # Soft cloud
-        if x_soft.size and y_soft.size:
-            ax.scatter(x_soft, y_soft, marker='.', s=8, linewidths=0,
-                    edgecolors='none', alpha=0.75, label='Soft', rasterized=True)
+            if x_soft.size and y_soft.size:
+                ax.scatter(x_soft, y_soft, marker='.', s=8, linewidths=0,
+                        edgecolors='none', alpha=0.75, label='Soft', rasterized=True)
 
+            if x_hard.size and y_hard.size:
+                n = min(x_hard.size, y_hard.size)
+                ax.scatter(
+                    x_hard[:n], y_hard[:n],
+                    marker="+",
+                    c="red",
+                    s=crosshair_size,
+                    linewidths=crosshair_lw,
+                    label="Hard",
+                )
 
-        # Hard centroids as red crosshairs + decision boundaries
-        if x_hard.size and y_hard.size:
-            n = min(x_hard.size, y_hard.size)
-            ax.scatter(
-                x_hard[:n], y_hard[:n],
-                marker="+",
-                c="red",
-                s=crosshair_size,
-                linewidths=crosshair_lw,
-                label="Hard",
-            )
+                if show_boundaries:
+                    levels_i = np.unique(x_hard[:n])
+                    levels_q = np.unique(y_hard[:n])
+                    mids_i = (levels_i[1:] + levels_i[:-1]) / 2.0 if levels_i.size >= 2 else np.array([])
+                    mids_q = (levels_q[1:] + levels_q[:-1]) / 2.0 if levels_q.size >= 2 else np.array([])
 
-            if show_boundaries:
-                # Unique decision levels and midpoints
-                levels_i = np.unique(x_hard[:n])
-                levels_q = np.unique(y_hard[:n])
-                mids_i = (levels_i[1:] + levels_i[:-1]) / 2.0 if levels_i.size >= 2 else np.array([])
-                mids_q = (levels_q[1:] + levels_q[:-1]) / 2.0 if levels_q.size >= 2 else np.array([])
+                    all_x = np.concatenate([x_soft, x_hard[:n]]) if x_soft.size else x_hard[:n]
+                    all_y = np.concatenate([y_soft, y_hard[:n]]) if y_hard.size else y_hard[:n]
+                    if all_x.size:
+                        x_min, x_max = float(np.min(all_x)), float(np.max(all_x))
+                        x_pad = 0.05 * (x_max - x_min if x_max > x_min else 1.0)
+                        x_lo, x_hi = x_min - x_pad, x_max + x_pad
+                    else:
+                        x_lo, x_hi = -1.0, 1.0
+                    if all_y.size:
+                        y_min, y_max = float(np.min(all_y)), float(np.max(all_y))
+                        y_pad = 0.05 * (y_max - y_min if y_max > y_min else 1.0)
+                        y_lo, y_hi = y_min - y_pad, y_max + y_pad
+                    else:
+                        y_lo, y_hi = -1.0, 1.0
 
-                # Determine extents with small padding
-                all_x = np.concatenate([x_soft, x_hard[:n]]) if x_soft.size else x_hard[:n]
-                all_y = np.concatenate([y_soft, y_hard[:n]]) if y_soft.size else y_hard[:n]
-                if all_x.size:
-                    x_min, x_max = float(np.min(all_x)), float(np.max(all_x))
-                    x_pad = 0.05 * (x_max - x_min if x_max > x_min else 1.0)
-                    x_lo, x_hi = x_min - x_pad, x_max + x_pad
-                else:
-                    x_lo, x_hi = -1.0, 1.0
-                if all_y.size:
-                    y_min, y_max = float(np.min(all_y)), float(np.max(all_y))
-                    y_pad = 0.05 * (y_max - y_min if y_max > y_min else 1.0)
-                    y_lo, y_hi = y_min - y_pad, y_max + y_pad
-                else:
-                    y_lo, y_hi = -1.0, 1.0
+                    for mx in mids_i:
+                        ax.axvline(mx, linestyle="--", linewidth=1.0, alpha=boundary_alpha, zorder=0)
+                    for my in mids_q:
+                        ax.axhline(my, linestyle="--", linewidth=1.0, alpha=boundary_alpha, zorder=0)
 
-                # Draw vertical (I) and horizontal (Q) decision midlines
-                for mx in mids_i:
-                    ax.axvline(mx, linestyle="--", linewidth=1.0, alpha=boundary_alpha, zorder=0)
-                for my in mids_q:
-                    ax.axhline(my, linestyle="--", linewidth=1.0, alpha=boundary_alpha, zorder=0)
+                    if cfg.xlim is None:
+                        ax.set_xlim(x_lo, x_hi)
+                    if cfg.ylim is None:
+                        ax.set_ylim(y_lo, y_hi)
 
-                # Respect explicit cfg.xlim/ylim; otherwise apply computed limits
-                if cfg.xlim is None:
-                    ax.set_xlim(x_lo, x_hi)
-                if cfg.ylim is None:
-                    ax.set_ylim(y_lo, y_hi)
+            try:
+                ax.set_aspect("equal", adjustable="datalim")
+            except Exception:
+                pass
 
-        # Square aspect for constellation geometry
-        try:
-            ax.set_aspect("equal", adjustable="datalim")
-        except Exception:
-            pass
-
-        return self._finish(fig, ax, self._resolve_path(filename), cfg)
+            return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
     def plot_bar(
         self,
@@ -429,17 +446,18 @@ class MatplotManager:
 
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
-        fig, ax = self._new_fig()
-        idx = np.arange(len(cats))
+        with self._theme_context(cfg):
+            fig, ax = self._new_fig()
+            idx = np.arange(len(cats))
 
-        if orient == "vertical":
-            ax.bar(idx, vals)
-            ax.set_xticks(idx, labels=[str(c) for c in cats], rotation=0)
-        else:
-            ax.barh(idx, vals)
-            ax.set_yticks(idx, labels=[str(c) for c in cats], rotation=0)
+            if orient == "vertical":
+                ax.bar(idx, vals)
+                ax.set_xticks(idx, labels=[str(c) for c in cats], rotation=0)
+            else:
+                ax.barh(idx, vals)
+                ax.set_yticks(idx, labels=[str(c) for c in cats], rotation=0)
 
-        return self._finish(fig, ax, self._resolve_path(filename), cfg)
+            return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
     def plot_histogram(
         self,
@@ -449,14 +467,81 @@ class MatplotManager:
         bins: Union[int, Sequence[Number]] = 30,
         range: Optional[Tuple[Number, Number]] = None,
         density: bool = False,
+        weights: Optional[ArrayLike] = None,
+        orientation: Literal["vertical", "horizontal"] = "vertical",
+        cumulative: bool = False,
+        histtype: Literal["bar", "step", "stepfilled", "barstacked"] = "bar",
+        align: Literal["mid", "left", "right"] = "mid",
+        label: Optional[str] = None,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """
+        Plot a 1D histogram and save as a PNG.
+
+        Args:
+            data: Sequence of numeric values (any array-like). Will be flattened.
+            filename: Output image path.
+            bins: Number of bins or explicit bin edges.
+            range: Lower/upper range of the bins. If not provided, uses data min/max.
+            density: If True, normalize to form a probability density.
+            weights: Optional weights for each data point; length will be aligned to data if mismatched.
+            orientation: "vertical" (default) or "horizontal".
+            cumulative: If True, draw a cumulative histogram.
+            histtype: One of {"bar", "step", "stepfilled", "barstacked"}.
+            align: Bin alignment ("mid", "left", "right").
+            label: Optional legend label.
+            cfg: Plot configuration. Merged with defaults.
+
+        Returns:
+            Path to the saved image.
+
+        Examples:
+            >>> self.plot_histogram(data, "hist.png", bins=50)
+            >>> self.plot_histogram(data, "hist.png", bins=[0, 1, 2, 3], density=True)
+            >>> self.plot_histogram(data, "hist.png", orientation="horizontal", cumulative=True)
+        """
+        import numpy as np
+        from pathlib import Path as _Path
+
         vals = np.asarray(data, dtype=float).ravel()
+
+        w = None
+        if weights is not None:
+            w = np.asarray(weights, dtype=float).ravel()
+            if w.size != vals.size:
+                n = min(w.size, vals.size)
+                vals = vals[:n]
+                w = w[:n]
+
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
-        fig, ax = self._new_fig()
-        ax.hist(vals, bins=bins, range=range, density=density)
-        return self._finish(fig, ax, self._resolve_path(filename), cfg)
+        with self._theme_context(cfg):
+            fig, ax = self._new_fig()
+
+            ax.hist(
+                vals,
+                bins=bins,
+                range=range,
+                density=density,
+                weights=w,
+                orientation=orientation,
+                cumulative=cumulative,
+                histtype=histtype,
+                align=align,
+                label=label,
+            )
+
+            if label is not None and cfg.legend is not False:
+                ax.legend()
+
+            out_path = self._finish(fig, ax, self._resolve_path(filename), cfg)
+
+        if hasattr(self, "logger"):
+            try:
+                self.logger.info(f"Saved histogram to {out_path}")
+            except Exception:
+                pass
+        return out_path
 
     def plot_step(
         self,
@@ -470,9 +555,10 @@ class MatplotManager:
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
-        fig, ax = self._new_fig()
-        ax.step(x, y, where=where)
-        return self._finish(fig, ax, self._resolve_path(filename), cfg)
+        with self._theme_context(cfg):
+            fig, ax = self._new_fig()
+            ax.step(x, y, where=where)
+            return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
     def plot_stem(
         self,
@@ -486,9 +572,10 @@ class MatplotManager:
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
-        fig, ax = self._new_fig()
-        ax.stem(x, y, use_line_collection=use_line_collection)
-        return self._finish(fig, ax, self._resolve_path(filename), cfg)
+        with self._theme_context(cfg):
+            fig, ax = self._new_fig()
+            ax.stem(x, y, use_line_collection=use_line_collection)
+            return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
     def plot_errorbar(
         self,
@@ -504,9 +591,10 @@ class MatplotManager:
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
         ye = None if yerr is None else np.asarray(yerr, dtype=float).ravel()[:len(y)]
-        fig, ax = self._new_fig()
-        ax.errorbar(x, y, yerr=ye, capsize=capsize)
-        return self._finish(fig, ax, self._resolve_path(filename), cfg)
+        with self._theme_context(cfg):
+            fig, ax = self._new_fig()
+            ax.errorbar(x, y, yerr=ye, capsize=capsize)
+            return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
     def plot_area(
         self,
@@ -521,14 +609,15 @@ class MatplotManager:
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
-        fig, ax = self._new_fig()
-        if y2 is not None:
-            y2a = np.asarray(y2, dtype=float).ravel()[:len(y)]
-            n = min(len(x), len(y), len(y2a))
-            ax.fill_between(x[:n], y[:n], y2a[:n], alpha=0.3)
-        else:
-            ax.fill_between(x, baseline, y, alpha=0.3)
-        return self._finish(fig, ax, self._resolve_path(filename), cfg)
+        with self._theme_context(cfg):
+            fig, ax = self._new_fig()
+            if y2 is not None:
+                y2a = np.asarray(y2, dtype=float).ravel()[:len(y)]
+                n = min(len(x), len(y), len(y2a))
+                ax.fill_between(x[:n], y[:n], y2a[:n], alpha=0.3)
+            else:
+                ax.fill_between(x, baseline, y, alpha=0.3)
+            return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
     def heatmap2d(
         self,
@@ -557,15 +646,16 @@ class MatplotManager:
         x = self._to_1d(x if x is not None else cfg.x)
         y = self._to_1d(y if y is not None else cfg.y)
 
-        fig, ax = self._new_fig()
-        extent = None
-        if x.size and y.size:
-            extent = [float(np.min(x)), float(np.max(x)), float(np.min(y)), float(np.max(y))]
-        im = ax.imshow(Z, origin=origin, interpolation=interpolation,
-                       vmin=vmin, vmax=vmax, extent=extent, aspect="auto")
-        if add_colorbar:
-            fig.colorbar(im, ax=ax)
-        return self._finish(fig, ax, self._resolve_path(filename), cfg)
+        with self._theme_context(cfg):
+            fig, ax = self._new_fig()
+            extent = None
+            if x.size and y.size:
+                extent = [float(np.min(x)), float(np.max(x)), float(np.min(y)), float(np.max(y))]
+            im = ax.imshow(Z, origin=origin, interpolation=interpolation,
+                           vmin=vmin, vmax=vmax, extent=extent, aspect="auto")
+            if add_colorbar:
+                fig.colorbar(im, ax=ax)
+            return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
     def heatmap3d(
         self,
@@ -609,24 +699,25 @@ class MatplotManager:
             y = y[:n]; Z = Z[:n, :]; ny = n
 
         X, Y = np.meshgrid(x, y)
-        fig, ax = self._new_fig(projection="3d")
-        if wireframe:
-            ax.plot_wireframe(X, Y, Z, rstride=rstride, cstride=cstride, antialiased=antialiased)
-        else:
-            ax.plot_surface(X, Y, Z, rstride=rstride, cstride=cstride, antialiased=antialiased)
+        with self._theme_context(cfg):
+            fig, ax = self._new_fig(projection="3d")
+            if wireframe:
+                ax.plot_wireframe(X, Y, Z, rstride=rstride, cstride=cstride, antialiased=antialiased)
+            else:
+                ax.plot_surface(X, Y, Z, rstride=rstride, cstride=cstride, antialiased=antialiased)
 
-        if cfg.title:  ax.set_title(cfg.title)
-        if cfg.xlabel: ax.set_xlabel(cfg.xlabel)
-        if cfg.ylabel: ax.set_ylabel(cfg.ylabel)
-        zl = zlabel if zlabel is not None else cfg.zlabel
-        if zl: ax.set_zlabel(zl)
-        if self.tight_layout:
-            fig.tight_layout()
+            if cfg.title:  ax.set_title(cfg.title)
+            if cfg.xlabel: ax.set_xlabel(cfg.xlabel)
+            if cfg.ylabel: ax.set_ylabel(cfg.ylabel)
+            zl = zlabel if zlabel is not None else cfg.zlabel
+            if zl: ax.set_zlabel(zl)
+            if self.tight_layout:
+                fig.tight_layout()
 
-        path = self._resolve_path(filename).with_suffix(".png")
-        path.parent.mkdir(parents=True, exist_ok=True)
-        fig.savefig(path, dpi=self.dpi, bbox_inches="tight", transparent=bool(cfg.transparent))
-        plt.close(fig)
-        self._update_png_file(path)
-        self.logger.info("Saved 3D plot: %s", path)
-        return path
+            path = self._resolve_path(filename).with_suffix(".png")
+            path.parent.mkdir(parents=True, exist_ok=True)
+            fig.savefig(path, dpi=self.dpi, bbox_inches="tight", transparent=bool(cfg.transparent))
+            plt.close(fig)
+            self._update_png_file(path)
+            self.logger.info("Saved 3D plot: %s", path)
+            return path

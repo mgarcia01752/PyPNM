@@ -7,7 +7,7 @@ import numpy as np
 from enum import Enum
 from typing import Callable, List, Dict, Any
 
-from pypnm.api.routes.common.classes.analysis.model.schema import ConstellationDisplayAnalysisModel
+from pypnm.api.routes.common.classes.analysis.model.schema import ConstellationDisplayAnalysisModel, DsHistogramAnalysisModel
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor, Utils
@@ -81,8 +81,8 @@ class Analysis:
             self.analysis.append(self.basic_analysis_rxmer(measurement))
 
         elif pnm_file_type == PnmFileType.DOWNSTREAM_HISTOGRAM.value:
-            self.logger.debug("Stub: Processing DOWNSTREAM_HISTOGRAM")
-            pass
+            self.logger.debug("Processing DOWNSTREAM_HISTOGRAM")
+            self.analysis.append(self.basic_analysis_ds_histogram_display(measurement).model_dump())
 
         elif pnm_file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS.value:
             self.logger.debug("Processing UPSTREAM_PRE_EQUALIZER_COEFFICIENTS")
@@ -447,6 +447,20 @@ class Analysis:
             modulation_order    = qm,           # QamModulation 
             hard                = hard,         # Scaled
             soft                = soft          # Scaled
+        )
+
+    @classmethod
+    def basic_analysis_ds_histogram_display(cls,measurement: Dict[str, Any],) -> DsHistogramAnalysisModel:
+        """
+        """
+        return DsHistogramAnalysisModel(
+            device_details  = measurement.get("device_details", SystemDescriptor.empty()),
+            pnm_header      = measurement.get("pnm_header", {}),
+            mac_address     = measurement.get("mac_address", MacAddress.null()),
+            channel_id      = measurement.get("channel_id", INVALID_CHANNEL_ID),
+            symmetry        = measurement.get("symmetry", INVALID_CHANNEL_ID),
+            dwell_count     = measurement.get("dwell_count", INVALID_CHANNEL_ID),
+            hit_counts      = measurement.get("hit_counts", []),
         )
 
     def get_results(self, full_dict = True) -> Dict[str, Any]:

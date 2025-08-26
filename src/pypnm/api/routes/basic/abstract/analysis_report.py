@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+import json
 import logging
 
 import pandas as pd
@@ -18,6 +19,7 @@ from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.csv.manager import CSVManager
+from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.matplot.manager import MatplotManager
 from pypnm.lib.types import PathArray, PathLike
 from pypnm.lib.utils import Utils
@@ -235,7 +237,12 @@ class AnalysisReport(ABC):
 
     def __init(self):
 
-        self._data_list:AnalysisData        = self._analysis.get_results().get('analysis') # type: ignore
+        self._data_list:AnalysisData        = self._analysis.get_results().get('analysis', [])
+
+        if not self._data_list:
+            self.logger.error(f'Unable to aquire analysis data')
+            FileProcessor(f'logs/error-{Utils.time_stamp()}.json').write_file(json.dumps(self._analysis.get_results()))
+            raise
 
         self._png_dir:PathLike              = SystemConfigSettings.png_dir
         self._csv_dir:PathLike              = SystemConfigSettings.csv_dir
@@ -245,7 +252,7 @@ class AnalysisReport(ABC):
         self._base_filename:str             = ""
         self._common_analysis_model:Dict[int, BaseModel] = {}
 
-        self._mac_address:MacAddress        = MacAddress(self._data_list[0].get('mac_address'))
+        self._mac_address:MacAddress        = MacAddress(self._data_list[0].get('mac_address', MacAddress.null()))
         self._sys_descr:SystemDescriptor    = SystemDescriptor.load_from_dict(self._data_list[0]['device_details']['sys_descr'])
 
     def _generate_fname(self, tags: List[str] = [], ext: str = "") -> str:
