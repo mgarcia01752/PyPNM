@@ -35,7 +35,7 @@ class AnalysisParseUtils:
                         * Capture Times are roughly within a few seconds                
                  """
                 if not self.mac_address:
-                    self.mac_address = MacAddress(inst.get("mac_address", "00:00:00:00:00:00"))
+                    self.mac_address = MacAddress(inst.get("mac_address", MacAddress.null()))
                     self.capture_time = int(inst.get("pnm_header",{}).get("capture_time", "0"))
                     if self.capture_time == 0:
                         self.logger.warning(f"Unexpected Capture Time: {self.capture_time}")

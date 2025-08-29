@@ -14,10 +14,12 @@ from typing import Any, Dict, List, Union
 from pydantic import BaseModel, Field
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
+from pypnm.api.routes.common.classes.analysis.model.schema import BaseAnalysisModel
 from pypnm.api.routes.docs.pnm.files.service import MacAddress
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor
 from pypnm.lib.archive.manager import ArchiveManager
+from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.matplot.manager import MatplotManager
@@ -52,6 +54,9 @@ class AnalysisReport(ABC):
 
     def get_analysis_data(self) -> AnalysisData:
         return self._data_list
+
+    def get_analysis_model(self) -> Union[BaseAnalysisModel, List[BaseAnalysisModel]]:
+        return self._analysis.get_model()
 
     def get_mac_address(self) -> MacAddress:    
         return self._mac_address
@@ -167,7 +172,7 @@ class AnalysisReport(ABC):
         Raises:
             KeyError: If the specified channel_id does not exist.
         """
-        if channel_id == -1:
+        if channel_id == INVALID_CHANNEL_ID:
             # Return all models sorted by channel_id
             return [self._common_analysis_model[cid] for cid in sorted(self._common_analysis_model)]
 

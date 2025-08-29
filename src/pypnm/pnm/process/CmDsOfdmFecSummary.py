@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import json
-from typing import List, Dict, Optional
+from typing import Any, List, Dict, Optional
 from struct import unpack, calcsize
 import logging
 
@@ -18,17 +18,17 @@ class CmDsOfdmFecSummary(PnmHeader):
         self.mac_address: Optional[str] = None
         self.summary_type: Optional[int] = None
         self.num_profiles: Optional[int] = None
-        self.fec_summary_data: Optional[List[Dict[str, any]]] = None
-        self._process_fec_summary()
+        self.fec_summary_data: Optional[List[Dict[str, Any]]] = None
+        self.__process()
 
-    def _process_fec_summary(self) -> None:
+    def __process(self) -> None:
         """
         Processes FEC Summary information:
-        - DS Channel Id (1 byte)
-        - CM MAC Address (6 bytes)
-        - Summary Type (1 byte)
-        - Number of Profiles (1 byte)
-        - FEC Data (FecSummaryData)
+        - DS Channel Id         (1 byte)
+        - CM MAC Address        (6 bytes)
+        - Summary Type          (1 byte)
+        - Number of Profiles    (1 byte)
+        - FEC Data              (FecSummaryData)
         """
         if self.get_pnm_file_type() != PnmFileType.OFDM_FEC_SUMMARY:
             cann = PnmFileType.OFDM_FEC_SUMMARY.get_pnm_cann()
@@ -59,8 +59,8 @@ class CmDsOfdmFecSummary(PnmHeader):
                 self.logger.debug(f"Profile {profile_id} has {number_of_sets} sets of codeword entries.")
 
                 fec_summary_for_profile = {
-                    "profile_id": profile_id,
-                    "number_of_sets": number_of_sets,
+                    "profile_id":       profile_id,
+                    "number_of_sets":   number_of_sets,
                     "codeword_entries": []
                 }
 
@@ -73,10 +73,10 @@ class CmDsOfdmFecSummary(PnmHeader):
                         codeword_set = unpack(codeword_set_format, self.pnm_data[fec_data_start:fec_data_start + codeword_set_size])
                         timestamp, total_codewords, corrected_codewords, uncorrectable_codewords = codeword_set
                         fec_summary_for_profile["codeword_entries"].append({
-                            "timestamp": timestamp,
-                            "total_codewords": total_codewords,
-                            "corrected_codewords": corrected_codewords,
-                            "uncorrectable_codewords": uncorrectable_codewords
+                            "timestamp":                timestamp,
+                            "total_codewords":          total_codewords,
+                            "corrected_codewords":      corrected_codewords,
+                            "uncorrectable_codewords":  uncorrectable_codewords
                         })
                         self.logger.debug(f"Codeword set: timestamp={timestamp}, total={total_codewords}, corrected={corrected_codewords}, uncorrectable={uncorrectable_codewords}")
                         fec_data_start += codeword_set_size
@@ -91,41 +91,45 @@ class CmDsOfdmFecSummary(PnmHeader):
 
         self.logger.debug(f"Parsed {len(self.fec_summary_data)} profiles from FEC summary.")
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> Dict[str, Any]:
         """
         Converts the processed FEC summary data to a dictionary.
         
-    {
-        "status": "SUCCESS",
-        "channel_id": 34,
-        "mac_address": "00:50:f1:12:dc:c3",
-        "summary_type": 2,
-        "num_profiles": 5,
-        "fec_summary_data": [
-            {
-                "profile_id": 255,
-                "number_of_sets": 600,
-                "codeword_entries": [
-                    {
-                        "timestamp": 626563,
-                        "total_codewords": 44444,
-                        "corrected_codewords": 0,
-                        "uncorrectable_codewords": 0
-                    }
-                ]
-            }
-        ]
-    }        
-        
+        {
+            "status": "SUCCESS",
+            "channel_id": 34,
+            "mac_address": "00:50:f1:12:dc:c3",
+            "summary_type": 2,
+            "num_profiles": 5,
+            "fec_summary_data": [
+                {
+                    "profile_id": 255,
+                    "number_of_sets": 600,
+                    "codeword_entries": [
+                        {
+                            "timestamp": 626563,
+                            "total_codewords": 44444,
+                            "corrected_codewords": 0,
+                            "uncorrectable_codewords": 0
+                        }
+                    ]
+                }
+            ]
+        }        
         
         """
-        return {
-            "channel_id": self.channel_id,
-            "mac_address": self.mac_address,
-            "summary_type": self.summary_type,
-            "num_profiles": self.num_profiles,
-            "fec_summary_data": self.fec_summary_data
-        }
+        out:Dict[str, Any] = {}
+
+        out = self.getPnmHeader()
+        out.update ({
+                "channel_id":       self.channel_id,
+                "mac_address":      self.mac_address,
+                "summary_type":     self.summary_type,
+                "num_profiles":     self.num_profiles,
+                "fec_summary_data": self.fec_summary_data
+        })
+
+        return out
 
     def to_json(self) -> str:
         """

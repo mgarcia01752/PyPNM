@@ -5,9 +5,11 @@ import logging
 import numpy as np
 
 from enum import Enum
-from typing import Callable, List, Dict, Any
+from typing import Callable, List, Dict, Any, Mapping, Sequence, Union
 
-from pypnm.api.routes.common.classes.analysis.model.schema import ConstellationDisplayAnalysisModel, DsHistogramAnalysisModel
+from pypnm.api.routes.common.classes.analysis.model.schema import (
+    BaseAnalysisModel, ConstellationDisplayAnalysisModel, DsHistogramAnalysisModel, 
+    FecSummaryCodeWordModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel)
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor, Utils
@@ -41,60 +43,97 @@ class AnalysisType(Enum):
     BASIC = 0
 
 class Analysis:
-        
-    def __init__(self, analysis_type: AnalysisType, msg_response: MessageResponse):
+    """Core analysis runner.
+
+    This initializer normalizes the payload's ``data`` field into a list of measurement
+    dictionaries and kicks off processing based on ``analysis_type``. Logging honors the
+    configured level; at DEBUG, the full message response is persisted via
+    ``save_message_response``.
+    """
+
+    def __init__(self, analysis_type: "AnalysisType", msg_response: "MessageResponse") -> None:
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
-        self.analysis_type = analysis_type
-        self.msg_response = msg_response
-        self.measurement_data = self.msg_response.payload_to_dict().get("data", [])
-        self.analysis: List[Dict[str, Any]] = []
-        
-        # how to check to see if logger.DEBUG is enable
+        self.analysis_type: "AnalysisType" = analysis_type
+        self.msg_response: "MessageResponse" = msg_response
+
+        payload: Dict[str, Any] = msg_response.payload_to_dict() or {}
+        raw_data = payload.get("data", [])
+
+        self._result_model:List[BaseAnalysisModel] = []
+
+        # Normalize measurement_data to List[Dict[str, Any]]
+        if isinstance(raw_data, Mapping):
+            self.measurement_data: List[Dict[str, Any]] = [dict(raw_data)]
+        elif isinstance(raw_data, Sequence) and not isinstance(raw_data, (str, bytes, bytearray)):
+            self.measurement_data = [dict(m) for m in raw_data]  # type: ignore[arg-type]
+        else:
+            self.measurement_data = []
+
+        self._analysis_dict: List[Dict[str, Any]] = []
+
+        # Persist the raw message when DEBUG is enabled
         if self.logger.isEnabledFor(logging.DEBUG):
             self.save_message_response(self.msg_response)
 
         self._process()
 
-    def _process(self):
-        """
-        Processes each measurement in the payload based on the analysis type.
-        """
-        for measurement in self.measurement_data:
-            pnm_header = measurement.get("pnm_header")
-            pnm_file_type = f'{pnm_header.get("file_type")}{pnm_header.get("file_type_version")}'
+    def _process(self) -> None:
+        """Process each measurement in the payload according to the selected analysis type."""
+        
+        for idx, measurement in enumerate(self.measurement_data):
 
-            if self.analysis_type == AnalysisType.BASIC:
+            pnm_header: Dict[str, Any] = measurement.get("pnm_header") or {}
+            channel_id: int =  measurement.get("channel_id", INVALID_CHANNEL_ID)
+
+            self.logger.info(f"PNM-HEADER[{idx}]: {pnm_header}")
+
+            file_type       = str(pnm_header.get("file_type", ""))
+            file_ver        = str(pnm_header.get("file_type_version", ""))
+            pnm_file_type   = f'{file_type}{file_ver}'
+
+            if self.analysis_type == AnalysisType.BASIC:                    # type: ignore[name-defined]
+                self.logger.info(f'Performing Basic Analysis on PNM: {pnm_file_type} on Channel: {channel_id}')
                 self._basic_analysis(pnm_file_type, measurement)
+            
+            else:
+                self.logger.error(f'Unknown AnalysisType: {self.analysis_type}')
+                raise
 
     def _basic_analysis(self, pnm_file_type: str, measurement):
 
         if pnm_file_type == PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT.value:
             self.logger.info("Processing OFDM_CHANNEL_ESTIMATE_COEFFICIENT")
-            self.analysis.append(self.basic_analysis_ds_chan_est(measurement))
+            self.__update_result_dict(self.basic_analysis_ds_chan_est(measurement))
 
         elif pnm_file_type == PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY.value:
             self.logger.debug("Processing DOWNSTREAM_CONSTELLATION_DISPLAY")
-            self.analysis.append(self.basic_analysis_ds_constellation_display(measurement).model_dump())
+            model = self.basic_analysis_ds_constellation_display(measurement)
+            self.__update_result_model(model)
+            self.__update_result_dict(model.model_dump())
 
         elif pnm_file_type == PnmFileType.RECEIVE_MODULATION_ERROR_RATIO.value:
             self.logger.debug("Processing RECEIVE_MODULATION_ERROR_RATIO")
-            self.analysis.append(self.basic_analysis_rxmer(measurement))
+            self.__update_result_dict(self.basic_analysis_rxmer(measurement))
 
         elif pnm_file_type == PnmFileType.DOWNSTREAM_HISTOGRAM.value:
             self.logger.debug("Processing DOWNSTREAM_HISTOGRAM")
-            self.analysis.append(self.basic_analysis_ds_histogram_display(measurement).model_dump())
+            model = self.basic_analysis_ds_histogram(measurement)
+            self.__update_result_model(model)
+            self.__update_result_dict(model.model_dump())
 
         elif pnm_file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS.value:
             self.logger.debug("Processing UPSTREAM_PRE_EQUALIZER_COEFFICIENTS")
-            self.analysis.append(self.basic_analysis_us_ofdma_pre_equalization(measurement))
+            self.__update_result_dict(self.basic_analysis_us_ofdma_pre_equalization(measurement))
 
         elif pnm_file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE.value:
             self.logger.debug("Stub: Processing UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE")
             pass
 
         elif pnm_file_type == PnmFileType.OFDM_FEC_SUMMARY.value:
-            self.logger.debug("Stub: Processing OFDM_FEC_SUMMARY")
-            pass
+            self.logger.debug("Processing OFDM_FEC_SUMMARY")
+            model = self.basic_analysis_ds_ofdm_fec_summary(measurement)
+            self.__update_result_model(model)
+            self.__update_result_dict(model.model_dump())
 
         elif pnm_file_type == PnmFileType.SPECTRUM_ANALYSIS.value:
             self.logger.debug("Stub: Processing SPECTRUM_ANALYSIS")
@@ -102,7 +141,7 @@ class Analysis:
 
         elif pnm_file_type == PnmFileType.OFDM_MODULATION_PROFILE.value:
             self.logger.debug("Processing OFDM_MODULATION_PROFILE")
-            self.analysis.append(self.basic_analysis_ds_modulation_profile(measurement))
+            self.__update_result_dict(self.basic_analysis_ds_modulation_profile(measurement))
 
         elif pnm_file_type == PnmFileType.LATENCY_REPORT.value:
             self.logger.warning("Stub: Processing LATENCY_REPORT")
@@ -110,7 +149,43 @@ class Analysis:
 
         else:
             self.logger.warning(f"Unknown PNM file type: {pnm_file_type}")
-   
+
+    def get_results(self, full_dict = True) -> Dict[str, Any]:
+        """
+        Returns the list of processed analysis results.
+        If full_dict is True, returns the entire analysis dictionary.
+        
+        Args    :
+            full_dict (bool): If True, returns the full analysis dictionary.
+                            If False, returns only the analysis list.
+
+        Returns:
+            Dict[str, Any]: The analysis results. 
+            {
+                "analysis": Dict[str, Any]
+            }    
+        """
+        return {"analysis": self._analysis_dict}
+
+    def get_model(self) -> Union[BaseAnalysisModel, List[BaseAnalysisModel]]:
+        return self._result_model
+
+    def save_message_response(self, msg_response: MessageResponse) -> None:
+        msg_rsp_dict:Dict[Any, Any] = msg_response.payload_to_dict()
+        mac = msg_rsp_dict.get('mac_address')
+        fname = f'{SystemConfigSettings().message_response_dir}/{mac}_{Utils.time_stamp()}.msg'
+        self.logger.debug(f'Saving Message Response: {fname}')
+
+        fp = FileProcessor(fname)
+        fp.write_file(msg_rsp_dict)
+        fp.close()
+
+    def __update_result_model(self, model:BaseAnalysisModel) :
+        self._result_model.append(model)
+    
+    def __update_result_dict(self, model:Dict[str,Any]):
+        self._analysis_dict.append(model)
+
     @classmethod
     def basic_analysis_rxmer(cls, measurement: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -408,7 +483,7 @@ class Analysis:
         return result
 
     @classmethod
-    def basic_analysis_ds_constellation_display(cls,measurement: Dict[str, Any],) -> ConstellationDisplayAnalysisModel:
+    def basic_analysis_ds_constellation_display(cls, measurement: Dict[str, Any]) -> ConstellationDisplayAnalysisModel:
         """
         Build a minimal constellation analysis payload from a downstream OFDM
         measurement dictionary.
@@ -450,9 +525,8 @@ class Analysis:
         )
 
     @classmethod
-    def basic_analysis_ds_histogram_display(cls,measurement: Dict[str, Any],) -> DsHistogramAnalysisModel:
-        """
-        """
+    def basic_analysis_ds_histogram(cls, measurement: Dict[str, Any]) -> DsHistogramAnalysisModel:
+
         return DsHistogramAnalysisModel(
             device_details  = measurement.get("device_details", SystemDescriptor.empty()),
             pnm_header      = measurement.get("pnm_header", {}),
@@ -463,31 +537,75 @@ class Analysis:
             hit_counts      = measurement.get("hit_counts", []),
         )
 
-    def get_results(self, full_dict = True) -> Dict[str, Any]:
+    @classmethod
+    def basic_analysis_ds_ofdm_fec_summary(cls, measurement: Dict[str, Any]) -> OfdmFecSummaryAnalysisModel:
+        """Build an :class:`OfdmFecSummaryAnalysisModel` from a DS OFDM FEC summary payload.
+
+            Expected input shape (keys are case-sensitive):
+
+            {
+                "device_details": {"sys_descr": {...}},
+                "pnm_header": {...},
+                "channel_id": int,
+                "mac_address": "...",
+                "summary_type": int,
+                "num_profiles": int,
+                "fec_summary_data": [
+                    {
+                        "profile_id": int,
+                        "number_of_sets": int,
+                        "codeword_entries": [
+                            {
+                                "timestamp": int,
+                                "total_codewords": int,
+                                "corrected_codewords": int,
+                                "uncorrectable_codewords": int
+                            },
+                            ...
+                        ]
+                    },
+                    ...
+                ]
+            }
         """
-        Returns the list of processed analysis results.
-        If full_dict is True, returns the entire analysis dictionary.
-        
-        Args    :
-            full_dict (bool): If True, returns the full analysis dictionary.
-                              If False, returns only the analysis list.
+        profiles: List[OfdmFecSummaryProfileModel] = []
 
-        Returns:
-            Dict[str, Any]: The analysis results. 
-              {
-                "analysis": Dict[str, Any]
-            }    
-        """
-        return {"analysis": self.analysis}
-    
-    def save_message_response(self, msg_response: MessageResponse) -> None:
-        msg_rsp_dict:Dict[Any, Any] = msg_response.payload_to_dict()
-        mac = msg_rsp_dict.get('mac_address')
-        fname = f'{SystemConfigSettings().message_response_dir}/{mac}_{Utils.time_stamp()}.msg'
-        self.logger.debug(f'Saving Message Response: {fname}')
+        for prof in (measurement.get("fec_summary_data") or []):
 
-        fp = FileProcessor(fname)
-        fp.write_file(msg_rsp_dict)
-        fp.close()
+            profile_id: int     = int(prof.get("profile_id", INVALID_CHANNEL_ID))
+            number_of_sets: int = int(prof.get("number_of_sets", 0))
 
-        
+            ts_list:  List[int] = []
+            tot_list: List[int] = []
+            cor_list: List[int] = []
+            unc_list: List[int] = []
+
+            for entry in (prof.get("codeword_entries") or []):
+                ts_list.append(int(entry.get("timestamp", 0)))
+                tot_list.append(int(entry.get("total_codewords", 0)))
+                cor_list.append(int(entry.get("corrected_codewords", 0)))
+                unc_list.append(int(entry.get("uncorrectable_codewords", 0)))
+
+            cw = FecSummaryCodeWordModel(
+                timestamps       = ts_list,
+                total_codewords = tot_list,
+                corrected       = cor_list,
+                uncorrected     = unc_list,
+            )
+
+            profiles.append(
+                OfdmFecSummaryProfileModel(
+                    profile         = profile_id,
+                    number_of_sets  = number_of_sets,
+                    codewords       = cw,
+                    )
+                )
+
+        return OfdmFecSummaryAnalysisModel(
+            device_details      = measurement.get("device_details", SystemDescriptor.empty()),
+            pnm_header          = measurement.get("pnm_header", {}),
+            mac_address         = measurement.get("mac_address", MacAddress.null()),
+            channel_id          = int(measurement.get("channel_id", INVALID_CHANNEL_ID)),
+            profiles            = profiles,
+        )
+            

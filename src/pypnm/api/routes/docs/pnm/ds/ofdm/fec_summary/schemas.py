@@ -4,6 +4,7 @@
 from pydantic import Field
 
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmDataResponse, PnmRequest
+from pypnm.api.routes.docs.pnm.ds.histogram.schemas import PnmAnalysisRequest
 from pypnm.docsis.cm_snmp_operation import FecSummaryType
 
 class PnmFecSummaryRequest(PnmRequest):
@@ -14,3 +15,9 @@ class PnmFecSummaryRequest(PnmRequest):
 
 class PnmFecSummaryResponse(PnmDataResponse):
     """Generic response container for most PNM operations."""
+
+class PnmFecSummaryAnalysisRequest(PnmAnalysisRequest):
+    """"""
+    fec_summary_type:int = Field(
+        default=int(FecSummaryType.TEN_MIN.value), description="FEC Summuary 10 Min = 2, 24 Hr = 3"
+    )
