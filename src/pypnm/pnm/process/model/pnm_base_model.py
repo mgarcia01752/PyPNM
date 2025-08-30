@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from pydantic import AliasChoices, AliasPath, BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 from pypnm.lib.mac_address import MacAddress
 from pypnm.pnm.process.pnm_header import PnmHeaderModel, PnmHeaderParameters
 
