@@ -50,7 +50,7 @@ class PnmHeader:
         self.logger: logging.Logger = logging.getLogger(self.__class__.__name__)
 
         self._pnmheader_model: PnmHeaderModel
-
+        self._parameters: PnmHeaderParameters
         self.file_type: Optional[bytes] = None
         self.file_type_num: Optional[int] = None
         self.major_version: Optional[int] = None
@@ -97,16 +97,16 @@ class PnmHeader:
         self.pnm_data = bytes(byte_array[size:])
 
     def __build_pnm_header_model(self):
-        params = PnmHeaderParameters(
+        self._parameters = PnmHeaderParameters(
             file_type           =   self.file_type.decode("utf-8").strip() if self.file_type else None,
             file_type_version   =   self.file_type_num,
             major_version       =   self.major_version,
             minor_version       =   self.minor_version,
             capture_time        =   self.capture_time,
         )
-        self._pnmheader_model = PnmHeaderModel(pnm_header=params)
+        self._pnmheader_model = PnmHeaderModel(pnm_header=self._parameters)
     
-    def to_pnm_header_model(self) -> PnmHeaderModel:
+    def getPnmHeaderModel(self) -> PnmHeaderModel:
         """
         Build a Pydantic model representing the parsed header.
 
@@ -114,6 +114,9 @@ class PnmHeader:
             PnmHeaderModel: Structured header model.
         """
         return self._pnmheader_model
+    
+    def getPnmHeaderParameterModel(self) -> PnmHeaderParameters:
+        return self._parameters
 
     def _to_dict(self, header_only: bool = False) -> Dict[str, Any]:
         """
@@ -125,7 +128,7 @@ class PnmHeader:
         Returns:
             Dict[str, Any]: {"pnm_header": {...}} plus optional "data".
         """
-        out: Dict[str, Any] = self.to_pnm_header_model().model_dump(exclude_none=True)
+        out: Dict[str, Any] = self.getPnmHeaderModel().model_dump(exclude_none=True)
         if not header_only:
             out["data"] = self.pnm_data.hex()
         return out

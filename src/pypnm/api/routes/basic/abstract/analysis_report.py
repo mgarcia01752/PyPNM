@@ -22,6 +22,7 @@ from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.file_processor import FileProcessor
+from pypnm.lib.log_files import LogFile
 from pypnm.lib.matplot.manager import MatplotManager
 from pypnm.lib.types import PathArray, PathLike
 from pypnm.lib.utils import Utils
@@ -246,8 +247,7 @@ class AnalysisReport(ABC):
 
         if not self._data_list:
             self.logger.error(f'Unable to aquire analysis data')
-            FileProcessor(f'logs/error-{Utils.time_stamp()}.json').write_file(json.dumps(self._analysis.get_results()))
-            raise
+            pass
 
         self._png_dir:PathLike              = SystemConfigSettings.png_dir
         self._csv_dir:PathLike              = SystemConfigSettings.csv_dir

@@ -1,11 +1,14 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, AliasPath, BaseModel, ConfigDict, Field
 from pypnm.lib.mac_address import MacAddress
-from pypnm.pnm.process.pnm_header import PnmHeaderModel
+from pypnm.pnm.process.pnm_header import PnmHeaderModel, PnmHeaderParameters
 
 
-class PnmBaseModel(BaseModel):
+class PnmBaseModel(PnmHeaderModel):
     """
     Base fields shared by PNM analysis models.
 
@@ -28,7 +31,8 @@ class PnmBaseModel(BaseModel):
     - Indices are 0-based.
     - This base model does not enforce domain limits; downstream models may add validation.
     """
-    header:PnmHeaderModel               = Field(..., description="PNM Header")
+    model_config = ConfigDict(populate_by_name=True)
+    pnm_header:PnmHeaderParameters      = Field(..., description="")
     channel_id: int                     = Field(0, description="Downstream channel ID")
     mac_address: str                    = Field(default_factory=MacAddress.null, description="Device MAC address")
     subcarrier_zero_frequency: int      = Field(0, description="Frequency of subcarrier 0 (Hz)")

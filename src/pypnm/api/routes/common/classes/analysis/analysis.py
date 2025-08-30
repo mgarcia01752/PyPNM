@@ -15,6 +15,7 @@ from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor, Utils
 from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.file_processor import FileProcessor
+from pypnm.lib.log_files import LogFile
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.qam.lut_mgr import QamLutManager
 from pypnm.lib.qam.types import QamModulation
@@ -85,11 +86,16 @@ class Analysis:
             pnm_header: Dict[str, Any] = measurement.get("pnm_header") or {}
             channel_id: int =  measurement.get("channel_id", INVALID_CHANNEL_ID)
 
-            self.logger.info(f"PNM-HEADER[{idx}]: {pnm_header}")
+            self.logger.debug(f"PNM-HEADER[{idx}]: {pnm_header}")
 
             file_type       = str(pnm_header.get("file_type", ""))
             file_ver        = str(pnm_header.get("file_type_version", ""))
             pnm_file_type   = f'{file_type}{file_ver}'
+
+            if not pnm_file_type:
+                self.logger.error(f'PNM FileType not Found')
+                LogFile.write(fname=f'rxmer-analysis-measurment-{Utils.time_stamp()}.dict' , data=measurement)
+                pass
 
             if self.analysis_type == AnalysisType.BASIC:                    # type: ignore[name-defined]
                 self.logger.info(f'Performing Basic Analysis on PNM: {pnm_file_type} on Channel: {channel_id}')
@@ -148,7 +154,7 @@ class Analysis:
             pass
 
         else:
-            self.logger.warning(f"Unknown PNM file type: {pnm_file_type}")
+            self.logger.warning(f"Unknown PNM file type: ({pnm_file_type})")
 
     def get_results(self, full_dict = True) -> Dict[str, Any]:
         """
@@ -213,7 +219,7 @@ class Analysis:
         """
         spacing:int = measurement.get("subcarrier_spacing",-1)                  # Hz
         active_index:int = measurement.get("first_active_subcarrier_index",-1)  # index
-        zero_freq:int = measurement.get("zero_frequency", -1)                   # Hz
+        zero_freq:int = measurement.get("subcarrier_zero_frequency", -1)        # Hz
         
         if active_index < 0 or zero_freq < 0 or spacing <0:
             raise ValueError(f"Active index: {active_index} or zero frequency: {zero_freq} or spacing: {spacing} must be non-negative")

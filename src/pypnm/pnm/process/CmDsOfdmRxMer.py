@@ -99,7 +99,7 @@ class CmDsOfdmRxMer(PnmHeader):
         values = self.get_rxmer_values()
 
         model = CmDsOfdmRxMerModel(
-                header                          =   self.to_pnm_header_model(),
+                pnm_header                      =   self.getPnmHeaderParameterModel(),       
                 channel_id                      =   self._channel_id,
                 mac_address                     =   self._mac_address,
                 subcarrier_zero_frequency       =   self._subcarrier_zero_frequency,
