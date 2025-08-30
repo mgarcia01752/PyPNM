@@ -1,107 +1,170 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+from __future__ import annotations
+
 import logging
 import struct
 from typing import Any, Dict, Optional
-
+from pydantic import BaseModel, Field
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 
+class PnmHeaderParameters(BaseModel):
+    """Typed fields parsed from a PNM header."""
+
+    file_type: Optional[str]         = Field(None, description="PNM file type identifier (e.g., 'PNN')")
+    file_type_version: Optional[int] = Field(None, description="Numeric version of the file type (e.g., 10 for PNN10)")
+    major_version: Optional[int]     = Field(None, description="Major version of the PNM format")
+    minor_version: Optional[int]     = Field(None, description="Minor version of the PNM format")
+    capture_time: Optional[int]      = Field(None, description="Capture timestamp as epoch seconds since 1970-01-01")
+
+
+class PnmHeaderModel(BaseModel):
+    """Model wrapper for PNM header parameters."""
+    pnm_header: PnmHeaderParameters
+
+
 class PnmHeader:
-    def __init__(self, byte_array):
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.file_type = None
-        self.major_version:int = None
-        self.minor_version:int = None
-        self.capture_time:int = 0
-        self.pnm_data:bytes = None
-        
+    """
+    Parser for PNM headers.
+
+    Formats
+    -------
+    - Special (little-endian) when byte_array[3] == 8:
+        '<3sBBB'  -> file_type(3s), file_type_num(u8), major(u8), minor(u8)
+        (no capture_time)
+    - Standard (big-endian/network) otherwise:
+        '!3sBBBI' -> file_type(3s), file_type_num(u8), major(u8), minor(u8), capture_time(u32)
+    """
+
+    _FMT_LE: str = "<3sBBB"   # special case (no capture_time)
+    _FMT_BE: str = "!3sBBBI"  # standard (with capture_time)
+
+    def __init__(self, byte_array: bytes) -> None:
+        """
+        Initialize and parse a PNM header from raw bytes.
+
+        Args:
+            byte_array: Raw file bytes starting at the PNM header.
+        """
+        self.logger: logging.Logger = logging.getLogger(self.__class__.__name__)
+
+        self._pnmheader_model: PnmHeaderModel
+
+        self.file_type: Optional[bytes] = None
+        self.file_type_num: Optional[int] = None
+        self.major_version: Optional[int] = None
+        self.minor_version: Optional[int] = None
+        self.capture_time: Optional[int] = None
+        self.pnm_data: bytes = b""
+
         self.__parse_header(byte_array)
+        self.__build_pnm_header_model()
 
-    def __parse_header(self, byte_array):
-        
-        pnm_special_case = struct.unpack('<B', byte_array[3:4])
-            
-        if pnm_special_case[0] == 8:
-            
-            header_format = '<3sBBB'
-            header_size = struct.calcsize(header_format)
-            header_data = struct.unpack(header_format, byte_array[:header_size])
-            
-            self.file_type = header_data[0]
-            self.file_type_num = header_data[1]
-            self.major_version = header_data[2]
-            self.minor_version = header_data[3]
-        
+    def __parse_header(self, byte_array: bytes) -> None:
+        """
+        Internal: parse header fields and slice payload.
+
+        Raises:
+            ValueError: If byte_array is too short to contain a header.
+        """
+        if not isinstance(byte_array, (bytes, bytearray)) or len(byte_array) < 4:
+            raise ValueError("byte_array must be bytes-like and at least 4 bytes long")
+
+        special: int = struct.unpack("<B", byte_array[3:4])[0]
+
+        if special == 8:
+            fmt = self._FMT_LE
+            size = struct.calcsize(fmt)
+            if len(byte_array) < size:
+                raise ValueError("insufficient bytes for little-endian header")
+            self.file_type, self.file_type_num, self.major_version, self.minor_version = struct.unpack(
+                fmt, byte_array[:size]
+            )
         else:
-            header_format = '!3sBBBI'
-            header_size = struct.calcsize(header_format)
-            header_data = struct.unpack(header_format, byte_array[:header_size])
-            
-            self.file_type = header_data[0]
-            self.file_type_num = header_data[1]
-            self.major_version = header_data[2]
-            self.minor_version = header_data[3]
-            self.capture_time = header_data[4]
+            fmt = self._FMT_BE
+            size = struct.calcsize(fmt)
+            if len(byte_array) < size:
+                raise ValueError("insufficient bytes for big-endian header")
+            (
+                self.file_type,
+                self.file_type_num,
+                self.major_version,
+                self.minor_version,
+                self.capture_time,
+            ) = struct.unpack(fmt, byte_array[:size])
 
-        self.pnm_data:bytes = byte_array[header_size:]
+        self.pnm_data = bytes(byte_array[size:])
+
+    def __build_pnm_header_model(self):
+        params = PnmHeaderParameters(
+            file_type           =   self.file_type.decode("utf-8").strip() if self.file_type else None,
+            file_type_version   =   self.file_type_num,
+            major_version       =   self.major_version,
+            minor_version       =   self.minor_version,
+            capture_time        =   self.capture_time,
+        )
+        self._pnmheader_model = PnmHeaderModel(pnm_header=params)
+    
+    def to_pnm_header_model(self) -> PnmHeaderModel:
+        """
+        Build a Pydantic model representing the parsed header.
+
+        Returns:
+            PnmHeaderModel: Structured header model.
+        """
+        return self._pnmheader_model
+
+    def _to_dict(self, header_only: bool = False) -> Dict[str, Any]:
+        """
+        Serialize the header using Pydantic's model_dump.
+
+        Args:
+            header_only: When True, omit payload hex.
+
+        Returns:
+            Dict[str, Any]: {"pnm_header": {...}} plus optional "data".
+        """
+        out: Dict[str, Any] = self.to_pnm_header_model().model_dump(exclude_none=True)
+        if not header_only:
+            out["data"] = self.pnm_data.hex()
+        return out
 
     def getPnmHeader(self, header_only: bool = False) -> Dict[str, Any]:
         """
-        Returns the PNM header information as a dictionary.
+        Public getter maintained for backward compatibility.
 
         Args:
-            header_only (bool): If True, excludes the 'Data' field from the result.
+            header_only: When True, omit payload hex.
 
         Returns:
-            Dict[str, Any]: Dictionary containing parsed PNM header fields.
-            
-        header = {
-            "pnm_header": {
-            "file_type": self.file_type.decode('utf-8'),
-            "file_type_version": self.file_type_num,
-            "major_version": self.major_version,
-            "minor_version": self.minor_version,
-            "capture_time": self.capture_time,
-            }
-        }            
-            
+            Dict[str, Any]: Header dictionary.
         """
-        header = {
-            "pnm_header": {
-            "file_type": self.file_type.decode('utf-8'),
-            "file_type_version": self.file_type_num,
-            "major_version": self.major_version,
-            "minor_version": self.minor_version,
-            "capture_time": self.capture_time,
-            }
-        }
-
-        if not header_only:
-            header["data"] = self.pnm_data.hex()
-
-        return header
+        return self._to_dict(header_only)
 
     def get_pnm_file_type(self) -> Optional[PnmFileType]:
         """
-        Attempts to map the combined file_type + file_type_num (e.g., 'PNN10') to a known `PnmFileType` enum.
+        Map parsed (file_type + version) to a PnmFileType enum, if known.
 
         Returns:
-            Optional[PnmFileType]: The matching enum value if found; otherwise, None.
+            Optional[PnmFileType]: Matching enum or None if unrecognized.
         """
-        try:
-            if self.file_type and self.file_type_num is not None:
-
-                pnm_id = f"{self.file_type.decode('utf-8').strip()}{self.file_type_num}"
-
-                for pnm_type in PnmFileType:
-                    if pnm_type.value == pnm_id:
-                        return pnm_type
-
-                self.logger.warning(f"Unrecognized PNM file type ID: {pnm_id}")
-            else:
-                self.logger.warning("Incomplete header: file_type or file_type_num is missing.")
-        except Exception as e:
-            self.logger.error(f"Error determining PNM file type: {e}")
-
+        if self.file_type and self.file_type_num is not None:
+            pnm_id: str = f"{self.file_type.decode('utf-8').strip()}{self.file_type_num}"
+            for t in PnmFileType:
+                if t.value == pnm_id:
+                    return t
         return None
+
+    @classmethod
+    def from_bytes(cls, data: bytes) -> "PnmHeader":
+        """
+        Alternate constructor.
+
+        Args:
+            data: Raw bytes.
+
+        Returns:
+            PnmHeader: Parsed instance.
+        """
+        return cls(data)

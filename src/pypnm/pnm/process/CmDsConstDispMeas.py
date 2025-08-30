@@ -7,7 +7,6 @@ from typing import Optional, Dict
 import json
 
 from pypnm.lib.constants import KHZ
-from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader

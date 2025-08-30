@@ -1,19 +1,30 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-import json
 import logging
 import struct
 
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional
+
+from pydantic.fields import Field
 
 from pypnm.lib.constants import KHZ
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.signal_processing.shan.series import ShannonSeries
 from pypnm.pnm.lib.signal_statistics import SignalStatistics
+from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 from pypnm.lib.types import FloatSeries
+
+class CmDsOfdmRxMerModel(PnmBaseModel):
+    """Downstream OFDM RxMER dataset for a single channel."""
+    data_length: int                        = Field(..., ge=0, description="Number of RxMER points (subcarriers)")
+    occupied_channel_bandwidth: int         = Field(..., ge=0, description="OFDM Occupied Bandwidth (Hz)")
+    value_units:str                         = Field(default="dB", description="Non-mutable")
+    values:FloatSeries                      = Field(..., description="OFDM Occupied Bandwidth (Hz)")
+    signal_statistics:Dict[str, Any]        = Field(..., description="")
+    modulation_statistics:Dict[str, Any]    = Field(..., description="")
 
 class CmDsOfdmRxMer(PnmHeader):
     """
@@ -32,19 +43,20 @@ class CmDsOfdmRxMer(PnmHeader):
         """
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
+        self._rxmer_model:CmDsOfdmRxMerModel
 
-        self.channel_id: Optional[int]                      = 0
-        self.mac_address: Optional[str]                     = MacAddress.null()
-        self.subcarrier_zero_frequency: Optional[int]       = 0
-        self.first_active_subcarrier_index: Optional[int]   = 0
-        self.subcarrier_spacing: Optional[int]              = 0
-        self.rxmer_data_length: Optional[int]               = 0
-        self.rxmer_data: Optional[bytes]
-        self.rx_mer_float_data: Optional[FloatSeries]       = []
+        self._channel_id: Optional[int]                     = 0
+        self._mac_address: Optional[str]                    = MacAddress.null()
+        self._subcarrier_zero_frequency: Optional[int]      = 0
+        self._first_active_subcarrier_index: Optional[int]  = 0
+        self._subcarrier_spacing: Optional[int]             = 0
+        self._rxmer_data_length: Optional[int]              = 0
+        self._rxmer_data: Optional[bytes]                    
+        self._rx_mer_float_data: Optional[FloatSeries]      = []
 
-        self._process_rxmer_data()
-
-    def _process_rxmer_data(self) -> None:
+        self._process()
+      
+    def _process(self) -> None:
         """
         Parses the header and extracts metadata and raw RxMER data.
         """
@@ -61,22 +73,19 @@ class CmDsOfdmRxMer(PnmHeader):
 
             unpacked_data = struct.unpack(rxmer_data_format, self.pnm_data[:head_len])
 
-            self.channel_id                     = unpacked_data[0]
-            self.mac_address                    = ':'.join(f'{b:02x}' for b in unpacked_data[1])
-            self.subcarrier_zero_frequency      = unpacked_data[2]
-            self.first_active_subcarrier_index  = unpacked_data[3]
-            self.subcarrier_spacing             = unpacked_data[4] * KHZ
-            self.rxmer_data_length              = unpacked_data[5]
-            self.rxmer_data                     = self.pnm_data[head_len:head_len + self.rxmer_data_length]
+            self._channel_id                     = unpacked_data[0]
+            self._mac_address                    = ':'.join(f'{b:02x}' for b in unpacked_data[1])
+            self._subcarrier_zero_frequency      = unpacked_data[2]
+            self._first_active_subcarrier_index  = unpacked_data[3]
+            self._subcarrier_spacing             = unpacked_data[4] * KHZ
+            self._rxmer_data_length              = unpacked_data[5]
+            self._rxmer_data                     = self.pnm_data[head_len:head_len + self._rxmer_data_length]
 
-            if len(self.rxmer_data) < self.rxmer_data_length:
-                raise ValueError(f"Insufficient RxMER data length: {len(self.rxmer_data)} based on header field: {self.rxmer_data_length}")
-
-            self.logger.debug(f"Parsed RxMER header: "
-                              f"channel_id={self.channel_id}, mac={self.mac_address}, "
-                              f"zero_freq={self.subcarrier_zero_frequency}, active_idx={self.first_active_subcarrier_index}, "
-                              f"spacing={self.subcarrier_spacing}, data_len={self.rxmer_data_length}")
+            if len(self._rxmer_data) < self._rxmer_data_length:
+                raise ValueError(f"Insufficient RxMER data length: {len(self._rxmer_data)} based on header field: {self._rxmer_data_length}")
             
+            self._rxmer_model = self._update_model()
+
         except struct.error as e:
             self.logger.error(f"Struct unpack error: {e}")
             raise
@@ -85,6 +94,26 @@ class CmDsOfdmRxMer(PnmHeader):
             self.logger.error(f"Error processing RxMER data: {e}")
             raise
 
+    def _update_model(self) -> CmDsOfdmRxMerModel:
+
+        values = self.get_rxmer_values()
+
+        model = CmDsOfdmRxMerModel(
+                header                          =   self.to_pnm_header_model(),
+                channel_id                      =   self._channel_id,
+                mac_address                     =   self._mac_address,
+                subcarrier_zero_frequency       =   self._subcarrier_zero_frequency,
+                first_active_subcarrier_index   =   self._first_active_subcarrier_index,
+                subcarrier_spacing              =   self._subcarrier_spacing,
+                data_length                     =   self._rxmer_data_length,
+                occupied_channel_bandwidth      =   self._rxmer_data_length * self._subcarrier_spacing,         
+                values                          =   values,
+                signal_statistics               =   SignalStatistics(values).compute(),
+                modulation_statistics           =   ShannonSeries(values).to_dict()
+            )
+
+        return model
+
     def get_rxmer_values(self) -> FloatSeries:
         """
         Converts raw RxMER bytes to float values in quarter-dB steps.
@@ -92,40 +121,24 @@ class CmDsOfdmRxMer(PnmHeader):
         Returns:
             List[float]: Decoded RxMER values.
         """
-        if self.rx_mer_float_data:
-            self.logger.info(f"RxMER Float Data: {self.rx_mer_float_data}")
-            return self.rx_mer_float_data
+        if self._rx_mer_float_data:
+            self.logger.info(f"RxMER Float Data: {self._rx_mer_float_data}")
+            return self._rx_mer_float_data
 
-        if not self.rxmer_data:
+        if not self._rxmer_data:
             self.logger.error("RxMER data is empty or uninitialized.")
             return []
 
-        self.rx_mer_float_data = [min(max(byte / 4.0, 0.0), 63.5) for byte in self.rxmer_data]
+        self._rx_mer_float_data = [min(max(byte / 4.0, 0.0), 63.5) for byte in self._rxmer_data]
 
-        self.logger.info(f"Decoded {len(self.rx_mer_float_data)} RxMER float values.")
+        self.logger.debug(f"Decoded {len(self._rx_mer_float_data)} RxMER float values.")
 
-        return self.rx_mer_float_data
+        return self._rx_mer_float_data
 
-    def get_raw_data(self) -> Tuple[Optional[int], Optional[str], Optional[int],
-                                    Optional[int], Optional[int], Optional[int], Optional[bytes]]:
-        """
-        Returns a tuple of all parsed header fields and the raw RxMER bytes.
-
-        Returns:
-            Tuple containing channel_id, mac_address, zero_frequency, active_subcarrier_index,
-            subcarrier_spacing, rxmer_data_length, and raw rxmer_data bytes.
-        """
-        return (
-            self.channel_id,
-            self.mac_address,
-            self.subcarrier_zero_frequency,
-            self.first_active_subcarrier_index,
-            self.subcarrier_spacing,
-            self.rxmer_data_length,
-            self.rxmer_data
-        )
-
-    def to_dict(self, header_only: bool = False) -> Dict[str, object]:
+    def to_model(self) -> CmDsOfdmRxMerModel:
+        return self._rxmer_model
+    
+    def to_dict(self) -> Dict[str, object]:
         """
         Returns a dictionary representation of the RxMER header and optionally the values.
 
@@ -135,28 +148,9 @@ class CmDsOfdmRxMer(PnmHeader):
         Returns:
             Dict[str, object]: Parsed RxMER data.
         """
-        data = self.getPnmHeader(header_only=True)
-        
-        data.update({
-            "channel_id": self.channel_id,
-            "mac_address": self.mac_address,
-            "zero_frequency": self.subcarrier_zero_frequency,
-            "first_active_subcarrier_index": self.first_active_subcarrier_index,
-            "subcarrier_spacing": self.subcarrier_spacing,
-            "data_length": self.rxmer_data_length,
-            "occupied_channel_bandwidth": (self.rxmer_data_length * self.subcarrier_spacing),
-        })
-        
-        if not header_only:
-            data["value_units"] = "dB"
-            values:FloatSeries = self.get_rxmer_values()
-            data["values"] = values
-            data["signal_statistics"] = SignalStatistics(values).compute()
-            data["modulation_statistics"] = ShannonSeries(values).to_dict()
+        return self.to_model().model_dump()
 
-        return data
-
-    def to_json(self, header_only: bool = False) -> str:
+    def to_json(self) -> str:
         """
         Returns a JSON string representation of the RxMER data.
 
@@ -166,8 +160,4 @@ class CmDsOfdmRxMer(PnmHeader):
         Returns:
             str: JSON string of RxMER data.
         """
-        try:
-            return json.dumps(self.to_dict(header_only=header_only), indent=2)
-        except Exception as e:
-            self.logger.error(f"Failed to serialize RxMER data to JSON: {e}")
-            return "{}"
+        return self.to_model().model_dump_json()
