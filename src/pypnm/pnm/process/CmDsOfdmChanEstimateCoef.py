@@ -18,34 +18,87 @@ from pypnm.pnm.process.pnm_header import PnmHeader
 
 class CmDsOfdmChanEstimateCoefModel(PnmBaseModel):
     """
+    Canonical payload for **DOCSIS OFDM downstream channel-estimation coefficients**.
+
+    This extends `PnmBaseModel` (providing `pnm_header`, `channel_id`, `mac_address`,
+    and OFDM subcarrier metadata) with complex tap values for each active subcarrier.
+
+    Notes
+    -----
+    - `value_units` is fixed to `"complex"`.
+    - `data_length` is the **byte length** of the coefficient payload in the PNM file,
+      which must be a multiple of 4 (2 bytes real + 2 bytes imag per subcarrier).
+    - The number of complex points equals `data_length // 4`.
+    - `occupied_channel_bandwidth` is derived as
+      `(#complex points) * subcarrier_spacing` (Hz).
+
+    Fields
+    ------
+    data_length : int
+        Raw byte length of the complex coefficient payload (≥ 0; multiple of 4).
+    occupied_channel_bandwidth : int
+        Total occupied OFDM bandwidth in Hertz.
+    value_units : str
+        Non-mutable indicator of units; always `"complex"`.
+    values : ComplexArray
+        Per-subcarrier complex coefficients represented as `[real, imag]` pairs
+        (rounded or raw depending on producer).
     """
     data_length: int                        = Field(..., ge=0, description="Number of points (subcarriers)")
     occupied_channel_bandwidth: int         = Field(..., ge=0, description="OFDM Occupied Bandwidth (Hz)")
     value_units:str                         = Field(default="complex", description="Non-mutable")
     values:ComplexArray                     = Field(..., description="")
 
+
 class CmDsOfdmChanEstimateCoef(PnmHeader):
     """
-    Parses DOCSIS OFDM Downstream Channel Estimation Coefficients from binary data.
+    Parser/adapter for **DOCSIS OFDM Downstream Channel Estimation Coefficients**.
 
-    Expected binary format:
-        - Channel ID: 1 byte
-        - MAC Address: 6 bytes
-        - Zero Frequency (Hz): 4 bytes
-        - First Active Subcarrier Index: 2 bytes
-        - Subcarrier Spacing (kHz): 1 byte
-        - Coefficient Data Length (bytes): 4 bytes
-        - Complex Coefficient Data: Variable length (fixed-point complex values)
+    Responsibilities
+    ----------------
+    1. Validate the incoming PNM stream is of type `OFDM_CHANNEL_ESTIMATE_COEFFICIENT`.
+    2. Unpack the header and payload from the binary stream.
+    3. Decode fixed-point complex coefficients using `FixedPointDecoder`.
+    4. Materialize a `CmDsOfdmChanEstimateCoefModel` with metadata and values.
+
+    Expected binary header format (big-endian)
+    -----------------------------------------
+    Struct format: ``'>B6sIHBI'``
+
+    - ``B``  : Channel ID (uint8)
+    - ``6s`` : MAC address (6 bytes)
+    - ``I``  : Subcarrier-zero frequency, Hz (uint32)
+    - ``H``  : First active subcarrier index (uint16)
+    - ``B``  : Subcarrier spacing, **kHz** (uint8; later scaled by `KHZ` to Hz)
+    - ``I``  : Coefficient payload length, **bytes** (uint32; must be multiple of 4)
+
+    Coefficient encoding
+    --------------------
+    - Each complex coefficient is stored as **2 bytes real + 2 bytes imag** in a
+      Signed-Magnitude fixed-point format `(S.M, N)` specified by `sm_n_format`.
     """
 
     def __init__(self, binary_data: bytes, sm_n_format: Tuple[int, int] = (2, 13), round_precision: int = 6):
         """
-        Initialize and decode the binary coefficient data.
+        Construct and immediately parse a channel-estimation coefficient blob.
 
-        Args:
-            binary_data (bytes): Raw binary input from SNMP/TFTP.
-            sm_n_format (Tuple[int, int]): Signed-Magnitude fixed-point format (integer bits, fractional bits).
-            round_precision
+        Parameters
+        ----------
+        binary_data : bytes
+            Raw PNM file buffer sourced from SNMP/TFTP capture.
+        sm_n_format : Tuple[int, int], default (2, 13)
+            Signed-Magnitude fixed-point configuration as `(integer_bits, fractional_bits)`
+            used by `FixedPointDecoder.decode_complex_data`.
+        round_precision : int
+            Decimal places to round `[real, imag]` pairs when producing `values`.
+            If `None`, no rounding is applied.
+
+        Raises
+        ------
+        ValueError
+            If validation of file type, header size, payload size, or alignment fails.
+        struct.error
+            If the header cannot be unpacked with the expected struct layout.
         """
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -67,7 +120,24 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
 
     def _process(self) -> None:
         """
-        Internal method to parse and decode channel estimation coefficients.
+        Parse the binary stream and decode complex coefficients.
+
+        Workflow
+        --------
+        1. Ensure the PNM file type is `OFDM_CHANNEL_ESTIMATE_COEFFICIENT`.
+        2. Validate buffer size for the fixed header (`'>B6sIHBI'`).
+        3. Unpack header fields; verify `coefficient_data_length` is a multiple of 4.
+        4. Slice the complex payload and decode via `FixedPointDecoder.decode_complex_data`.
+        5. Normalize MAC address formatting and convert spacing from kHz to Hz.
+        6. Build the pydantic model (`CmDsOfdmChanEstimateCoefModel`) with rounded pairs.
+
+        Raises
+        ------
+        ValueError
+            If header/payload are truncated, the type is incorrect,
+            or the coefficient byte length is misaligned.
+        struct.error
+            If unpacking the header fails.
         """
         if self.get_pnm_file_type() != PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT:
             cann = PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT.get_pnm_cann()
@@ -123,39 +193,58 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
 
     def get_coefficients(self, precision:str="rounded") -> ComplexArray:
         """
-        Returns:
-            Optional[List[complex]]: List of complex channel estimation coefficients.
-            precision: str rounded | raw
+        Retrieve channel-estimation coefficients.
+
+        Parameters
+        ----------
+        precision : {"rounded", "raw"}, default "rounded"
+            - `"rounded"` returns `[real, imag]` pairs with `round_precision` applied.
+            - `"raw"` returns the original complex values decoded from the payload.
+
+        Returns
+        -------
+        ComplexArray
+            Coefficients in the requested representation.
         """
         if precision == "rounded":
             return self._coeff_values_rounded
         
         return cast(ComplexArray, self._coefficient_data)
         
-
     def to_model(self) -> CmDsOfdmChanEstimateCoefModel:
+        """
+        Return the fully-populated pydantic model representation.
+
+        Returns
+        -------
+        CmDsOfdmChanEstimateCoefModel
+            Structured payload including header metadata and coefficients.
+        """
         return self._model
 
     def to_dict(self) -> Dict:
         """
-        Returns a dictionary of all parsed header and coefficient metadata.
+        Export the parsed header and coefficient metadata as a Python dictionary.
 
-        Args:
-            round_precision (Optional[int]): Decimal precision to round real/imag parts of coefficients.
-                                             If None, no rounding is applied.
-
-        Returns:
-            dict: Dictionary with lowercase snake_case keys.
+        Returns
+        -------
+        dict
+            A `model_dump()` of the internal pydantic model, suitable for JSON serialization.
         """              
         return self.to_model().model_dump()
 
     def to_json(self, indent:int=2) -> str:
         """
-        Serializes parsed data to JSON.
+        Export the parsed data as a JSON string.
 
-        Args:
+        Parameters
+        ----------
+        indent : int, default 2
+            Indentation level for pretty-printed JSON.
 
-        Returns:
-            str: JSON string.
+        Returns
+        -------
+        str
+            JSON document describing the coefficients and associated metadata.
         """
         return self.to_model().model_dump_json(indent=indent)

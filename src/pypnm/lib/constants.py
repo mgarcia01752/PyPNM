@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from typing import List, TypeVar
-from pypnm.lib.types import Number, ArrayLike
+from pypnm.lib.types import Number
 
 KHZ:Number                  = 1_000
 MHZ:Number                  = 1_000_000

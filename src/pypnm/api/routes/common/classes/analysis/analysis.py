@@ -110,6 +110,9 @@ class Analysis:
         if pnm_file_type == PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT.value:
             self.logger.info("Processing OFDM_CHANNEL_ESTIMATE_COEFFICIENT")
             self.__update_result_dict(self.basic_analysis_ds_chan_est(measurement))
+            # model = self.basic_analysis_ds_chan_est(measurement)
+            # self.__update_result_model(model)
+            # self.__update_result_dict(model.model_dump())
 
         elif pnm_file_type == PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY.value:
             self.logger.debug("Processing DOWNSTREAM_CONSTELLATION_DISPLAY")
@@ -120,6 +123,9 @@ class Analysis:
         elif pnm_file_type == PnmFileType.RECEIVE_MODULATION_ERROR_RATIO.value:
             self.logger.debug("Processing RECEIVE_MODULATION_ERROR_RATIO")
             self.__update_result_dict(self.basic_analysis_rxmer(measurement))
+            # model = self.basic_analysis_rxmer(measurement)
+            # self.__update_result_model(model)
+            # self.__update_result_dict(model.model_dump())            
 
         elif pnm_file_type == PnmFileType.DOWNSTREAM_HISTOGRAM.value:
             self.logger.debug("Processing DOWNSTREAM_HISTOGRAM")
@@ -130,9 +136,15 @@ class Analysis:
         elif pnm_file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS.value:
             self.logger.debug("Processing UPSTREAM_PRE_EQUALIZER_COEFFICIENTS")
             self.__update_result_dict(self.basic_analysis_us_ofdma_pre_equalization(measurement))
-
+            # model = self.basic_analysis_us_ofdma_pre_equalization(measurement)
+            # self.__update_result_model(model)
+            # self.__update_result_dict(model.model_dump())
+  
         elif pnm_file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE.value:
             self.logger.debug("Stub: Processing UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE")
+            # model = self.basic_analysis_us_ofdma_pre_equalization(measurement)
+            # self.__update_result_model(model)
+            # self.__update_result_dict(model.model_dump())             
             pass
 
         elif pnm_file_type == PnmFileType.OFDM_FEC_SUMMARY.value:
@@ -148,6 +160,9 @@ class Analysis:
         elif pnm_file_type == PnmFileType.OFDM_MODULATION_PROFILE.value:
             self.logger.debug("Processing OFDM_MODULATION_PROFILE")
             self.__update_result_dict(self.basic_analysis_ds_modulation_profile(measurement))
+            # model = self.basic_analysis_ds_modulation_profile(measurement)
+            # self.__update_result_model(model)
+            # self.__update_result_dict(model.model_dump())             
 
         elif pnm_file_type == PnmFileType.LATENCY_REPORT.value:
             self.logger.warning("Stub: Processing LATENCY_REPORT")
@@ -288,23 +303,23 @@ class Analysis:
         Returns:
             Dict[str, Any]: Analysis results with magnitude and group delay per subcarrier.
         """
-        spacing:int = measurement.get("subcarrier_spacing",-1)                              # Hz
-        active_index:int = measurement.get("first_active_subcarrier_index",-1)              # index
-        zero_freq:int = measurement.get("zero_frequency", -1)                               # Hz
+        subcarrier_spacing:int = measurement.get("subcarrier_spacing",-1)                              # Hz
+        first_active_subcarrier_index:int = measurement.get("first_active_subcarrier_index",-1)              # index
+        subcarrier_zero_frequency:int = measurement.get("subcarrier_zero_frequency", -1)                    # Hz
         occupied_channel_bandwidth:int = measurement.get("occupied_channel_bandwidth", -1)  #
         
-        if active_index < 0 or zero_freq < 0 or spacing <0:
-            raise ValueError(f"Active index: {active_index} or zero frequency: {zero_freq} or spacing: {spacing} must be non-negative")
+        if first_active_subcarrier_index < 0 or subcarrier_zero_frequency < 0 or subcarrier_spacing <0:
+            raise ValueError(f"Active index: {first_active_subcarrier_index} or zero frequency: {subcarrier_zero_frequency} or spacing: {subcarrier_spacing} must be non-negative")
 
         values:ComplexArray = measurement.get("values", []) # Complex Values
         if not values:
             raise ValueError("No complex channel estimation values provided in measurement.")
         
-        start_freq = (spacing * active_index) + zero_freq
-        freqs:List[int] = [start_freq + (i * spacing) for i in range(len(values))]
+        start_freq = (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency
+        freqs:List[int] = [start_freq + (i * subcarrier_spacing) for i in range(len(values))]
 
         # Group delay calculation
-        gd = GroupDelay.from_channel_estimate(Hhat=values, df_hz=spacing, f0_hz=start_freq)
+        gd = GroupDelay.from_channel_estimate(Hhat=values, df_hz=subcarrier_spacing, f0_hz=start_freq)
         gd_results = gd.to_result()
        
         # Calculate Per-subcarrer Complex Numerbers

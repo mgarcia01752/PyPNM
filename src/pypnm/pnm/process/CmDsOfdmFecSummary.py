@@ -14,10 +14,10 @@ class CmDsOfdmFecSummary(PnmHeader):
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
 
-        self.channel_id: Optional[int] = None
-        self.mac_address: Optional[str] = None
-        self.summary_type: Optional[int] = None
-        self.num_profiles: Optional[int] = None
+        self._channel_id: Optional[int] = None
+        self._mac_address: Optional[str] = None
+        self._summary_type: Optional[int] = None
+        self._num_profiles: Optional[int] = None
         self.fec_summary_data: Optional[List[Dict[str, Any]]] = None
         self.__process()
 
@@ -40,15 +40,15 @@ class CmDsOfdmFecSummary(PnmHeader):
 
         self.logger.debug(f"FEC Summary Header Data: {self.pnm_data[:fec_summary_size].hex()}")
 
-        self.channel_id = unpacked_data[0]
-        self.mac_address = unpacked_data[1].hex(':')
-        self.summary_type = unpacked_data[2]
-        self.num_profiles = unpacked_data[3]
+        self._channel_id = unpacked_data[0]
+        self._mac_address = unpacked_data[1].hex(':')
+        self._summary_type = unpacked_data[2]
+        self._num_profiles = unpacked_data[3]
 
         fec_data_start = fec_summary_size
         self.fec_summary_data = []
 
-        for profile_index in range(self.num_profiles):
+        for profile_index in range(self._num_profiles):
             profile_format = '!B H'
             profile_size = calcsize(profile_format)
 
@@ -122,10 +122,10 @@ class CmDsOfdmFecSummary(PnmHeader):
 
         out = self.getPnmHeader()
         out.update ({
-                "channel_id":       self.channel_id,
-                "mac_address":      self.mac_address,
-                "summary_type":     self.summary_type,
-                "num_profiles":     self.num_profiles,
+                "channel_id":       self._channel_id,
+                "mac_address":      self._mac_address,
+                "summary_type":     self._summary_type,
+                "num_profiles":     self._num_profiles,
                 "fec_summary_data": self.fec_summary_data
         })
 
