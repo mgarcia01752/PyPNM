@@ -560,73 +560,99 @@ class Analysis:
 
     @classmethod
     def basic_analysis_ds_ofdm_fec_summary(cls, measurement: Dict[str, Any]) -> OfdmFecSummaryAnalysisModel:
-        """Build an :class:`OfdmFecSummaryAnalysisModel` from a DS OFDM FEC summary payload.
-
-            Expected input shape (keys are case-sensitive):
-
-            {
-                "device_details": {"sys_descr": {...}},
-                "pnm_header": {...},
-                "channel_id": int,
-                "mac_address": "...",
-                "summary_type": int,
-                "num_profiles": int,
-                "fec_summary_data": [
-                    {
-                        "profile_id": int,
-                        "number_of_sets": int,
-                        "codeword_entries": [
-                            {
-                                "timestamp": int,
-                                "total_codewords": int,
-                                "corrected_codewords": int,
-                                "uncorrectable_codewords": int
-                            },
-                            ...
-                        ]
-                    },
-                    ...
-                ]
-            }
         """
+        Build an :class:`OfdmFecSummaryAnalysisModel` from a DS OFDM FEC summary payload.
+
+        Expected input (keys are case-sensitive)
+        ----------------------------------------
+        {
+            "device_details": {"sys_descr": {...}},
+            "pnm_header": {...},
+            "channel_id": int,
+            "mac_address": "xx:xx:xx:xx:xx:xx",
+            "summary_type": int,                # e.g., 2 | 3 (aggregation code)
+            "num_profiles": int,
+            "fec_summary_data": [
+                {
+                    "profile_id": int,
+                    "number_of_sets": int,
+                    "codeword_entries": {
+                        "timestamp": List[int],
+                        "total_codewords": List[int],
+                        "corrected": List[int],
+                        "uncorrected": List[int]
+                    }
+                },
+                ...
+            ]
+        }
+
+        Behavior
+        --------
+        - Coerces all codeword series to ints.
+        - If series lengths differ, truncates to the shortest and logs a warning.
+        - Uses the **computed** series length for `number_of_sets` (logs if it disagrees with declared).
+        """
+        log = logging.getLogger(getattr(cls, "__name__", "OfdmFecSummaryAnalysis"))
+
         profiles: List[OfdmFecSummaryProfileModel] = []
 
         for prof in (measurement.get("fec_summary_data") or []):
+            profile_id: int = int(prof.get("profile_id", INVALID_CHANNEL_ID))
+            declared_sets: int = int(prof.get("number_of_sets", 0))
 
-            profile_id: int     = int(prof.get("profile_id", INVALID_CHANNEL_ID))
-            number_of_sets: int = int(prof.get("number_of_sets", 0))
+            cwe: Dict[str, Any] = prof.get("codeword_entries") or {}
 
-            ts_list:  List[int] = []
-            tot_list: List[int] = []
-            cor_list: List[int] = []
-            unc_list: List[int] = []
+            # Extract parallel arrays and coerce to int lists
+            ts_list:  List[int] = [int(x) for x in (cwe.get("timestamp") or [])]
+            tot_list: List[int] = [int(x) for x in (cwe.get("total_codewords") or [])]
+            cor_list: List[int] = [int(x) for x in (cwe.get("corrected") or [])]
+            unc_list: List[int] = [int(x) for x in (cwe.get("uncorrected") or [])]
 
-            for entry in (prof.get("codeword_entries") or []):
-                ts_list.append(int(entry.get("timestamp", 0)))
-                tot_list.append(int(entry.get("total_codewords", 0)))
-                cor_list.append(int(entry.get("corrected_codewords", 0)))
-                unc_list.append(int(entry.get("uncorrectable_codewords", 0)))
+            # Enforce equal lengths by truncating to the shortest (robustness over hard failure)
+            n = min(len(ts_list), len(tot_list), len(cor_list), len(unc_list)) if any(
+                (ts_list, tot_list, cor_list, unc_list)
+            ) else 0
+
+            if n and any(len(lst) != n for lst in (ts_list, tot_list, cor_list, unc_list)):
+                log.warning(
+                    f"Profile {profile_id}: series length mismatch; truncating to {n} "
+                    f"(ts={len(ts_list)}, total={len(tot_list)}, corrected={len(cor_list)}, uncorrected={len(unc_list)})"
+                )
+                ts_list, tot_list, cor_list, unc_list = (
+                    ts_list[:n], tot_list[:n], cor_list[:n], unc_list[:n]
+                )
+
+            if declared_sets and declared_sets != n:
+                log.debug(
+                    f"Profile {profile_id}: number_of_sets declared={declared_sets}, computed={n}; using computed."
+                )
 
             cw = FecSummaryCodeWordModel(
-                timestamps       = ts_list,
-                total_codewords = tot_list,
-                corrected       = cor_list,
-                uncorrected     = unc_list,
+                timestamps=ts_list,
+                total_codewords=tot_list,
+                corrected=cor_list,
+                uncorrected=unc_list,
             )
 
             profiles.append(
                 OfdmFecSummaryProfileModel(
-                    profile         = profile_id,
-                    number_of_sets  = number_of_sets,
-                    codewords       = cw,
-                    )
+                    profile=profile_id,
+                    number_of_sets=n,
+                    codewords=cw,
                 )
+            )
+
+        # Optional sanity check: header-declared num_profiles vs parsed count
+        declared_num_profiles = int(measurement.get("num_profiles", len(profiles)))
+        if declared_num_profiles != len(profiles):
+            log.debug(f"num_profiles declared={declared_num_profiles}, parsed={len(profiles)}")
 
         return OfdmFecSummaryAnalysisModel(
-            device_details      = measurement.get("device_details", SystemDescriptor.empty()),
-            pnm_header          = measurement.get("pnm_header", {}),
-            mac_address         = measurement.get("mac_address", MacAddress.null()),
-            channel_id          = int(measurement.get("channel_id", INVALID_CHANNEL_ID)),
-            profiles            = profiles,
+            device_details=measurement.get("device_details", SystemDescriptor.empty()),
+            pnm_header=measurement.get("pnm_header", {}),
+            mac_address=measurement.get("mac_address", MacAddress.null()),
+            channel_id=int(measurement.get("channel_id", INVALID_CHANNEL_ID)),
+            profiles=profiles,
         )
-            
+      

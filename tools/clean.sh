@@ -78,7 +78,12 @@ safe_rm() {
 # -----------------------------------------------------------------------------
 clean_logs() {
   echo "🧹 Cleaning logs..."
-  safe_rm "$ROOT_DIR/logs/"*
+  safe_rm "$ROOT_DIR/.data/pnm/"*
+}
+
+clean_archives() {
+  echo "🧹 Cleaning Archives..."
+  safe_rm "$ROOT_DIR/.data/archive/"*
 }
 
 clean_python() {
@@ -112,7 +117,6 @@ clean_png() {
   safe_rm "$ROOT_DIR/.data/png/"*
 }
 
-
 safe_rm "$ROOT_DIR/.data/db/"*
 
 clean_output() {
@@ -128,12 +132,17 @@ for action in "${ACTIONS[@]}"; do
 
     --all)
       echo "🚀 Performing full cleanup..."
+      clean_archives
       clean_python
       clean_build
       clean_pnm
       clean_excel
       clean_output
       clean_png
+      ;;
+
+    --archive)
+      clean_archives
       ;;
 
     --logs)
