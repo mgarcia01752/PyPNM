@@ -2,15 +2,27 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-import json
 from struct import calcsize, unpack
-from typing import List, Optional, Tuple, Dict
+from typing import List, Optional, Tuple, Dict, cast
 
-from pypnm.lib.constants import KHZ
+from pydantic import Field
+
+from pypnm.api.routes.docs.pnm.files.service import MacAddress
+from pypnm.lib.constants import INVALID_CHANNEL_ID, KHZ
+from pypnm.lib.types import ComplexArray
 from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder
+from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 
+
+class CmDsOfdmChanEstimateCoefModel(PnmBaseModel):
+    """
+    """
+    data_length: int                        = Field(..., ge=0, description="Number of points (subcarriers)")
+    occupied_channel_bandwidth: int         = Field(..., ge=0, description="OFDM Occupied Bandwidth (Hz)")
+    value_units:str                         = Field(default="complex", description="Non-mutable")
+    values:ComplexArray                     = Field(..., description="")
 
 class CmDsOfdmChanEstimateCoef(PnmHeader):
     """
@@ -26,29 +38,34 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
         - Complex Coefficient Data: Variable length (fixed-point complex values)
     """
 
-    def __init__(self, binary_data: bytes, sm_n_format: Tuple[int, int] = (2, 13)):
+    def __init__(self, binary_data: bytes, sm_n_format: Tuple[int, int] = (2, 13), round_precision: int = 6):
         """
         Initialize and decode the binary coefficient data.
 
         Args:
             binary_data (bytes): Raw binary input from SNMP/TFTP.
             sm_n_format (Tuple[int, int]): Signed-Magnitude fixed-point format (integer bits, fractional bits).
+            round_precision
         """
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.sm_n_format = sm_n_format
+        self._sm_n_format = sm_n_format
+        self._round_precision = round_precision
         
-        self.channel_id: Optional[int] = None
-        self.mac_address: Optional[str] = None
-        self.subcarrier_zero_frequency: Optional[int] = None
-        self.first_active_subcarrier_index: Optional[int] = None
-        self.subcarrier_spacing: Optional[int] = None
-        self.coefficient_data_length: Optional[int] = None
-        self.coefficient_data: Optional[List[complex]] = None
+        self._channel_id: int                                = INVALID_CHANNEL_ID
+        self._mac_address: Optional[str]                     = MacAddress.null()
+        self._subcarrier_zero_frequency: int                 = -1
+        self._first_active_subcarrier_index: int             = -1
+        self._subcarrier_spacing: int                        = -1
+        self._coefficient_data_length: int                   = -1
+        self._coefficient_data: Optional[List[complex]]      = None
+        self._coeff_values_rounded: ComplexArray
 
-        self._parse_header_and_coefficients()
+        self._model:CmDsOfdmChanEstimateCoefModel
 
-    def _parse_header_and_coefficients(self) -> None:
+        self._process()
+
+    def _process(self) -> None:
         """
         Internal method to parse and decode channel estimation coefficients.
         """
@@ -63,35 +80,63 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
             raise ValueError("Insufficient binary data for CmDsOfdmChanEstimateCoef header.")
 
         (
-            self.channel_id,
+            self._channel_id,
             mac_raw,
-            self.subcarrier_zero_frequency,
-            self.first_active_subcarrier_index,
-            self.subcarrier_spacing,
-            self.coefficient_data_length
+            self._subcarrier_zero_frequency,
+            self._first_active_subcarrier_index,
+            self._subcarrier_spacing,
+            self._coefficient_data_length
         ) = unpack(header_format, self.pnm_data[:header_size])
 
-        self.mac_address = ':'.join(f'{b:02x}' for b in mac_raw)
-
-        if self.coefficient_data_length % 4 != 0:
+        if self._coefficient_data_length % 4 != 0:
             raise ValueError("Coefficient data length must be a multiple of 4 bytes (2 bytes real + 2 bytes imag).")
 
         coef_start = header_size
-        coef_end = coef_start + self.coefficient_data_length
+        coef_end = coef_start + self._coefficient_data_length
         if len(self.pnm_data) < coef_end:
             raise ValueError("Coefficient data segment is truncated or incomplete.")
 
         complex_bytes = self.pnm_data[coef_start:coef_end]
-        self.coefficient_data = FixedPointDecoder.decode_complex_data(complex_bytes, self.sm_n_format)
+        self._coefficient_data = FixedPointDecoder.decode_complex_data(complex_bytes, self._sm_n_format)
 
-    def get_coefficient_data(self) -> Optional[List[complex]]:
+        self._mac_address = ':'.join(f'{b:02x}' for b in mac_raw)
+        self._subcarrier_spacing = self._subcarrier_spacing * cast(int,KHZ)
+        obw:int = (len(self._coefficient_data) * self._subcarrier_spacing)
+
+        self._coeff_values_rounded = [
+            [round(c.real, self._round_precision), 
+             round(c.imag, self._round_precision)] if self._round_precision is not None else [c.real, c.imag]
+            for c in self._coefficient_data
+        ]        
+
+        self._model = CmDsOfdmChanEstimateCoefModel(
+            pnm_header                      = self.getPnmHeaderParameterModel(),
+            channel_id                      = self._channel_id,
+            mac_address                     = self._mac_address,
+            subcarrier_zero_frequency       = self._first_active_subcarrier_index,
+            subcarrier_spacing              = self._subcarrier_spacing,
+            data_length                     = self._coefficient_data_length,
+            first_active_subcarrier_index   = self._first_active_subcarrier_index,
+            occupied_channel_bandwidth      = obw,
+            values                          = self._coeff_values_rounded,
+        )
+
+    def get_coefficients(self, precision:str="rounded") -> ComplexArray:
         """
         Returns:
             Optional[List[complex]]: List of complex channel estimation coefficients.
+            precision: str rounded | raw
         """
-        return self.coefficient_data
+        if precision == "rounded":
+            return self._coeff_values_rounded
+        
+        return cast(ComplexArray, self._coefficient_data)
+        
 
-    def to_dict(self, round_precision: Optional[int] = 6) -> Dict:
+    def to_model(self) -> CmDsOfdmChanEstimateCoefModel:
+        return self._model
+
+    def to_dict(self) -> Dict:
         """
         Returns a dictionary of all parsed header and coefficient metadata.
 
@@ -101,60 +146,16 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
 
         Returns:
             dict: Dictionary with lowercase snake_case keys.
-        """
-        coeffs = self.coefficient_data or []
-        coeff_values = [
-            [round(c.real, round_precision), round(c.imag, round_precision)] if round_precision is not None else [c.real, c.imag]
-            for c in coeffs
-        ]
-        
-        sub_car_spacing:int = int(self.subcarrier_spacing) * KHZ
-        
-        data = self.getPnmHeader(header_only=True)
-        
-        data.update ({
-            "channel_id": self.channel_id,
-            "mac_address": self.mac_address,
-            "zero_frequency": self.subcarrier_zero_frequency,
-            "first_active_subcarrier_index": self.first_active_subcarrier_index,
-            "subcarrier_spacing": sub_car_spacing,
-            "coefficient_data_length": self.coefficient_data_length,
-            "number_of_coefficients": len(coeffs),
-            "occupied_channel_bandwidth": (len(coeffs) * sub_car_spacing),
-            "value_units":"[Real(I),Imaginary(Q)]",
-            "values": coeff_values,
-        })
-        
-        return data
+        """              
+        return self.to_model().model_dump()
 
-    def to_json(self, header_only: bool = False, round_precision: Optional[int] = 6) -> str:
+    def to_json(self, indent:int=2) -> str:
         """
         Serializes parsed data to JSON.
 
         Args:
-            header_only (bool): If True, exclude coefficient values.
-            round_precision (Optional[int]): Decimal precision for real/imag rounding in output.
 
         Returns:
             str: JSON string.
         """
-        data = self.to_dict(round_precision=round_precision)
-        if header_only:
-            data.pop("coefficient_values", None)
-            data.pop("number_of_coefficients", None)
-        return json.dumps(data, indent=2)
-
-    def to_csv(self) -> str:
-        """
-        Exports the coefficient values to a CSV-formatted string.
-
-        Returns:
-            str: CSV with 'index,real,imag' rows.
-        """
-        if not self.coefficient_data:
-            return ""
-
-        lines = ["index,real,imag"]
-        for idx, coeff in enumerate(self.coefficient_data):
-            lines.append(f"{idx},{coeff.real},{coeff.imag}")
-        return "\n".join(lines)
+        return self.to_model().model_dump_json(indent=indent)

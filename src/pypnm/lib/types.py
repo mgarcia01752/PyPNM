@@ -51,6 +51,7 @@ TwoDFloatSeries = List[FloatSeries]  # e.g., heatmaps
 # Complex Number
 Complex         = Tuple[float, float]
 ComplexArray    = List[Complex]
+ComplexSeries   = List[complex]
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Paths / filesystem

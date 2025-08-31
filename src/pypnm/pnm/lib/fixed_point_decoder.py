@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from typing import List, Tuple
+from typing import List, Tuple, Union
 import logging
+
+from pypnm.lib.types import ComplexArray, ComplexSeries
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +35,7 @@ class FixedPointDecoder:
         return value / (2 ** frac_bits)
 
     @staticmethod
-    def decode_complex_data(data: bytes, q_format: Tuple[int, int], signed: bool = True) -> List[complex]:
+    def decode_complex_data(data: bytes, q_format: Tuple[int, int], signed: bool = True, output_type: Union[ComplexSeries, ComplexArray] = ComplexSeries ) -> ComplexSeries:
         """
         Decodes a binary byte stream containing fixed-point complex numbers into a list of Python complex numbers.
 
@@ -63,7 +65,7 @@ class FixedPointDecoder:
         if len(data) % bytes_per_complex != 0:
             raise ValueError("Invalid input: data length must be a multiple of the complex number size.")
 
-        complex_values = []
+        complex_values:List[Union[ComplexSeries, ComplexArray]] = []
 
         for offset in range(0, len(data), bytes_per_complex):
             real_bytes = data[offset:offset + bytes_per_component]
@@ -80,7 +82,6 @@ class FixedPointDecoder:
 
             logger.debug(
                 f"Decoded complex: raw_real=0x{real_int:X}, raw_imag=0x{imag_int:X}, "
-                f"float=({real:.6f} + {imag:.6f})"
-            )
+                f"float=({real:.6f} + {imag:.6f})")
 
         return complex_values
