@@ -5,11 +5,11 @@ import logging
 import numpy as np
 
 from enum import Enum
-from typing import Callable, List, Dict, Any, Mapping, Sequence, Union
+from typing import Callable, List, Dict, Any, Mapping, Sequence, Union, cast
 
 from pypnm.api.routes.common.classes.analysis.model.schema import (
-    BaseAnalysisModel, ConstellationDisplayAnalysisModel, DsHistogramAnalysisModel, 
-    FecSummaryCodeWordModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel)
+    BaseAnalysisModel, ConstellationDisplayAnalysisModel, DsHistogramAnalysisModel, DsRxMerAnalysisModel, 
+    FecSummaryCodeWordModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel, RegressionModel, RxMerCarrierValuesModel)
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor, Utils
@@ -22,7 +22,7 @@ from pypnm.lib.qam.types import QamModulation
 from pypnm.lib.signal_processing.complex_array_ops import ComplexArrayOps
 from pypnm.lib.signal_processing.group_delay import GroupDelay
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
-from pypnm.lib.types import ComplexArray, FloatSeries, IntSeries, StringArray
+from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, IntSeries, StringArray
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics
 from pypnm.pnm.process.pnm_file_type import PnmFileType
@@ -122,10 +122,9 @@ class Analysis:
 
         elif pnm_file_type == PnmFileType.RECEIVE_MODULATION_ERROR_RATIO.value:
             self.logger.debug("Processing RECEIVE_MODULATION_ERROR_RATIO")
-            self.__update_result_dict(self.basic_analysis_rxmer(measurement))
-            # model = self.basic_analysis_rxmer(measurement)
-            # self.__update_result_model(model)
-            # self.__update_result_dict(model.model_dump())            
+            model = self.basic_analysis_rxmer(measurement)
+            self.__update_result_model(model)
+            self.__update_result_dict(model.model_dump())            
 
         elif pnm_file_type == PnmFileType.DOWNSTREAM_HISTOGRAM.value:
             self.logger.debug("Processing DOWNSTREAM_HISTOGRAM")
@@ -208,7 +207,7 @@ class Analysis:
         self._analysis_dict.append(model)
 
     @classmethod
-    def basic_analysis_rxmer(cls, measurement: Dict[str, Any]) -> Dict[str, Any]:
+    def basic_analysis_rxmer(cls, measurement: Dict[str, Any]) -> DsRxMerAnalysisModel:
         """
         Performs a basic RxMER (Received Modulation Error Ratio) analysis on the provided measurement data.
 
@@ -232,20 +231,28 @@ class Analysis:
             ValueError: If the RxMER values list is missing or if frequency, magnitude, and classification
                         arrays have mismatched lengths.
         """
-        spacing:int = measurement.get("subcarrier_spacing",-1)                  # Hz
-        active_index:int = measurement.get("first_active_subcarrier_index",-1)  # index
-        zero_freq:int = measurement.get("subcarrier_zero_frequency", -1)        # Hz
+        out: DsRxMerAnalysisModel
+
+        channel_id                          = measurement.get("channel_id", INVALID_CHANNEL_ID)
+        pnm_header                          = measurement.get("pnm_header",{})
+        device_details                      = measurement.get("device_details",{})
+        mac_address:str                     = measurement.get("mac_address",MacAddress.null()) 
+        subcarrier_spacing:int              = measurement.get("subcarrier_spacing",-1)           
+        first_active_subcarrier_index:int   = measurement.get("first_active_subcarrier_index",-1)
+        subcarrier_zero_frequency:int       = measurement.get("subcarrier_zero_frequency", -1)
+        values                              = measurement.get("values", [])
         
-        if active_index < 0 or zero_freq < 0 or spacing <0:
-            raise ValueError(f"Active index: {active_index} or zero frequency: {zero_freq} or spacing: {spacing} must be non-negative")
+        if first_active_subcarrier_index < 0 or subcarrier_zero_frequency < 0 or subcarrier_spacing <0:
+            raise ValueError(f"Active index: {first_active_subcarrier_index} or "
+                             f"zero frequency: {subcarrier_zero_frequency} or "
+                             f"spacing: {subcarrier_spacing} ALL must be non-negative")
 
-        values = measurement.get("values", [])
         if not values:
-            raise ValueError("No complex channel estimation values provided in measurement.")
+            raise ValueError("No RxMER values provided in measurement.")
 
-        base_freq = (spacing * active_index) + zero_freq
-        freqs:List[int] = [base_freq + (i * spacing) for i in range(len(values))]
-        magnitudes:List[float] = values
+        base_freq = (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency
+        freqs:IntSeries = [base_freq + (i * subcarrier_spacing) for i in range(len(values))]
+        magnitudes:FloatSeries = values
 
         classify: Callable[[float], int] = lambda v: int(
             RxMerCarrierType.EXCLUSION.value
@@ -266,31 +273,39 @@ class Analysis:
 
         ss = ShannonSeries(magnitudes)
         
-        result = {
-            "device_details": measurement.get("device_details"),
-            "pnm_header": measurement.get("pnm_header"),
-            "mac_address": measurement.get("mac_address"),
-            "channel_id": measurement.get("channel_id"),
-            "magnitude_unit": "dB",
-            "frequency_unit": "Hz",            
-            "carrier_status_map": {
-                RxMerCarrierType.EXCLUSION.name.lower(): RxMerCarrierType.EXCLUSION.value,
-                RxMerCarrierType.CLIPPED.name.lower(): RxMerCarrierType.CLIPPED.value,
-                RxMerCarrierType.NORMAL.name.lower(): RxMerCarrierType.NORMAL.value,
-            },
-            "carrier_values": {
-                "carrier_count": len(freqs),
-                "magnitude": magnitudes,
-                "frequency": freqs,            
-                "carrier_status": carrier_status,
-            },
-            "regression": {
-                "slope": LinearRegression1D(magnitudes, freqs).regression_line(),
-            },
-            "modulation_statistics": ss.to_dict()
+        regession_model = RegressionModel(
+            slope   = cast(FloatSeries, LinearRegression1D(cast(ArrayLike,magnitudes), 
+                                                           cast(ArrayLike,freqs)).regression_line())
+        )
+
+        csm:Dict[str, Any] = { 
+            RxMerCarrierType.EXCLUSION.name.lower(): RxMerCarrierType.EXCLUSION.value,
+            RxMerCarrierType.CLIPPED.name.lower(): RxMerCarrierType.CLIPPED.value,
+            RxMerCarrierType.NORMAL.name.lower(): RxMerCarrierType.NORMAL.value,
         }
 
-        return result
+        cv = RxMerCarrierValuesModel(
+            carrier_status_map  = csm, 
+            carrier_count       = len(freqs),
+            magnitude           = magnitudes,
+            frequency           = freqs,
+            carrier_status      = carrier_status
+        )
+
+        out = DsRxMerAnalysisModel(
+            device_details                  = device_details,
+            pnm_header                      = pnm_header,
+            channel_id                      = channel_id,
+            mac_address                     = mac_address,
+            subcarrier_spacing              = subcarrier_spacing,
+            first_active_subcarrier_index   = first_active_subcarrier_index,
+            subcarrier_zero_frequency       = subcarrier_zero_frequency,
+            carrier_values                  = cv,
+            regression                      = regession_model,
+            modulation_statistics           = ss.to_dict()
+        )
+
+        return out
 
     @classmethod
     def basic_analysis_ds_chan_est(cls, measurement: Dict[str, Any]) -> Dict[str, Any]:
@@ -655,4 +670,5 @@ class Analysis:
             channel_id=int(measurement.get("channel_id", INVALID_CHANNEL_ID)),
             profiles=profiles,
         )
-      
+
+
