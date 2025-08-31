@@ -29,27 +29,74 @@ from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
 
 class RxMerCarrierType(Enum):
+    """
+    RxMER carrier classification labels.
+
+    Members
+    -------
+    EXCLUSION : str
+        "0". Subcarriers marked as excluded (e.g., guard bands, PLC gaps).
+    CLIPPED : str
+        "1". Values clipped/saturated (e.g., 0.0 dB or 63.5 dB).
+    NORMAL : str
+        "2". Valid, non-clipped RxMER readings.
+    """
     EXCLUSION   = "0"
     CLIPPED     = "1"
     NORMAL      = "2"
 
+# RxMER special sentinel values used for classification:
 RXMER_EXCLUSION = 63.75
 RXMER_CLIPPED_LOW = 0.0
 RXMER_CLIPPED_HIGH = 63.5
     
 class AnalysisType(Enum):
     """
-    BASIC provides (Frequency, Magnitude) and some meta-data depending on PNM FileType.
+    Analysis mode selector.
+
+    Notes
+    -----
+    BASIC
+        Provides (frequency, magnitude) and selected meta-data depending on the
+        detected PNM file type. Additional per-type metrics may be included
+        (e.g., group delay, Shannon limits, histogram counts).
     """
     BASIC = 0
 
 class Analysis:
     """Core analysis runner.
 
-    This initializer normalizes the payload's ``data`` field into a list of measurement
-    dictionaries and kicks off processing based on ``analysis_type``. Logging honors the
-    configured level; at DEBUG, the full message response is persisted via
-    ``save_message_response``.
+    This orchestrator normalizes the payload's ``data`` into a list of
+    measurement dictionaries and dispatches to the appropriate basic
+    analysis routine based on the inferred PNM file type.
+
+    Parameters
+    ----------
+    analysis_type : AnalysisType
+        Analysis mode (currently ``AnalysisType.BASIC``).
+    msg_response : MessageResponse
+        Wrapped transport of the measurement payload; expected to expose
+        ``payload_to_dict()`` with a top-level ``"data"`` entry.
+
+    Attributes
+    ----------
+    logger : logging.Logger
+        Component logger named after the class.
+    analysis_type : AnalysisType
+        Selected analysis mode.
+    msg_response : MessageResponse
+        Original message/measurement container.
+    measurement_data : list of dict
+        Normalized list of measurement dicts derived from the payload.
+    _result_model : list of BaseAnalysisModel
+        Collected typed results (when a Pydantic model is produced).
+    _analysis_dict : list of dict
+        Collected plain-dict results for serialization.
+
+    Notes
+    -----
+    If the logger is configured at ``DEBUG`` level, the raw message response
+    is persisted to disk via :meth:`save_message_response`.
     """
 
     def __init__(self, analysis_type: "AnalysisType", msg_response: "MessageResponse") -> None:
@@ -79,7 +126,17 @@ class Analysis:
         self._process()
 
     def _process(self) -> None:
-        """Process each measurement in the payload according to the selected analysis type."""
+        """Iterate and dispatch analysis per measurement.
+
+        For each normalized measurement, this method assembles the combined
+        PNM file type string from the header fields and routes to the
+        corresponding *basic* analysis handler.
+
+        Notes
+        -----
+        Unknown or missing file types are logged; the measurement is
+        serialized for troubleshooting via :class:`LogFile`.
+        """
         
         for idx, measurement in enumerate(self.measurement_data):
 
@@ -106,91 +163,135 @@ class Analysis:
                 raise
 
     def _basic_analysis(self, pnm_file_type: str, measurement):
+        """
+        Route to the appropriate BASIC analysis handler.
 
+        Parameters
+        ----------
+        pnm_file_type : str
+            Concatenated PNM file type identifier, e.g.
+            ``PnmFileType.RECEIVE_MODULATION_ERROR_RATIO.value``.
+        measurement : dict
+            Single measurement dictionary. Expected keys vary by file type,
+            but generally include:
+                - ``pnm_header`` : dict with ``file_type`` and version
+                - ``channel_id`` : int
+                - ``device_details`` : dict
+                - per-type fields such as subcarrier spacing, values, profiles, etc.
+
+        Notes
+        -----
+        This method only dispatches. See the specific handlers for field
+        expectations and returned structures:
+
+        - :meth:`basic_analysis_ds_chan_est`
+        - :meth:`basic_analysis_ds_constellation_display`
+        - :meth:`basic_analysis_rxmer`
+        - :meth:`basic_analysis_ds_histogram`
+        - :meth:`basic_analysis_us_ofdma_pre_equalization`
+        - :meth:`basic_analysis_ds_ofdm_fec_summary`
+        - :meth:`basic_analysis_ds_modulation_profile`
+        """
         if pnm_file_type == PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT.value:
-            self.logger.info("Processing OFDM_CHANNEL_ESTIMATE_COEFFICIENT")
+            self.logger.info("Processing: OFDM_CHANNEL_ESTIMATE_COEFFICIENT")
             self.__update_result_dict(self.basic_analysis_ds_chan_est(measurement))
             # model = self.basic_analysis_ds_chan_est(measurement)
             # self.__update_result_model(model)
-            # self.__update_result_dict(model.model_dump())
+            # self.__update_result_dict(model.model_dump())   
 
         elif pnm_file_type == PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY.value:
-            self.logger.debug("Processing DOWNSTREAM_CONSTELLATION_DISPLAY")
+            self.logger.debug("Processing: DOWNSTREAM_CONSTELLATION_DISPLAY")
             model = self.basic_analysis_ds_constellation_display(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
 
         elif pnm_file_type == PnmFileType.RECEIVE_MODULATION_ERROR_RATIO.value:
-            self.logger.debug("Processing RECEIVE_MODULATION_ERROR_RATIO")
+            self.logger.info("Processing: RECEIVE_MODULATION_ERROR_RATIO")
             model = self.basic_analysis_rxmer(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())            
 
         elif pnm_file_type == PnmFileType.DOWNSTREAM_HISTOGRAM.value:
-            self.logger.debug("Processing DOWNSTREAM_HISTOGRAM")
+            self.logger.debug("Processing: DOWNSTREAM_HISTOGRAM")
             model = self.basic_analysis_ds_histogram(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
 
         elif pnm_file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS.value:
-            self.logger.debug("Processing UPSTREAM_PRE_EQUALIZER_COEFFICIENTS")
+            self.logger.debug("Processing: UPSTREAM_PRE_EQUALIZER_COEFFICIENTS")
             self.__update_result_dict(self.basic_analysis_us_ofdma_pre_equalization(measurement))
             # model = self.basic_analysis_us_ofdma_pre_equalization(measurement)
             # self.__update_result_model(model)
             # self.__update_result_dict(model.model_dump())
   
         elif pnm_file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE.value:
-            self.logger.debug("Stub: Processing UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE")
+            self.logger.debug("Stub: Processing: UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE")
             # model = self.basic_analysis_us_ofdma_pre_equalization(measurement)
             # self.__update_result_model(model)
             # self.__update_result_dict(model.model_dump())             
             pass
 
         elif pnm_file_type == PnmFileType.OFDM_FEC_SUMMARY.value:
-            self.logger.debug("Processing OFDM_FEC_SUMMARY")
+            self.logger.debug("Processing: OFDM_FEC_SUMMARY")
             model = self.basic_analysis_ds_ofdm_fec_summary(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
 
         elif pnm_file_type == PnmFileType.SPECTRUM_ANALYSIS.value:
-            self.logger.debug("Stub: Processing SPECTRUM_ANALYSIS")
+            self.logger.debug("Stub: Processing: SPECTRUM_ANALYSIS")
             pass
 
         elif pnm_file_type == PnmFileType.OFDM_MODULATION_PROFILE.value:
-            self.logger.debug("Processing OFDM_MODULATION_PROFILE")
+            self.logger.debug("Processing: OFDM_MODULATION_PROFILE")
             self.__update_result_dict(self.basic_analysis_ds_modulation_profile(measurement))
             # model = self.basic_analysis_ds_modulation_profile(measurement)
             # self.__update_result_model(model)
             # self.__update_result_dict(model.model_dump())             
 
         elif pnm_file_type == PnmFileType.LATENCY_REPORT.value:
-            self.logger.warning("Stub: Processing LATENCY_REPORT")
+            self.logger.warning("Stub: Processing: LATENCY_REPORT")
             pass
 
         else:
-            self.logger.warning(f"Unknown PNM file type: ({pnm_file_type})")
+            self.logger.error(f"Unknown PNM file type: ({pnm_file_type})")
 
     def get_results(self, full_dict = True) -> Dict[str, Any]:
         """
-        Returns the list of processed analysis results.
-        If full_dict is True, returns the entire analysis dictionary.
-        
-        Args    :
-            full_dict (bool): If True, returns the full analysis dictionary.
-                            If False, returns only the analysis list.
+        Get the accumulated analysis results (dict form).
 
-        Returns:
-            Dict[str, Any]: The analysis results. 
-            {
-                "analysis": Dict[str, Any]
-            }    
+        Parameters
+        ----------
+        full_dict : bool, default True
+            Present for interface compatibility; this implementation always
+            returns a dict with a single ``"analysis"`` key mapping to the
+            internal list of dict results.
+
+        Returns
+        -------
+        dict
+            Structure of the form ``{"analysis": List[Dict[str, Any]]}``.
         """
         return {"analysis": self._analysis_dict}
 
     def get_model(self) -> Union[BaseAnalysisModel, List[BaseAnalysisModel]]:
+        """Get the accumulated analysis results (typed models).
+
+        Returns
+        -------
+        BaseAnalysisModel or list of BaseAnalysisModel
+            The collected Pydantic models for analyses that produce them.
+        """
         return self._result_model
 
     def save_message_response(self, msg_response: MessageResponse) -> None:
+        """Persist the raw message response (debug aid).
+
+        Parameters
+        ----------
+        msg_response : MessageResponse
+            Source container that will be serialized to disk. The filename
+            includes the MAC address (if present) and a timestamp.
+        """
         msg_rsp_dict:Dict[Any, Any] = msg_response.payload_to_dict()
         mac = msg_rsp_dict.get('mac_address')
         fname = f'{SystemConfigSettings().message_response_dir}/{mac}_{Utils.time_stamp()}.msg'
@@ -201,35 +302,59 @@ class Analysis:
         fp.close()
 
     def __update_result_model(self, model:BaseAnalysisModel) :
+        """Append a typed analysis model to the results cache.
+
+        Parameters
+        ----------
+        model : BaseAnalysisModel
+            The model instance to record.
+        """
         self._result_model.append(model)
     
     def __update_result_dict(self, model:Dict[str,Any]):
+        """Append a plain-dict analysis result to the results cache.
+
+        Parameters
+        ----------
+        model : dict
+            The dictionary result to record.
+        """
         self._analysis_dict.append(model)
 
     @classmethod
     def basic_analysis_rxmer(cls, measurement: Dict[str, Any]) -> DsRxMerAnalysisModel:
         """
-        Performs a basic RxMER (Received Modulation Error Ratio) analysis on the provided measurement data.
+        Perform basic RxMER (Receive Modulation Error Ratio) analysis.
 
-        This method calculates the subcarrier frequencies, extracts the RxMER magnitudes, and classifies each
-        subcarrier into one of three categories:
-            - EXCLUSION (63.75 dB): typically marks unusable spectrum regions
-            - CLIPPED (0.0 or 63.5 dB): values that are clipped or saturated
-            - NORMAL (all other values): valid RxMER readings
+        Computes frequency per subcarrier, propagates magnitudes, and assigns a
+        carrier status classification for each element (``EXCLUSION``, ``CLIPPED``,
+        or ``NORMAL``). Also provides a simple regression line over the magnitudes
+        and Shannon-series metadata.
 
-        It also validates that the lengths of the frequency, magnitude, and classification lists match.
+        Parameters
+        ----------
+        measurement : dict
+            Expected keys (subset):
+                - ``channel_id`` : int
+                - ``pnm_header`` : dict
+                - ``device_details`` : dict
+                - ``mac_address`` : str
+                - ``subcarrier_spacing`` : int (Hz)
+                - ``first_active_subcarrier_index`` : int
+                - ``subcarrier_zero_frequency`` : int (Hz)
+                - ``values`` : List[float] (RxMER in dB)
 
-        Args:
-            measurement (Dict[str, Any]): A dictionary containing subcarrier spacing, active index,
-                                        zero frequency, and RxMER values under the "values" key.
+        Returns
+        -------
+        DsRxMerAnalysisModel
+            Typed model with ``carrier_values.frequency``, ``carrier_values.magnitude``,
+            and ``carrier_values.carrier_status`` aligned by index, plus regression
+            and modulation statistics.
 
-        Returns:
-            Dict[str, Any]: A dictionary containing the computed frequency list, RxMER magnitudes,
-                            subcarrier classifications, and relevant metadata.
-
-        Raises:
-            ValueError: If the RxMER values list is missing or if frequency, magnitude, and classification
-                        arrays have mismatched lengths.
+        Raises
+        ------
+        ValueError
+            If required parameters are missing/negative, or lengths mismatch.
         """
         out: DsRxMerAnalysisModel
 
@@ -310,13 +435,36 @@ class Analysis:
     @classmethod
     def basic_analysis_ds_chan_est(cls, measurement: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Performs Channel Estimation analysis, including frequency, magnitude in dB, and group delay.
+        Perform downstream channel estimation analysis.
 
-        Args:
-            measurement (Dict[str, Any]): Contains complex values per subcarrier and metadata.
+        Computes per-subcarrier frequency, magnitude in dB (from complex
+        channel estimates), group delay (from phase slope), and basic
+        signal statistics.
 
-        Returns:
-            Dict[str, Any]: Analysis results with magnitude and group delay per subcarrier.
+        Parameters
+        ----------
+        measurement : dict
+            Expected keys (subset):
+                - ``subcarrier_spacing`` : int (Hz)
+                - ``first_active_subcarrier_index`` : int
+                - ``subcarrier_zero_frequency`` : int (Hz)
+                - ``occupied_channel_bandwidth`` : int
+                - ``values`` : ComplexArray (list of [real, imag])
+
+        Returns
+        -------
+        dict
+            Result dictionary containing:
+                - ``carrier_values.frequency`` : List[int]
+                - ``carrier_values.magnitude`` : List[float] (dB)
+                - ``carrier_values.group_delay`` : List[float] (µs)
+                - ``carrier_values.complex`` : original ComplexArray
+                - meta-fields (units, header, device details, etc.)
+
+        Raises
+        ------
+        ValueError
+            If required parameters are missing/negative, or ``values`` is empty.
         """
         subcarrier_spacing:int = measurement.get("subcarrier_spacing",-1)                              # Hz
         first_active_subcarrier_index:int = measurement.get("first_active_subcarrier_index",-1)              # index
@@ -374,21 +522,34 @@ class Analysis:
         """
         Analyze the Downstream OFDM Modulation Profile.
 
-        Args:
-            measurement: Parsed profile measurement dict.
-            split_carriers: 
-                - False (default): carrier_values → {"carriers": [ {freq,mod,shannon}, … ]}
-                - True:            carrier_values → {"freqs": […], "mods": […], "shannons": […]}
+        Parameters
+        ----------
+        measurement : dict
+            Expected keys (subset):
+                - ``subcarrier_spacing`` : int (Hz)
+                - ``first_active_subcarrier_index`` : int
+                - ``zero_frequency`` : int (Hz)
+                - ``profiles`` : list of dicts with:
+                    * ``profile_id`` : int
+                    * ``schemes`` : list with items:
+                        - ``modulation_order`` : str (e.g., "qam256", "plc", "exclusion")
+                        - ``num_subcarriers`` : int
+        split_carriers : bool, default True
+            If ``True``, output carrier lists in split arrays
+            (``frequency``/``modulation``/``shannon_min_mer``). If ``False``,
+            emit a list of per-carrier dicts.
 
-        Returns:
-            Dict containing:
-              - pnm_header
-              - channel_id
-              - frequency_unit: 'Hz'
-              - shannon_limit_unit: 'dB'
-              - profiles: List of dicts with:
-                  * profile_id
-                  * carrier_values (see above)
+        Returns
+        -------
+        dict
+            Contains header/device info and a ``profiles`` list with
+            ``carrier_values`` per profile, either split arrays or a list of
+            carrier dicts.
+
+        Raises
+        ------
+        ValueError
+            If spacing/indices/frequencies are invalid.
         """
         spacing:int      = measurement.get("subcarrier_spacing", -1)
         active_index:int = measurement.get("first_active_subcarrier_index", -1)
@@ -470,16 +631,29 @@ class Analysis:
         Perform basic analysis of upstream OFDMA pre-equalization data.
 
         Computes:
-            - Frequency per carrier
-            - Complex values
-            - Magnitude in dB
-            - Group delay (phase derivative)
+            - Per-carrier frequency (Hz)
+            - Magnitude (dB) from complex coefficients
+            - Group delay (µs) from unwrapped phase gradient
+            - Complex samples passthrough
 
-        Args:
-            measurement (Dict[str, Any]): Measurement data containing channel estimation values and metadata.
+        Parameters
+        ----------
+        measurement : dict
+            Expected keys (subset):
+                - ``subcarrier_spacing`` : int (Hz)
+                - ``first_active_subcarrier_index`` : int
+                - ``subcarrier_zero_frequency`` : int (Hz)
+                - ``values`` : list of [real, imag]
 
-        Returns:
-            Dict[str, Any]: Dictionary with per-carrier analysis results.
+        Returns
+        -------
+        dict
+            Dictionary with units, per-carrier arrays, and metadata.
+
+        Raises
+        ------
+        ValueError
+            If ``values`` is empty.
         """
         spacing: int = measurement.get("subcarrier_spacing", 0)  # in Hz
         active_index: int = measurement.get("first_active_subcarrier_index", 0)
@@ -524,18 +698,27 @@ class Analysis:
         Build a minimal constellation analysis payload from a downstream OFDM
         measurement dictionary.
 
-        Expected keys in `measurement`
-        ------------------------------
-        - values : ComplexArray                  # required; list of (real, imag)
-        - pnm_header : dict                      # optional
-        - mac_address : str                      # optional
-        - channel_id : int                       # optional
-        - num_sample_symbols : int               # optional; defaults to len(values)
-        - actual_modulation_order : int|str      # optional; 'QAM-256' normalized → 256
+        Parameters
+        ----------
+        measurement : dict
+            Expected keys (subset):
+                - ``samples`` : ComplexArray (list of [real, imag]); required
+                - ``pnm_header`` : dict
+                - ``mac_address`` : str
+                - ``channel_id`` : int
+                - ``num_sample_symbols`` : int (defaults to len(samples))
+                - ``actual_modulation_order`` : int | str (e.g., 256 or "QAM-256")
 
         Returns
         -------
         ConstellationDisplayAnalysisModel
+            Typed model carrying device/header info, inferred QAM order,
+            and hard/soft decision coordinates (scaled).
+
+        Raises
+        ------
+        ValueError
+            If ``samples`` is missing or empty.
         """
         samples: ComplexArray = measurement.get("samples") or []
         if not samples:
@@ -562,7 +745,26 @@ class Analysis:
 
     @classmethod
     def basic_analysis_ds_histogram(cls, measurement: Dict[str, Any]) -> DsHistogramAnalysisModel:
+        """
+        Build a :class:`DsHistogramAnalysisModel` from a downstream histogram payload.
 
+        Parameters
+        ----------
+        measurement : dict
+            Expected keys (subset):
+                - ``device_details`` : dict
+                - ``pnm_header`` : dict
+                - ``mac_address`` : str
+                - ``channel_id`` : int
+                - ``symmetry`` : int
+                - ``dwell_count`` : int
+                - ``hit_counts`` : List[int]
+
+        Returns
+        -------
+        DsHistogramAnalysisModel
+            Typed model with histogram metrics and metadata.
+        """
         return DsHistogramAnalysisModel(
             device_details  = measurement.get("device_details", SystemDescriptor.empty()),
             pnm_header      = measurement.get("pnm_header", {}),
@@ -606,7 +808,23 @@ class Analysis:
         --------
         - Coerces all codeword series to ints.
         - If series lengths differ, truncates to the shortest and logs a warning.
-        - Uses the **computed** series length for `number_of_sets` (logs if it disagrees with declared).
+        - Uses the **computed** series length for ``number_of_sets`` (logs if it disagrees with declared).
+
+        Parameters
+        ----------
+        measurement : dict
+            DS OFDM FEC summary structure as shown above.
+
+        Returns
+        -------
+        OfdmFecSummaryAnalysisModel
+            Collection of per-profile codeword time-series aligned by shortest length,
+            plus header/device metadata.
+
+        Notes
+        -----
+        The top-level ``num_profiles`` is compared with the actual parsed count and
+        differences are logged at DEBUG level.
         """
         log = logging.getLogger(getattr(cls, "__name__", "OfdmFecSummaryAnalysis"))
 
@@ -644,17 +862,17 @@ class Analysis:
                 )
 
             cw = FecSummaryCodeWordModel(
-                timestamps=ts_list,
-                total_codewords=tot_list,
-                corrected=cor_list,
-                uncorrected=unc_list,
+                timestamps      =ts_list,
+                total_codewords =tot_list,
+                corrected       =cor_list,
+                uncorrected     =unc_list,
             )
 
             profiles.append(
                 OfdmFecSummaryProfileModel(
-                    profile=profile_id,
-                    number_of_sets=n,
-                    codewords=cw,
+                    profile         =profile_id,
+                    number_of_sets  =n,
+                    codewords       =cw,
                 )
             )
 
@@ -664,11 +882,9 @@ class Analysis:
             log.debug(f"num_profiles declared={declared_num_profiles}, parsed={len(profiles)}")
 
         return OfdmFecSummaryAnalysisModel(
-            device_details=measurement.get("device_details", SystemDescriptor.empty()),
-            pnm_header=measurement.get("pnm_header", {}),
-            mac_address=measurement.get("mac_address", MacAddress.null()),
-            channel_id=int(measurement.get("channel_id", INVALID_CHANNEL_ID)),
-            profiles=profiles,
+            device_details      =measurement.get("device_details", SystemDescriptor.empty()),
+            pnm_header          =measurement.get("pnm_header", {}),
+            mac_address         =measurement.get("mac_address", MacAddress.null()),
+            channel_id          =int(measurement.get("channel_id", INVALID_CHANNEL_ID)),
+            profiles            =profiles,
         )
-
-

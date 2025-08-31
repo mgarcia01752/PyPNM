@@ -3,7 +3,18 @@
 
 import json
 from typing import Sequence, List, Dict, Any
+
+from pydantic import BaseModel, Field
+
+from pypnm.lib.types import FloatSeries, IntSeries, StringArray
 from .shannon import Shannon
+
+class ShannonSeriesModel(BaseModel):
+    snr_db_values:FloatSeries                   = Field(...,description="")
+    bits_per_symbol:IntSeries                   = Field(...,description="")
+    modulations:StringArray                     = Field(...,description="")
+    snr_db_limit:FloatSeries                    = Field(...,description="")
+    supported_modulation_counts: Dict[str,int]  = Field(...,description="")
 
 class ShannonSeries:
     """
@@ -39,9 +50,23 @@ class ShannonSeries:
         self._instances: List[Shannon] = [Shannon(db) for db in self.snr_db_values]
 
         # Extract bits and modulations
-        self.bits_list: List[int] = [inst.bits for inst in self._instances]
-        self.modulations: List[str] = [inst.get_modulation() for inst in self._instances]
-        self.snr_db_limit: List[float] = self.limit()
+        self.bits_list: List[int]       = [inst.bits for inst in self._instances]
+        self.modulations: List[str]     = [inst.get_modulation() for inst in self._instances]
+        self.snr_db_limit: List[float]  = self.limit()
+
+        self._model:ShannonSeriesModel = self.__build_model()
+
+    def __build_model(self) -> ShannonSeriesModel:
+
+        _:ShannonSeriesModel = ShannonSeriesModel (
+            bits_per_symbol             =   self.bits_list,
+            modulations                 =   self.modulations,
+            snr_db_values               =   self.snr_db_values,
+            supported_modulation_counts = self.supported_modulation_counts(),
+            snr_db_limit                = self.limit()
+        )
+        
+        return _
 
     def supported_modulation_counts(self) -> Dict[str, int]:
         """
@@ -55,6 +80,7 @@ class ShannonSeries:
         """
         # Initialize counts for all known modulations
         counts: Dict[str, int] = {mod: 0 for mod in Shannon.QAM_MODULATIONS.values()}
+        
         # For each sample, increment all modulations it supports
         for inst in self._instances:
             max_bits = inst.bits
@@ -63,41 +89,25 @@ class ShannonSeries:
                     counts[mod] += 1
         return counts
 
+    def to_model(self) -> ShannonSeriesModel:
+        return self._model
+
     def to_dict(self) -> Dict[str, Any]:
         """
         Serialize the series results and supported counts to a dictionary.
-
-        Returns
-        -------
-
-        dict
-            {
-              'snr_db_values'              : [...],
-              'bits_per_symbol'            : [...],
-              'modulations'                : [...],
-              'snr_db_limit'               : [...],
-              'supported_modulation_counts': {mod: count, ...}
-            }
-
         """
-        return {
-            'snr_db_values': self.snr_db_values,
-            'bits_per_symbol': self.bits_list,
-            'modulations': self.modulations,
-            'snr_db_limit': self.limit(),
-            'supported_modulation_counts': self.supported_modulation_counts()
-        }
+        return self.to_model().model_dump()
 
-    def to_json(self) -> str:
+    def to_json(self, indent:int=2) -> str:
         """
         Serialize the series results to a JSON string.
 
         Returns
         -------
         str
-            JSON representation of to_dict().
+            JSON representation of the Model.
         """
-        return json.dumps(self.to_dict())
+        return self.to_model().model_dump_json(indent=indent)
 
     def average_bits(self) -> float:
         """

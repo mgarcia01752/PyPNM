@@ -9,13 +9,14 @@ from pydantic import BaseModel, Field, ConfigDict
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.qam.types import QamModulation
+from pypnm.lib.signal_processing.shan.series import ShannonSeriesModel
 from pypnm.lib.types import ComplexArray, FloatSeries, IntSeries
 
 class BaseAnalysisModel(BaseModel):
-    device_details: Mapping[str, Any]           = Field(default_factory=dict, description="Device Details SysDescr")
-    pnm_header: Mapping[str, Any]               = Field(default_factory=dict, description="PNM metadata header as a free-form mapping.")
-    mac_address: Optional[str]                  = Field(default=MacAddress.null(), description="CPE MAC address (string).")
-    channel_id: Optional[int]                   = Field(default=INVALID_CHANNEL_ID, description="Upstream/downstream channel identifier.")
+    device_details: Mapping[str, Any]   = Field(default_factory=dict, description="Device Details SysDescr")
+    pnm_header: Mapping[str, Any]       = Field(default_factory=dict, description="PNM metadata header as a free-form mapping.")
+    mac_address: str                    = Field(default=MacAddress.null(), description="CPE MAC address (string).")
+    channel_id: int                     = Field(default=INVALID_CHANNEL_ID, description="Upstream/downstream channel identifier.")
 
 class RegressionModel(BaseModel):
     slope:FloatSeries   = Field(..., description="")
@@ -82,9 +83,9 @@ class RxMerCarrierValuesModel(BaseModel):
     carrier_status:IntSeries            = Field(..., description="")
 
 class DsRxMerAnalysisModel(BaseAnalysisModel):
-    subcarrier_spacing:int              = Field(..., description="")
-    first_active_subcarrier_index:int   = Field(..., description="")
-    subcarrier_zero_frequency:int       = Field(..., description="")           
-    carrier_values: RxMerCarrierValuesModel   = Field(..., description="")
-    regression: RegressionModel         = Field(..., description="")
-    modulation_statistics:Dict[str,Any] = Field(..., description="")
+    subcarrier_spacing:int                      = Field(..., description="")
+    first_active_subcarrier_index:int           = Field(..., description="")
+    subcarrier_zero_frequency:int               = Field(..., description="")           
+    carrier_values: RxMerCarrierValuesModel     = Field(..., description="")
+    regression: RegressionModel                 = Field(..., description="")
+    modulation_statistics:ShannonSeriesModel    = Field(..., description="")

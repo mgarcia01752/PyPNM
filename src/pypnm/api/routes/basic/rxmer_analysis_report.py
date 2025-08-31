@@ -7,19 +7,19 @@ import logging
 import math
 import re
 
-from typing import Any, Dict, List, Mapping, Tuple, cast
+from typing import Dict, List, Mapping, Tuple, cast
 from pydantic import BaseModel, ConfigDict, Field
 
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.basic.common.signal_capture_agg import SignalCaptureAggregator
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
+from pypnm.api.routes.common.classes.analysis.model.schema import DsRxMerAnalysisModel
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.numeric_scaler import NumericScaler
-from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
 from pypnm.lib.signal_processing.shan.series import Shannon
-from pypnm.lib.types import FloatSeries, IntSeries
+from pypnm.lib.types import ArrayLike, FloatSeries, IntSeries
 
 class RxMerAnalysisParameters(BaseModel):
     """
@@ -29,8 +29,8 @@ class RxMerAnalysisParameters(BaseModel):
     - regression_line : Per-subcarrier fitted values (ŷ) from linear regression over index domain
     """
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
-    shannon_limit_db: List[float]       = Field(..., description="Shannon/SNR limit per subcarrier (dB)")
-    regression_line: List[float]        = Field(..., description="Regression fitted values per subcarrier")
+    shannon_limit_db: FloatSeries       = Field(..., description="Shannon/SNR limit per subcarrier (dB)")
+    regression_line: FloatSeries        = Field(..., description="Regression fitted values per subcarrier")
     modulation_count: Dict[str, int]    = Field(..., description="Number of supported modulation schemes")
 
 class RxMerAnalysis(CommonAnalysis):
@@ -58,7 +58,7 @@ class RxMerAnalysisReport(AnalysisReport):
         for common_model in self.get_common_analysis_model():
             any_models = True
             model = cast(RxMerAnalysis, common_model)
-            chan = int(model.channel_id)
+            chan = model.channel_id
 
             x:FloatSeries   = model.raw_x
             y:FloatSeries   = model.raw_y
@@ -121,7 +121,7 @@ class RxMerAnalysisReport(AnalysisReport):
         for common_model in self.get_common_analysis_model():
             any_models = True
             model       = cast(RxMerAnalysis, common_model)
-            channel_id  = int(model.channel_id)
+            channel_id  = model.channel_id
             x_hz        = model.raw_x
             y_db        = model.raw_y
             rl          = model.parameters.regression_line
@@ -130,16 +130,17 @@ class RxMerAnalysisReport(AnalysisReport):
             x_khz, _ = NumericScaler().to_prefix(values=x_hz, target="k")
             chan_id_list.append(channel_id)
 
+            title_prefix = f'RxMER OFDM Channels: ({chan_id_list})'
+
             '''
             RxMER with Regression Line - All OFDM DS Channels
             '''
             try:
 
                 cfg = PlotConfig(
-                    title=f"RxMER OFDM Channel: {channel_id}",
-                    x=x_khz, xlabel="Frequency (kHz)",
-                    y_multi=[y_db, rl],
-                    y_multi_label=["RxMER", "Regression Line"],
+                    title=f'{title_prefix}',
+                    x=x_khz,            xlabel="Frequency (kHz)",
+                    y_multi=[y_db, rl], y_multi_label=["RxMER", "Regression Line"],
                     grid=True, legend=True, transparent=False,)
 
                 multi = self.create_png_fname(tags=[str(channel_id), 'rxmer'])
@@ -160,7 +161,7 @@ class RxMerAnalysisReport(AnalysisReport):
                 bpsym, order_count = self.__modulation_order_count_to_series(mc)
                 
                 cfg = PlotConfig(
-                    title=f"RxMER OFDM Channel: {channel_id} - Modulation Order Count",
+                    title=f"{title_prefix} - Modulation Order Count",
                     x=bpsym,                  xlabel="Bits Per Symbol (bps)",
                     y=order_count,            ylabel="Order Count",
                     grid=True, legend=True, transparent=False,)
@@ -182,7 +183,7 @@ class RxMerAnalysisReport(AnalysisReport):
             try:
                 x, y = self._sig_cap_agg.get_series()
                 cfg = PlotConfig(
-                    title=f"RxMER OFDM Channels: ({chan_id_list})",
+                    title=f"{title_prefix}",
                     x=x,            xlabel="Frequency(Hz)",
                     y=y,            ylabel="Magnitude(dB)",
                     grid=True, legend=True, transparent=False,)
@@ -204,42 +205,23 @@ class RxMerAnalysisReport(AnalysisReport):
         return out
 
     def _process(self) -> None:
-        """
-        Normalize raw measurement dicts into fully-validated RxMerAnalysis models.
 
-        Required input shape per item:
-            {
-                "channel_id": int,
-                "carrier_values": { "frequency": List[number], "magnitude": List[number] },
-                "modulation_statistics": { "snr_db_limit": List[number] 
-                    "supported_modulation_counts": {
-                        "qam_2": 7600,...
-                    }
-                }
-            }
+        analysis_models: List[DsRxMerAnalysisModel] = cast(List[DsRxMerAnalysisModel], self.get_analysis_model())
 
-        Rules enforced here (and only here):
-          - Coerce frequency/magnitude/shannon to float lists.
-          - All lists must be same non-zero length.
-          - All values must be finite.
-          - Compute regression fitted values (index domain) to `parameters.regression_line`.
-        """
-        data_list: List[Dict[str, Any]] = self.get_analysis_data() or []
-
-        for idx, data in enumerate(data_list):
+        for idx, data in enumerate(analysis_models):
 
             try:
 
-                channel_id  = int(data.get("channel_id", self.INVALID_CHANNEL_ID))
-                cv          = data.get("carrier_values") or {}
-                ms          = data.get("modulation_statistics") or {}
-                x_raw       = list(cv.get("frequency") or [])
-                y_raw       = list(cv.get("magnitude") or [])
-                sh_raw      = list(ms.get("snr_db_limit") or [])
-                mod_count:Dict[str,int] = ms.get("supported_modulation_counts") or {}
+                channel_id      = data.channel_id
+                cv              = data.carrier_values
+                ms              = data.modulation_statistics
+                x_raw           = data.carrier_values.frequency
+                y_raw           = data.carrier_values.magnitude
+                snr_db_limit    = data.modulation_statistics.snr_db_limit
+                mod_count:Dict[str,int] = data.modulation_statistics.supported_modulation_counts
 
-                # coerce -> float (and finiteness)
                 def coerce_finite(seq, name: str) -> List[float]:
+                    '''coerce -> float (and finiteness)'''
                     out: List[float] = []
                     for v in seq:
                         fv = float(v)
@@ -250,7 +232,7 @@ class RxMerAnalysisReport(AnalysisReport):
 
                 x = coerce_finite(x_raw, "raw_x")
                 y = coerce_finite(y_raw, "raw_y")
-                sh = coerce_finite(sh_raw, "shannon_limit_db")
+                sh = coerce_finite(snr_db_limit, "shannon_limit_db")
 
                 # length checks (strict)
                 n = len(x)
@@ -258,25 +240,21 @@ class RxMerAnalysisReport(AnalysisReport):
                     raise ValueError(
                         f"length mismatch x/y/shannon: {len(x)}/{len(y)}/{len(sh)} (n must be equal & > 0)")
 
-                # compute regression (index domain 0..n-1) => fitted ŷ, len == n
-                y_hat = LinearRegression1D(y).fitted_values()
-
-                params = RxMerAnalysisParameters(
-                    shannon_limit_db    =   sh, 
-                    regression_line     =   y_hat,              # type: ignore
-                    modulation_count    =   mod_count) 
-
                 model = RxMerAnalysis(
-                    channel_id  =   channel_id,
+                    channel_id  =   data.channel_id,
                     raw_x=x,        raw_y=y,
-                    parameters  =   params,)
+                    parameters  =   RxMerAnalysisParameters(
+                                        shannon_limit_db    =   sh, 
+                                        regression_line     =   data.regression.slope,
+                                        modulation_count    =   mod_count
+                                    ))
                 
                 # Must register Model
                 self.register_common_analysis_model(channel_id, model)
 
                 # Add to Signal Capture Aggregator
                 self.logger.debug(f"Adding OFDM RxMER Channel: {channel_id} for aggregated signal capture")
-                self._sig_cap_agg.add_series(x_raw, y_raw)
+                self._sig_cap_agg.add_series(cast(ArrayLike, x_raw),cast(ArrayLike, y_raw))
 
             except Exception as exc:
                 self.logger.exception("Failed to process RxMER item %d: %s", idx, exc)
