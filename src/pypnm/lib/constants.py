@@ -12,5 +12,7 @@ NULL_ARRAY_NUMBER:List[Number] = [0]
 
 INVALID_CHANNEL_ID: int     = -1
 INVALID_PROFILE_ID:int      = -1
+INVALID_START_VAULE: int    = -1
+INVALID_SCHEMA_TYPE: int    = -1
 
 T = TypeVar("T")

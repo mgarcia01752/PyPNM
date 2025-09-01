@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Mapping, Optional, Literal
+from typing import Annotated, Any, Dict, List, Mapping, Optional, Literal, Union
 from pydantic import BaseModel, Field, ConfigDict
 
 from pypnm.lib.mac_address import MacAddress
@@ -11,6 +11,7 @@ from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.qam.types import QamModulation
 from pypnm.lib.signal_processing.shan.series import ShannonSeriesModel
 from pypnm.lib.types import ComplexArray, FloatSeries, IntSeries
+from pypnm.pnm.process.CmDsOfdmModulationProfile import SchemeModel
 
 class BaseAnalysisModel(BaseModel):
     device_details: Mapping[str, Any]   = Field(default_factory=dict, description="Device Details SysDescr")
@@ -19,7 +20,7 @@ class BaseAnalysisModel(BaseModel):
     channel_id: int                     = Field(default=INVALID_CHANNEL_ID, description="Upstream/downstream channel identifier.")
 
 class RegressionModel(BaseModel):
-    slope:FloatSeries   = Field(..., description="")
+    slope:FloatSeries                   = Field(..., description="")
 
 class ConstellationDisplayAnalysisModel(BaseAnalysisModel):
     """Canonical payload for a constellation display dataset. Use `from_measurement(...)` to build from a raw measurement dict."""
@@ -89,3 +90,4 @@ class DsRxMerAnalysisModel(BaseAnalysisModel):
     carrier_values: RxMerCarrierValuesModel     = Field(..., description="")
     regression: RegressionModel                 = Field(..., description="")
     modulation_statistics:ShannonSeriesModel    = Field(..., description="")
+

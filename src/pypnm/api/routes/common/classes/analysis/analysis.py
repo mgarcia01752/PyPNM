@@ -7,13 +7,17 @@ import numpy as np
 from enum import Enum
 from typing import Callable, List, Dict, Any, Mapping, Sequence, Union, cast
 
+from pypnm.api.routes.common.classes.analysis.model.mod_profile_schema import (
+    CarrierItemModel, CarrierValuesListModel, CarrierValuesModel, CarrierValuesSplitModel, 
+    DsModulationProfileAnalysisModel, ProfileAnalysisEntryModel)
 from pypnm.api.routes.common.classes.analysis.model.schema import (
     BaseAnalysisModel, ConstellationDisplayAnalysisModel, DsHistogramAnalysisModel, DsRxMerAnalysisModel, 
-    FecSummaryCodeWordModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel, RegressionModel, RxMerCarrierValuesModel)
+    FecSummaryCodeWordModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel, RegressionModel, 
+    RxMerCarrierValuesModel)
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor, Utils
-from pypnm.lib.constants import INVALID_CHANNEL_ID
+from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_PROFILE_ID, INVALID_SCHEMA_TYPE, INVALID_START_VAULE
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.log_files import LogFile
 from pypnm.lib.mac_address import MacAddress
@@ -22,10 +26,10 @@ from pypnm.lib.qam.types import QamModulation
 from pypnm.lib.signal_processing.complex_array_ops import ComplexArrayOps
 from pypnm.lib.signal_processing.group_delay import GroupDelay
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
-from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, IntSeries, StringArray
+from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, IntSeries
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics
-from pypnm.pnm.process.CmDsOfdmModulationProfile import ModulationOrderType
+from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ModulationOrderType
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
 
@@ -243,11 +247,10 @@ class Analysis:
             pass
 
         elif pnm_file_type == PnmFileType.OFDM_MODULATION_PROFILE.value:
-            self.logger.info("Processing: OFDM_MODULATION_PROFILE")
-            self.__update_result_dict(self.basic_analysis_ds_modulation_profile(measurement))
-            # model = self.basic_analysis_ds_modulation_profile(measurement)
-            # self.__update_result_model(model)
-            # self.__update_result_dict(model.model_dump())             
+            self.logger.debug("Processing: OFDM_MODULATION_PROFILE")
+            model = self.basic_analysis_ds_modulation_profile(measurement)
+            self.__update_result_model(model)
+            self.__update_result_dict(model.model_dump())             
 
         elif pnm_file_type == PnmFileType.LATENCY_REPORT.value:
             self.logger.warning("Stub: Processing: LATENCY_REPORT")
@@ -519,114 +522,161 @@ class Analysis:
         return result
 
     @classmethod
-    def basic_analysis_ds_modulation_profile(cls, measurement: Dict[str, Any], split_carriers: bool = True) -> Dict[str, Any]:
+    def basic_analysis_ds_modulation_profile(cls, measurement: Mapping[str, Any], split_carriers: bool = True) -> DsModulationProfileAnalysisModel:
         """
-        Analyze the Downstream OFDM Modulation Profile.
+        Analyze the Downstream OFDM Modulation Profile and return a typed model.
 
         Parameters
         ----------
-        measurement : dict
+        measurement : Mapping[str, Any]
             Expected keys (subset):
-                - ``subcarrier_spacing`` : int (Hz)
-                - ``first_active_subcarrier_index`` : int
-                - ``zero_frequency`` : int (Hz)
-                - ``profiles`` : list of dicts with:
-                    * ``profile_id`` : int
-                    * ``schemes`` : list with items:
-                        - ``modulation_order`` : str (e.g., "qam256", "plc", "exclusion")
-                        - ``num_subcarriers`` : int
+            - subcarrier_spacing : int (Hz)
+            - first_active_subcarrier_index : int
+            - subcarrier_zero_frequency : int (Hz)
+            - mac_address : str
+            - channel_id : int
+            - device_details : Mapping[str, Any] (optional passthrough)
+            - pnm_header : Mapping[str, Any] (optional passthrough)
+            - profiles : list of dicts:
+                    {
+                    "profile_id": int,
+                    "schemes": list[SchemeModel-like]
+                    }
+
+            Each scheme item is one of:
+            - schema_type = 0 (range):
+                    { "schema_type": 0,
+                    "modulation_order": "qam_256" | "plc" | "exclusion" | "continuous_pilot" | ...,
+                    "num_subcarriers": int }
+            - schema_type = 1 (skip):
+                    { "schema_type": 1,
+                    "main_modulation_order": "...",
+                    "skip_modulation_order": "...",
+                    "num_subcarriers": int }
+
         split_carriers : bool, default True
-            If ``True``, output carrier lists in split arrays
-            (``frequency``/``modulation``/``shannon_min_mer``). If ``False``,
-            emit a list of per-carrier dicts.
+            Controls how per-carrier results are represented in the output:
+
+            * True  → **split layout** (compact parallel arrays). Best for fast analytics,
+                    vectorized ops, plotting, and storage efficiency.
+            * False → **list layout** (verbose per-carrier records). Best for inspection/logging.
 
         Returns
         -------
-        dict
-            Contains header/device info and a ``profiles`` list with
-            ``carrier_values`` per profile, either split arrays or a list of
-            carrier dicts.
+        DsModulationProfileAnalysisModel
 
         Raises
         ------
         ValueError
             If spacing/indices/frequencies are invalid.
         """
-        spacing:int      = measurement.get("subcarrier_spacing", -1)
-        active_index:int = measurement.get("first_active_subcarrier_index", -1)
-        zero_freq:int    = measurement.get("subcarrier_zero_frequency", -1)
+        spacing: int       = int(measurement.get("subcarrier_spacing", INVALID_START_VAULE))
+        active_index: int  = int(measurement.get("first_active_subcarrier_index", INVALID_START_VAULE))
+        zero_freq: int     = int(measurement.get("subcarrier_zero_frequency", INVALID_START_VAULE))
 
-        if active_index < 0 or zero_freq < 0 or spacing < 0:
-            raise ValueError(f"Invalid parameters: spacing={spacing}, active_index={active_index}, zero_freq={zero_freq}")
+        if active_index < 0 or zero_freq < 0 or spacing <= 0:
+            raise ValueError(
+                f"Invalid parameters: spacing={spacing}, active_index={active_index}, zero_freq={zero_freq}"
+            )
 
+        #Calculate Start Frequency
         start_freq = zero_freq + spacing * active_index
 
-        result: Dict[str, Any] = {
-            "device_details":       measurement.get("device_details"),
-            "pnm_header":           measurement.get("pnm_header"),
-            "mac_address":          measurement.get("mac_address"),
-            "channel_id":           measurement.get("channel_id"),
-            "frequency_unit":       "Hz",
-            "shannon_limit_unit":   "dB",
-            "profiles":             [] 
-        }
+        out = DsModulationProfileAnalysisModel(
+            device_details      = measurement.get("device_details", {}),
+            pnm_header          = measurement.get("pnm_header", {}),
+            mac_address         = str(measurement.get("mac_address", MacAddress.null())),
+            channel_id          = int(measurement.get("channel_id", INVALID_CHANNEL_ID)),
+            frequency_unit      = "Hz",
+            shannon_min_unit    = "dB",
+            profiles            = [],
+        )
 
-        for profile in measurement.get("profiles", []):
-            profile_id  = profile.get("profile_id")
-            schemes     = profile.get("schemes", [])
+        # --- Per-profile assembly ---
+        for profile in measurement.get("profiles", []) or []:
+            profile_id  = int(profile.get("profile_id", INVALID_PROFILE_ID))
+            schemes     = profile.get("schemes", []) or []
 
-            freqs:    IntSeries             = []
-            mods:     StringArray           = []
-            shannons: FloatSeries           = []
-            carriers: List[Dict[str, Any]]  = []
+            freq_list: List[int]        = []
+            mod_list:  List[str]        = []
+            shan_list: List[float]      = []
+            carrier_items: List[CarrierItemModel] = []
 
             freq_ptr = start_freq
+
             for scheme in schemes:
-                mod_type:str = scheme.get("modulation_order")
-                count:int    = scheme.get("num_subcarriers", 0)
+                schema_type = int(scheme.get("schema_type", INVALID_SCHEMA_TYPE))
+
+                # Determine which modulation name & count to use
+                if schema_type == CmDsOfdmModulationProfile.RANGE_MODULATION:
+                    mod_name: str   = str(scheme.get("modulation_order"))
+                    count: int      = int(scheme.get("num_subcarriers", 0))
+
+                elif schema_type == CmDsOfdmModulationProfile.SKIP_MODULATION:
+                    mod_name = str(scheme.get("main_modulation_order"))
+                    count    = int(scheme.get("num_subcarriers", 0))
+                
+                else:
+                    # Unknown schema; skip conservatively
+                    logging.warning(f'basic_analysis_ds_modulation_profile() -> Unknown Schema: {schema_type}')
+                    continue
 
                 for _ in range(count):
-                    
-                    if mod_type in ("continuous_pilot", "exclusion"):
-                        s_limit = 0.0
-                    
-                    elif mod_type == "plc":        # treat as 16-QAM
-                        s_limit = Shannon.bits_to_snr(4)
+                    # Compute Shannon minimum MER (perfect FEC) per modulation-order-type
 
+                    if mod_name in (ModulationOrderType.continuous_pilot.name, 
+                                    ModulationOrderType.exclusion.name):
+                        s_min = 0.0
+
+                    elif mod_name == ModulationOrderType.plc.name:
+                        # Treat PLC as 16-QAM (4 bits/s/Hz) at the Shannon min
+                        s_min = Shannon.bits_to_snr(4)
+                    
                     else:
-                        s_limit = Shannon.snr_from_modulation(mod_type)
+                        # Map strings like 'qam_256' → Shannon SNR (dB)
+                        s_min = Shannon.snr_from_modulation(mod_name)
 
-                    s_limit = round(s_limit, 2)
-                    f_val   = int(freq_ptr)
+                    s_min = round(float(s_min), 2)
+                    f_val = int(freq_ptr)
 
                     if split_carriers:
-                        freqs.append(f_val)
-                        mods.append(mod_type)
-                        shannons.append(s_limit)
+                        freq_list.append(f_val)
+                        mod_list.append(mod_name)
+                        shan_list.append(s_min)
                     else:
-                        carriers.append({
-                            "frequency":        f_val,
-                            "modulation":       mod_type,
-                            "shannon_min_mer":  s_limit
-                        })
+                        carrier_items.append(
+                            CarrierItemModel(
+                                frequency       = f_val,
+                                modulation      = mod_name,
+                                shannon_min_mer = s_min,
+                            )
+                        )
 
                     freq_ptr += spacing
 
-            entry: Dict[str, Any] = {"profile_id": profile_id}
+            # Attach carrier values according to layout
             if split_carriers:
-                entry["carrier_values"] = {
-                    "frequency": freqs,
-                    "modulation": mods,
-                    "shannon_min_mer": shannons
-                }
-            else:
-                entry["carrier_values"] = {
-                    "carriers": carriers
-                }
+                carrier_values: CarrierValuesModel = CarrierValuesSplitModel(
+                    layout          =   "split",
+                    frequency       =   freq_list,
+                    modulation      =   mod_list,
+                    shannon_min_mer =   shan_list,
+                )
 
-            result["profiles"].append(entry)
-        
-        return result
+            else:
+                carrier_values = CarrierValuesListModel(
+                    layout      =   "list",
+                    carriers    =   carrier_items,
+                )
+
+            out.profiles.append(
+                ProfileAnalysisEntryModel(
+                    profile_id      =   profile_id,
+                    carrier_values  =   carrier_values,
+                )
+            )
+
+        return out
 
     @classmethod
     def basic_analysis_us_ofdma_pre_equalization(cls, measurement: Dict[str, Any]) -> Dict[str, Any]:
