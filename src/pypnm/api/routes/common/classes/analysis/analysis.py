@@ -7,6 +7,7 @@ import numpy as np
 from enum import Enum
 from typing import Callable, List, Dict, Any, Mapping, Sequence, Union, cast
 
+from pypnm.api.routes.common.classes.analysis.model.chan_est_schema import ChanEstCarrierModel, DsChannelEstAnalysisModel, GroupDelayStats
 from pypnm.api.routes.common.classes.analysis.model.mod_profile_schema import (
     CarrierItemModel, CarrierValuesListModel, CarrierValuesModel, CarrierValuesSplitModel, 
     DsModulationProfileAnalysisModel, ProfileAnalysisEntryModel)
@@ -155,11 +156,11 @@ class Analysis:
             pnm_file_type   = f'{file_type}{file_ver}'
 
             if not pnm_file_type:
-                self.logger.error(f'PNM FileType not Found')
+                self.logger.error('PNM FileType not Found')
                 LogFile.write(fname=f'rxmer-analysis-measurment-{Utils.time_stamp()}.dict' , data=measurement)
                 pass
 
-            if self.analysis_type == AnalysisType.BASIC:                    # type: ignore[name-defined]
+            if self.analysis_type == AnalysisType.BASIC:
                 self.logger.info(f'Performing Basic Analysis on PNM: {pnm_file_type} on Channel: {channel_id}')
                 self._basic_analysis(pnm_file_type, measurement)
             
@@ -198,11 +199,10 @@ class Analysis:
         - :meth:`basic_analysis_ds_modulation_profile`
         """
         if pnm_file_type == PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT.value:
-            self.logger.info("Processing: OFDM_CHANNEL_ESTIMATE_COEFFICIENT")
-            self.__update_result_dict(self.basic_analysis_ds_chan_est(measurement))
-            # model = self.basic_analysis_ds_chan_est(measurement)
-            # self.__update_result_model(model)
-            # self.__update_result_dict(model.model_dump())   
+            self.logger.debug("Processing: OFDM_CHANNEL_ESTIMATE_COEFFICIENT")
+            model = self.basic_analysis_ds_chan_est(measurement)
+            self.__update_result_model(model)
+            self.__update_result_dict(model.model_dump())   
 
         elif pnm_file_type == PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY.value:
             self.logger.debug("Processing: DOWNSTREAM_CONSTELLATION_DISPLAY")
@@ -437,89 +437,99 @@ class Analysis:
         return out
 
     @classmethod
-    def basic_analysis_ds_chan_est(cls, measurement: Dict[str, Any]) -> Dict[str, Any]:
+    def basic_analysis_ds_chan_est(cls, measurement: Dict[str, Any]) -> DsChannelEstAnalysisModel:
         """
         Perform downstream channel estimation analysis.
 
-        Computes per-subcarrier frequency, magnitude in dB (from complex
-        channel estimates), group delay (from phase slope), and basic
-        signal statistics.
+        Computes per-subcarrier frequency, magnitude (from complex channel estimates),
+        group delay (from phase slope), and time-domain signal statistics.
 
         Parameters
         ----------
         measurement : dict
             Expected keys (subset):
-                - ``subcarrier_spacing`` : int (Hz)
-                - ``first_active_subcarrier_index`` : int
-                - ``subcarrier_zero_frequency`` : int (Hz)
-                - ``occupied_channel_bandwidth`` : int
-                - ``values`` : ComplexArray (list of [real, imag])
+            - subcarrier_spacing            : int (Hz)
+            - first_active_subcarrier_index : int
+            - subcarrier_zero_frequency     : int (Hz)
+            - occupied_channel_bandwidth    : int
+            - values                        : ComplexArray (list of [real, imag])
+            - device_details                : dict (optional)
+            - pnm_header                    : dict (optional)
+            - mac_address                   : str (optional)
+            - channel_id                    : int (optional)
 
         Returns
         -------
-        dict
-            Result dictionary containing:
-                - ``carrier_values.frequency`` : List[int]
-                - ``carrier_values.magnitude`` : List[float] (dB)
-                - ``carrier_values.group_delay`` : List[float] (µs)
-                - ``carrier_values.complex`` : original ComplexArray
-                - meta-fields (units, header, device details, etc.)
+        DsChannelEstAnalysisModel
+            Typed analysis result model.
 
         Raises
         ------
         ValueError
             If required parameters are missing/negative, or ``values`` is empty.
         """
-        subcarrier_spacing:int = measurement.get("subcarrier_spacing",-1)                              # Hz
-        first_active_subcarrier_index:int = measurement.get("first_active_subcarrier_index",-1)              # index
-        subcarrier_zero_frequency:int = measurement.get("subcarrier_zero_frequency", -1)                    # Hz
-        occupied_channel_bandwidth:int = measurement.get("occupied_channel_bandwidth", -1)  #
-        
-        if first_active_subcarrier_index < 0 or subcarrier_zero_frequency < 0 or subcarrier_spacing <0:
-            raise ValueError(f"Active index: {first_active_subcarrier_index} or zero frequency: {subcarrier_zero_frequency} or spacing: {subcarrier_spacing} must be non-negative")
+        subcarrier_spacing: int             = measurement.get("subcarrier_spacing",            INVALID_START_VAULE)
+        first_active_subcarrier_index: int  = measurement.get("first_active_subcarrier_index", INVALID_START_VAULE)
+        subcarrier_zero_frequency: int      = measurement.get("subcarrier_zero_frequency",     INVALID_START_VAULE)
+        occupied_channel_bandwidth: int     = measurement.get("occupied_channel_bandwidth",    INVALID_START_VAULE)
 
-        values:ComplexArray = measurement.get("values", []) # Complex Values
+        if (first_active_subcarrier_index < 0) or (subcarrier_zero_frequency < 0) or (subcarrier_spacing <= 0):
+            raise ValueError(
+                f"Active index: {first_active_subcarrier_index} or "
+                f"zero frequency: {subcarrier_zero_frequency} or "
+                f"spacing: {subcarrier_spacing} must be non-negative")
+
+        values: ComplexArray = measurement.get("values", [])
         if not values:
             raise ValueError("No complex channel estimation values provided in measurement.")
-        
-        start_freq = (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency
-        freqs:List[int] = [start_freq + (i * subcarrier_spacing) for i in range(len(values))]
+
+        start_freq: int     = (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency
+        freqs: List[int]    = [start_freq + (i * subcarrier_spacing) for i in range(len(values))]
 
         # Group delay calculation
-        gd = GroupDelay.from_channel_estimate(Hhat=values, df_hz=subcarrier_spacing, f0_hz=start_freq)
-        gd_results = gd.to_result()
-       
-        # Calculate Per-subcarrer Complex Numerbers
+        gd          = GroupDelay.from_channel_estimate(Hhat=values, df_hz=subcarrier_spacing, f0_hz=start_freq)
+        gd_results  = gd.to_result()
+
+        # Per-subcarrier magnitudes (power in dB from complex coefficients)
         cao = ComplexArrayOps(values)
+        magnitudes_db: FloatSeries  = cao.to_list(cao.power_db())
 
-        logging.info(f'Power: {cao.to_list(cao.power_db())}')
+        # Time-domain statistics of the magnitude sequence (returns BaseModel)
+        signal_stats_model = SignalStatistics(magnitudes_db).compute()
 
-        signal_stats = SignalStatistics(cao.power_db()).compute()
+        # Complex array dimensionality (for metadata only)
         complex_arr = np.asarray(values, dtype=complex)
 
-        result = {
-            "device_details": measurement.get("device_details"),
-            "pnm_header": measurement.get("pnm_header"),
-            "mac_address": measurement.get("mac_address"),
-            "channel_id": measurement.get("channel_id"),
-            "frequency_unit": "Hz",
-            "magnitude_unit": "dB",
-            "group_delay_unit": "microsecond",
-            "complex_unit": "[Real, Imaginary]",
-            "carrier_values": {
-                "occupied_channel_bandwidth": occupied_channel_bandwidth,
-                "carrier_count": len(freqs),
-                "frequency": freqs,
-                "magnitude": cao.to_list(cao.power_db()),
-                "group_delay": ComplexArrayOps.to_list(gd_results.group_delay_us),
-                "complex": values,
-                "complex_dimension": f"{complex_arr.ndim}"
-            },
-            "signal_statistics_target": "magnitude",
-            "signal_statistics": signal_stats
-        }
+        # Build nested models
+        group_delay_stats: GroupDelayStats = GroupDelayStats(
+            group_delay_unit            = "microsecond",
+            magnitude                   = ComplexArrayOps.to_list(gd_results.group_delay_us),
+        )
 
-        return result
+        carrier_values: ChanEstCarrierModel = ChanEstCarrierModel(
+            carrier_count               = len(freqs),
+            frequency_unit              = "Hz",
+            frequency                   = freqs,
+            complex                     = values,
+            complex_dimension           = int(complex_arr.ndim),
+            magnitudes                  = magnitudes_db,   # NOTE: produced from power_db(); units elsewhere may denote dB
+            group_delay                 = group_delay_stats,
+            occupied_channel_bandwidth  = occupied_channel_bandwidth,
+        )
+
+        result_model: DsChannelEstAnalysisModel = DsChannelEstAnalysisModel(
+            device_details              = measurement.get("device_details", {}),
+            pnm_header                  = measurement.get("pnm_header", {}),
+            mac_address                 = measurement.get("mac_address", ""),
+            channel_id                  = int(measurement.get("channel_id", INVALID_START_VAULE)),
+            subcarrier_spacing          = subcarrier_spacing,
+            first_active_subcarrier_index = first_active_subcarrier_index,
+            subcarrier_zero_frequency   = subcarrier_zero_frequency,
+            carrier_values              = carrier_values,
+            signal_statistics           = signal_stats_model,
+        )
+
+        return result_model
 
     @classmethod
     def basic_analysis_ds_modulation_profile(cls, measurement: Mapping[str, Any], split_carriers: bool = True) -> DsModulationProfileAnalysisModel:

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 import math
-from typing import Any, Dict, List, cast
+from typing import Dict, List, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -13,11 +13,12 @@ from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.basic.common.signal_capture_agg import SignalCaptureAggregator
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
+from pypnm.api.routes.common.classes.analysis.model.chan_est_schema import ChanEstCarrierModel, DsChannelEstAnalysisModel
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.numeric_scaler import NumericScaler
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
-from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries
+from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, IntSeries, PathLike
 
 
 class ChanEstimationParameters(BaseModel):
@@ -25,15 +26,16 @@ class ChanEstimationParameters(BaseModel):
     Parameters that augment channel estimation analysis output.
     - regression_line : Per-subcarrier fitted values (ŷ) from linear regression over index domain
     """
-    model_config                    = ConfigDict(populate_by_name=True, extra="ignore")
-    regression_line: FloatSeries    = Field(..., description="Regression fitted values per subcarrier")
-    group_delay:FloatSeries         = Field(..., description="Group Delay")
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+    regression_line: FloatSeries = Field(..., description="Regression fitted values per subcarrier")
+    group_delay: FloatSeries = Field(..., description="Group Delay")
 
 class ChanEstimationAnalysis(CommonAnalysis):
     """
     Analysis view over channel estimation data (extends CommonAnalysis).
     """
     parameters: ChanEstimationParameters = Field(..., description="Channel estimation analysis parameters and limits.")
+
 
 class ChanEstimationReport(AnalysisReport):
     """Concrete report builder for channel estimation measurements."""
@@ -42,38 +44,36 @@ class ChanEstimationReport(AnalysisReport):
 
     def __init__(self, analysis: Analysis):
         super().__init__(analysis)
-        self.logger = logging.getLogger("ChanEstimationReport")
-        self._results: Dict[int, ChanEstimationAnalysis] = {}
-        self._sig_cap_agg: SignalCaptureAggregator = SignalCaptureAggregator()
+        self.logger             = logging.getLogger("ChanEstimationReport")
+        self._results           : Dict[int, ChanEstimationAnalysis] = {}
+        self._sig_cap_agg       : SignalCaptureAggregator           = SignalCaptureAggregator()
 
     def create_csv(self, **kwargs) -> List[CSVManager]:
         """
         Stream validated models into CSVs. Assumes `_process()` already enforced
         """
         csv_mgr_list: List[CSVManager] = []
-        any_models = False
+        any_models:bool = False
 
         for common_model in self.get_common_analysis_model():
             any_models = True
-            model = cast(ChanEstimationAnalysis, common_model)
-            chan = int(model.channel_id)
+            model      = cast(ChanEstimationAnalysis, common_model)
+            chan       = int(model.channel_id)
 
-            x:ArrayLike         = model.raw_x
-            y:ArrayLike         = model.raw_y
-            ca:ComplexArray     = model.raw_complex
-            rl:FloatSeries      = model.parameters.regression_line
+            x: ArrayLike        = model.raw_x
+            y: ArrayLike        = model.raw_y
+            ca: ComplexArray    = model.raw_complex
+            rl: FloatSeries     = model.parameters.regression_line
 
-            """
-            Single Channel Capture
-            """
+            # Single Channel Capture
             try:
-                csv_mgr: CSVManager = self.csv_manager_factory()
-                csv_fname = self.create_csv_fname(tags=[str(chan), self.FNAME_TAG])
+                csv_mgr: CSVManager    = self.csv_manager_factory()
+                csv_fname:PathLike     = self.create_csv_fname(tags=[str(chan), self.FNAME_TAG])
                 csv_mgr.set_path_fname(csv_fname)
-                
+
                 csv_mgr.set_header(["ChannelID", "Frequency(Hz)", "Magnitude(Linear)", "Regression(Linear)", "Real(Linear)", "Imaginary(Linear)"])
                 for rx, ry, reg, cmp in zip(x, y, rl, ca):
-                    real,img = cmp
+                    real, img = cmp
                     csv_mgr.insert_row([chan, rx, ry, reg, real, img])
 
                 self.logger.info(f"CSV created for channel {chan}: {csv_fname} (rows={len(x)})")
@@ -91,56 +91,51 @@ class ChanEstimationReport(AnalysisReport):
         """
         Generate per-channel line and multi-line plots from validated models.
         """
-        matplot_mgr: List[MatplotManager] = []
-        any_models = False
-        chan_id_list:List[int] = []
+        matplot_mgr: List[MatplotManager]   = []
+        any_models:bool                     = False
+        chan_id_list: IntSeries = []
 
         for common_model in self.get_common_analysis_model():
-            any_models = True
-            model = cast(ChanEstimationAnalysis, common_model)
-            chan = int(model.channel_id)
+            any_models          = True
+            model               = cast(ChanEstimationAnalysis, common_model)
+            chan                = int(model.channel_id)
             chan_id_list.append(chan)
 
-            x_hz:ArrayLike      = model.raw_x
-            y_ln:ArrayLike      = model.raw_y
-            cplex:ComplexArray  = model.raw_complex
-            rl:FloatSeries      = model.parameters.regression_line
-            gd_us:FloatSeries   = model.parameters.group_delay
-            
+            x_hz: ArrayLike     = model.raw_x
+            y_ln: ArrayLike     = model.raw_y
+            cplex: ComplexArray = model.raw_complex
+            rl: FloatSeries     = model.parameters.regression_line
+            gd_us: FloatSeries  = model.parameters.group_delay
+
             x_khz, _ = NumericScaler().to_prefix(values=x_hz, target="k")
 
-            '''
-            Channel Estimation with Regression Line - All OFDM DS Channels
-            '''
+            # Channel Estimation with Regression Line - OFDM DS Channel
             try:
-
                 cfg = PlotConfig(
                     title=f"Channel Estimation - OFDM Channel: {chan}",
                     x=x_khz,            xlabel="Frequency (kHz)",
                     y_multi=[y_ln, rl], y_multi_label=["Channel Estimation", "Regression Line"],
-                    grid=True, legend=True, transparent=False,)
+                    grid=True, legend=True, transparent=False,
+                )
 
                 multi = self.create_png_fname(tags=[str(chan), self.FNAME_TAG])
                 self.logger.info("Creating MatPlot: %s for channel: %s", multi, chan)
 
                 mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_multi_line(filename=multi)
-
                 matplot_mgr.append(mgr)
 
             except Exception as exc:
                 self.logger.exception("Failed to create plot for channel %s: %s", chan, exc)
 
-            '''
-            Channel Estimation with Group Delay - All OFDM DS Channels
-            '''
+            # Group Delay - OFDM DS Channel
             try:
-
                 cfg = PlotConfig(
                     title=f"Group Delay - OFDM Channel: {chan}",
                     x=x_khz,                xlabel="Frequency (kHz)",
                     y=gd_us,                ylabel="uS",
-                    grid=True, legend=True, transparent=False,)
+                    grid=True, legend=True, transparent=False,
+                )
 
                 multi = self.create_png_fname(tags=[str(chan), self.FNAME_TAG, 'groupdelay'])
                 self.logger.info("Creating Group Delay MatPlot: %s for channel: %s", multi, chan)
@@ -159,44 +154,27 @@ class ChanEstimationReport(AnalysisReport):
 
     def _process(self) -> None:
         """
-        Normalize raw measurement dicts into fully-validated RxMerAnalysis models.
+        Normalize validated `DsChannelEstAnalysisModel` items into `ChanEstimationAnalysis`
+        and register them for reporting/plotting.
 
-        Required input shape per item:
-        {
-            "pnm_header": measurement.get("pnm_header"),
-            "mac_address": measurement.get("mac_address"),
-            "channel_id": measurement.get("channel_id"),
-            "frequency_unit": "Hz",
-            "magnitude_unit": "dB",
-            "group_delay_unit": "microsecond",
-            "complex_unit": "[Real, Imaginary]",
-            "carrier_values": {
-                "occupied_channel_bandwidth": occupied_channel_bandwidth,
-                "carrier_count": len(freqs),
-                "frequency": freqs,
-                "magnitude": magnitudes_db.tolist(),
-                "group_delay": group_delay.tolist(),
-                "complex": values,
-                "complex_dimension": f"{complex_arr.ndim}"
-            },
-            "signal_statistics_target": "magnitude",
-            "signal_statistics": signal_stats
-        }
-
+        This method expects `self.get_analysis_model()` to return a list of
+        `DsChannelEstAnalysisModel` instances (already validated upstream).
         """
-        data_list: List[Dict[str, Any]] = self.get_analysis_data() or []
+        data_list               : List[DsChannelEstAnalysisModel] = cast(List[DsChannelEstAnalysisModel], self.get_analysis_model())
 
         for idx, data in enumerate(data_list):
-
             try:
-                channel_id = int(data.get("channel_id", self.INVALID_CHANNEL_ID))
-                cv:Dict                 = data.get("carrier_values") or {}
-                x_raw:ArrayLike         = list(cv.get("frequency") or [])
-                y_raw:ArrayLike         = list(cv.get("magnitude") or [])
-                cplex:ComplexArray      = list(cv.get("complex") or [])
-                group_delay:FloatSeries = list(cv.get("group_delay") or [])
+                # Pull strongly-typed fields directly from BaseModel (no dict parsing)
+                channel_id: int          = int(data.channel_id)
 
-                # coerce -> float (and finiteness)
+                # Carrier values block
+                cv:ChanEstCarrierModel      = data.carrier_values
+                x_raw: FloatSeries          = list(cv.frequency)
+                y_raw: FloatSeries          = list(cv.magnitudes)
+                cplex: ComplexArray         = list(cv.complex)
+                group_delay: FloatSeries    = list(cv.group_delay.magnitude)
+
+                # Coerce -> float and ensure finiteness
                 def coerce_finite(seq, name: str) -> List[float]:
                     out: List[float] = []
                     for v in seq:
@@ -206,21 +184,24 @@ class ChanEstimationReport(AnalysisReport):
                         out.append(fv)
                     return out
 
-                x = coerce_finite(x_raw, "raw_x")
-                y = coerce_finite(y_raw, "raw_y")
-                y_hat = cast(List[float], LinearRegression1D(y).fitted_values())
+                x: FloatSeries      = coerce_finite(x_raw, "raw_x")
+                y: FloatSeries      = coerce_finite(y_raw, "raw_y")
+                y_hat: FloatSeries  = cast(FloatSeries, LinearRegression1D(cast(ArrayLike,y)).fitted_values())
 
                 params = ChanEstimationParameters(
-                    regression_line = y_hat,
-                    group_delay     = group_delay)
-                
-                model = ChanEstimationAnalysis(
-                        channel_id  =   channel_id,
-                        raw_x=x,        raw_y=y,
-                        raw_complex =   cplex, 
-                        parameters  =   params,)
+                    regression_line               = y_hat,
+                    group_delay                   = group_delay,
+                )
 
-                # Must register Model
+                model = ChanEstimationAnalysis(
+                    channel_id                    = channel_id,
+                    raw_x                         = x,
+                    raw_y                         = y,
+                    raw_complex                   = cplex,
+                    parameters                    = params,
+                )
+
+                # Register model for downstream CSV/plot generation
                 self.register_common_analysis_model(channel_id, model)
 
                 # Add to Signal Capture Aggregator
@@ -232,4 +213,3 @@ class ChanEstimationReport(AnalysisReport):
 
         # Finalize signal capture aggregation
         self._sig_cap_agg.reconstruct()
-

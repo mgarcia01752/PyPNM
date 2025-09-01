@@ -116,9 +116,9 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
 
         self._model:CmDsOfdmChanEstimateCoefModel
 
-        self._process()
+        self.__process()
 
-    def _process(self) -> None:
+    def __process(self) -> None:
         """
         Parse the binary stream and decode complex coefficients.
 
