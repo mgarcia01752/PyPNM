@@ -769,8 +769,8 @@ class Analysis:
             mac_address     = measurement.get("mac_address", MacAddress.null()),
             channel_id      = measurement.get("channel_id", INVALID_CHANNEL_ID),
             symmetry        = measurement.get("symmetry", INVALID_CHANNEL_ID),
-            dwell_count     = measurement.get("dwell_count", INVALID_CHANNEL_ID),
-            hit_counts      = measurement.get("hit_counts", []),
+            dwell_count     = measurement.get("dwell_count_values", INVALID_CHANNEL_ID),
+            hit_counts      = measurement.get("hit_count_values", []),
         )
 
     @classmethod

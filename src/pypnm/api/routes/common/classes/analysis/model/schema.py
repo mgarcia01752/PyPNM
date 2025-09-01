@@ -40,9 +40,9 @@ class DsHistogramAnalysisModel(BaseAnalysisModel):
     metadata may be carried in `device_details` and `pnm_header` without strict schema.
     """
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
-    symmetry: Optional[int]             = Field(..., description="Histogram symmetry flag as reported by the device (implementation- or vendor-defined).")
-    dwell_count: Optional[int]          = Field(..., description="Measurement dwell/accumulation count used when collecting the histogram.")
-    hit_counts: Optional[List[int]]     = Field(..., description="Per-bin hit counts; index i corresponds to bin i. Length equals number of bins.")
+    symmetry: int             = Field(..., description="Histogram symmetry flag as reported by the device (implementation- or vendor-defined).")
+    dwell_count: IntSeries    = Field(..., description="Measurement dwell/accumulation count used when collecting the histogram.")
+    hit_counts: IntSeries     = Field(..., description="Per-bin hit counts; index i corresponds to bin i. Length equals number of bins.")
 
 class FecSummaryCodeWordModel(BaseModel):
     """Vectorized FEC codeword summary for a single OFDM profile.

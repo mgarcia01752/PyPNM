@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
-from pypnm.api.routes.common.classes.analysis.analysis import Analysis
+from pypnm.api.routes.common.classes.analysis.analysis import Analysis, DsHistogramAnalysisModel
 from pypnm.lib.constants import INVALID_CHANNEL_ID, T
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
@@ -19,8 +19,8 @@ from pypnm.lib.types import IntSeries
 class DsHistrogramParameters(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
     symmetry: int           = Field(..., description="Histogram symmetry flag (implementation-defined)")
-    dwell_count: int        = Field(..., description="Capture dwell count (implementation-defined)")
-    hit_counts: List[int]   = Field(default_factory=list, description="Histogram bin hit counts")
+    dwell_count: IntSeries  = Field(..., description="Capture dwell count (implementation-defined)")
+    hit_counts: IntSeries   = Field(default_factory=list, description="Histogram bin hit counts")
 
 
 class DsHistrogramAnalysis(CommonAnalysis):
@@ -41,9 +41,9 @@ class DsHistrogramReport(AnalysisReport):
 
         for common_model in self.get_common_analysis_model():
             model                   = cast(DsHistrogramAnalysis, common_model)
-            channel_id: int         = int(model.channel_id)
-            symmetry: int           = int(model.parameters.symmetry)
-            dwell_count: int        = int(model.parameters.dwell_count)
+            channel_id: int         = model.channel_id
+            symmetry: int           = model.parameters.symmetry
+            dwell_count: int        = model.parameters.dwell_count
             hit_counts: IntSeries   = model.parameters.hit_counts
 
             try:
@@ -162,28 +162,27 @@ class DsHistrogramReport(AnalysisReport):
             "hit_counts": List[int]
         }
         """
-        data_list: List[Dict[str, Any]] = self.get_analysis_data() or []
+        models:List[DsHistogramAnalysisModel] = cast(List[DsHistogramAnalysisModel], self.get_analysis_model())
 
-        for idx, data in enumerate(data_list):
+        for idx, model in enumerate(models):
             try:
-                channel_id  = int(data.get("channel_id", INVALID_CHANNEL_ID))
-                symmetry    = int(data.get("symmetry", 0))
-                dwell_count = int(data.get("dwell_count", 0))
-                hit_counts: List[int] = [int(v) for v in (data.get("hit_counts", []) or [])]
+                symmetry    = model.symmetry
+                dwell_count = model.dwell_count
+                hit_counts  = model.hit_counts
 
                 raw_x = list(range(len(hit_counts)))
                 raw_y:IntSeries = hit_counts
 
                 model = DsHistrogramAnalysis(
-                    channel_id=channel_id, 
-                    raw_x=raw_x, raw_y=raw_y, 
+                    channel_id  =   INVALID_CHANNEL_ID, 
+                    raw_x=cast(int, raw_x),    raw_y=cast(int, raw_y), 
                     parameters=DsHistrogramParameters(
                         symmetry    =   symmetry, 
                         dwell_count =   dwell_count, 
                         hit_counts  =   hit_counts
                     )
                 )
-                self.register_common_analysis_model(channel_id, model)
+                self.register_common_analysis_model(INVALID_CHANNEL_ID, model)
 
             except Exception as exc:
                 self.logger.exception(f"Failed to process DS Histogram item {idx}: {exc}", exc_info=True)

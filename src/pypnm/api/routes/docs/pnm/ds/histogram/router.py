@@ -137,17 +137,17 @@ class DsHistogramRouter:
             msg_rsp = cps.process()
 
             analysis = Analysis(AnalysisType.BASIC, msg_rsp)
-            
+                           
             if request.output.type == FileType.JSON.value:
-                return PnmAnalysisResponse(mac_address=mac, 
-                                           status=ServiceStatusCode.SUCCESS, 
-                                           data=analysis.get_results())
+
+                return PnmHistogramResponse(
+                    mac_address =   mac,
+                    status      =   ServiceStatusCode.SUCCESS,
+                    measurement =   analysis.get_results())
 
             elif request.output.type == FileType.ARCHIVE.value:
-                
                 analysis_rpt = DsHistrogramReport(analysis)
                 rpt:Path = cast(Path, analysis_rpt.build_report())
-
                 return PnmFileService().get_file(FileType.ARCHIVE,rpt.name)
 
             else:
