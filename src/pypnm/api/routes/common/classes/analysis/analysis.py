@@ -427,7 +427,7 @@ class Analysis:
             subcarrier_zero_frequency       = subcarrier_zero_frequency,
             carrier_values                  = cv,
             regression                      = regession_model,
-            modulation_statistics           = ss.to_dict()
+            modulation_statistics           = ss.to_model()
         )
 
         return out
@@ -720,14 +720,12 @@ class Analysis:
         ValueError
             If ``samples`` is missing or empty.
         """
-        samples: ComplexArray = measurement.get("samples") or []
+        samples: ComplexArray   = measurement.get("samples") or []
         if not samples:
             raise ValueError("measurement['values'] is required and must be a non-empty ComplexArray.")
 
-        amo:int = measurement.get("actual_modulation_order", DsOfdmModulationType.UNKNOWN)
-        num_sample_symbols = int(measurement.get("num_sample_symbols", len(samples)))
-
         #Get Hard/Soft Decsions
+        amo:int                 = measurement.get("actual_modulation_order", DsOfdmModulationType.UNKNOWN)
         qm:QamModulation    = QamModulation.from_DsOfdmModulationType(amo)
         hard                = QamLutManager().get_hard_decisions(qm)
         soft                = QamLutManager().scale_soft_decisions(qm, samples)
@@ -737,7 +735,7 @@ class Analysis:
             pnm_header          = measurement.get("pnm_header", {}),
             mac_address         = measurement.get("mac_address", MacAddress.null()),
             channel_id          = measurement.get("channel_id", INVALID_CHANNEL_ID),
-            num_sample_symbols  = num_sample_symbols,
+            num_sample_symbols  = measurement.get("num_sample_symbols", len(samples)),
             modulation_order    = qm,           # QamModulation 
             hard                = hard,         # Scaled
             soft                = soft          # Scaled

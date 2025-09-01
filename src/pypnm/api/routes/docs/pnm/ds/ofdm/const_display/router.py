@@ -62,7 +62,9 @@ class ConstellationDisplayRouter:
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
-            self.logger.info(f"Starting Constellation Display measurement for MAC: {mac}, IP: {ip}, Modulation Order Offset: {request.modulation_order_offset}, Number of Sample Symbols: {request.number_sample_symbol}")
+            self.logger.info(f"Starting Constellation Display measurement for MAC: {mac}, IP: {ip}, "
+                             f"Modulation Order Offset: {request.capture_settings.modulation_order_offset}, "
+                             f"Number of Sample Symbols: {request.capture_settings.number_sample_symbol}")
 
             try:
                 cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))

@@ -1,11 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-import json
 import logging
-
-import pandas as pd
-import matplotlib.pyplot as plt
 import zipfile
 
 from abc import ABC, abstractmethod
@@ -21,8 +17,6 @@ from pypnm.docsis.cm_snmp_operation import SystemDescriptor
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.csv.manager import CSVManager
-from pypnm.lib.file_processor import FileProcessor
-from pypnm.lib.log_files import LogFile
 from pypnm.lib.matplot.manager import MatplotManager
 from pypnm.lib.types import PathArray, PathLike
 from pypnm.lib.utils import Utils
@@ -42,8 +36,6 @@ class AnalysisReport(ABC):
     '''
     Abstract base class for generating analysis reports.
     '''
-    INVALID_CHANNEL_ID: int = -1
-
     def __init__(self, analysis: Analysis):
         self.logger = logging.getLogger("AnalysisReport")
         self._analysis = analysis

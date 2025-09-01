@@ -6,12 +6,23 @@ from struct import unpack, calcsize
 from typing import Optional, Dict
 import json
 
+from pydantic import Field
+
 from pypnm.lib.constants import KHZ
 from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder
+from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 from pypnm.lib.types import ComplexArray
 
+class CmDsConstDispMeasModel(PnmBaseModel):
+    """
+    """
+    actual_modulation_order: int    = Field(..., ge=0, description="")
+    num_sample_symbols: int         = Field(..., ge=0, description="Number of constellation soft-decision symbol samples")
+    sample_length: int              = Field(..., ge=0, description="Number of constellation soft-decision complex pairs")
+    sample_units: str               = Field(default="[Real(I), Imaginary(Q)]", description="Non-mutable")
+    samples: ComplexArray           = Field(..., description="Constellation soft-decision samples")
 
 class CmDsConstDispMeas(PnmHeader):
     """
@@ -30,15 +41,16 @@ class CmDsConstDispMeas(PnmHeader):
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
 
-        self.channel_id: Optional[int] = None
-        self.mac_address: Optional[str] = None
-        self.subcarrier_zero_frequency: Optional[int] = None
-        self.actual_modulation_order: Optional[int] = None
-        self.num_sample_symbols: Optional[int] = None
-        self.subcarrier_spacing: Optional[int] = None
-        self.display_data_length: Optional[int] = None
-        self.constellation_display_data: Optional[bytes] = None
-        self.parsed_constellation_data: Optional[ComplexArray] = None
+        self._channel_id: int
+        self._mac_address: str
+        self._subcarrier_zero_frequency: int
+        self._actual_modulation_order: int
+        self._num_sample_symbols: int
+        self._subcarrier_spacing: int
+        self._display_data_length: int
+        self._constellation_display_data: bytes
+        self._parsed_constellation_data: ComplexArray
+        self._model: CmDsConstDispMeasModel
 
         self.__process()
 
@@ -65,15 +77,26 @@ class CmDsConstDispMeas(PnmHeader):
         const_disp_meas_size = calcsize(const_disp_meas_format)
         unpacked_data = unpack(const_disp_meas_format, self.pnm_data[:const_disp_meas_size])
 
-        self.channel_id                 = unpacked_data[0]
-        self.mac_address                = unpacked_data[1].hex(':')
-        self.subcarrier_zero_frequency  = unpacked_data[2]
-        self.actual_modulation_order    = unpacked_data[3]
-        self.num_sample_symbols         = unpacked_data[4]
-        self.subcarrier_spacing         = unpacked_data[5] * KHZ
-        self.display_data_length        = unpacked_data[6]
-        self.constellation_display_data = self.pnm_data[const_disp_meas_size:]
-        self.parsed_constellation_data  = self._process_constellation_display_data()
+        self._channel_id                 = unpacked_data[0]
+        self._mac_address                = unpacked_data[1].hex(':')
+        self._subcarrier_zero_frequency  = unpacked_data[2]
+        self._actual_modulation_order    = unpacked_data[3]
+        self._num_sample_symbols         = unpacked_data[4]
+        self._subcarrier_spacing         = unpacked_data[5] * KHZ
+        self._display_data_length        = unpacked_data[6]
+        self._constellation_display_data = self.pnm_data[const_disp_meas_size:]
+
+        self._model = CmDsConstDispMeasModel(
+            pnm_header                      =   self.getPnmHeaderParameterModel(),
+            channel_id                      =   self._channel_id,
+            mac_address                     =   self._mac_address,
+            subcarrier_zero_frequency       =   self._subcarrier_zero_frequency,
+            subcarrier_spacing              =   self._subcarrier_spacing,
+            actual_modulation_order         =   self._actual_modulation_order,
+            num_sample_symbols              =   self._num_sample_symbols,
+            sample_length                   =   self._display_data_length,
+            samples                         =   self._process_constellation_display_data(),
+        )
 
     def _process_constellation_display_data(self) -> ComplexArray:
         """
@@ -85,7 +108,7 @@ class CmDsConstDispMeas(PnmHeader):
             List of [i, q] float pairs.
         """
         offset = 0
-        raw:bytes = self.constellation_display_data
+        raw:bytes = self._constellation_display_data
         decode_list = []
 
         while offset + self.CONST_DISPLAY_DATA_COMPLEX_LENGTH <= len(raw):
@@ -98,47 +121,21 @@ class CmDsConstDispMeas(PnmHeader):
 
         return decode_list
 
-    def get_const_disp_meas(self) -> Dict[str, Optional[object]]:
-        """
-        Returns a dictionary of parsed measurement data with lowercase snake_case keys.
-
-        Returns:
-            dict: Parsed data including metadata and I/Q constellation points.
-        
-        Notes:
-            actual_modulation_order ---Convert--> DsOfdmModulationType
-            
-        """
-        data = self.getPnmHeader(header_only=True)
-        
-        data.update (
-            {
-                'channel_id': self.channel_id,
-                'mac_address': self.mac_address,
-                'subcarrier_zero_frequency': self.subcarrier_zero_frequency,
-                'actual_modulation_order': self.actual_modulation_order,
-                'num_sample_symbols': self.num_sample_symbols,
-                'subcarrier_spacing': self.subcarrier_spacing,
-                'sample_length': self.display_data_length,
-                "sample_units":"[Real(I), Imaginary(Q)]",
-                "samples": self.parsed_constellation_data,
-            }
-        )
-        
-        return data
+    def to_model(self) -> CmDsConstDispMeasModel:
+        return self._model
 
     def to_dict(self) -> Dict[str, Optional[object]]:
         """
         Returns:
             dict: Alias for `get_const_disp_meas()`.
         """
-        return self.get_const_disp_meas()
+        return self.to_model().model_dump()
     
-    def to_json(self) -> str:
+    def to_json(self, indent:int=2) -> str:
         """
         Serializes the parsed measurement data to a JSON string.
 
         Returns:
             str: JSON-formatted string representation of the data.
         """
-        return json.dumps(self.to_dict(), indent=2)
+        return self.to_model().model_dump_json(indent=indent)
