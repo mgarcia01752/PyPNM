@@ -9,7 +9,7 @@ from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
 from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
 from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
-from pypnm.pnm.process.CmUsPreEq import CmUsPreEq
+from pypnm.pnm.process.CmUsPreEq import CmUsOfdmaPreEq
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 
@@ -147,9 +147,9 @@ class PnmObjectAndParameters(PnmHeader):
         """Downstream histogram parser (not implemented)."""
         raise NotImplementedError("Histogram parsing not implemented.")
 
-    def _process_upstream_pre_eq(self) -> CmUsPreEq:
+    def _process_upstream_pre_eq(self) -> CmUsOfdmaPreEq:
         """Upstream pre-equalizer coefficients parser."""
-        return CmUsPreEq(self.byte_stream)
+        return CmUsOfdmaPreEq(self.byte_stream)
 
     def _process_upstream_pre_eq_update(self) -> Any:
         """Latest upstream pre-equalizer update parser (not implemented)."""

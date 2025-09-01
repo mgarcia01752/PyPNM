@@ -1,162 +1,168 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-import json
+from __future__ import annotations
+
 import logging
 from struct import calcsize, unpack
-from typing import Optional, List, Tuple, Dict, Any
+from typing import Optional, List, Tuple, Dict, Any, cast
 
+from pydantic import ConfigDict, Field
+
+from pypnm.lib.constants import KHZ
+from pypnm.lib.types import ComplexArray, ComplexSeries
 from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder
+from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 
 
-class CmUsPreEq(PnmHeader):
-    """
-    Parses and decodes CM Upstream Pre-Equalization data from binary input.
+class CmUsOfdmaPreEqModel(PnmBaseModel):
+    model_config                   = ConfigDict(extra="ignore")
 
-    Includes:
-        - Header metadata
-        - Fixed-point complex coefficient data
+    cmts_mac_address: str          = Field(..., description="CMTS MAC address associated with this measurement.")
+    value_length: int              = Field(..., ge=0, description="Number of complex coefficient pairs (non-negative).")
+    value_unit: str                = Field(default="[Real, Imaginary]", description="Unit representation of complex values.")
+    values: ComplexArray           = Field(..., min_length=1, description="Pre-equalization coefficients as [real, imaginary] pairs.")
+
+
+class CmUsOfdmaPreEq(PnmHeader):
+    """
+    Parses and decodes CM OFDMA Upstream Pre-Equalization data from binary input.
+
+    Produces a validated `CmUsOfdmaPreEqModel` that includes:
+      - PNM header fields (via PnmBaseModel)
+      - CM/CMTS MAC addresses
+      - Channel/frequency metadata (subcarrier 0, first active index, spacing in Hz)
+      - Complex pre-equalization coefficients as [real, imag] pairs
     """
 
     def __init__(self, binary_data: bytes, sm_n_format: Tuple[int, int] = (1, 14)):
         super().__init__(binary_data)
-        self.logger = logging.getLogger(self.__class__.__name__)
-        
-        self.sm_n_format = sm_n_format
+        self.logger                          = logging.getLogger(self.__class__.__name__)
 
-        self.channel_id: Optional[int] = None
-        self.mac_address: Optional[str] = None
-        self.cmts_mac_address: Optional[str] = None
-        self.subcarrier_zero_frequency: Optional[int] = None
-        self.first_active_subcarrier_index: Optional[int] = None
-        self.subcarrier_spacing: Optional[int] = None
-        self.pre_eq_data_length: Optional[int] = None
-        self.pre_eq_coefficient_data: Optional[bytes] = None
-        self._decoded_coefficients: Optional[List[complex]] = None
+        self._sm_n_format                    = sm_n_format
 
-        self._parse_header_and_coefficients()
+        self._channel_id                     : int
+        self._mac_address                    : str
+        self._cmts_mac_address               : str
+        self._subcarrier_zero_frequency      : int
+        self._first_active_subcarrier_index  : int
+        self._subcarrier_spacing_khz         : int
+        self._pre_eq_data_length             : int
+        self._pre_eq_coefficient_data        : bytes
+        self._decoded_coefficients           : ComplexSeries
 
-    def convert_complex_list(self, coefficients: List[complex]) -> List[Dict[str, float]]:
+        self._model                          : CmUsOfdmaPreEqModel
+
+        self.__process()
+
+    def __process(self) -> None:
         """
-        Converts list of Python complex numbers to a JSON-serializable list of dicts.
-
-        Args:
-            coefficients (List[complex]): List of complex numbers
-
-        Returns:
-            List[Dict[str, float]]: List of {"real": ..., "imag": ...} representations
+        Parse header and coefficient block; decode fixed-point complex values; build BaseModel.
+        Header format (big-endian):
+            >B 6s 6s I H B I
+             | |  |  | | | +-- pre-eq data length (bytes)
+             | |  |  | | +---- subcarrier spacing (kHz, 1-byte)
+             | |  |  | +------ first active subcarrier index (H)
+             | |  |  +-------- subcarrier zero frequency (Hz, I)
+             | |  +----------- CMTS MAC (6s)
+             | +-------------- CM MAC (6s)
+             +---------------- upstream channel id (B)
         """
-        return [{"real": c.real, "imag": c.imag} for c in coefficients]
+        # Validate file type (allow "last update" variant)
+        if (self.get_pnm_file_type() != PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS) and \
+           (self.get_pnm_file_type() != PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE):
+            expected       = PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS.get_pnm_cann()
+            got            = self.get_pnm_file_type().get_pnm_cann()
+            raise ValueError(f"PNM File Stream is not file type: {expected}, Error: {got}")
 
-    def _parse_header_and_coefficients(self) -> None:
-        """
-        Parses the fixed-length header and coefficient block.
-        Format:
-            - 1 byte: Upstream Channel ID
-            - 6 bytes: CM MAC
-            - 6 bytes: CMTS MAC
-            - 4 bytes: Subcarrier Zero Freq (Hz)
-            - 2 bytes: First Active Subcarrier Index
-            - 1 byte: Subcarrier Spacing (kHz)
-            - 4 bytes: Length of coefficient data (bytes)
-        """
-        if (self.get_pnm_file_type() != PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS) and (self.get_pnm_file_type() != PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE):
-            cann = PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS.get_pnm_cann()
-            raise ValueError(f"PNM File Stream is not  file type: {cann}, Error: {self.get_pnm_file_type().get_pnm_cann()}")
-         
-        header_format = '>B 6s 6s I H B I'
-        header_size = calcsize(header_format)
-
+        header_format = ">B6s6sIHB I".replace(" ", "")   # >B6s6sIHB I → >B6s6sIHBI
+        header_size   = calcsize(header_format)
         if len(self.pnm_data) < header_size:
-            raise ValueError("Insufficient data for CmUsPreEq header.")
+            raise ValueError("Insufficient data for CmUsOfdmaPreEq header.")
 
         (
-            self.channel_id,
+            self._channel_id,
             cm_mac,
             cmts_mac,
-            self.subcarrier_zero_frequency,
-            self.first_active_subcarrier_index,
-            self.subcarrier_spacing,
-            self.pre_eq_data_length
+            self._subcarrier_zero_frequency,
+            self._first_active_subcarrier_index,
+            self._subcarrier_spacing_khz,
+            self._pre_eq_data_length,
         ) = unpack(header_format, self.pnm_data[:header_size])
 
-        self.mac_address = self._format_mac(cm_mac)
-        self.cmts_mac_address = self._format_mac(cmts_mac)
-        self.pre_eq_coefficient_data = self.pnm_data[header_size:]
+        self._mac_address                  = self._format_mac(cm_mac)
+        self._cmts_mac_address             = self._format_mac(cmts_mac)
+        self._pre_eq_coefficient_data      = self.pnm_data[header_size:]
 
-        if len(self.pre_eq_coefficient_data) != self.pre_eq_data_length:
-            raise ValueError("Mismatch between reported and actual Pre-EQ data length.")
-        
-        self._decoded_coefficients = self.process_pre_eq_coefficient_data()
+        if len(self._pre_eq_coefficient_data) != self._pre_eq_data_length:
+            raise ValueError(
+                f"Mismatch between reported ({self._pre_eq_data_length}) and actual ({len(self._pre_eq_coefficient_data)}) Pre-EQ data length."
+            )
 
-    def _format_mac(self, mac_bytes: bytes) -> str:
-        return ':'.join(f'{b:02x}' for b in mac_bytes)
+        # Decode fixed-point complex coefficients → List[complex]
+        decoded:ComplexSeries = self.process_pre_eq_coefficient_data()
+        if not decoded:
+            raise ValueError("No pre-equalization coefficients decoded.")
 
-    def process_pre_eq_coefficient_data(self) -> Optional[List[complex]]:
+        # Convert to ComplexArray: List[List[float, float]]
+        complex_pairs:ComplexArray    = cast(ComplexArray, [[c.real, c.imag] for c in decoded])
+
+        # Build BaseModel (convert spacing to Hz; PnmBaseModel expects Hz)
+        self._model                        = CmUsOfdmaPreEqModel(
+            pnm_header                     = self.getPnmHeaderParameterModel(),
+            channel_id                     = int(self._channel_id),
+            mac_address                    = self._mac_address,
+            subcarrier_zero_frequency      = int(self._subcarrier_zero_frequency),
+            first_active_subcarrier_index  = int(self._first_active_subcarrier_index),
+            subcarrier_spacing             = int(int(self._subcarrier_spacing_khz) * KHZ),
+
+            cmts_mac_address               = self._cmts_mac_address,
+            value_length                   = int(self._pre_eq_data_length),
+            value_unit                     = "[Real, Imaginary]",
+            values                         = complex_pairs,
+        )
+
+    @staticmethod
+    def _format_mac(mac_bytes: bytes) -> str:
+        return ":".join(f"{b:02x}" for b in mac_bytes)
+
+    def process_pre_eq_coefficient_data(self) -> ComplexSeries:
         """
-        Decodes fixed-point complex coefficients.
-
-        Returns:
-            Optional[List[complex]]: Decoded coefficient list
+        Decode fixed-point complex coefficients using (s,m.n) format.
         """
-        if not self.pre_eq_coefficient_data:
-            return None
+        if not self._pre_eq_coefficient_data:
+            return []
 
-        self._decoded_coefficients = FixedPointDecoder.decode_complex_data(
-            self.pre_eq_coefficient_data,
-            self.sm_n_format
+        self._decoded_coefficients         = FixedPointDecoder.decode_complex_data(
+            self._pre_eq_coefficient_data,
+            self._sm_n_format,
         )
         return self._decoded_coefficients
 
-    def get_coefficients(self) -> Optional[List[complex]]:
+    def get_coefficients(self) -> ComplexSeries:
         """
-        Returns previously decoded coefficients if available, otherwise decodes on demand.
-
-        Returns:
-            Optional[List[complex]]
+        Return previously decoded coefficients if available; otherwise decode on demand.
         """
         if self._decoded_coefficients is not None:
             return self._decoded_coefficients
         return self.process_pre_eq_coefficient_data()
 
+    def to_model(self) -> CmUsOfdmaPreEqModel:
+        return self._model
+
     def to_dict(self) -> Dict[str, Any]:
         """
-        Convert the upstream OFDMA pre-equalization object into a dictionary with snake_case keys.
-
-        Returns:
-            Dict[str, Any]: Parsed header and analysis-relevant values.
+        Convert to a plain dictionary via the Pydantic model.
         """
-        result: Dict[str, Any] = self.getPnmHeader(header_only=True)
+        return self._model.model_dump()
 
-        coefficients = self.get_coefficients()
-        complex_pairs = [[c.real, c.imag] for c in coefficients] if coefficients else []
-
-        result.update({
-            "upstream_channel_id": self.channel_id,
-            "cm_mac_address": self.mac_address,
-            "cmts_mac_address": self.cmts_mac_address,
-            "subcarrier_zero_frequency": self.subcarrier_zero_frequency,  # Hz
-            "first_active_subcarrier_index": self.first_active_subcarrier_index,
-            "subcarrier_spacing": self.subcarrier_spacing * 1_000,        # Convert kHz → Hz
-            "value_length": self.pre_eq_data_length,
-            "value_unit": "[Real, Imaginary]",
-            "values": complex_pairs
-        })
-
-        return result
-
-
-    def to_json(self) -> str:
+    def to_json(self, indent: int = 2) -> str:
         """
-        Returns:
-            str: JSON string of header values
+        Convert to a JSON string via the Pydantic model.
         """
-        return json.dumps(self.to_dict(), indent=2)
+        return self._model.model_dump_json(indent=indent)
 
-    def __repr__(self):
-        return f"<CmUsPreEq(chid={self.channel_id}, cm={self.mac_address}, cmts={self.cmts_mac_address})>"
-
-
-
+    def __repr__(self) -> str:
+        return f"<CmUsOfdmaPreEq(chid={self._channel_id}, cm={self._mac_address}, cmts={self._cmts_mac_address})>"

@@ -22,7 +22,7 @@ from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfil
 from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
 from pypnm.pnm.process.CmSpectrumAnalysis import CmSpectrumAnalysis
 from pypnm.pnm.process.CmSpectrumAnalysisSnmp import CmSpectrumAnalysisSnmp
-from pypnm.pnm.process.CmUsPreEq import CmUsPreEq
+from pypnm.pnm.process.CmUsPreEq import CmUsOfdmaPreEq
 
 class CommonProcessService(CommonMessagingService):
     def __init__(self, message_response:MessageResponse, **extra_options):
@@ -144,7 +144,7 @@ class CommonProcessService(CommonMessagingService):
             
         elif pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF.name:
             self.logger.debug(f"Processing {pnm_test_type} PNM data")         
-            pnm_dict = self._add_device_details(CmUsPreEq(binary_data=pnm_data).to_dict(), device_details)
+            pnm_dict = self._add_device_details(CmUsOfdmaPreEq(binary_data=pnm_data).to_dict(), device_details)
             self.build_msg(ServiceStatusCode.SUCCESS, pnm_dict)
         
         elif pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA.name:

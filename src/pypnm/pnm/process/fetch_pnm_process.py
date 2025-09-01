@@ -38,9 +38,9 @@ class PnmFileTypeObjectFetcher(PnmHeader):
         elif pnm_type == PnmFileType.DOWNSTREAM_HISTOGRAM:
             from pypnm.pnm.process.CmDsHist import CmDsHist as ParserClass
         elif pnm_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS:
-            from pypnm.pnm.process.CmUsPreEq import CmUsPreEq as ParserClass
+            from pypnm.pnm.process.CmUsPreEq import CmUsOfdmaPreEq as ParserClass
         elif pnm_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE:
-            from pypnm.pnm.process.CmUsPreEq import CmUsPreEq as ParserClass
+            from pypnm.pnm.process.CmUsPreEq import CmUsOfdmaPreEq as ParserClass
         elif pnm_type == PnmFileType.OFDM_FEC_SUMMARY:
             from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary as ParserClass
         elif pnm_type == PnmFileType.SPECTRUM_ANALYSIS:
