@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from enum import IntEnum
 from struct import calcsize, unpack
@@ -39,17 +38,17 @@ class ModulationOrderType(IntEnum):
 class RangeModulationProfileSchemaModel(BaseModel):
     """Schema 0: contiguous range of subcarriers at a single modulation order."""
     model_config = ConfigDict(use_enum_values=True, extra="ignore")
-    schema_type: Literal[0]                           = Field(0, description="0 = range modulation")
-    modulation_order: ModulationOrderType             = Field(..., description="Modulation order for this range")
-    num_subcarriers: int                              = Field(..., ge=0, description="Number of subcarriers in the range")
+    schema_type: Literal[0]           = Field(0, description="0 = range modulation")
+    modulation_order: str             = Field(..., description="Modulation-Order-Type for this range")
+    num_subcarriers: int              = Field(..., ge=0, description="Number of subcarriers in the range")
 
 class SkipModulationProfileSchemaModel(BaseModel):
     """Schema 1: alternating/skip pattern (main vs skip modulation)."""
     model_config = ConfigDict(use_enum_values=True, extra="ignore")
-    schema_type: Literal[1]                           = Field(1, description="1 = skip modulation")
-    main_modulation_order: ModulationOrderType        = Field(..., description="Main (kept) subcarrier modulation order")
-    skip_modulation_order: ModulationOrderType        = Field(..., description="Skipped subcarrier modulation order")
-    num_subcarriers: int                              = Field(..., ge=0, description="Number of affected subcarriers")
+    schema_type: Literal[1]           = Field(1, description="1 = skip modulation")
+    main_modulation_order: str        = Field(..., description="Main (kept) subcarrier Modulation-Order-Type")
+    skip_modulation_order: str        = Field(..., description="Skipped subcarrier Modulation-Order-Type")
+    num_subcarriers: int              = Field(..., ge=0, description="Number of affected subcarriers")
 
 SchemeModel = Annotated[
     Union[RangeModulationProfileSchemaModel, SkipModulationProfileSchemaModel],
@@ -138,7 +137,7 @@ class CmDsOfdmModulationProfile(PnmHeader):
             raise ValueError(f"Failed to unpack modulation profile header: {e}") from e
 
         mac_address = mac6.hex(":")
-        subcarrier_spacing_hz = int(subcarrier_spacing_khz) * KHZ
+        subcarrier_spacing_hz = int(int(subcarrier_spacing_khz) * KHZ)
         profile_blob = self.pnm_data[header_sz:]
 
         profiles = self._parse_profiles(profile_blob)
@@ -201,7 +200,7 @@ class CmDsOfdmModulationProfile(PnmHeader):
                         schemes.append(
                             RangeModulationProfileSchemaModel(
                                 schema_type         =   0,
-                                modulation_order    =   ModulationOrderType(mod_val),
+                                modulation_order    =   ModulationOrderType(mod_val).name,
                                 num_subcarriers     =   num_sc,
                             )
                         )
@@ -214,8 +213,8 @@ class CmDsOfdmModulationProfile(PnmHeader):
                         schemes.append(
                             SkipModulationProfileSchemaModel(
                                 schema_type             =   1,
-                                main_modulation_order   =   ModulationOrderType(main_val),
-                                skip_modulation_order   =   ModulationOrderType(skip_val),
+                                main_modulation_order   =   ModulationOrderType(main_val).name,
+                                skip_modulation_order   =   ModulationOrderType(skip_val).name,
                                 num_subcarriers         =   num_sc,
                             )
                         )
@@ -283,13 +282,13 @@ class CmDsOfdmModulationProfile(PnmHeader):
                     "schemes": [
                         {
                             "schema_type": 0,
-                            "modulation_order": 4,
+                            "modulation_order": qam_16,         <- ModulationOrderType()
                             "num_subcarriers": 192
                         },
                         {
                             "schema_type": 1,
-                            "main_modulation_order": 8,
-                            "skip_modulation_order": 2,
+                            "main_modulation_order": qam_256,   <- ModulationOrderType()
+                            "skip_modulation_order": qam_512,   <- ModulationOrderType()
                             "num_subcarriers": 48
                         }
                     ]
@@ -330,8 +329,16 @@ class CmDsOfdmModulationProfile(PnmHeader):
             {
               "profile_id": 1,
               "schemes": [
-                { "schema_type": 0, "modulation_order": 4, "num_subcarriers": 192 },
-                { "schema_type": 1, "main_modulation_order": 8, "skip_modulation_order": 2, "num_subcarriers": 48 }
+                { 
+                    "schema_type": 0, 
+                    "modulation_order": qam_16,         <- ModulationOrderType() 
+                    "num_subcarriers": 192 
+                },
+                { "schema_type": 1, 
+                    "main_modulation_order": qam_256,   <- ModulationOrderType() 
+                    "skip_modulation_order": qam_512,   <- ModulationOrderType()
+                    "num_subcarriers": 48 
+                }
               ]
             }
           ]

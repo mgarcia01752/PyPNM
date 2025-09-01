@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-import logging
 import math
 from typing import ClassVar, Dict, List, Union, cast
 
 import numpy as np
 
 from pypnm.lib.types import SNRdB, SNRln
+from pypnm.pnm.process.CmDsOfdmModulationProfile import ModulationOrderType
 
 BitsPerSymbol       = int
 BitPerSymToQamMod   = Dict[BitsPerSymbol, str]
@@ -36,15 +36,11 @@ class Shannon:
         self.snr_db = snr_db
         self.bits = self._snr_to_bits(snr_db)
 
-    @staticmethod
-    def _snr_to_bits(snr_db: float) -> BitsPerSymbol:
-        """Convert SNR in dB to bits (modulation order) by Shannon formula, floored."""
-        snr_linear = 10 ** (snr_db / 10)
-        bits = math.floor(math.log2(snr_linear + 1))
-        return bits
-
     def get_modulation(self) -> str:
         return self.QAM_MODULATIONS.get(self.bits, "unknown")
+
+    def get_snr_db(self) -> float:
+        return self.snr_db
 
     @classmethod
     def from_modulation(cls, modulation_name: str) -> "Shannon":
@@ -63,7 +59,32 @@ class Shannon:
         snr_db = 10 * math.log10(snr_linear)
 
         return cls(snr_db)
-    
+
+    @classmethod
+    def from_modulation_type(cls, mod_ord_type: ModulationOrderType) -> "Shannon":
+        """
+        Create a ModulationEstimator instance from a known modulation name (e.g., "qam_256").
+        Assumes ideal Shannon conditions to reverse-calculate approximate SNR (dB).
+        """
+        mod_map = {v: k for k, v in cls.QAM_MODULATIONS.items()}
+        bits = mod_map.get(mod_ord_type.name)
+
+        if bits is None:
+            raise ValueError(f"Unsupported modulation type: {mod_ord_type.name}")
+
+        # Reverse Shannon formula: SNR_linear = 2^bits - 1 → SNR_dB = 10 * log10(2^bits - 1)
+        snr_linear = (2 ** bits) - 1
+        snr_db = 10 * math.log10(snr_linear)
+
+        return cls(snr_db)
+
+    @staticmethod
+    def _snr_to_bits(snr_db: float) -> BitsPerSymbol:
+        """Convert SNR in dB to bits (modulation order) by Shannon formula, floored."""
+        snr_linear = 10 ** (snr_db / 10)
+        bits = math.floor(math.log2(snr_linear + 1))
+        return bits
+
     @staticmethod
     def bits_from_symbol_count(symbol_count:int) -> BitsPerSymbol:
         """
@@ -149,5 +170,4 @@ class Shannon:
         shannon_limits:List[SNRdB] = [Shannon.bits_to_snr(bits) for bits in limits]
 
         return shannon_limits
-
 

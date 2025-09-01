@@ -585,13 +585,14 @@ class Analysis:
                 mod_type:str = scheme.get("modulation_order")
                 count:int    = scheme.get("num_subcarriers", 0)
 
-                mod_type = ModulationOrderType(int(mod_type)).name
-
                 for _ in range(count):
+                    
                     if mod_type in ("continuous_pilot", "exclusion"):
                         s_limit = 0.0
-                    elif mod_type == "plc":                                 # treat as 16-QAM
+                    
+                    elif mod_type == "plc":        # treat as 16-QAM
                         s_limit = Shannon.bits_to_snr(4)
+
                     else:
                         s_limit = Shannon.snr_from_modulation(mod_type)
 
