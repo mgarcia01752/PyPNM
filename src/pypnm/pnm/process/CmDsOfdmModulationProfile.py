@@ -1,271 +1,343 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
+# Copyright (c) 2025
+
+from __future__ import annotations
 
 import json
 import logging
-from struct import unpack, calcsize
-from typing import Any, Optional, List, Dict, Union
-from dataclasses import dataclass, field
 from enum import IntEnum
-from venv import logger
+from struct import calcsize, unpack
+from typing import Any, Dict, List, Union, Annotated
+from typing_extensions import Literal
+
+from pydantic import BaseModel, Field, ConfigDict
+
+from pypnm.lib.constants import KHZ
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
 
 class ModulationOrderType(IntEnum):
-    zero_bit_loaded = 0
-    continuous_pilot = 1
-    qpsk = 2
-    reserved_3 = 3
-    qam_16 = 4
-    reserved_5 = 5
-    qam_64 = 6
-    qam_128 = 7
-    qam_256 = 8
-    qam_512 = 9
-    qam_1024 = 10
-    qam_2048 = 11
-    qam_4096 = 12
-    qam_8192 = 13
-    qam_16384 = 14
-    exclusion = 16
-    plc = 20
+    zero_bit_loaded   = 0
+    continuous_pilot  = 1
+    qpsk              = 2
+    reserved_3        = 3
+    qam_16            = 4
+    reserved_5        = 5
+    qam_64            = 6
+    qam_128           = 7
+    qam_256           = 8
+    qam_512           = 9
+    qam_1024          = 10
+    qam_2048          = 11
+    qam_4096          = 12
+    qam_8192          = 13
+    qam_16384         = 14
+    exclusion         = 16
+    plc               = 20
 
-@dataclass
-class ModulationProfileData:
-    profile: List[ModulationOrderType] = field(default_factory=list)
+class RangeModulationProfileSchemaModel(BaseModel):
+    """Schema 0: contiguous range of subcarriers at a single modulation order."""
+    model_config = ConfigDict(use_enum_values=True, extra="ignore")
+    schema_type: Literal[0]                           = Field(0, description="0 = range modulation")
+    modulation_order: ModulationOrderType             = Field(..., description="Modulation order for this range")
+    num_subcarriers: int                              = Field(..., ge=0, description="Number of subcarriers in the range")
 
-    def add(self, modulation: ModulationOrderType):
-        self.profile.append(modulation)
+class SkipModulationProfileSchemaModel(BaseModel):
+    """Schema 1: alternating/skip pattern (main vs skip modulation)."""
+    model_config = ConfigDict(use_enum_values=True, extra="ignore")
+    schema_type: Literal[1]                           = Field(1, description="1 = skip modulation")
+    main_modulation_order: ModulationOrderType        = Field(..., description="Main (kept) subcarrier modulation order")
+    skip_modulation_order: ModulationOrderType        = Field(..., description="Skipped subcarrier modulation order")
+    num_subcarriers: int                              = Field(..., ge=0, description="Number of affected subcarriers")
 
-    def get(self, index: int) -> ModulationOrderType:
-        return self.profile[index]
+SchemeModel = Annotated[
+    Union[RangeModulationProfileSchemaModel, SkipModulationProfileSchemaModel],
+    Field(discriminator="schema_type")
+]
 
-    def set(self, index: int, modulation: ModulationOrderType):
-        self.profile[index] = modulation
+class ModulationProfileModel(BaseModel):
+    """One OFDM modulation profile (profile_id + list of scheme chunks)."""
+    model_config = ConfigDict(extra="ignore")
+    profile_id: int             = Field(..., ge=0, description="Profile identifier")
+    schemes: List[SchemeModel]  = Field(default_factory=list, description="Schema chunks composing the profile")
 
-    def length(self) -> int:
-        return len(self.profile)
+class CmDsOfdmModulationProfileModel(PnmBaseModel):
+    """
+    Canonical payload for DS OFDM Modulation Profile.
 
-@dataclass
-class ModulationScheme:
-    profile_id: int
-    data: Union[dict, None]
+    Inherits the following from PnmBaseModel (do NOT re-declare):
+      - pnm_header : PnmHeaderParameters
+      - channel_id : int
+      - mac_address : str
+      - subcarrier_zero_frequency : int
+      - first_active_subcarrier_index : int
+      - subcarrier_spacing : int   (Hz)
+
+    Additional fields:
+      - num_profiles : total number of profiles found
+      - profile_data_length_bytes : raw length of the profile data section
+      - profiles : parsed profile structures
+    """
+    model_config = ConfigDict(extra="ignore", use_enum_values=True)
+    num_profiles: int                      = Field(..., ge=0, description="Number of profiles in this capture")
+    profile_data_length_bytes: int         = Field(..., ge=0, description="Length of the profile data block (bytes)")
+    profiles: List[ModulationProfileModel] = Field(default_factory=list, description="Parsed modulation profiles")
 
 class CmDsOfdmModulationProfile(PnmHeader):
+    """
+    Parser for DOCSIS OFDM Modulation Profile PNM files.
+
+    This class unpacks the binary stream, validates the file type,
+    and produces a structured Pydantic model (`CmDsOfdmModulationProfileModel`).
+
+    Example
+    -------
+    >>> parser = CmDsOfdmModulationProfile(binary_blob)
+    >>> model = parser.to_model()
+    >>> print(model.model_dump_json(indent=2))
+    """
+
     def __init__(self, binary_data: bytes):
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
-        
-        self.channel_id: Optional[int] = None
-        self.mac_address: Optional[str] = None
-        self.num_profiles: Optional[int] = None
-        self.subcarrier_zero_frequency: Optional[int] = None
-        self.first_active_subcarrier_index: Optional[int] = None
-        self.subcarrier_spacing: Optional[int] = None
-        self.profile_data_length: Optional[int] = None
-        self.modulation_profile_data: Optional[bytes] = None
-        self.parsed_profiles: List[ModulationScheme] = []
+        self._model: CmDsOfdmModulationProfileModel
+        self.__process()
 
-        self._process_modulation_profile()
-
-    def _process_modulation_profile(self) -> None:
+    def __process(self) -> None:
+        # Validate file type
         if self.get_pnm_file_type() != PnmFileType.OFDM_MODULATION_PROFILE:
-            cann = PnmFileType.OFDM_MODULATION_PROFILE.get_pnm_cann()
-            raise ValueError(f"PNM File Stream is not RxMER file type: {cann}, Error: {self.get_pnm_file_type().get_pnm_cann()}")
-                
-        header_format = '>B6sBIHBI'
-        header_size = calcsize(header_format)
+            want = PnmFileType.OFDM_MODULATION_PROFILE.get_pnm_cann()
+            got  = self.get_pnm_file_type().get_pnm_cann()
+            raise ValueError(f"PNM stream type mismatch: expected {want}, got {got}")
+
+        # Local header (after the common PNM header already handled by PnmHeader)
+        # Layout: >B 6s B I H B I
+        #          |  |  | | | | |
+        #          |  |  | | | | +-- profile_data_length_bytes: I
+        #          |  |  | | | +---- subcarrier_spacing_khz: B
+        #          |  |  | | +------ first_active_subcarrier_index: H
+        #          |  |  | +-------- subcarrier_zero_frequency: I
+        #          |  |  +---------- num_profiles: B
+        #          |  +------------- mac_address: 6s
+        #          +---------------- channel_id: B
+        header_fmt = ">B6sBIHBI"
+        header_sz = calcsize(header_fmt)
         try:
-            unpacked = unpack(header_format, self.pnm_data[:header_size])
+            (
+                channel_id,
+                mac6,
+                num_profiles,
+                subcarrier_zero_frequency,
+                first_active_subcarrier_index,
+                subcarrier_spacing_khz,
+                profile_data_length_bytes
+            ) = unpack(header_fmt, self.pnm_data[:header_sz])
+
         except Exception as e:
-            raise ValueError(f"Failed to unpack modulation profile header: {e}")
+            raise ValueError(f"Failed to unpack modulation profile header: {e}") from e
 
-        self.channel_id = unpacked[0]
-        self.mac_address = unpacked[1].hex(':')
-        self.num_profiles = unpacked[2]
-        self.subcarrier_zero_frequency = unpacked[3]
-        self.first_active_subcarrier_index = unpacked[4]
-        self.subcarrier_spacing = unpacked[5]
-        self.profile_data_length = unpacked[6]
-        self.modulation_profile_data = self.pnm_data[header_size:]
-               
-        self._process_modulation_profile_data()
+        mac_address = mac6.hex(":")
+        subcarrier_spacing_hz = int(subcarrier_spacing_khz) * KHZ
+        profile_blob = self.pnm_data[header_sz:]
 
-    def _process_modulation_profile_data(self) -> None:
+        profiles = self._parse_profiles(profile_blob)
+
+        self._model = CmDsOfdmModulationProfileModel(
+            pnm_header                      =   self.getPnmHeaderParameterModel(),
+            channel_id                      =   channel_id,
+            mac_address                     =   mac_address,
+            subcarrier_zero_frequency       =   subcarrier_zero_frequency,
+            first_active_subcarrier_index   =   first_active_subcarrier_index,
+            subcarrier_spacing              =   subcarrier_spacing_hz,
+            num_profiles                    =   num_profiles,
+            profile_data_length_bytes       =   profile_data_length_bytes,
+            profiles                        =   profiles,
+        )
+
+    def _parse_profiles(self, blob: bytes) -> List[ModulationProfileModel]:
+        """
+        Parse a profile section from the binary blob.
+
+        Layout
+        ------
+        - Profile header: [profile_id:1][length:2]
+        - Payload (length bytes): sequence of schema chunks
+            * schema 0 (range): [0:1][mod_order:1][num_subcarriers:2]
+            * schema 1 (skip):  [1:1][main_order:1][skip_order:1][num_subcarriers:2]
+        """
         offset = 0
-        data = self.modulation_profile_data
-        self.profile_info_list = []
+        results: List[ModulationProfileModel] = []
 
-        while offset < len(data):
+        # Discover each [profile_id, payload]
+        while offset < len(blob):
             try:
-                header_format = '>BH'
-                header_size = calcsize(header_format)
-                profile_id, length = unpack(header_format, data[offset:offset + header_size])
-                offset += header_size + length
+                hdr_fmt = ">BH"
+                hdr_sz = calcsize(hdr_fmt)
+                profile_id, length = unpack(hdr_fmt, blob[offset:offset + hdr_sz])
+                start = offset + hdr_sz
+                end = start + length
+                if end > len(blob):
+                    raise ValueError(f"Profile payload overruns buffer (offset={offset}, length={length})")
+                payload = blob[start:end]
+                offset = end
             except Exception as e:
-                raise ValueError(f"Failed to unpack profile header at offset {offset}: {e}")
+                raise ValueError(f"Failed to read profile header at offset {offset}: {e}") from e
 
-            profile_info = {
-                "profile_id": profile_id,
-                "length": length,
-                "modulation_profile_data": data[offset - length:offset]
-            }
+            # Decode payload
+            pos = 0
+            schemes: List[SchemeModel] = []
 
-            self.profile_info_list.append(profile_info)
-            
-        for profile_dict in self.profile_info_list:
-            mod_profile_data = profile_dict["modulation_profile_data"]
-            offset = 0
-
-            # Save multiple schemas found
-            modulation_schema = []
-
-            while offset < len(mod_profile_data):
-
+            while pos < len(payload):
                 try:
-                    # First byte in profile data is the scheme type
-                    scheme_type = mod_profile_data[offset]
-                    offset += 1
+                    scheme_type = payload[pos]
+                    pos += 1
 
-                    if scheme_type == 0:  # Subcarrier Range Modulation
-                        fmt = '>BH'
+                    if scheme_type == 0:
+                        fmt = ">BH"
                         size = calcsize(fmt)
-                        modulation_order, num_subcarriers = unpack(fmt, mod_profile_data[offset:offset + size])
-                        offset += size
+                        mod_val, num_sc = unpack(fmt, payload[pos:pos + size])
+                        pos += size
+                        schemes.append(
+                            RangeModulationProfileSchemaModel(
+                                schema_type         =   0,
+                                modulation_order    =   ModulationOrderType(mod_val),
+                                num_subcarriers     =   num_sc,
+                            )
+                        )
 
-                        modulation_schema.append({
-                            "schema_type": scheme_type,
-                            "modulation_order": ModulationOrderType(modulation_order).name.lower(),
-                            "num_subcarriers": num_subcarriers
-                        })
-                        
-                    elif scheme_type == 1:  # Subcarrier Skip Modulation
-                        fmt = '>BBH'
+                    elif scheme_type == 1:
+                        fmt = ">BBH"
                         size = calcsize(fmt)
-                        main_order, skip_order, num_skipped = unpack(fmt, mod_profile_data[offset:offset + size])
-                        offset += size
-
-                        modulation_schema.append({
-                            "schema_type": scheme_type,
-                            "main_modulation_order": ModulationOrderType(main_order).name.lower(),
-                            "skip_modulation_order": ModulationOrderType(skip_order).name.lower(),
-                            "num_subcarriers": num_skipped
-                        })
+                        main_val, skip_val, num_sc = unpack(fmt, payload[pos:pos + size])
+                        pos += size
+                        schemes.append(
+                            SkipModulationProfileSchemaModel(
+                                schema_type             =   1,
+                                main_modulation_order   =   ModulationOrderType(main_val),
+                                skip_modulation_order   =   ModulationOrderType(skip_val),
+                                num_subcarriers         =   num_sc,
+                            )
+                        )
 
                     else:
-                        self.logger.warning(f"Skipping unknown scheme type {scheme_type} for profile ID {profile_dict['profile_id']}")
-                        continue
+                        self.logger.warning(
+                            "Unknown scheme type %s in profile %s; stopping schema parse for this profile",
+                            scheme_type, profile_id
+                        )
+                        break  # can't safely advance without a known format
 
-                    self.logger.debug(f'{modulation_schema[-1]}')
+                except Exception as exc:
+                    self.logger.exception(
+                        "Error decoding scheme (profile %s at pos %s): %s",
+                        profile_id, pos, exc
+                    )
+                    break
 
-                except Exception as e:
-                    logging.error(f"Error decoding modulation scheme for profile ID {profile_dict['profile_id']}: {e}")
+            results.append(ModulationProfileModel(profile_id=profile_id, schemes=schemes))
 
-            # Append once per profile (outside the while loop)
-            self.parsed_profiles.append(ModulationScheme(
-                profile_id=profile_dict["profile_id"],
-                data=modulation_schema
-            ))
+        return results
 
-    def get_modulation_profile(self) -> Dict[str, Union[str, int, List[dict]]]:
+    def to_model(self) -> CmDsOfdmModulationProfileModel:
         """
-        Returns the modulation profile information along with basic PNM header metadata.
+        Return the parsed modulation profile as a validated Pydantic model.
 
-        This includes details such as:
-        - MAC address
-        - Channel ID
-        - Number of profiles
-        - Frequency and subcarrier info
-        - Parsed modulation profiles per profile ID
+        Returns
+        -------
+        CmDsOfdmModulationProfileModel
+            Full structured dataset including header fields and profiles.
 
-        Returns:
-            Dict[str, Union[str, int, List[dict]]]: A dictionary with PNM header fields and
-            downstream modulation profile structure, including modulation schemes.
-            
-            {
-                "channel_id": ,
-                "mac_address":,
-                "num_profiles":,
-                "zero_frequency":,
-                "first_active_subcarrier_index":,
-                "subcarrier_spacing":,
-                "profile_data_length_bytes":,
-                "profiles": [                
-                    'profile_id': , 
-                    'schemes': [
-                        {
-                            'schema_type': , 
-                            'modulation_order':, 
-                            'num_subcarriers':
-                        }
-                    ]
-                }
-            }
-            
+        Example
+        -------
+        >>> model = parser.to_model()
+        >>> print(model.num_profiles)
+        2
         """
-        data: Dict[str, Any] = self.getPnmHeader(header_only=True)
+        return self._model
 
-        # Add modulation profile metadata and parsed content
-        data.update({
-            "channel_id": self.channel_id,
-            "mac_address": self.mac_address,
-            "num_profiles": self.num_profiles,
-            "zero_frequency": self.subcarrier_zero_frequency,
-            "first_active_subcarrier_index": self.first_active_subcarrier_index,
-            "subcarrier_spacing": self.subcarrier_spacing * 1000,
-            "profile_data_length_bytes": self.profile_data_length,
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Return the parsed modulation profile as a Python dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary representation of the parsed modulation profile.
+
+        Example
+        -------
+        >>> dct = parser.to_dict()
+        >>> print(dct)
+        {
+            "pnm_header": {...},
+            "channel_id": 1,
+            "mac_address": "aa:bb:cc:dd:ee:ff",
+            "subcarrier_zero_frequency": 120000000,
+            "first_active_subcarrier_index": 128,
+            "subcarrier_spacing": 25000,
+            "num_profiles": 2,
+            "profile_data_length_bytes": 64,
             "profiles": [
                 {
-                    "profile_id": p.profile_id,
-                    "schemes": p.data
-                }
-                for p in self.parsed_profiles
-            ]
-        })
-
-        return data
-
-    def to_dict(self) -> dict:
-        """
-            Returns a dictionary of the parsed modulation profile data.
-
-            Returns:
-            dict: Parsed modulation profile details.
-        
-            {
-                "channel_id": ,
-                "mac_address":,
-                "num_profiles":,
-                "zero_frequency":,
-                "first_active_subcarrier_index":,
-                "subcarrier_spacing":,
-                "profile_data_length_bytes":,
-                "profiles": [                
-                    'profile_id': , 
-                    'schemes': [
+                    "profile_id": 1,
+                    "schemes": [
                         {
-                            'schema_type': , 
-                            'modulation_order':, 
-                            'num_subcarriers':
+                            "schema_type": 0,
+                            "modulation_order": 4,
+                            "num_subcarriers": 192
+                        },
+                        {
+                            "schema_type": 1,
+                            "main_modulation_order": 8,
+                            "skip_modulation_order": 2,
+                            "num_subcarriers": 48
                         }
                     ]
                 }
-            }          
-            
+            ]
+        }
         """
-        return self.get_modulation_profile()
+        return self._model.model_dump()
 
-    def to_json(self, pretty: bool = True) -> str:
+    def to_json(self, indent: int = 2) -> str:
         """
-        Serialize the parsed modulation profile data to a JSON-formatted string.
+        Return the parsed modulation profile as a JSON string.
 
-        Args:
-            pretty (bool): If True, the JSON output will be indented for readability.
+        Parameters
+        ----------
+        indent : int, optional
+            Number of spaces for indentation (default = 2).
 
-        Returns:
-            str: JSON string of the modulation profile data.
+        Returns
+        -------
+        str
+            JSON representation of the parsed modulation profile.
+
+        Example
+        -------
+        >>> js = parser.to_json(indent=2)
+        >>> print(js)
+        {
+          "pnm_header": {...},
+          "channel_id": 1,
+          "mac_address": "aa:bb:cc:dd:ee:ff",
+          "subcarrier_zero_frequency": 120000000,
+          "first_active_subcarrier_index": 128,
+          "subcarrier_spacing": 25000,
+          "num_profiles": 2,
+          "profile_data_length_bytes": 64,
+          "profiles": [
+            {
+              "profile_id": 1,
+              "schemes": [
+                { "schema_type": 0, "modulation_order": 4, "num_subcarriers": 192 },
+                { "schema_type": 1, "main_modulation_order": 8, "skip_modulation_order": 2, "num_subcarriers": 48 }
+              ]
+            }
+          ]
+        }
         """
-        return json.dumps(self.to_dict(), indent=4 if pretty else None)
+        return self._model.model_dump_json(indent=indent)
 
     def __str__(self) -> str:
-        return f'{self.__class__.__name__}'
+        return f"{self.__class__.__name__}"

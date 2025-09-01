@@ -25,6 +25,7 @@ from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
 from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, IntSeries, StringArray
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics
+from pypnm.pnm.process.CmDsOfdmModulationProfile import ModulationOrderType
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
 
@@ -242,7 +243,7 @@ class Analysis:
             pass
 
         elif pnm_file_type == PnmFileType.OFDM_MODULATION_PROFILE.value:
-            self.logger.debug("Processing: OFDM_MODULATION_PROFILE")
+            self.logger.info("Processing: OFDM_MODULATION_PROFILE")
             self.__update_result_dict(self.basic_analysis_ds_modulation_profile(measurement))
             # model = self.basic_analysis_ds_modulation_profile(measurement)
             # self.__update_result_model(model)
@@ -553,11 +554,10 @@ class Analysis:
         """
         spacing:int      = measurement.get("subcarrier_spacing", -1)
         active_index:int = measurement.get("first_active_subcarrier_index", -1)
-        zero_freq:int    = measurement.get("zero_frequency", -1)
+        zero_freq:int    = measurement.get("subcarrier_zero_frequency", -1)
 
         if active_index < 0 or zero_freq < 0 or spacing < 0:
-            raise ValueError(f"Invalid parameters: spacing={spacing}, "
-                             f"active_index={active_index}, zero_freq={zero_freq}")
+            raise ValueError(f"Invalid parameters: spacing={spacing}, active_index={active_index}, zero_freq={zero_freq}")
 
         start_freq = zero_freq + spacing * active_index
 
@@ -584,6 +584,8 @@ class Analysis:
             for scheme in schemes:
                 mod_type:str = scheme.get("modulation_order")
                 count:int    = scheme.get("num_subcarriers", 0)
+
+                mod_type = ModulationOrderType(int(mod_type)).name
 
                 for _ in range(count):
                     if mod_type in ("continuous_pilot", "exclusion"):

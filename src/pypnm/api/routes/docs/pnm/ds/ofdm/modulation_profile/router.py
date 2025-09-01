@@ -116,8 +116,9 @@ Includes:
                 
         if request.output.type == FileType.JSON.value:
             return PnmAnalysisResponse(
-                mac_address=mac, 
-                status=ServiceStatusCode.SUCCESS, data=analysis.get_results())
+                mac_address =   mac, 
+                status      =   ServiceStatusCode.SUCCESS, 
+                data        =   analysis.get_results())
 
         elif request.output.type == FileType.ARCHIVE.value:
             
@@ -128,8 +129,9 @@ Includes:
 
         else:
             return PnmAnalysisResponse(
-                mac_address=mac,
-                status=ServiceStatusCode.INVALID_OUTPUT_TYPE, data={})
+                mac_address =   mac,
+                status      =   ServiceStatusCode.INVALID_OUTPUT_TYPE, 
+                data        =   {})
 
     async def get_measurement_statistics_logic(self, request: PnmRequest) -> SnmpResponse:
         mac = request.cable_modem.mac_address
