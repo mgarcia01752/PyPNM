@@ -190,13 +190,6 @@ class Analysis:
         This method only dispatches. See the specific handlers for field
         expectations and returned structures:
 
-        - :meth:`basic_analysis_ds_chan_est`
-        - :meth:`basic_analysis_ds_constellation_display`
-        - :meth:`basic_analysis_rxmer`
-        - :meth:`basic_analysis_ds_histogram`
-        - :meth:`basic_analysis_us_ofdma_pre_equalization`
-        - :meth:`basic_analysis_ds_ofdm_fec_summary`
-        - :meth:`basic_analysis_ds_modulation_profile`
         """
         if pnm_file_type == PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT.value:
             self.logger.debug("Processing: OFDM_CHANNEL_ESTIMATE_COEFFICIENT")
@@ -224,10 +217,9 @@ class Analysis:
 
         elif pnm_file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS.value:
             self.logger.debug("Processing: UPSTREAM_PRE_EQUALIZER_COEFFICIENTS")
-            self.__update_result_dict(self.basic_analysis_us_ofdma_pre_equalization(measurement))
-            # model = self.basic_analysis_us_ofdma_pre_equalization(measurement)
-            # self.__update_result_model(model)
-            # self.__update_result_dict(model.model_dump())
+            model = self.basic_analysis_us_ofdma_pre_equalization(measurement)
+            self.__update_result_model(model)
+            self.__update_result_dict(model.model_dump())   
   
         elif pnm_file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE.value:
             self.logger.debug("Stub: Processing: UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE")
@@ -689,73 +681,6 @@ class Analysis:
         return out
 
     @classmethod
-    def _basic_analysis_us_ofdma_pre_equalization(cls, measurement: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Perform basic analysis of upstream OFDMA pre-equalization data.
-
-        Computes:
-            - Per-carrier frequency (Hz)
-            - Magnitude (dB) from complex coefficients
-            - Group delay (µs) from unwrapped phase gradient
-            - Complex samples passthrough
-
-        Parameters
-        ----------
-        measurement : dict
-            Expected keys (subset):
-                - ``subcarrier_spacing`` : int (Hz)
-                - ``first_active_subcarrier_index`` : int
-                - ``subcarrier_zero_frequency`` : int (Hz)
-                - ``values`` : list of [real, imag]
-
-        Returns
-        -------
-        dict
-            Dictionary with units, per-carrier arrays, and metadata.
-
-        Raises
-        ------
-        ValueError
-            If ``values`` is empty.
-        """
-        spacing: int = measurement.get("subcarrier_spacing", 0)  # in Hz
-        active_index: int = measurement.get("first_active_subcarrier_index", 0)
-        zero_freq: int = measurement.get("subcarrier_zero_frequency", 0)  # in Hz
-        base_freq = zero_freq + (spacing * active_index)
-
-        values: List[List[float]] = measurement.get("values", [])
-        if not values:
-            raise ValueError("No complex channel estimation values provided in measurement.")
-
-        complex_values = np.array([complex(r, i) for r, i in values])
-        magnitudes_db = 20 * np.log10(np.abs(complex_values) + 1e-12)
-
-        # Group delay = -dφ/df, φ = phase
-        phase = np.unwrap(np.angle(complex_values))
-        group_delay = -np.gradient(phase, spacing) * 1e6  # in microseconds
-
-        freqs = [base_freq + i * spacing for i in range(len(complex_values))]
-
-        result = {
-            "pnm_header": measurement.get("pnm_header"),
-            "mac_address": measurement.get("mac_address"),
-            "channel_id": measurement.get("channel_id"),
-            "frequency_unit": "Hz",
-            "magnitude_unit": "dB",
-            "group_delay_unit": "microsecond",
-            "complex_unit": "[Real, Imaginary]",
-            "carrier_values": {
-                "carrier_count": len(freqs),
-                "frequency": freqs,
-                "magnitude": magnitudes_db.tolist(),
-                "group_delay": group_delay.tolist(),
-                "complex": values
-            }
-        }
-
-        return result
-
-    @classmethod
     def basic_analysis_us_ofdma_pre_equalization(cls, measurement: Dict[str, Any]) -> UsOfdmaUsPreEqAnalysisModel:
         """
         Perform basic analysis of upstream OFDMA pre-equalization data and return a typed model.
@@ -768,9 +693,9 @@ class Analysis:
         - Signal statistics over the magnitude sequence
         """
         # --- inputs / sanity ---
-        spacing: int                   = int(measurement.get("subcarrier_spacing", 0))                 # Hz
+        spacing: int                    = int(measurement.get("subcarrier_spacing", 0))               
         active_index: int               = int(measurement.get("first_active_subcarrier_index", 0))
-        zero_freq: int                  = int(measurement.get("subcarrier_zero_frequency", 0))          # Hz
+        zero_freq: int                  = int(measurement.get("subcarrier_zero_frequency", 0))        
         base_freq: int                  = zero_freq + (spacing * active_index)
 
         values: ComplexArray            = measurement.get("values", [])
@@ -779,12 +704,11 @@ class Analysis:
 
         # --- core calculations ---
         complex_values                  = np.array([complex(r, i) for r, i in values], dtype=complex)
-        magnitudes_db                   = 20.0 * np.log10(np.abs(complex_values) + 1e-12)               # dB
+        magnitudes_db                   = 20.0 * np.log10(np.abs(complex_values) + 1e-12)             
 
         # Group delay  (τ = - dφ/df).  φ from unwrapped angle; spacing in Hz → τ in microseconds
         phase                           = np.unwrap(np.angle(complex_values))
-        group_delay_us                  = -np.gradient(phase, spacing) * 1e6                            # µs
-
+        group_delay_us                  = -np.gradient(phase, spacing) * 1e6                          
         freqs: List[int]                = [base_freq + i * spacing for i in range(len(complex_values))]
         complex_ndim: int               = int(np.asarray(values, dtype=complex).ndim)
 

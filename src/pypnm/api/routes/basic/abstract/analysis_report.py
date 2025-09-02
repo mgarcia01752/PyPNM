@@ -6,7 +6,7 @@ import zipfile
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, cast
 from pydantic import BaseModel, Field
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
@@ -233,24 +233,46 @@ class AnalysisReport(ABC):
         """
         pass
 
-    def __init(self):
-
-        self._data_list:AnalysisData        = self._analysis.get_results().get('analysis', [])
+    def __init(self) -> None:
+        # Acquire analysis data
+        self._data_list: AnalysisData = list(self._analysis.get_results().get("analysis", []))
+        self.logger.debug("Analysis items received: %d", len(self._data_list))
 
         if not self._data_list:
-            self.logger.error(f'Unable to aquire analysis data')
-            pass
+            self.logger.error("Unable to acquire analysis data (empty 'analysis' list).")
+            raise ValueError("No analysis data available")
 
-        self._png_dir:PathLike              = SystemConfigSettings.png_dir
-        self._csv_dir:PathLike              = SystemConfigSettings.csv_dir
-        self._archive_dir:PathLike          = SystemConfigSettings.archive_dir
+        # Directories / session metadata
+        self._png_dir: PathLike       = SystemConfigSettings.png_dir
+        self._csv_dir: PathLike       = SystemConfigSettings.csv_dir
+        self._archive_dir: PathLike   = SystemConfigSettings.archive_dir
 
-        self._group_time                    = Utils.time_stamp()        
-        self._base_filename:str             = ""
-        self._common_analysis_model:Dict[int, BaseModel] = {}
+        self._group_time              = Utils.time_stamp()
+        self._base_filename: str      = ""
+        self._common_analysis_model: Dict[int, BaseModel] = {}
 
-        self._mac_address:MacAddress        = MacAddress(self._data_list[0].get('mac_address', MacAddress.null()))
-        self._sys_descr:SystemDescriptor    = SystemDescriptor.load_from_dict(self._data_list[0]['device_details']['sys_descr'])
+        # Normalize first item to a dict (supports both dict and BaseModel)
+        first_item = self._data_list[0]
+        if isinstance(first_item, BaseModel):
+            first_dict: Dict[str, Any] = first_item.model_dump()
+        else:
+            first_dict = cast(Dict[str, Any], first_item)
+
+        # MAC addresses (prefer 'mac_address', fall back to 'cm_mac_address')
+        mac_str: str = (
+            first_dict.get("mac_address")
+            or first_dict.get("cm_mac_address")
+            or MacAddress.null()
+        )
+        cmts_mac_str: str  = first_dict.get("cmts_mac_address", MacAddress.null())
+
+        self._mac_address: MacAddress      = MacAddress(mac_str)
+        self._cmts_mac_address: MacAddress = MacAddress(cmts_mac_str)
+
+        # System descriptor (robust to missing keys)
+        dev_details: Dict[str, Any]                   = cast(Dict[str, Any], first_dict.get("device_details", {}))
+        sys_descr_dict: Dict[str, Any]                = cast(Dict[str, Any], dev_details.get("sys_descr", {}))
+        self._sys_descr: SystemDescriptor             = SystemDescriptor.load_from_dict(sys_descr_dict)
 
     def _generate_fname(self, tags: List[str] = [], ext: str = "") -> str:
         """

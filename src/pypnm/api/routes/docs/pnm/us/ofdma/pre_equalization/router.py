@@ -2,8 +2,9 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from typing import Union
+from typing import Union, cast
 
+from pypnm.api.routes.basic.us_ofdma_pre_eq_analysis_rpt import CmUsOfdmaPreEqReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
 from pypnm.api.routes.common.classes.common_endpoint_classes.router import PnmFastApiRouter
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
@@ -13,10 +14,12 @@ from pypnm.api.routes.common.classes.operation.cable_modem_precheck import Cable
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.docs.pnm.files.service import FileResponse, FileType, PnmFileService
 from pypnm.api.routes.docs.pnm.us.ofdma.pre_equalization.service import CmUsOfdmaPreEqService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import Path
 
 class UsOfdmaPreEqualizationRouter(PnmFastApiRouter):
     """
@@ -101,15 +104,14 @@ group delay ripple, slope, mean values, and file references per OFDMA upstream c
                                       status=msg_rsp.status, 
                                       measurement=msg_rsp.payload) # type: ignore
 
-    async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, SnmpResponse]:
+    async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, FileResponse, SnmpResponse]:
         mac = request.cable_modem.mac_address
         ip = request.cable_modem.ip_address
         self.logger.info(f"Starting Upstream OFDMA Pre-Equalization analysis for MAC: {mac}, IP: {ip}, Analysis Type: {request.analysis.type}")
 
         cm: CableModem = CableModem(MacAddress(mac), Inet(ip))
 
-        status, msg = await CableModemServicePreCheck(cable_modem=cm,
-                                                      validate_ofdma_exist=True).run_precheck()
+        status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdma_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
             return SnmpResponse(mac_address=str(mac), status=status, message=msg)       
@@ -121,10 +123,21 @@ group delay ripple, slope, mean values, and file references per OFDMA upstream c
         msg_rsp:MessageResponse = cps.process()
         
         analysis = Analysis(AnalysisType.BASIC, msg_rsp)
-                
-        return PnmAnalysisResponse(mac_address=mac, 
-                                   status=ServiceStatusCode.SUCCESS,
-                                   data=analysis.get_results()) 
+
+        if request.output.type == FileType.JSON.value:
+            return PnmAnalysisResponse(
+                mac_address=mac, 
+                status=ServiceStatusCode.SUCCESS, data=analysis.get_results())
+
+        elif request.output.type == FileType.ARCHIVE.value:
+            analysis_rpt = CmUsOfdmaPreEqReport(analysis)
+            rpt:Path = cast(Path, analysis_rpt.build_report())
+            return PnmFileService().get_file(FileType.ARCHIVE,rpt.name)
+
+        else:
+            return PnmAnalysisResponse(
+                mac_address=mac,
+                status=ServiceStatusCode.INVALID_OUTPUT_TYPE, data={})
 
     async def get_measurement_statistics_logic(self, request: PnmRequest) -> Union[SnmpResponse]:       # type: ignore
         """
