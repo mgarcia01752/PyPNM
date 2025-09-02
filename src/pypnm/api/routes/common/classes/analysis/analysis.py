@@ -13,8 +13,8 @@ from pypnm.api.routes.common.classes.analysis.model.mod_profile_schema import (
     DsModulationProfileAnalysisModel, ProfileAnalysisEntryModel)
 from pypnm.api.routes.common.classes.analysis.model.schema import (
     BaseAnalysisModel, ConstellationDisplayAnalysisModel, DsHistogramAnalysisModel, DsRxMerAnalysisModel, 
-    FecSummaryCodeWordModel, GrpDelayStatsModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel, OfdmaUsPreEqCarrierModel, RegressionModel, 
-    RxMerCarrierValuesModel, UsOfdmaUsPreEqAnalysisModel)
+    FecSummaryCodeWordModel, GrpDelayStatsModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel, 
+    OfdmaUsPreEqCarrierModel, RegressionModel, RxMerCarrierValuesModel, UsOfdmaUsPreEqAnalysisModel)
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor, Utils
