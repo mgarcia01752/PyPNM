@@ -7,7 +7,7 @@ from typing import Union, cast
 
 from fastapi.responses import FileResponse
 
-from pypnm.api.routes.basic.modulation_profile_analysis_report import ModulationProfileReport
+from pypnm.api.routes.basic.modulation_profile_analysis_rpt import ModulationProfileReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
 from pypnm.api.routes.common.classes.common_endpoint_classes.router import PnmFastApiRouter
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (

@@ -7,14 +7,14 @@ import numpy as np
 from enum import Enum
 from typing import Callable, List, Dict, Any, Mapping, Sequence, Union, cast
 
-from pypnm.api.routes.common.classes.analysis.model.chan_est_schema import ChanEstCarrierModel, DsChannelEstAnalysisModel, GroupDelayStats
+from pypnm.api.routes.common.classes.analysis.model.chan_est_schema import ChanEstCarrierModel, DsChannelEstAnalysisModel
 from pypnm.api.routes.common.classes.analysis.model.mod_profile_schema import (
     CarrierItemModel, CarrierValuesListModel, CarrierValuesModel, CarrierValuesSplitModel, 
     DsModulationProfileAnalysisModel, ProfileAnalysisEntryModel)
 from pypnm.api.routes.common.classes.analysis.model.schema import (
     BaseAnalysisModel, ConstellationDisplayAnalysisModel, DsHistogramAnalysisModel, DsRxMerAnalysisModel, 
-    FecSummaryCodeWordModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel, RegressionModel, 
-    RxMerCarrierValuesModel)
+    FecSummaryCodeWordModel, GrpDelayStatsModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel, OfdmaUsPreEqCarrierModel, RegressionModel, 
+    RxMerCarrierValuesModel, UsOfdmaUsPreEqAnalysisModel)
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor, Utils
@@ -29,7 +29,7 @@ from pypnm.lib.signal_processing.group_delay import GroupDelay
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
 from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, IntSeries
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
-from pypnm.pnm.lib.signal_statistics import SignalStatistics
+from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
 from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ModulationOrderType
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
@@ -501,7 +501,7 @@ class Analysis:
         complex_arr = np.asarray(values, dtype=complex)
 
         # Build nested models
-        group_delay_stats: GroupDelayStats = GroupDelayStats(
+        group_delay_stats: GrpDelayStatsModel = GrpDelayStatsModel(
             group_delay_unit            = "microsecond",
             magnitude                   = ComplexArrayOps.to_list(gd_results.group_delay_us),
         )
@@ -689,7 +689,7 @@ class Analysis:
         return out
 
     @classmethod
-    def basic_analysis_us_ofdma_pre_equalization(cls, measurement: Dict[str, Any]) -> Dict[str, Any]:
+    def _basic_analysis_us_ofdma_pre_equalization(cls, measurement: Dict[str, Any]) -> Dict[str, Any]:
         """
         Perform basic analysis of upstream OFDMA pre-equalization data.
 
@@ -754,6 +754,74 @@ class Analysis:
         }
 
         return result
+
+    @classmethod
+    def basic_analysis_us_ofdma_pre_equalization(cls, measurement: Dict[str, Any]) -> UsOfdmaUsPreEqAnalysisModel:
+        """
+        Perform basic analysis of upstream OFDMA pre-equalization data and return a typed model.
+
+        Computes:
+        - Per-carrier frequency (Hz)
+        - Magnitude (dB) from complex coefficients
+        - Group delay (µs) from unwrapped phase gradient
+        - Complex samples passthrough
+        - Signal statistics over the magnitude sequence
+        """
+        # --- inputs / sanity ---
+        spacing: int                   = int(measurement.get("subcarrier_spacing", 0))                 # Hz
+        active_index: int               = int(measurement.get("first_active_subcarrier_index", 0))
+        zero_freq: int                  = int(measurement.get("subcarrier_zero_frequency", 0))          # Hz
+        base_freq: int                  = zero_freq + (spacing * active_index)
+
+        values: ComplexArray            = measurement.get("values", [])
+        if not values:
+            raise ValueError("No complex channel estimation values provided in measurement.")
+
+        # --- core calculations ---
+        complex_values                  = np.array([complex(r, i) for r, i in values], dtype=complex)
+        magnitudes_db                   = 20.0 * np.log10(np.abs(complex_values) + 1e-12)               # dB
+
+        # Group delay  (τ = - dφ/df).  φ from unwrapped angle; spacing in Hz → τ in microseconds
+        phase                           = np.unwrap(np.angle(complex_values))
+        group_delay_us                  = -np.gradient(phase, spacing) * 1e6                            # µs
+
+        freqs: List[int]                = [base_freq + i * spacing for i in range(len(complex_values))]
+        complex_ndim: int               = int(np.asarray(values, dtype=complex).ndim)
+
+        # --- models: nested blocks ---
+        grp_delay_model: GrpDelayStatsModel = GrpDelayStatsModel(
+            group_delay_unit            = "microsecond",
+            magnitude                   = group_delay_us.tolist(),
+        )
+
+        carrier_values: OfdmaUsPreEqCarrierModel = OfdmaUsPreEqCarrierModel(
+            carrier_count               = len(freqs),
+            frequency_unit              = "Hz",
+            frequency                   = freqs,
+            complex                     = values,
+            complex_dimension           = complex_ndim,
+            magnitudes                  = magnitudes_db.tolist(),
+            group_delay                 = grp_delay_model,
+            occupied_channel_bandwidth  = int(measurement.get("occupied_channel_bandwidth", 0)),
+        )
+
+        # Signal statistics over magnitudes (dB)
+        signal_stats_model: SignalStatisticsModel = SignalStatistics(magnitudes_db.tolist()).compute()
+
+        # --- assemble top-level analysis model ---
+        result_model: UsOfdmaUsPreEqAnalysisModel = UsOfdmaUsPreEqAnalysisModel(
+            device_details              = measurement.get("device_details", {}),
+            pnm_header                  = measurement.get("pnm_header", {}),
+            mac_address                 = str(measurement.get("mac_address", "")),
+            channel_id                  = int(measurement.get("channel_id", 0)),
+            subcarrier_spacing          = spacing,
+            first_active_subcarrier_index = active_index,
+            subcarrier_zero_frequency   = zero_freq,
+            carrier_values              = carrier_values,
+            signal_statistics           = signal_stats_model,
+        )
+
+        return result_model
 
     @classmethod
     def basic_analysis_ds_constellation_display(cls, measurement: Dict[str, Any]) -> ConstellationDisplayAnalysisModel:

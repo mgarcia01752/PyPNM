@@ -9,7 +9,7 @@ from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
 from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
 from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
-from pypnm.pnm.process.CmUsPreEq import CmUsOfdmaPreEq
+from pypnm.pnm.process.CmUsOfdmaPreEq import CmUsOfdmaPreEq
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 

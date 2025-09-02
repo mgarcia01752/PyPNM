@@ -7,7 +7,7 @@ from typing import List, Union, cast
 
 from fastapi import APIRouter, HTTPException
 
-from pypnm.api.routes.basic.histrogram_analysis_report import DsHistrogramReport
+from pypnm.api.routes.basic.histrogram_analysis_rpt import DsHistrogramReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisResponse
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse

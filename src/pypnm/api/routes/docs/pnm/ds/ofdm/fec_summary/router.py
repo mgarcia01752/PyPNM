@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 from typing import List, Union, cast
 from fastapi import APIRouter, HTTPException
-from pypnm.api.routes.basic.fec_summary_analysis_report import FecSummaryAnalysisReport
+from pypnm.api.routes.basic.fec_summary_analysis_rpt import FecSummaryAnalysisReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck

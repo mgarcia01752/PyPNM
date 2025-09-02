@@ -22,7 +22,7 @@ from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfil
 from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
 from pypnm.pnm.process.CmSpectrumAnalysis import CmSpectrumAnalysis
 from pypnm.pnm.process.CmSpectrumAnalysisSnmp import CmSpectrumAnalysisSnmp
-from pypnm.pnm.process.CmUsPreEq import CmUsOfdmaPreEq
+from pypnm.pnm.process.CmUsOfdmaPreEq import CmUsOfdmaPreEq
 
 class CommonProcessService(CommonMessagingService):
     def __init__(self, message_response:MessageResponse, **extra_options):

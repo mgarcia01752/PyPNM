@@ -11,12 +11,37 @@ from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.qam.types import QamModulation
 from pypnm.lib.signal_processing.shan.series import ShannonSeriesModel
 from pypnm.lib.types import ComplexArray, FloatSeries, IntSeries
+from pypnm.pnm.lib.signal_statistics import SignalStatisticsModel
 
 class BaseAnalysisModel(BaseModel):
     device_details: Mapping[str, Any]   = Field(default_factory=dict, description="Device Details SysDescr")
     pnm_header: Mapping[str, Any]       = Field(default_factory=dict, description="PNM metadata header as a free-form mapping.")
     mac_address: str                    = Field(default=MacAddress.null(), description="CPE MAC address (string).")
     channel_id: int                     = Field(default=INVALID_CHANNEL_ID, description="Upstream/downstream channel identifier.")
+
+class GrpDelayStatsModel(BaseModel):
+    group_delay_unit : str         = Field(..., description="Unit of group delay values (e.g., microseconds).")
+    magnitude        : FloatSeries = Field(..., description="Per-subcarrier group delay values in specified units.")
+
+
+class ComplexDataCarrierModel(BaseModel):
+    carrier_count             : int              = Field(..., description="Total number of active subcarriers included in the estimation.")
+    frequency_unit            : str              = Field(default="Hz", description="Unit of the frequency axis (default: Hertz).")
+    frequency                 : IntSeries        = Field(..., description="List of subcarrier center frequencies.")
+    complex                   : ComplexArray     = Field(..., description="Raw complex channel estimation coefficients as [real, imag] pairs.")
+    complex_dimension         : int              = Field(..., description="Dimensionality of the complex array (should be 1 for per-carrier sequence).")
+    magnitudes                : FloatSeries      = Field(..., description="Per-subcarrier magnitude response in linear scale.")
+    group_delay               : GrpDelayStatsModel  = Field(..., description="Group delay analysis results for the channel estimate.")
+    occupied_channel_bandwidth: int              = Field(..., description="Occupied channel bandwidth in Hertz.")
+
+
+class ComplexDataAnalysisModel(BaseAnalysisModel):
+    subcarrier_spacing           : int                        = Field(..., description="Subcarrier frequency spacing in Hertz.")
+    first_active_subcarrier_index: int                        = Field(..., description="Index of the first active OFDM subcarrier (0-based).")
+    subcarrier_zero_frequency    : int                        = Field(..., description="Absolute frequency of subcarrier k=0 in Hertz.")
+    carrier_values               : ComplexDataCarrierModel    = Field(..., description="Detailed per-subcarrier results.")
+    signal_statistics            : SignalStatisticsModel      = Field(..., description="Computed time-domain statistics of the channel estimate signal.")
+
 
 class RegressionModel(BaseModel):
     slope:FloatSeries                   = Field(..., description="")
@@ -90,4 +115,8 @@ class DsRxMerAnalysisModel(BaseAnalysisModel):
     regression: RegressionModel                 = Field(..., description="")
     modulation_statistics:ShannonSeriesModel    = Field(..., description="")
 
+class OfdmaUsPreEqCarrierModel(ComplexDataCarrierModel):
+    """"""
 
+class UsOfdmaUsPreEqAnalysisModel(ComplexDataAnalysisModel):
+    """"""
