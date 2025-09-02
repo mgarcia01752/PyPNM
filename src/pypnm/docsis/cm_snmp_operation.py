@@ -6,9 +6,7 @@ from enum import Enum
 import logging
 import time
 from typing import Any, Dict, List, Tuple, Type, Union
-from pysnmp.proto.rfc1902 import (OctetString, Counter32, Bits, 
-                                  Counter64, Gauge32, Integer, 
-                                  Integer32, IpAddress)
+from pysnmp.proto.rfc1902 import OctetString, Gauge32, Integer32
 from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
 from pypnm.docsis.data_type.DocsDevEventEntry import DocsDevEventEntry
 from pypnm.docsis.data_type.DocsFddCmFddCapabilities import DocsFddCmFddBandEdgeCapabilities
@@ -18,7 +16,8 @@ from pypnm.docsis.data_type.DocsIf31CmDsOfdmProfileStatsEntry import DocsIf31CmD
 from pypnm.docsis.data_type.DocsIf31CmSystemCfgState import DocsIf31CmSystemCfgDiplexState
 from pypnm.docsis.data_type.DocsIf31CmUsOfdmaChanEntry import DocsIf31CmUsOfdmaChanEntry
 from pypnm.docsis.data_type.DocsIfDownstreamChannel import DocsIfDownstreamChannelEntry
-from pypnm.docsis.data_type.DocsIfDownstreamChannelCwErrorRate import DocsIfDownstreamChannelCwErrorRate, DocsIfDownstreamCwErrorRateEntry
+from pypnm.docsis.data_type.DocsIfDownstreamChannelCwErrorRate import (
+    DocsIfDownstreamChannelCwErrorRate, DocsIfDownstreamCwErrorRateEntry)
 from pypnm.docsis.data_type.DocsIfSignalQualityEntry import DocsIfSignalQuality
 from pypnm.docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChannelEntry
 from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst
@@ -74,18 +73,6 @@ class DocsPnmBulkFileUploadStatus(Enum):
 
     def __str__(self):
         return super().__str__()
-
-    @classmethod
-    def from_value(cls, value: int):
-        """Helper method to get the enum member from an integer value"""
-        if value == 1:
-            return cls.TFTP
-        elif value == 2:
-            return cls.HTTP
-        elif value == 3:
-            return cls.HTTPS
-        else:
-            raise ValueError(f"Unsupported value: {value}")
 
 class MeasStatusType(Enum):
     """
@@ -319,10 +306,10 @@ class CmSnmpOperation:
         """
         
         return DocsPnmBulkDataGroup(
-            docsPnmBulkDestIpAddrType=await self._get_value("docsPnmBulkDestIpAddrType", int),
-            docsPnmBulkDestIpAddr=InetUtils.binary_to_inet(await self._get_value("docsPnmBulkDestIpAddr", bytes)),
-            docsPnmBulkDestPath=await self._get_value("docsPnmBulkDestPath", str),
-            docsPnmBulkUploadControl=await self._get_value("docsPnmBulkUploadControl", int)
+            docsPnmBulkDestIpAddrType   =   await self._get_value("docsPnmBulkDestIpAddrType", int),
+            docsPnmBulkDestIpAddr       =   InetUtils.binary_to_inet(await self._get_value("docsPnmBulkDestIpAddr", bytes)),
+            docsPnmBulkDestPath         =   await self._get_value("docsPnmBulkDestPath", str),
+            docsPnmBulkUploadControl    =   await self._get_value("docsPnmBulkUploadControl", int)
         )
   
     async def _get_docs_pnm_bulk_file_group(self) -> List[DocsPnmBulkFileEntry]:
@@ -736,7 +723,6 @@ class CmSnmpOperation:
             self.logger.exception("Failed to retrieve downstream SC-QAM codeword error rates")
             return {"entries": [], "aggregate_error_rate": 0.0}
 
-
     async def getDocsIf31CmUsOfdmaChanEntry(self) -> List[DocsIf31CmUsOfdmaChanEntry]:
         """
         Retrieves and initializes all OFDMA channel entries from Snmp_v2c.
@@ -1010,7 +996,6 @@ class CmSnmpOperation:
             filtered.append((idx, chan_id))
 
         return filtered
-
 
     async def getDocsIf31CmDsOfdmChannelIdIndexStack(self) -> List[Tuple[int, int]]:
         """
