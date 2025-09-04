@@ -7,6 +7,7 @@ Module: common_endpoint_classes.schema.precheck
 Defines a pre-check service for CableModem connectivity,
 verifying reachability via ping, SNMP, and optional DOCSIS version compatibility.
 """
+from __future__ import annotations
 
 import logging
 from typing import Iterable, List, Tuple, Optional

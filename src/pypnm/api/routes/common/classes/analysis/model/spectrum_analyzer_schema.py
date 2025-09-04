@@ -1,3 +1,6 @@
+
+from __future__ import annotations
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
@@ -6,7 +9,13 @@ from pypnm.api.routes.common.classes.analysis.model.schema import BaseAnalysisMo
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpecAnCapturePara
 from pypnm.lib.types import FrequencySeriesHz, MagnitudeSeries
 
-DEFAULT_POINT_AVG: int = 3
+"""
+    Default to a 7-point moving average.
+    Rationale: an odd window centers the filter (no bias), and N=7 reduces
+    random noise by ≈1/√7 (~0.38×) without over-smoothing narrow (1–2 bin)
+    features typical in DOCSIS spectra. Override via `window_average_points`.
+"""
+DEFAULT_POINT_AVG: int = 7
 
 class WindowAverage(BaseModel):
     """

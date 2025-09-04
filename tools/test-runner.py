@@ -22,6 +22,7 @@ Usage:
         --coverage          Run with coverage analysis (requires coverage.py)
         --parallel          Run tests in parallel (requires pytest-xdist)
 """
+from __future__ import annotations
 
 import argparse
 import sys

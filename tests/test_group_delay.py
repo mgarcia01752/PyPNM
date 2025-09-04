@@ -1,3 +1,6 @@
+
+from __future__ import annotations
+
 # SPDX-License-Identifier: MIT
 # pytest -q
 import unittest

@@ -6,6 +6,9 @@ Module: docs.if31.ds.ofdm_profile_stats.service
 
 Defines a service class for fetching DOCSIS 3.1 downstream OFDM profile statistics from a cable modem.
 """
+
+from __future__ import annotations
+
 import logging
 from typing import List, Dict, Any
 

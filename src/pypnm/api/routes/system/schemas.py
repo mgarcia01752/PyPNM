@@ -6,6 +6,9 @@ Module: common_endpoint_classes.schema.sys
 
 Defines request and response models for system SNMP operations (sysDescr and sysUpTime).
 """
+
+from __future__ import annotations
+
 from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import BaseDeviceConnectRequest
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
 

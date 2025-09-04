@@ -1,11 +1,15 @@
+
+from __future__ import annotations
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
 
 import logging
 import numpy as np
 
 from enum import Enum
-from typing import Callable, List, Dict, Any, Mapping, Sequence, Union, cast
+from typing import List, Dict, Any, Mapping, Sequence, Union, cast
 
 from pypnm.api.routes.common.classes.analysis.model.chan_est_schema import ChanEstCarrierModel, DsChannelEstAnalysisModel
 from pypnm.api.routes.common.classes.analysis.model.mod_profile_schema import (
@@ -16,7 +20,7 @@ from pypnm.api.routes.common.classes.analysis.model.schema import (
     FecSummaryCodeWordModel, GrpDelayStatsModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel, 
     OfdmaUsPreEqCarrierModel, RegressionModel, RxMerCarrierValuesModel, UsOfdmaUsPreEqAnalysisModel)
 from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema import (
-    MagnitudeSeries, SpecAnaAnalysisResults, SpectrumAnalyzerAnalysisModel, WindowAverage)
+    DEFAULT_POINT_AVG, MagnitudeSeries, SpecAnaAnalysisResults, SpectrumAnalyzerAnalysisModel, WindowAverage)
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpecAnCapturePara
@@ -117,7 +121,6 @@ class Analysis:
 
         payload: Dict[str, Any] = msg_response.payload_to_dict() or {}
         raw_data = payload.get("data", [])
-
         self._result_model:List[BaseAnalysisModel] = []
 
         # Normalize measurement_data to List[Dict[str, Any]]
@@ -382,13 +385,13 @@ class Analysis:
         freqs:IntSeries = [base_freq + (i * subcarrier_spacing) for i in range(len(values))]
         magnitudes:FloatSeries = values
 
-        classify: Callable[[float], int] = lambda v: int(
-            RxMerCarrierType.EXCLUSION.value
-            if v == RXMER_EXCLUSION
-            else RxMerCarrierType.CLIPPED.value
-            if v in (RXMER_CLIPPED_LOW, RXMER_CLIPPED_HIGH)
-            else RxMerCarrierType.NORMAL.value
-        )
+        def classify(v: float) -> int:
+            if v == RXMER_EXCLUSION:
+                return int(RxMerCarrierType.EXCLUSION.value)
+            elif v in (RXMER_CLIPPED_LOW, RXMER_CLIPPED_HIGH):
+                return int(RxMerCarrierType.CLIPPED.value)
+            else:
+                return int(RxMerCarrierType.NORMAL.value)
 
         # carrier_status will be List[int]
         carrier_status: List[int] = [classify(v) for v in values]
@@ -952,121 +955,77 @@ class Analysis:
     @classmethod
     def basic_analysis_spectrum_analyzer(cls, measurement: Dict[str, Any]) -> SpectrumAnalyzerAnalysisModel:
         """
-        Build a SpectrumAnalyzerAnalysisModel from a raw spectrum analyzer measurement.
-
-        The method maps core capture parameters, derives reasonable defaults when fields
-        are missing, constructs a frequency axis (if not supplied), and computes a
-        same-length moving-average smoothing of the magnitudes using ``MovingAverage``.
-
-        Expected `measurement` keys (subset)
-        ------------------------------------
-        pnm_header : dict
-            PNM header metadata.
-        device_details : dict
-            System descriptor / identification (optional).
-        mac_address : str
-            Cable modem MAC address (optional; defaults to ``MacAddress.null()``).
-        channel_id : int
-            Channel identifier (optional; defaults to 0).
-        first_segment_center_frequency : int (Hz)
-            Center frequency of the first (or only) captured segment.
-        last_segment_center_frequency : int (Hz)
-            Center frequency of the last captured segment.
-        segment_frequency_span : int (Hz)
-            Span (width) of each segment.
-        num_bins_per_segment : int
-            Number of FFT bins per segment.
-        equivalent_noise_bandwidth : float (Hz)
-            ENBW in Hz; converted to kHz for parameters.
-        window_function : int
-            Enum value for the window applied during capture (mapped to ``WindowFunction``).
-        bin_frequency_spacing : int (Hz)
-            Frequency spacing between adjacent bins; if absent, derived as span / bins.
-        magnitudes : list[float]
-            Optional, single-segment magnitude (e.g., dB) values aligned to bins.
-        frequencies : list[int] (Hz)
-            Optional, frequency axis corresponding to ``magnitudes``.
-        amplitude_bin_segments_float : list[list[float]]
-            Optional, segmented magnitudes. If ``magnitudes`` is absent, the first segment
-            is used as a fallback.
-
-        Additional optional keys
-        ------------------------
-        window_average_points : int
-            Smoothing window size; default 7.
-
-        Returns
-        -------
-        SpectrumAnalyzerAnalysisModel
-            Fully populated analysis model with parameters, raw magnitudes, frequency axis,
-            and a same-length moving-average series.
-
-        Notes
-        -----
-        - Magnitude smoothing uses reflection padding for stable edge behavior.
-        - Non-finite magnitude values are excluded from the average (masked) and will yield
-          a 0.0 result if an entire window contains no finite samples.
+        Build SpectrumAnalyzerAnalysisModel from converted PNM measurement:
         """
-        # --- map & coerce parameter fields ---
-        first_seg_cf          : int           = int(measurement.get("first_segment_center_frequency", 0))
-        last_seg_cf           : int           = int(measurement.get("last_segment_center_frequency", 0))
-        seg_span_hz           : int           = int(measurement.get("segment_frequency_span", 0))
-        bins_per_seg          : int           = int(measurement.get("num_bins_per_segment", 0))
+        # --- core params ---
+        first_seg_cf  = int(measurement.get("first_segment_center_frequency", 0))
+        last_seg_cf   = int(measurement.get("last_segment_center_frequency", 0))
+        seg_span_hz   = int(measurement.get("segment_frequency_span", 0))
+        bins_per_seg  = int(measurement.get("num_bins_per_segment", 0))
+        enbw_hz       = float(measurement.get("equivalent_noise_bandwidth", 0.0))
+        noise_bw_khz  = int(round(enbw_hz / 1_000.0)) if enbw_hz > 0.0 else 0
 
-        # ENBW: Hz -> kHz (rounded)
-        enbw_hz               : float         = float(measurement.get("equivalent_noise_bandwidth", 0.0))
-        noise_bw_khz          : int           = int(round(enbw_hz / 1_000.0)) if enbw_hz > 0.0 else 0
-
-        # Window function mapping (int -> enum), fall back to HANN
-        wf_raw                : int           = int(measurement.get("window_function", WindowFunction.HANN.value))
+        wf_raw        = int(measurement.get("window_function", WindowFunction.HANN.value))
         try:
-            wf_enum          : WindowFunction = WindowFunction(wf_raw)
+            wf_enum: WindowFunction = WindowFunction(wf_raw)
         except Exception:
-            wf_enum          = WindowFunction.HANN
+            wf_enum = WindowFunction.HANN
 
-        # Bin bandwidth / spacing
-        bin_bw                : int           = int(measurement.get("bin_frequency_spacing", 0))
+        bin_bw = int(measurement.get("bin_frequency_spacing", 0))
         if bin_bw <= 0 and seg_span_hz > 0 and bins_per_seg > 0:
             bin_bw = max(1, seg_span_hz // bins_per_seg)
 
-        # --- frequencies (Hz): use provided or synthesize for single segment ---
-        in_freqs = measurement.get("frequencies")
-        if isinstance(in_freqs, (list, tuple)) and len(in_freqs) > 0:
-            frequencies: FrequencySeriesHz = [int(f) for f in in_freqs]
-        else:
-            frequencies = []
-            if bins_per_seg > 0 and seg_span_hz > 0 and bin_bw > 0 and first_seg_cf > 0:
-                # Centered segment: start at (center - span/2), step by bin_bw.
-                start_hz = first_seg_cf - (seg_span_hz // 2)
-                # Optional alignment to bin centers
-                start_hz += bin_bw // 2
-                frequencies = [int(start_hz + i * bin_bw) for i in range(bins_per_seg)]
+        # --- segments & magnitudes ---
+        segments = measurement.get("amplitude_bin_segments_float", [])
+        num_segments = len(segments)
+        if bins_per_seg <= 0 and num_segments:
+            bins_per_seg = len(segments[0])
 
-        # --- magnitudes (prefer flat list; otherwise first segment fallback) ---
-        in_mags = measurement.get("magnitudes")
-        if not isinstance(in_mags, (list, tuple)):
-            segs = measurement.get("amplitude_bin_segments_float")
-            if isinstance(segs, list) and segs and isinstance(segs[0], list):
-                in_mags = segs[0]
+        # Normalize each segment length to bins_per_seg (clip/pad NaN)
+        norm_segments: List[List[float]] = []
+        for s in segments:
+            if len(s) >= bins_per_seg:
+                norm_segments.append([float(x) for x in s[:bins_per_seg]])
             else:
-                in_mags = []
-        magnitudes: MagnitudeSeries = [float(x) for x in in_mags]
+                pad = [float("nan")] * (bins_per_seg - len(s))
+                norm_segments.append([float(x) for x in s] + pad)
 
-        # --- windowed average (same length) using robust MovingAverage ---
-        window_points = int(measurement.get("window_average_points", 7))
+        magnitudes: MagnitudeSeries = [x for seg in norm_segments for x in seg]
+
+        # --- compute frequency axis across segments ---
+        frequencies: FrequencySeriesHz = []
+        if num_segments > 0 and bins_per_seg > 0 and seg_span_hz > 0 and bin_bw > 0 and first_seg_cf > 0:
+            seg_step_hz = (last_seg_cf - first_seg_cf) // (num_segments - 1) if num_segments > 1 else 0
+            # start at center - span/2, align to bin center with +bin_bw/2
+            seg0_start = first_seg_cf - (seg_span_hz // 2) + (bin_bw // 2)
+
+            freqs: List[int] = []
+            for s_idx in range(num_segments):
+                start_hz = seg0_start + s_idx * seg_step_hz
+                freqs.extend(int(start_hz + i * bin_bw) for i in range(bins_per_seg))
+            frequencies = cast(FloatSeries, freqs)
+
+        # --- align lengths (trim to shortest) ---
+        if frequencies and magnitudes and len(frequencies) != len(magnitudes):
+            n = min(len(frequencies), len(magnitudes))
+            frequencies = frequencies[:n]
+            magnitudes  = magnitudes[:n]
+        if not frequencies or not magnitudes:
+            frequencies, magnitudes = [], []
+
+        # --- windowed average (same length) ---
+        window_points  = int(measurement.get("window_average_points", DEFAULT_POINT_AVG))
         try:
             ma = MovingAverage(max(1, window_points), mode="reflect")
             smoothed = ma.apply(magnitudes) if magnitudes else []
         except Exception:
-            # Defensive: if anything goes wrong, fall back to pass-through
             smoothed = list(magnitudes)
 
-        window_avg = WindowAverage(
-            points     = max(1, window_points),
-            magnitudes = smoothed,
-        )
+        if len(smoothed) != len(frequencies):
+            smoothed = smoothed[:len(frequencies)]
 
-        # --- results payload ---
+        window_avg = WindowAverage(points=max(1, window_points), magnitudes=smoothed)
+
         results = SpecAnaAnalysisResults(
             bin_bandwidth  = bin_bw,
             segment_length = bins_per_seg,
@@ -1075,7 +1034,6 @@ class Analysis:
             window_average = window_avg,
         )
 
-        # --- capture parameters payload ---
         capture_parameters: SpecAnCapturePara = SpecAnCapturePara(
             first_segment_center_freq = first_seg_cf,
             last_segment_center_freq  = last_seg_cf,
@@ -1085,7 +1043,6 @@ class Analysis:
             window_function           = wf_enum,
         )
 
-        # --- assemble top-level analysis model ---
         return SpectrumAnalyzerAnalysisModel(
             device_details     = measurement.get("device_details", SystemDescriptor.empty()),
             pnm_header         = measurement.get("pnm_header", {}),

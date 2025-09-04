@@ -1,3 +1,6 @@
+
+from __future__ import annotations
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
@@ -56,7 +59,7 @@ class SpectrumAnalyzerRouter:
             try:
                 cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
                 
-                status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
+                status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_pnm_ready_status = True).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(mac_address=str(mac), status=status, message=msg)                   
@@ -92,8 +95,7 @@ class SpectrumAnalyzerRouter:
             self.logger.info(f"Retrieving Spectrum Analyzer Analysis for MAC: {mac}, IP: {ip}, Analysis Type: {request.analysis.type}")
 
             try:
-                status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip,
-                                                              validate_pnm_ready_status = True).run_precheck()
+                status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip, validate_pnm_ready_status = True).run_precheck()
                 
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
