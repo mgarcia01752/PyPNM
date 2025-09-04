@@ -14,28 +14,33 @@ from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema imp
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.log_files import LogFile
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
-from pypnm.lib.types import FloatSeries, IntSeries
+from pypnm.lib.types import ArrayLike, FloatSeries, IntSeries
 from pypnm.lib.utils import Utils
 
 class SpecAnaWindowAvgRptModel(BaseModel):
+    """Window-average metadata and values."""
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
-    window_size:int                 = Field(..., description="")
-    windows_average:FloatSeries     = Field(..., description="")
-    length:int                      = Field(..., description="")
+    window_size: int                = Field(..., description="Number of points in the moving average.")
+    windows_average: FloatSeries    = Field(..., description="Smoothed magnitudes (same length as frequency).")
+    length: int                     = Field(..., description="Number of samples.")
+
 
 class SpectrumAnalyzerSignalProcessRptModel(BaseModel):
+    """Per-point frequency, amplitude (dBmV), linear anti-log, and windowed average."""
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
-    frequency:IntSeries                 = Field(..., description="")
-    amplitude:FloatSeries               = Field(..., description="")
-    anti_log:FloatSeries                = Field(..., description="")
-    window:SpecAnaWindowAvgRptModel     = Field(..., description="")
+    frequency: IntSeries                    = Field(..., description="Frequencies in Hz for each bin (all segments).")
+    amplitude: FloatSeries                  = Field(..., description="Magnitude per bin (dBmV).")
+    anti_log: FloatSeries                   = Field(..., description="Linear ratio: 10^(dBmV/20).")
+    window: SpecAnaWindowAvgRptModel        = Field(..., description="Moving-average for visualization.")
+
 
 class SpectrumAnalyzerAnalysisRptModel(CommonAnalysis):
-    signal: SpectrumAnalyzerSignalProcessRptModel = Field(..., description="")
-
+    """Spectrum Analyzer report model bound to a channel."""
+    signal: SpectrumAnalyzerSignalProcessRptModel = Field(..., description="Signal data and smoothing.")
 
 class SpectrumAnalyzerReport(AnalysisReport):
-    FNAME_TAG: str = "SpectrumAnalyzer"
+    """Builds CSV and plots from Spectrum Analyzer analysis results."""
+    FNAME_TAG: str = "SpectrumAnalyzerReport"
 
     def __init__(self, analysis: Analysis):
         super().__init__(analysis)
@@ -43,94 +48,118 @@ class SpectrumAnalyzerReport(AnalysisReport):
         self._results: Dict[int, SpectrumAnalyzerAnalysisRptModel] = {}
 
     def create_csv(self, **kwargs: Any) -> List[CSVManager]:
-        """Emit one CSV per channel with per-bin histogram rows."""
+        """Emit CSV with columns: Frequency, Magnitude(dBmV), MovingAverage."""
         csv_mgr_list: List[CSVManager] = []
 
         for common_model in self.get_common_analysis_model():
-            model                   = cast(SpectrumAnalyzerAnalysisRptModel, common_model)
-            channel_id: int         = model.channel_id
-
+            model = cast(SpectrumAnalyzerAnalysisRptModel, common_model)
+            channel_id: int = model.channel_id
+            sig = model.signal
 
             try:
                 csv_mgr: CSVManager = self.csv_manager_factory()
-                csv_mgr.set_header(["ChannelID", "BinIndex", "HitCount", "Symmetry", "DwellCount"])
+                csv_mgr.set_header(["Frequency", "Magnitude(dBmV)", "MovingAverage"])
+
+                # Rows aligned by index
+                for f_hz, mag_dbmv, ma in zip(sig.frequency, sig.amplitude, sig.window.windows_average):
+                    csv_mgr.insert_row ([f_hz, mag_dbmv, ma])
+
                 csv_fname = self.create_csv_fname(tags=[str(channel_id), self.FNAME_TAG])
                 csv_mgr.set_path_fname(csv_fname)
 
-                self.logger.info(f"CSV created for channel {channel_id}: {csv_fname} (rows={csv_mgr.get_row_count()})")
+                self.logger.info(
+                    "CSV created for channel %s: %s (rows=%s)",
+                    channel_id, csv_fname, csv_mgr.get_row_count()
+                )
                 csv_mgr_list.append(csv_mgr)
 
             except Exception as exc:
-                self.logger.exception(f"Failed to create CSV for channel {channel_id}: {exc}", exc_info=True)
+                self.logger.exception(
+                    "Failed to create CSV for channel %s: %s",
+                    channel_id, exc, exc_info=True
+                )
 
         return csv_mgr_list
 
     def create_matplot(self, **kwargs: Any) -> List[MatplotManager]:
-        """
-        Render a per-channel histogram view from **pre-binned counts** using `MatplotManager.plot_histogram`.
-
-        Keyword args (optional):
-            normalized (bool): If True, use probability density (fractions) instead of raw counts. Default False.
-            cumulative (bool): If True, draw the cumulative histogram. Default False.
-            orientation (str): "vertical" (default) or "horizontal".
-            histtype (str): One of {"bar", "step", "stepfilled", "barstacked"}. Default "bar".
-            align (str): "mid" | "left" | "right". Default "mid".
-            bins (int | Sequence[number]): Optional override for bin edges/count. By default uses unit-width bins per entry in `hit_counts`.
-            label (str | None): Optional legend label.
-        """
+        """Create two figures per channel: raw spectrum and moving average."""
         out: List[MatplotManager] = []
 
         for common_model in self.get_common_analysis_model():
-            model = cast(SpectrumAnalyzerAnalysisRptModel, common_model)
+            m = cast(SpectrumAnalyzerAnalysisRptModel, common_model)
+            ch = m.channel_id
+            sig = m.signal
 
+            # --- Raw spectrum ---
+            try:
+                fname = self.create_png_fname(tags=[str(ch), self.FNAME_TAG, "raw"])
+                self.logger.info("Creating Spectrum plot: %s", fname)
 
-            # Title/labels
-            title = "Spectrum Analyzer"
-            xlabel = "Bin Index"
-            ylabel = "Hit Count"
+                cfg = PlotConfig(
+                    title   =   "Spectrum Analyzer",
+                    x = cast(ArrayLike, sig.frequency),  xlabel = "Frequency (Hz)",
+                    y = cast(ArrayLike, sig.amplitude),  ylabel = "Magnitude (dBmV)",
+                    grid    =   True, legend=False, transparent=False,)
+                
+                mgr = MatplotManager(default_cfg=cfg)
+                mgr.plot_line(filename=fname)
+                out.append(mgr)
 
-            png = self.create_png_fname(tags=png_tags)
-            self.logger.info(f"Creating Spectrum plot: {png}")
+            except Exception as exc:
+                self.logger.exception("Failed to create plot for channel %s (raw): %s", ch, exc, exc_info=True)
 
-            cfg = PlotConfig(title=title, 
-                             x=bin_indices,     xlabel=xlabel, 
-                             y=hit_counts,      ylabel=ylabel, 
-                             grid=True, legend=(label is not None), transparent=False)
-            
-            mgr = MatplotManager(default_cfg=cfg)
+            # --- Moving average only ---
+            try:
+                fname = self.create_png_fname(tags=[str(ch), self.FNAME_TAG, "moving_average"])
+                self.logger.info("Creating Spectrum plot: %s", fname)
 
-            out.append(mgr)
+                cfg = PlotConfig(
+                    title   =   f"Spectrum Analyzer - Window Average n={sig.window.window_size}",
+                    x = cast(ArrayLike, sig.frequency),  xlabel = "Frequency (Hz)",
+                    y = cast(ArrayLike, sig.window.windows_average),  ylabel = "Magnitude (dBmV)",
+                    grid    =   True, legend=False, transparent=False,)
+                
+                mgr = MatplotManager(default_cfg=cfg)
+                mgr.plot_line(filename=fname)
+                out.append(mgr)
+
+            except Exception as exc:
+                self.logger.exception("Failed to create plot for channel %s (moving avg): %s", ch, exc, exc_info=True)
 
         return out
 
     def _process(self) -> None:
-        """
-        Expected per-item shape (keys are case-sensitive):
+        """Convert SpectrumAnalyzerAnalysisModel → SpectrumAnalyzerAnalysisRptModel per channel."""
+        models: List[SpectrumAnalyzerAnalysisModel] = cast(List[SpectrumAnalyzerAnalysisModel], self.get_analysis_model())
 
-            {
-                "status": "SUCCESS",
-                "pnm_header": {
-                    "file_type": "PNN",
-                    "file_type_version": 9,
-                    "major_version": 1,
-                    "minor_version": 0,
-                    "capture_time": 1756915479
-                },
-                "channel_id": 0,
-                "mac_address": "38:ad:2b:3e:87:7c",
-                "first_segment_center_frequency": 300000000,
-                "last_segment_center_frequency": 900000000,
-                "segment_frequency_span": 1000000,
-                "num_bins_per_segment": 256,
-                "equivalent_noise_bandwidth": 150.0,
-                "window_function": 1,
-                "bin_frequency_spacing": 3906,
-                "spectrum_analysis_data_length": 307712,
-                "spectrum_analysis_data" "hex",
-                "amplitude_bin_segments_float": [ [.float.], [.float.]]
-        """
-        models:List[SpectrumAnalyzerAnalysisModel] = cast(List[SpectrumAnalyzerAnalysisModel], self.get_analysis_model())
+        for idx, _model in enumerate(models):
+            # Optional: debug dump
+            # LogFile().write(fname=f"{self.FNAME_TAG}.{Utils.time_stamp()}.json", data=amodel.model_dump_json())
 
-        for idx, model in enumerate(models):
-            f = f'{self.FNAME_TAG}.{Utils.time_stamp()}.json'
-            LogFile().write(fname=f, data=model.model_dump_json())
+            sig_analysis = _model.signal_analysis
+            freq_hz: IntSeries      = [int(f) for f in sig_analysis.frequencies]
+            mag_dbmv: FloatSeries   = list(sig_analysis.magnitudes)
+            ma_vals: FloatSeries    = list(sig_analysis.window_average.magnitudes)
+
+            # Anti-log in linear ratio (suitable for amplitude-like values)
+            anti_log: FloatSeries = [10.0 ** (v / 20.0) for v in mag_dbmv]
+
+            window = SpecAnaWindowAvgRptModel(
+                window_size     =   sig_analysis.window_average.points,
+                windows_average =   ma_vals,
+                length          =   len(ma_vals),
+            )
+
+            signal = SpectrumAnalyzerSignalProcessRptModel(
+                frequency   =   freq_hz,
+                amplitude   =   mag_dbmv,
+                anti_log    =   anti_log,
+                window      =   window,
+            )
+
+            rpt = SpectrumAnalyzerAnalysisRptModel(
+                channel_id      =   _model.channel_id,
+                signal          =   signal,
+            )
+
+            self.register_common_analysis_model(_model.channel_id, rpt)

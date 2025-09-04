@@ -86,10 +86,10 @@ class AnalysisReport(ABC):
         Convert this instance into its Pydantic BaseModel representation.
         """
         return AnalysisOutputModel(
-            time=self._group_time,
-            csv_file=self.csv_file,
-            plot_file=self.plot_file,
-            archive_file=self.archive_file,
+            time        =   self._group_time,
+            csv_file    =   self.csv_file,
+            plot_file   =   self.plot_file,
+            archive_file=   self.archive_file,
         )
 
     def create_csv_fname(self, tags: List[str] = []) -> PathLike:

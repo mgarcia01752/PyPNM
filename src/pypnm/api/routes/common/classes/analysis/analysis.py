@@ -894,9 +894,8 @@ class Analysis:
         profiles: List[OfdmFecSummaryProfileModel] = []
 
         for prof in (measurement.get("fec_summary_data") or []):
-            profile_id: int = int(prof.get("profile_id", INVALID_CHANNEL_ID))
-            declared_sets: int = int(prof.get("number_of_sets", 0))
-
+            profile_id: int     = int(prof.get("profile_id", INVALID_CHANNEL_ID))
+            declared_sets: int  = int(prof.get("number_of_sets", 0))
             cwe: Dict[str, Any] = prof.get("codeword_entries") or {}
 
             # Extract parallel arrays and coerce to int lists
