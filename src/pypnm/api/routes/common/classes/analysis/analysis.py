@@ -15,8 +15,11 @@ from pypnm.api.routes.common.classes.analysis.model.schema import (
     BaseAnalysisModel, ConstellationDisplayAnalysisModel, DsHistogramAnalysisModel, DsRxMerAnalysisModel, 
     FecSummaryCodeWordModel, GrpDelayStatsModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel, 
     OfdmaUsPreEqCarrierModel, RegressionModel, RxMerCarrierValuesModel, UsOfdmaUsPreEqAnalysisModel)
+from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema import (
+    MagnitudeSeries, SpecAnaAnalysisResults, SpectrumAnalyzerAnalysisModel, WindowAverage)
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
+from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpecAnCapturePara
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor, Utils
 from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_PROFILE_ID, INVALID_SCHEMA_TYPE, INVALID_START_VAULE
 from pypnm.lib.file_processor import FileProcessor
@@ -27,12 +30,14 @@ from pypnm.lib.qam.types import QamModulation
 from pypnm.lib.signal_processing.complex_array_ops import ComplexArrayOps
 from pypnm.lib.signal_processing.group_delay import GroupDelay
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
-from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, IntSeries
+from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, FrequencySeriesHz, IntSeries
+from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import WindowFunction
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
 from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ModulationOrderType
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
+from tests.test_sliding_window_averager import MovingAverage
 
 class RxMerCarrierType(Enum):
     """
@@ -235,8 +240,10 @@ class Analysis:
             self.__update_result_dict(model.model_dump())
 
         elif pnm_file_type == PnmFileType.SPECTRUM_ANALYSIS.value:
-            self.logger.debug("Stub: Processing: SPECTRUM_ANALYSIS")
-            pass
+            self.logger.debug("Processing: SPECTRUM_ANALYSIS")
+            model = self.basic_analysis_spectrum_analyzer(measurement)
+            self.__update_result_model(model)
+            self.__update_result_dict(model.model_dump())
 
         elif pnm_file_type == PnmFileType.OFDM_MODULATION_PROFILE.value:
             self.logger.debug("Processing: OFDM_MODULATION_PROFILE")
@@ -915,17 +922,17 @@ class Analysis:
                 )
 
             cw = FecSummaryCodeWordModel(
-                timestamps      =ts_list,
-                total_codewords =tot_list,
-                corrected       =cor_list,
-                uncorrected     =unc_list,
+                timestamps      =   ts_list,
+                total_codewords =   tot_list,
+                corrected       =   cor_list,
+                uncorrected     =   unc_list,
             )
 
             profiles.append(
                 OfdmFecSummaryProfileModel(
-                    profile         =profile_id,
-                    number_of_sets  =n,
-                    codewords       =cw,
+                    profile         =   profile_id,
+                    number_of_sets  =   n,
+                    codewords       =   cw,
                 )
             )
 
@@ -935,9 +942,155 @@ class Analysis:
             log.debug(f"num_profiles declared={declared_num_profiles}, parsed={len(profiles)}")
 
         return OfdmFecSummaryAnalysisModel(
-            device_details      =measurement.get("device_details", SystemDescriptor.empty()),
-            pnm_header          =measurement.get("pnm_header", {}),
-            mac_address         =measurement.get("mac_address", MacAddress.null()),
-            channel_id          =int(measurement.get("channel_id", INVALID_CHANNEL_ID)),
-            profiles            =profiles,
+            device_details      =   measurement.get("device_details", SystemDescriptor.empty()),
+            pnm_header          =   measurement.get("pnm_header", {}),
+            mac_address         =   measurement.get("mac_address", MacAddress.null()),
+            channel_id          =   int(measurement.get("channel_id", INVALID_CHANNEL_ID)),
+            profiles            =   profiles,
+        )
+
+    @classmethod
+    def basic_analysis_spectrum_analyzer(cls, measurement: Dict[str, Any]) -> SpectrumAnalyzerAnalysisModel:
+        """
+        Build a SpectrumAnalyzerAnalysisModel from a raw spectrum analyzer measurement.
+
+        The method maps core capture parameters, derives reasonable defaults when fields
+        are missing, constructs a frequency axis (if not supplied), and computes a
+        same-length moving-average smoothing of the magnitudes using ``MovingAverage``.
+
+        Expected `measurement` keys (subset)
+        ------------------------------------
+        pnm_header : dict
+            PNM header metadata.
+        device_details : dict
+            System descriptor / identification (optional).
+        mac_address : str
+            Cable modem MAC address (optional; defaults to ``MacAddress.null()``).
+        channel_id : int
+            Channel identifier (optional; defaults to 0).
+        first_segment_center_frequency : int (Hz)
+            Center frequency of the first (or only) captured segment.
+        last_segment_center_frequency : int (Hz)
+            Center frequency of the last captured segment.
+        segment_frequency_span : int (Hz)
+            Span (width) of each segment.
+        num_bins_per_segment : int
+            Number of FFT bins per segment.
+        equivalent_noise_bandwidth : float (Hz)
+            ENBW in Hz; converted to kHz for parameters.
+        window_function : int
+            Enum value for the window applied during capture (mapped to ``WindowFunction``).
+        bin_frequency_spacing : int (Hz)
+            Frequency spacing between adjacent bins; if absent, derived as span / bins.
+        magnitudes : list[float]
+            Optional, single-segment magnitude (e.g., dB) values aligned to bins.
+        frequencies : list[int] (Hz)
+            Optional, frequency axis corresponding to ``magnitudes``.
+        amplitude_bin_segments_float : list[list[float]]
+            Optional, segmented magnitudes. If ``magnitudes`` is absent, the first segment
+            is used as a fallback.
+
+        Additional optional keys
+        ------------------------
+        window_average_points : int
+            Smoothing window size; default 7.
+
+        Returns
+        -------
+        SpectrumAnalyzerAnalysisModel
+            Fully populated analysis model with parameters, raw magnitudes, frequency axis,
+            and a same-length moving-average series.
+
+        Notes
+        -----
+        - Magnitude smoothing uses reflection padding for stable edge behavior.
+        - Non-finite magnitude values are excluded from the average (masked) and will yield
+          a 0.0 result if an entire window contains no finite samples.
+        """
+        # --- map & coerce parameter fields ---
+        first_seg_cf          : int           = int(measurement.get("first_segment_center_frequency", 0))
+        last_seg_cf           : int           = int(measurement.get("last_segment_center_frequency", 0))
+        seg_span_hz           : int           = int(measurement.get("segment_frequency_span", 0))
+        bins_per_seg          : int           = int(measurement.get("num_bins_per_segment", 0))
+
+        # ENBW: Hz -> kHz (rounded)
+        enbw_hz               : float         = float(measurement.get("equivalent_noise_bandwidth", 0.0))
+        noise_bw_khz          : int           = int(round(enbw_hz / 1_000.0)) if enbw_hz > 0.0 else 0
+
+        # Window function mapping (int -> enum), fall back to HANN
+        wf_raw                : int           = int(measurement.get("window_function", WindowFunction.HANN.value))
+        try:
+            wf_enum          : WindowFunction = WindowFunction(wf_raw)
+        except Exception:
+            wf_enum          = WindowFunction.HANN
+
+        # Bin bandwidth / spacing
+        bin_bw                : int           = int(measurement.get("bin_frequency_spacing", 0))
+        if bin_bw <= 0 and seg_span_hz > 0 and bins_per_seg > 0:
+            bin_bw = max(1, seg_span_hz // bins_per_seg)
+
+        # --- frequencies (Hz): use provided or synthesize for single segment ---
+        in_freqs = measurement.get("frequencies")
+        if isinstance(in_freqs, (list, tuple)) and len(in_freqs) > 0:
+            frequencies: FrequencySeriesHz = [int(f) for f in in_freqs]
+        else:
+            frequencies = []
+            if bins_per_seg > 0 and seg_span_hz > 0 and bin_bw > 0 and first_seg_cf > 0:
+                # Centered segment: start at (center - span/2), step by bin_bw.
+                start_hz = first_seg_cf - (seg_span_hz // 2)
+                # Optional alignment to bin centers
+                start_hz += bin_bw // 2
+                frequencies = [int(start_hz + i * bin_bw) for i in range(bins_per_seg)]
+
+        # --- magnitudes (prefer flat list; otherwise first segment fallback) ---
+        in_mags = measurement.get("magnitudes")
+        if not isinstance(in_mags, (list, tuple)):
+            segs = measurement.get("amplitude_bin_segments_float")
+            if isinstance(segs, list) and segs and isinstance(segs[0], list):
+                in_mags = segs[0]
+            else:
+                in_mags = []
+        magnitudes: MagnitudeSeries = [float(x) for x in in_mags]
+
+        # --- windowed average (same length) using robust MovingAverage ---
+        window_points = int(measurement.get("window_average_points", 7))
+        try:
+            ma = MovingAverage(max(1, window_points), mode="reflect")
+            smoothed = ma.apply(magnitudes) if magnitudes else []
+        except Exception:
+            # Defensive: if anything goes wrong, fall back to pass-through
+            smoothed = list(magnitudes)
+
+        window_avg = WindowAverage(
+            points     = max(1, window_points),
+            magnitudes = smoothed,
+        )
+
+        # --- results payload ---
+        results = SpecAnaAnalysisResults(
+            bin_bandwidth  = bin_bw,
+            segment_length = bins_per_seg,
+            frequencies    = frequencies,
+            magnitudes     = magnitudes,
+            window_average = window_avg,
+        )
+
+        # --- capture parameters payload ---
+        capture_parameters: SpecAnCapturePara = SpecAnCapturePara(
+            first_segment_center_freq = first_seg_cf,
+            last_segment_center_freq  = last_seg_cf,
+            segment_freq_span         = seg_span_hz,
+            num_bins_per_segment      = bins_per_seg,
+            noise_bw                  = noise_bw_khz,
+            window_function           = wf_enum,
+        )
+
+        # --- assemble top-level analysis model ---
+        return SpectrumAnalyzerAnalysisModel(
+            device_details     = measurement.get("device_details", SystemDescriptor.empty()),
+            pnm_header         = measurement.get("pnm_header", {}),
+            mac_address        = measurement.get("mac_address", MacAddress.null()),
+            channel_id         = int(measurement.get("channel_id", 0)),
+            capture_parameters = capture_parameters,
+            signal_analysis    = results,
         )

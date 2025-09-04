@@ -27,7 +27,7 @@ class ConstellationDisplayParameters(BaseModel):
     soft:ComplexArray               = Field(..., description="")
     sample_count:int                = Field(..., description="")
 
-class ConstellationDisplayAnalysis(CommonAnalysis):
+class ConstellationDisplayAnalysisRptModel(CommonAnalysis):
     parameters: ConstellationDisplayParameters = Field(..., description="Channel estimation analysis parameters and limits.")
 
 class ConstellationDisplayReport(AnalysisReport):
@@ -37,7 +37,7 @@ class ConstellationDisplayReport(AnalysisReport):
     def __init__(self, analysis: Analysis):
         super().__init__(analysis)
         self.logger = logging.getLogger("ConstellationDisplayReport")
-        self._results: Dict[int, ConstellationDisplayAnalysis] = {}
+        self._results: Dict[int, ConstellationDisplayAnalysisRptModel] = {}
         self._sig_cap_agg: SignalCaptureAggregator = SignalCaptureAggregator()
 
     def create_csv(self, **kwargs) -> List[CSVManager]:
@@ -49,7 +49,7 @@ class ConstellationDisplayReport(AnalysisReport):
 
         for common_model in self.get_common_analysis_model():
             any_models = True
-            model = cast(ConstellationDisplayAnalysis, common_model)
+            model = cast(ConstellationDisplayAnalysisRptModel, common_model)
             channel_id                  = int(model.channel_id)
             modulation:QamModulation    = model.parameters.modulation
             hard:ComplexArray           = model.parameters.hard
@@ -95,7 +95,7 @@ class ConstellationDisplayReport(AnalysisReport):
 
         for common_model in self.get_common_analysis_model():
             any_models = True
-            model = cast(ConstellationDisplayAnalysis, common_model)
+            model = cast(ConstellationDisplayAnalysisRptModel, common_model)
             channel_id                  = int(model.channel_id)
             modulation:QamModulation    = model.parameters.modulation
             hard:ComplexArray           = model.parameters.hard
@@ -164,7 +164,7 @@ class ConstellationDisplayReport(AnalysisReport):
                         sample_count    = sample_count,
                 )
                 
-                model = ConstellationDisplayAnalysis(
+                model = ConstellationDisplayAnalysisRptModel(
                         channel_id  =   channel_id,
                         raw_x       =   [0],    
                         raw_y       =   [0],

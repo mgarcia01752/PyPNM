@@ -17,7 +17,7 @@ from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.types import FloatSeries, FrequencySeriesHz, IntSeries, StringArray
 
 
-class ModulationProfileModel(BaseModel):
+class ModulationProfileRptModel(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
     profile_id: int = Field(..., description="Profile identifier")
     modulation: List[str] = Field(default_factory=list, description="Per-carrier modulation label (e.g., 'QAM256')")
@@ -25,13 +25,13 @@ class ModulationProfileModel(BaseModel):
     shannon_min_mer: List[float] = Field(default_factory=list, description="Per-carrier minimum MER per Shannon (dB)")
 
 
-class ModulationProfileParameters(BaseModel):
+class ModulationProfileParametersAnalysisRpt(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
-    profiles: List[ModulationProfileModel] = Field(default_factory=list, description="All profiles for a channel")
+    profiles: List[ModulationProfileRptModel] = Field(default_factory=list, description="All profiles for a channel")
 
 
-class ModulationProfileAnalysis(CommonAnalysis):
-    parameters: ModulationProfileParameters = Field(..., description="Modulation profile parameters")
+class ModulationProfileAnalysisRptModel(CommonAnalysis):
+    parameters: ModulationProfileParametersAnalysisRpt = Field(..., description="Modulation profile parameters")
 
 
 class ModulationProfileReport(AnalysisReport):
@@ -40,7 +40,7 @@ class ModulationProfileReport(AnalysisReport):
     def __init__(self, analysis: Analysis):
         super().__init__(analysis)
         self.logger = logging.getLogger("ModulationProfileReport")
-        self._results: Dict[int, ModulationProfileAnalysis] = {}
+        self._results: Dict[int, ModulationProfileAnalysisRptModel] = {}
 
     def create_csv(self, **kwargs: Any) -> List[CSVManager]:
         """
@@ -52,7 +52,7 @@ class ModulationProfileReport(AnalysisReport):
 
         for common_model in self.get_common_analysis_model():
             any_models = True
-            model = cast(ModulationProfileAnalysis, common_model)
+            model = cast(ModulationProfileAnalysisRptModel, common_model)
             channel_id: int = int(model.channel_id)
             freq: FrequencySeriesHz = cast(FrequencySeriesHz, model.raw_x)
 
@@ -103,7 +103,7 @@ class ModulationProfileReport(AnalysisReport):
         out: List[MatplotManager] = []
 
         for common_model in self.get_common_analysis_model():
-            model = cast(ModulationProfileAnalysis, common_model)
+            model = cast(ModulationProfileAnalysisRptModel, common_model)
             channel_id: int = int(model.channel_id)
             freq: FrequencySeriesHz = cast(FrequencySeriesHz, model.raw_x)
 
@@ -187,7 +187,7 @@ class ModulationProfileReport(AnalysisReport):
                 profiles_in: List[Dict[str, Any]] = data.get("profiles", [])
 
                 freq_array: FrequencySeriesHz = []
-                profile_models: List[ModulationProfileModel] = []
+                profile_models: List[ModulationProfileRptModel] = []
 
                 for profile_entry in profiles_in:
                     cv: Dict[str, Any] = profile_entry.get("carrier_values", {})
@@ -210,11 +210,11 @@ class ModulationProfileReport(AnalysisReport):
                         bps = self._align_len(bps, n, fill=0)
                         mer = self._align_len(mer, n, fill=float("nan"))
 
-                    profile_models.append(ModulationProfileModel(profile_id=profile_id, modulation=mod, bits_per_symbol=bps, shannon_min_mer=mer))
+                    profile_models.append(ModulationProfileRptModel(profile_id=profile_id, modulation=mod, bits_per_symbol=bps, shannon_min_mer=mer))
 
-                params = ModulationProfileParameters(profiles=profile_models)
+                params = ModulationProfileParametersAnalysisRpt(profiles=profile_models)
 
-                model = ModulationProfileAnalysis(channel_id=channel_id, raw_x=freq_array, raw_y=[0.0], parameters=params)
+                model = ModulationProfileAnalysisRptModel(channel_id=channel_id, raw_x=freq_array, raw_y=[0.0], parameters=params)
 
                 self.register_common_analysis_model(channel_id, model)
 

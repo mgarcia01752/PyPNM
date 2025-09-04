@@ -111,6 +111,7 @@ RegressionStats  = Tuple[float, float, float]    # (slope, intercept, r2)
 FrequencySeriesHz = FloatSeries                  # alias for intent
 MerSeriesdB       = FloatSeries
 ShannonSeriesdB   = FloatSeries
+MagnitudeSeries   = FloatSeries
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Explicit public surface
@@ -126,7 +127,7 @@ __all__ = [
     "JSONScalar", "JSONDict", "JSONList", "JSONValue",
     # unit-tagged
     "TimestampSec", "SampleIndex",
-    "FrequencyHz", "BandwidthHz", "PowerdBmV", "PowerdB", "MERdB", "SNRdB",
+    "FrequencyHz", "BandwidthHz", "PowerdBmV", "PowerdB", "MERdB", "SNRdB", "MagnitudeSeries",
     "ChannelId", "SubcarrierId",
     "OidStr", "OidNumTuple",
     "MacAddressStr", "IPv4Str", "IPv6Str",

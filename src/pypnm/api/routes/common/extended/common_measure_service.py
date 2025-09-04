@@ -81,15 +81,15 @@ class CommonMeasureService(CommonMessagingService):
         self.pnm_filename:List[str]
         
         self._transactionId_pnmFile: Dict[str, str] = {}
-        self.pnm_test_type:DocsPnmCmCtlTest = pnm_test_type
-        self.cm:CableModem = cable_modem
-        self.tftp_servers:Tuple[Inet,Inet] = tftp_servers
-        self.tftp_path:str = tftp_path
-        self.snmp_write_community:str = snmp_write_community
-        self.extra_options = extra_options
-        self.config_mgr:ConfigManager = ConfigManager()
-        self.log_prefix:str = f"MAC: {self.cm.get_mac_address} - INET: {self.cm.get_inet_address}"
-        self.save_dir = PnmConfigManager.get_save_dir()
+        self.pnm_test_type:DocsPnmCmCtlTest         = pnm_test_type
+        self.cm:CableModem                          = cable_modem
+        self.tftp_servers:Tuple[Inet,Inet]          = tftp_servers
+        self.tftp_path:str                          = tftp_path
+        self.snmp_write_community:str               = snmp_write_community
+        self.extra_options                          = extra_options
+        self.config_mgr:ConfigManager               = ConfigManager()
+        self.log_prefix:str                         = f"MAC: {self.cm.get_mac_address} - INET: {self.cm.get_inet_address}"
+        self.save_dir                               = PnmConfigManager.get_save_dir()
         
         if self.extra_options:
             self.logger.debug(f"{self.log_prefix} - OPTIONS: {self.extra_options}")
@@ -1098,15 +1098,15 @@ class CommonMeasureService(CommonMessagingService):
         inactivity_timeout = self.extra_options.get("inactivity_timeout", 100)
 
         # Frequency range (first and last segment center frequencies)
-        first_segment_center_frequency = self.extra_options.get("first_segment_center_freq", 300_000_000)
-        last_segment_center_frequency = self.extra_options.get("last_segment_center_freq", 993_000_000)
+        first_segment_center_frequency  = self.extra_options.get("first_segment_center_freq", 300_000_000)
+        last_segment_center_frequency   = self.extra_options.get("last_segment_center_freq", 993_000_000)
 
         # Per-segment configuration
-        segment_frequency_span = self.extra_options.get("segment_freq_span", 1_000_000)
-        num_bins_per_segment = self.extra_options.get("num_bins_per_segment", 256)
-        equivalent_noise_bandwidth = self.extra_options.get("noise_bw", 110)
-        window_function = self.extra_options.get("window_function", WindowFunction.HANN)
-        number_of_averages = self.extra_options.get("num_averages", 1)
+        segment_frequency_span      = self.extra_options.get("segment_freq_span", 1_000_000)
+        num_bins_per_segment        = self.extra_options.get("num_bins_per_segment", 256)
+        equivalent_noise_bandwidth  = self.extra_options.get("noise_bw", 110)
+        window_function             = self.extra_options.get("window_function", WindowFunction.HANN)
+        number_of_averages          = self.extra_options.get("num_averages", 1)
 
         # Decide retrieval mode: SNMP vs. TFTP/PNM-file
         spectrum_retrieval_type = self.extra_options.get(

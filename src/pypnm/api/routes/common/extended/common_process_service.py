@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-
-import json
 import logging
 from typing import Dict
 
@@ -12,7 +10,6 @@ from pypnm.api.routes.common.extended.common_messaging_service import (
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.file_processor import FileProcessor
-from pypnm.lib.utils import Utils
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 from pypnm.pnm.process.CmDsConstDispMeas import CmDsConstDispMeas
 from pypnm.pnm.process.CmDsHist import CmDsHist
@@ -113,7 +110,7 @@ class CommonProcessService(CommonMessagingService):
         device_details:Dict[str, str] = transaction_record[PnmFileTransaction.DEVICE_DETAILS]
         pnm_data = FileProcessor(file_name_dst).read_file()
 
-        if pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR.name:
+        if   pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR.name:
             pnm_dict = self._add_device_details(CmDsOfdmRxMer(binary_data=pnm_data).to_dict(), device_details)
             self.build_msg(ServiceStatusCode.SUCCESS, pnm_dict)
             
@@ -139,8 +136,8 @@ class CommonProcessService(CommonMessagingService):
             
         elif pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER.name:
             self.logger.debug("Processing DS_SPECTRUM_ANALYZER PNM data")
-            pnm_obj = CmSpectrumAnalysis(binary_data=pnm_data)            
-            self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict())           
+            pnm_dict = self._add_device_details(CmSpectrumAnalysis(pnm_data).to_dict(), device_details)            
+            self.build_msg(ServiceStatusCode.SUCCESS, pnm_dict)           
             
         elif pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF.name:
             self.logger.debug(f"Processing {pnm_test_type} PNM data")         
@@ -149,9 +146,8 @@ class CommonProcessService(CommonMessagingService):
         
         elif pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA.name:
             self.logger.debug(f"Processing {pnm_test_type} PNM data")
-            pnm_obj = CmSpectrumAnalysisSnmp(pnm_data)
-            FileProcessor(f'output/spec-ana-{Utils.time_stamp()}.json').write_file(json.dumps(pnm_obj.to_dict()))
-            self.build_msg(ServiceStatusCode.SUCCESS, pnm_obj.to_dict(include_raw=False))
+            pnm_dict = self._add_device_details(CmSpectrumAnalysisSnmp(pnm_data).to_dict(include_raw=False), device_details)
+            self.build_msg(ServiceStatusCode.SUCCESS, pnm_dict)
             
         else:
             self.logger.error(f"Unsupported PNM test type: {pnm_test_type}")

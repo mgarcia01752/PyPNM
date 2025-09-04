@@ -13,11 +13,13 @@ from typing import Iterable, List, Tuple, Optional
 
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus
 from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
 from pypnm.docsis.data_type.InterfaceStats import DocsisIfType
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 
+PreCheckStatus = Tuple[ServiceStatusCode, str]
 
 class CableModemServicePreCheck:
     """
@@ -43,9 +45,10 @@ class CableModemServicePreCheck:
         mac_address: Optional[str] = None,
         ip_address: Optional[str] = None,
         check_docsis_version: Optional[List[ClabsDocsisVersion]] = None,
-        validate_ofdm_exist: Optional[bool] = False,
-        validate_ofdma_exist: Optional[bool] = False,
-        validate_scqam_exist: Optional[bool] = False
+        validate_ofdm_exist: bool = False,
+        validate_ofdma_exist: bool = False,
+        validate_scqam_exist: bool = False,
+        validate_pnm_ready_status: bool = False,
     ) -> None:
         """
         Initialize the pre-check service.
@@ -80,9 +83,10 @@ class CableModemServicePreCheck:
         else:
             self.check_docsis_version = []
             
-        self.validate_ofdma_exist = validate_ofdma_exist
-        self.validate_ofdm_exist = validate_ofdm_exist
-        self.validate_scqam_exist = validate_scqam_exist
+        self._validate_ofdma_exist       = validate_ofdma_exist
+        self._validate_ofdm_exist        = validate_ofdm_exist
+        self._validate_scqam_exist       = validate_scqam_exist
+        self._validate_pnm_ready_stat    = validate_pnm_ready_status
 
     async def run_precheck(self) -> Tuple[ServiceStatusCode, str]:
         """
@@ -113,21 +117,26 @@ class CableModemServicePreCheck:
             if status != ServiceStatusCode.SUCCESS:
                 return status, msg
 
-        if self.validate_ofdm_exist:
+        if self._validate_ofdm_exist:
             status, msg = await self.validate_ofdm_channel_exist()
             if status != ServiceStatusCode.SUCCESS:
                 return status, msg  
 
-        if self.validate_ofdma_exist:
+        if self._validate_ofdma_exist:
             status, msg = await self.validate_ofdma_channel_exist()
             if status != ServiceStatusCode.SUCCESS:
                 return status, msg
 
-        if self.validate_scqam_exist:
+        if self._validate_scqam_exist:
             status, msg = await self.validate_scqam_channel_exist()
             if status != ServiceStatusCode.SUCCESS:
                 return status, msg            
-        
+
+        if self._validate_pnm_ready_stat:
+            status, msg = await self.validate_pnm_ready_status()
+            if status != ServiceStatusCode.SUCCESS:
+                return status, msg 
+
         msg = "Pre-check successful: CableModem reachable via ping and SNMP"
         self.logger.info(msg)
         return ServiceStatusCode.SUCCESS, msg
@@ -174,7 +183,7 @@ class CableModemServicePreCheck:
             SUCCESS if version is allowed, else INVALID_DOCSIS_VERSION.
         """
         try:
-            base_cap = await self.cm.getDocsisBaseCapability()
+            base_cap:ClabsDocsisVersion = await self.cm.getDocsisBaseCapability()
             if base_cap not in self.check_docsis_version:
                 msg = f"Invalid DOCSIS Version: {base_cap.name}"
                 self.logger.error(msg)
@@ -247,3 +256,14 @@ class CableModemServicePreCheck:
             return ServiceStatusCode.NO_SCQAM_CHAN_ID_INDEX_FOUND, msg
 
         return ServiceStatusCode.SUCCESS, "SC-QAM downstream channels detected."
+    
+    async def validate_pnm_ready_status(self) -> PreCheckStatus:
+
+        out:PreCheckStatus = (ServiceStatusCode.SUCCESS, DocsPnmCmCtlStatus.READY.name)
+
+        rst: DocsPnmCmCtlStatus = await self.cm.getDocsPnmCmCtlStatus()
+
+        if rst != DocsPnmCmCtlStatus.READY:
+            return ServiceStatusCode.SUCCESS, rst.name
+        
+        return out

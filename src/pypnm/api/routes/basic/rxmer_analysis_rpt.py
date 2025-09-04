@@ -21,7 +21,7 @@ from pypnm.lib.numeric_scaler import NumericScaler
 from pypnm.lib.signal_processing.shan.series import Shannon
 from pypnm.lib.types import ArrayLike, FloatSeries, IntSeries
 
-class RxMerAnalysisParameters(BaseModel):
+class RxMerParametersAnalysisRpt(BaseModel):
     """
     Parameters that augment RxMER analysis output.
 
@@ -33,11 +33,11 @@ class RxMerAnalysisParameters(BaseModel):
     regression_line: FloatSeries        = Field(..., description="Regression fitted values per subcarrier")
     modulation_count: Dict[str, int]    = Field(..., description="Number of supported modulation schemes")
 
-class RxMerAnalysis(CommonAnalysis):
+class RxMerAnalysisRptModel(CommonAnalysis):
     """
     Analysis view over RxMER data (extends CommonAnalysis).
     """
-    parameters: RxMerAnalysisParameters = Field(..., description="RxMER analysis parameters and limits.")
+    parameters: RxMerParametersAnalysisRpt = Field(..., description="RxMER analysis parameters and limits.")
 
 class RxMerAnalysisReport(AnalysisReport):
     """Concrete report builder for RxMER measurements."""
@@ -45,7 +45,7 @@ class RxMerAnalysisReport(AnalysisReport):
     def __init__(self, analysis: Analysis):
         super().__init__(analysis)
         self.logger = logging.getLogger("RxMerAnalysisReport")
-        self._results: Dict[int, RxMerAnalysis] = {}
+        self._results: Dict[int, RxMerAnalysisRptModel] = {}
         self._sig_cap_agg: SignalCaptureAggregator = SignalCaptureAggregator()
 
     def create_csv(self, **kwargs) -> List[CSVManager]:
@@ -57,7 +57,7 @@ class RxMerAnalysisReport(AnalysisReport):
 
         for common_model in self.get_common_analysis_model():
             any_models = True
-            model = cast(RxMerAnalysis, common_model)
+            model = cast(RxMerAnalysisRptModel, common_model)
             chan = model.channel_id
 
             x:FloatSeries   = model.raw_x
@@ -120,7 +120,7 @@ class RxMerAnalysisReport(AnalysisReport):
 
         for common_model in self.get_common_analysis_model():
             any_models = True
-            model       = cast(RxMerAnalysis, common_model)
+            model       = cast(RxMerAnalysisRptModel, common_model)
             channel_id  = model.channel_id
             x_hz        = model.raw_x
             y_db        = model.raw_y
@@ -240,10 +240,10 @@ class RxMerAnalysisReport(AnalysisReport):
                     raise ValueError(
                         f"length mismatch x/y/shannon: {len(x)}/{len(y)}/{len(sh)} (n must be equal & > 0)")
 
-                model = RxMerAnalysis(
+                model = RxMerAnalysisRptModel(
                     channel_id  =   data.channel_id,
                     raw_x=x,        raw_y=y,
-                    parameters  =   RxMerAnalysisParameters(
+                    parameters  =   RxMerParametersAnalysisRpt(
                                         shannon_limit_db    =   sh, 
                                         regression_line     =   data.regression.slope,
                                         modulation_count    =   mod_count

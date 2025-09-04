@@ -21,7 +21,7 @@ from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
 from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, IntSeries, PathLike
 
 
-class ChanEstimationParameters(BaseModel):
+class ChanEstimationParametersRptModel(BaseModel):
     """
     Parameters that augment channel estimation analysis output.
     - regression_line : Per-subcarrier fitted values (ŷ) from linear regression over index domain
@@ -30,11 +30,11 @@ class ChanEstimationParameters(BaseModel):
     regression_line: FloatSeries = Field(..., description="Regression fitted values per subcarrier")
     group_delay: FloatSeries = Field(..., description="Group Delay")
 
-class ChanEstimationAnalysis(CommonAnalysis):
+class ChanEstimationAnalysisRptModel(CommonAnalysis):
     """
     Analysis view over channel estimation data (extends CommonAnalysis).
     """
-    parameters: ChanEstimationParameters = Field(..., description="Channel estimation analysis parameters and limits.")
+    parameters: ChanEstimationParametersRptModel = Field(..., description="Channel estimation analysis parameters and limits.")
 
 
 class ChanEstimationReport(AnalysisReport):
@@ -45,7 +45,7 @@ class ChanEstimationReport(AnalysisReport):
     def __init__(self, analysis: Analysis):
         super().__init__(analysis)
         self.logger             = logging.getLogger("ChanEstimationReport")
-        self._results           : Dict[int, ChanEstimationAnalysis] = {}
+        self._results           : Dict[int, ChanEstimationAnalysisRptModel] = {}
         self._sig_cap_agg       : SignalCaptureAggregator           = SignalCaptureAggregator()
 
     def create_csv(self, **kwargs) -> List[CSVManager]:
@@ -57,7 +57,7 @@ class ChanEstimationReport(AnalysisReport):
 
         for common_model in self.get_common_analysis_model():
             any_models = True
-            model      = cast(ChanEstimationAnalysis, common_model)
+            model      = cast(ChanEstimationAnalysisRptModel, common_model)
             chan       = int(model.channel_id)
 
             x: ArrayLike        = model.raw_x
@@ -97,7 +97,7 @@ class ChanEstimationReport(AnalysisReport):
 
         for common_model in self.get_common_analysis_model():
             any_models          = True
-            model               = cast(ChanEstimationAnalysis, common_model)
+            model               = cast(ChanEstimationAnalysisRptModel, common_model)
             chan                = int(model.channel_id)
             chan_id_list.append(chan)
 
@@ -188,12 +188,12 @@ class ChanEstimationReport(AnalysisReport):
                 y: FloatSeries      = coerce_finite(y_raw, "raw_y")
                 y_hat: FloatSeries  = cast(FloatSeries, LinearRegression1D(cast(ArrayLike,y)).fitted_values())
 
-                params = ChanEstimationParameters(
+                params = ChanEstimationParametersRptModel(
                     regression_line               = y_hat,
                     group_delay                   = group_delay,
                 )
 
-                model = ChanEstimationAnalysis(
+                model = ChanEstimationAnalysisRptModel(
                     channel_id                    = channel_id,
                     raw_x                         = x,
                     raw_y                         = y,

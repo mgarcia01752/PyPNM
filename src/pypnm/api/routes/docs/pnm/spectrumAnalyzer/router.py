@@ -2,21 +2,25 @@
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from typing import List, Union
+from typing import List, Union, cast
 from fastapi import APIRouter, HTTPException
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisResponse, PnmResponse
+from pypnm.api.routes.basic.spec_analyzer_analysis_rpt import SpectrumAnalyzerReport
+from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisResponse
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.docs.pnm.files.service import FileType, PnmFileService
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import (
     CmSpecAnaAnalysisRequest, CmSpecAnaAnalysisResponse, CmSpectrumAnalyzerRequest)
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.service import CmSpectrumAnalysisService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import Path
 
 class SpectrumAnalyzerRouter:
     """
@@ -57,7 +61,7 @@ class SpectrumAnalyzerRouter:
                     self.logger.error(msg)
                     return SnmpResponse(mac_address=str(mac), status=status, message=msg)                   
                 
-                service = CmSpectrumAnalysisService(cable_modem=cm, spec_analyzer_para=request.parameters)
+                service = CmSpectrumAnalysisService(cable_modem=cm, capture_parameters=request.parameters)
                 msg_rsp: MessageResponse = await service.set_and_go()
 
                 if msg_rsp.status != ServiceStatusCode.SUCCESS:
@@ -84,16 +88,48 @@ class SpectrumAnalyzerRouter:
         async def get_analysis(request: CmSpecAnaAnalysisRequest):
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
+            parameters = request.capture_parameters
             self.logger.info(f"Retrieving Spectrum Analyzer Analysis for MAC: {mac}, IP: {ip}, Analysis Type: {request.analysis.type}")
 
             try:
-                status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
+                status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip,
+                                                              validate_pnm_ready_status = True).run_precheck()
                 
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(
                         mac_address=str(mac), status=status,message=msg)
-                         
+                
+                cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
+                service = CmSpectrumAnalysisService(cable_modem=cm, capture_parameters=parameters)
+                msg_rsp: MessageResponse = await service.set_and_go()
+
+                if msg_rsp.status != ServiceStatusCode.SUCCESS:
+                    self.logger.error(f"[getAnalysis] Spectrum Analyzer failed with status: {msg_rsp.status.name}")
+                    raise HTTPException(status_code=500, detail="Spectrum Analyzer SNMP execution failed")
+
+                cps = CommonProcessService(msg_rsp)
+                msg_rsp = cps.process()
+
+                analysis = Analysis(AnalysisType.BASIC, msg_rsp)
+
+                if request.output.type == FileType.JSON.value:
+                    return PnmAnalysisResponse(mac_address=mac, 
+                                               status=ServiceStatusCode.SUCCESS, 
+                                               data=analysis.get_results())
+
+                elif request.output.type == FileType.ARCHIVE.value:
+                    
+                    analysis_rpt = SpectrumAnalyzerReport(analysis)
+                    rpt:Path = cast(Path, analysis_rpt.build_report())
+                    return PnmFileService().get_file(FileType.ARCHIVE,rpt.name)
+
+                else:
+                    return PnmAnalysisResponse(
+                        mac_address=mac,
+                        status=ServiceStatusCode.INVALID_OUTPUT_TYPE, 
+                        data={})
+
             except HTTPException:
                 raise
             except Exception as e:

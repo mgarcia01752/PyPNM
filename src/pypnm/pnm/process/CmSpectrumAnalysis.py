@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from pydantic.functional_serializers import field_serializer
 from pypnm.lib.types import FloatSeries
 from pypnm.pnm.process.pnm_file_type import PnmFileType
-from pypnm.pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.process.pnm_header import PnmHeader, PnmHeaderParameters
 
 class CmSpectrumAnalyzerModel(BaseModel):
     """
@@ -21,7 +21,7 @@ class CmSpectrumAnalyzerModel(BaseModel):
     raw data, and processed amplitude segments.
     """
     model_config                                    = ConfigDict(extra="ignore", populate_by_name=True, ser_json_bytes="base64")
-
+    pnm_header:PnmHeaderParameters                  = Field(..., description="")
     channel_id: int                                 = Field(..., description="Downstream/upstream channel identifier.")
     mac_address: str                                = Field(..., description="Device MAC address (string).")
     first_segment_center_frequency: int             = Field(..., description="Center frequency of the first segment in Hz.")
@@ -152,6 +152,7 @@ class CmSpectrumAnalysis(PnmHeader):
         header fields and processed amplitude data.
         """
         self._model = CmSpectrumAnalyzerModel(
+            pnm_header                     = self.getPnmHeaderParameterModel(), 
             channel_id                     = self._channel_id,
             mac_address                    = self._mac_address,
             first_segment_center_frequency = self._first_segment_center_frequency,

@@ -23,7 +23,7 @@ class DsHistrogramParameters(BaseModel):
     hit_counts: IntSeries   = Field(default_factory=list, description="Histogram bin hit counts")
 
 
-class DsHistrogramAnalysis(CommonAnalysis):
+class DsHistrogramAnalysisRpt(CommonAnalysis):
     parameters: DsHistrogramParameters = Field(..., description="Ds Histogram parameters")
 
 
@@ -33,14 +33,14 @@ class DsHistrogramReport(AnalysisReport):
     def __init__(self, analysis: Analysis):
         super().__init__(analysis)
         self.logger = logging.getLogger("DsHistrogramReport")
-        self._results: Dict[int, DsHistrogramAnalysis] = {}
+        self._results: Dict[int, DsHistrogramAnalysisRpt] = {}
 
     def create_csv(self, **kwargs: Any) -> List[CSVManager]:
         """Emit one CSV per channel with per-bin histogram rows."""
         csv_mgr_list: List[CSVManager] = []
 
         for common_model in self.get_common_analysis_model():
-            model                   = cast(DsHistrogramAnalysis, common_model)
+            model                   = cast(DsHistrogramAnalysisRpt, common_model)
             channel_id: int         = model.channel_id
             symmetry: int           = model.parameters.symmetry
             dwell_count: int        = model.parameters.dwell_count
@@ -87,7 +87,7 @@ class DsHistrogramReport(AnalysisReport):
         bins_override = kwargs.get("bins", None)
 
         for common_model in self.get_common_analysis_model():
-            model = cast(DsHistrogramAnalysis, common_model)
+            model = cast(DsHistrogramAnalysisRpt, common_model)
             channel_id: int = int(model.channel_id)
             hit_counts: List[float] = [float(v) for v in (model.parameters.hit_counts or [])]
 
@@ -173,7 +173,7 @@ class DsHistrogramReport(AnalysisReport):
                 raw_x = list(range(len(hit_counts)))
                 raw_y:IntSeries = hit_counts
 
-                model = DsHistrogramAnalysis(
+                model = DsHistrogramAnalysisRpt(
                     channel_id  =   INVALID_CHANNEL_ID, 
                     raw_x=cast(int, raw_x),    raw_y=cast(int, raw_y), 
                     parameters=DsHistrogramParameters(

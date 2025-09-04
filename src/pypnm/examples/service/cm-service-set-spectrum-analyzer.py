@@ -8,7 +8,7 @@ import logging
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpectrumAnalyzerParameters
+from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpecAnCapturePara
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.service import CmSpectrumAnalysisService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.file_processor import FileProcessor
@@ -58,7 +58,7 @@ async def main():
     logging.info(f"Connected to: {await cm.getSysDescr()}")
 
     # Build SpectrumAnalyzerParameters from parsed args
-    spec_params = SpectrumAnalyzerParameters(
+    spec_params = SpecAnCapturePara(
         inactivity_timeout=int(args.inactivity_timeout),
         first_segment_center_freq=int(args.first_segment_center_freq),
         last_segment_center_freq=int(args.last_segment_center_freq),
@@ -73,7 +73,7 @@ async def main():
     # Create service with the parameter object
     service = CmSpectrumAnalysisService(
         cable_modem=cm,
-        spec_analyzer_para=spec_params,)
+        capture_parameters=spec_params,)
 
     msg_rsp: MessageResponse = await service.set_and_go()
 

@@ -17,7 +17,7 @@ from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 
 
-class FecSummaryAnalysis(CommonAnalysis):
+class FecSummaryAnalysisRptModel(CommonAnalysis):
     """
     CommonAnalysis wrapper for OFDM FEC Summary outputs.
 
@@ -46,7 +46,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
     def __init__(self, analysis: Analysis):
         super().__init__(analysis)
         self.logger = logging.getLogger("FecSummaryAnalysisReport")
-        self._results: Dict[int, FecSummaryAnalysis] = {}
+        self._results: Dict[int, FecSummaryAnalysisRptModel] = {}
 
     def create_csv(self, **kwargs: Any) -> List[CSVManager]:
         """
@@ -60,7 +60,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
         mgr_out: List[CSVManager] = []
 
         for common_model in self.get_common_analysis_model():
-            c_model = cast(FecSummaryAnalysis, common_model)
+            c_model = cast(FecSummaryAnalysisRptModel, common_model)
             channel_id: int = int(c_model.channel_id)
 
             analysis_model = c_model.parameters
@@ -123,7 +123,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
         mgr_out: List[MatplotManager] = []
 
         for common_model in self.get_common_analysis_model():
-            c_model = cast(FecSummaryAnalysis, common_model)
+            c_model = cast(FecSummaryAnalysisRptModel, common_model)
             channel_id: int = int(c_model.channel_id)
 
             analysis_model = c_model.parameters
@@ -175,7 +175,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
 
         for model in models:
             channel_id: int = int(model.channel_id)
-            a_model = FecSummaryAnalysis(
+            a_model = FecSummaryAnalysisRptModel(
                 channel_id=channel_id,
                 parameters=model,
             )

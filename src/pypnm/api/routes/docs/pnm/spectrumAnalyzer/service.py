@@ -5,12 +5,11 @@ import logging
 from typing import Tuple
 
 from pypnm.api.routes.common.extended.common_measure_service import CommonMeasureService
-from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpectrumAnalyzerParameters
+from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpecAnCapturePara
 from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
-
 
 class CmSpectrumAnalysisService(CommonMeasureService):
     """
@@ -44,7 +43,7 @@ class CmSpectrumAnalysisService(CommonMeasureService):
         cable_modem: CableModem,
         tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
         tftp_path: str = PnmConfigManager.get_tftp_path(),*,
-        spec_analyzer_para: SpectrumAnalyzerParameters,):
+        capture_parameters: SpecAnCapturePara,):
         self.logger = logging.getLogger(self.__class__.__name__)
         
         if not self.logger.handlers:
@@ -54,15 +53,15 @@ class CmSpectrumAnalysisService(CommonMeasureService):
             self.logger.addHandler(handler)
             self.logger.setLevel(logging.INFO)
 
-        inactivity_timeout = spec_analyzer_para.inactivity_timeout
-        first_segment_center_freq = spec_analyzer_para.first_segment_center_freq
-        last_segment_center_freq = spec_analyzer_para.last_segment_center_freq
-        segment_freq_span = spec_analyzer_para.segment_freq_span
-        num_bins_per_segment = spec_analyzer_para.num_bins_per_segment
-        noise_bw = spec_analyzer_para.noise_bw
-        window_function = spec_analyzer_para.window_function
-        num_averages = spec_analyzer_para.num_averages
-        spectrum_retrieval_type = spec_analyzer_para.spectrum_retrieval_type
+        inactivity_timeout          = capture_parameters.inactivity_timeout
+        first_segment_center_freq   = capture_parameters.first_segment_center_freq
+        last_segment_center_freq    = capture_parameters.last_segment_center_freq
+        segment_freq_span           = capture_parameters.segment_freq_span
+        num_bins_per_segment        = capture_parameters.num_bins_per_segment
+        noise_bw                    = capture_parameters.noise_bw
+        window_function             = capture_parameters.window_function
+        num_averages                = capture_parameters.num_averages
+        spectrum_retrieval_type     = capture_parameters.spectrum_retrieval_type
 
         super().__init__(
             DocsPnmCmCtlTest.SPECTRUM_ANALYZER,
@@ -70,12 +69,12 @@ class CmSpectrumAnalysisService(CommonMeasureService):
             tftp_servers,
             tftp_path,
             cable_modem.getWriteCommunity(),
-            inactivity_timeout=inactivity_timeout,
-            first_segment_center_freq=first_segment_center_freq,
-            last_segment_center_freq=last_segment_center_freq,
-            segment_freq_span=segment_freq_span,
-            num_bins_per_segment=num_bins_per_segment,
-            noise_bw=noise_bw,
-            window_function=window_function,
-            num_averages=num_averages,
-            spectrum_retrieval_type=spectrum_retrieval_type,)
+            inactivity_timeout          =   inactivity_timeout,
+            first_segment_center_freq   =   first_segment_center_freq,
+            last_segment_center_freq    =   last_segment_center_freq,
+            segment_freq_span           =   segment_freq_span,
+            num_bins_per_segment        =   num_bins_per_segment,
+            noise_bw                    =   noise_bw,
+            window_function             =   window_function,
+            num_averages                =   num_averages,
+            spectrum_retrieval_type     =   spectrum_retrieval_type,)
