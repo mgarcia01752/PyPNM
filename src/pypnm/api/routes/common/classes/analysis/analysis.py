@@ -114,7 +114,7 @@ class Analysis:
     is persisted to disk via :meth:`save_message_response`.
     """
 
-    def __init__(self, analysis_type: "AnalysisType", msg_response: "MessageResponse") -> None:
+    def __init__(self, analysis_type: AnalysisType, msg_response: MessageResponse) -> None:
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self.analysis_type: "AnalysisType" = analysis_type
         self.msg_response: "MessageResponse" = msg_response

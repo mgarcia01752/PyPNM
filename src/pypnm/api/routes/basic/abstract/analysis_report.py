@@ -1,11 +1,9 @@
-
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-import zipfile
 
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -28,85 +26,95 @@ AnalysisData    = List[Dict[str, Any]]
 
 class AnalysisOutputModel(BaseModel):
     """
-    Pydantic model for SingleChannelAnalysisOutput data.
+    Pydantic model for a single report output bundle.
+
+    How to use:
+        Return this from `to_model()` to expose file paths and time metadata
+        after `build_report()` has generated outputs.
     """
     time: int               = Field(..., description="Ephoc Time")
-    csv_file: List[str]     = Field(..., description="List of CSV file(s)")
-    plot_file: List[str]    = Field(..., description="List of PNG Matplot file(s)")
-    archive_file: str       = Field(..., description="File name of archive file containging analysis files")
+    csv_files: PathArray    = Field(..., description="List of CSV file(s)")
+    plot_files: PathArray   = Field(..., description="List of PNG Matplot file(s)")
+    archive_file: PathLike  = Field(..., description="File name of archive file containging analysis files")
     
 class AnalysisReport(ABC):
     '''
-    Abstract base class for generating analysis reports.
+    Abstract base class for generating analysis reports from an `Analysis`.
+
+    How to use:
+        - Subclass and implement `_process()`, `create_csv()`, and `create_matplot()`.
+        - Instantiate with an `Analysis` and call `build_report()` to produce files.
     '''
     def __init__(self, analysis: Analysis):
+        """Initialize report context and cache analysis reference."""
         self.logger = logging.getLogger("AnalysisReport")
         self._analysis = analysis
         self.__init()
         
-        # Dict[Filename, Data]
-        self.csv_files: Dict[str, Union[str, CSVManager]] = {}
-        self.plot_files: Dict[str, Union[str, bytes]] = {}
+        self.csv_files: List[PathLike]  = []
+        self.plot_files: List[PathLike] = []
 
     def get_analysis_data(self) -> AnalysisData:
+        """Return the raw per-item analysis data list loaded from the `Analysis` results."""
         return self._data_list
 
     def get_analysis_model(self) -> Union[BaseAnalysisModel, List[BaseAnalysisModel]]:
+        """Return the parsed analysis model(s) produced by the pipeline."""
         return self._analysis.get_model()
 
     def get_mac_address(self) -> MacAddress:    
+        """Return the CM MAC address associated with this report session."""
         return self._mac_address
 
     def get_sys_descr(self) -> SystemDescriptor:
+        """Return the SystemDescriptor used in filenames and labeling."""
         return self._sys_descr
 
     def get_group_time(self) -> int:
+        """Return the group timestamp used to namespace output filenames."""
         return self._group_time
     
-    def compress_output(self, zip_path: Union[str, Path]) -> None:
-        """
-        Compress the CSV and plot PNG into a ZIP archive.
-
-        Args:
-            zip_path (Union[str, Path]): Destination path for the ZIP file.
-        """
-        zip_path = Path(zip_path)
-        zip_path.parent.mkdir(parents=True, exist_ok=True)
-
-        with zipfile.ZipFile(zip_path, mode='w', compression=zipfile.ZIP_DEFLATED) as archive:
-            if self.csv_file and self.csv_file.exists():
-                archive.write(self.csv_file, arcname=self.csv_file.name)
-            if self.plot_file and self.plot_file.exists():
-                archive.write(self.plot_file, arcname=self.plot_file.name)
-
-        self.archive_file = zip_path
-
     def to_model(self) -> AnalysisOutputModel:
         """
         Convert this instance into its Pydantic BaseModel representation.
+
+        How to use:
+            Call after `build_report()` to return paths/time for API responses.
         """
         return AnalysisOutputModel(
-            time        =   self._group_time,
-            csv_file    =   self.csv_file,
-            plot_file   =   self.plot_file,
-            archive_file=   self.archive_file,
+            time         =   self._group_time,
+            csv_files    =   self.csv_files,
+            plot_files   =   self.plot_files,
+            archive_file =   self.archive_file,
         )
 
     def create_csv_fname(self, tags: List[str] = []) -> PathLike:
         '''
-        <csv_dir_path>/<mac_address>_<sys_descr.model>_<YYYYMMDD_HHMMSS>_<TAGS>.csv
+        Build a CSV filename:
+            <csv_dir>/<mac>_<model>_<timestamp>[_TAGS].csv
+
+        How to use:
+            `fname = self.create_csv_fname(tags=["ch1", "rpt"])`
         '''
         return f"{self._csv_dir}/{self.create_generic_fname(tags=tags, ext='csv')}"
 
     def create_png_fname(self, tags: List[str] = []) -> PathLike:
         '''
-        <png_dir_path>/<mac_address>_<sys_descr.model>_<YYYYMMDD_HHMMSS>_<TAGS>.png
+        Build a PNG filename:
+            <png_dir>/<mac>_<model>_<timestamp>[_TAGS].png
+
+        How to use:
+            `fname = self.create_png_fname(tags=["spectrum"])`
         '''        
         return f"{self._png_dir}/{self.create_generic_fname(tags=tags, ext='png')}"
 
     def create_archive_fname(self, tags: List[str] = []) -> PathLike:
         '''
-        <png_dir_path>/<mac_address>_<sys_descr.model>_<YYYYMMDD_HHMMSS>_<TAGS>.zip
+        Build a ZIP archive filename:
+            <archive_dir>/<mac>_<model>_<timestamp>[_TAGS].zip
+
+        How to use:
+            `fname = self.create_archive_fname(tags=["bundle"])`
         '''        
         return f"{self._archive_dir}/{self.create_generic_fname(tags=tags, ext='zip')}"
 
@@ -120,25 +128,35 @@ class AnalysisReport(ABC):
         
         Returns:
             str: Generated filename.
+
+        How to use:
+            `name = self.create_generic_fname(tags=["debug"], ext="json")`
         """
         return self._generate_fname(tags=tags, ext=ext)
 
     def csv_manager_factory(self) -> CSVManager:
+        """Factory for CSVManager; override in subclasses to customize CSV behavior."""
         return CSVManager()
 
     def get_base_filename(self) -> str:
         """
-        Returns the base filename for the analysis report.
+        Return the base filename (without extension) derived from MAC/model/time.
+
+        How to use:
+            Useful when constructing multiple related outputs for the same run.
         """
         return self._generate_fname()
 
     def register_common_analysis_model(self, channel_id:int, model: CommonAnalysis) -> None:
         """
-        Add a common analysis model to the report.
+        Add or overwrite a CommonAnalysis model keyed by channel ID.
 
         Args:
-            channel_id (int): The channel ID for the model.
-            model (CommonAnalysis): The analysis model to add.
+            channel_id (int): Channel identifier.
+            model (CommonAnalysis): Analysis model to register.
+
+        How to use:
+            Call inside `_process()` after constructing per-channel report models.
         """
         if not isinstance(model, CommonAnalysis):
             raise TypeError("model must be an instance of CommonAnalysis")
@@ -151,22 +169,20 @@ class AnalysisReport(ABC):
     
     def get_common_analysis_model(self, channel_id: int = -1) -> List[CommonAnalysis]:
         """
-        Retrieve one or more CommonAnalysis models by channel ID.
+        Retrieve CommonAnalysis models.
 
         Args:
-            channel_id (int, optional): 
-                The channel ID of the model to retrieve.
-                If set to -1 (default), returns all models in ascending
-                channel ID order.
+            channel_id (int, optional): Specific channel ID; pass -1 for all (default).
 
         Returns:
-            List[CommonAnalysis]: 
-                A list containing one or more CommonAnalysis instances.
-                If a specific channel_id is provided, the list will contain
-                only the matching model.
+            List[CommonAnalysis]: One or more models, ordered by channel ID when `-1`.
 
         Raises:
-            KeyError: If the specified channel_id does not exist.
+            KeyError: If a specific channel_id is requested but absent.
+
+        How to use:
+            `all_models = self.get_common_analysis_model()`  
+            `one = self.get_common_analysis_model(channel_id=5)`
         """
         if channel_id == INVALID_CHANNEL_ID:
             # Return all models sorted by channel_id
@@ -178,65 +194,85 @@ class AnalysisReport(ABC):
         return [self._common_analysis_model[channel_id]]
 
     def get_common_analysis_models_channel_ids(self) -> List[int]:
-
         """
-        Get a list of channel IDs for the common analysis models.
-        Returns:
-            List[int]: List of channel IDs.
+        Return a list of channel IDs currently registered.
+
+        How to use:
+            `ids = self.get_common_analysis_models_channel_ids()`
         """
         return list(self._common_analysis_model.keys())
 
     def build_report(self) -> Path:
         """
-        Build the analysis report.
+        Run the full report pipeline: `_process()` → CSV → plots → ZIP.
+
+        Returns:
+            Path: The path to the created archive file (ZIP).
+
+        How to use:
+            `archive = report.build_report()` then serve/return `archive`.
         """
         self._process()
 
         f:PathArray = [Path('')]
-        archive_file:Path = Path('')
 
         for csv_mgr in self.create_csv():
-
+            
             if not csv_mgr.write():
                 self.logger.error(f"Failed to write CSV: {csv_mgr.get_path_fname()}")
                 continue
 
             self.logger.debug(f'Wrote CSV File: {csv_mgr.get_path_fname()}')
+            self.csv_files.append(csv_mgr.get_path_fname())
             f.append(csv_mgr.get_path_fname())
 
         for matplot_mgr in self.create_matplot():
             for fn in matplot_mgr.get_png_files():
                 self.logger.debug(f'Wrote Matplotlib Figure: {fn}')
+                self.plot_files.append(fn)
                 f.append(fn)
 
         try:
-            archive_file = ArchiveManager().zip_files(files=f, archive_path=self.create_archive_fname())
+            self.archive_file = ArchiveManager().zip_files(files=f, archive_path=self.create_archive_fname())
 
         except Exception as e:
             self.logger.error(f"Failed to create archive: {e}")
 
-        return archive_file
+        return self.archive_file
 
     @abstractmethod
     def _process(self) -> None:
         """
-        Process the analysis data and populate the report.
+        Populate per-channel report models from raw analysis data.
+
+        How to use (in subclass):
+            - Parse `self.get_analysis_model()` / `self.get_analysis_data()`
+            - Build and `register_common_analysis_model(channel_id, model)`
         """
         pass
 
     @abstractmethod
     def create_csv(self, **kwargs) -> List[CSVManager]:
         """
+        Create one or more CSVManager instances ready to `write()`.
+
+        How to use (in subclass):
+            Build CSV rows from registered models and return the managers.
         """
         pass
 
     @abstractmethod
     def create_matplot(self, **kwargs) -> List[MatplotManager]:
         """
+        Create one or more MatplotManager instances to render PNG plots.
+
+        How to use (in subclass):
+            Configure figures from registered models and return the managers.
         """
         pass
 
     def __init(self) -> None:
+        """Initialize runtime context (paths, metadata, first-item descriptors)."""
         # Acquire analysis data
         self._data_list: AnalysisData = list(self._analysis.get_results().get("analysis", []))
         self.logger.debug("Analysis items received: %d", len(self._data_list))
@@ -292,6 +328,9 @@ class AnalysisReport(ABC):
 
         Returns:
             A valid filename string.
+
+        How to use:
+            `_generate_fname(tags=["ch1", "rpt"], ext="csv")`
         """
         mac = self.get_mac_address().to_mac_format()
         model = self.get_sys_descr().model.replace(" ", "_").lower()
