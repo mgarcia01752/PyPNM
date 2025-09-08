@@ -71,3 +71,5 @@ class ServiceStatusCode(IntEnum):
     DS_OFDM_FEC_SUMMARY_NOT_AVALIABLE       = 700
     
     DS_OFDM_MOD_PROFILE_NOT_AVALAIBLE       = 800
+
+    NO_SPECTRUM_CAPTURE_PARAMETERS          = 1000

@@ -11,7 +11,7 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
     PnmAnalysisRequest, PnmDataResponse, PnmRequest)
 
 class SpecAnMovingAvgParameters(BaseModel):
-    window_size:int                                     = Field(..., description="")
+    points:int                                          = Field(default=10, description="")
 
 class SpecAnCapturePara(BaseModel):
     inactivity_timeout       : int                      = Field(default=100, description="Timeout in seconds for inactivity during spectrum analysis.")

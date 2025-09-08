@@ -122,6 +122,7 @@ class Analysis:
         payload: Dict[str, Any] = msg_response.payload_to_dict() or {}
         raw_data = payload.get("data", [])
         self._result_model:List[BaseAnalysisModel] = []
+        self._processed_pnm_type:List[PnmFileType] = []
 
         # Normalize measurement_data to List[Dict[str, Any]]
         if isinstance(raw_data, Mapping):
@@ -203,37 +204,43 @@ class Analysis:
             self.logger.debug("Processing: OFDM_CHANNEL_ESTIMATE_COEFFICIENT")
             model = self.basic_analysis_ds_chan_est(measurement)
             self.__update_result_model(model)
-            self.__update_result_dict(model.model_dump())   
+            self.__update_result_dict(model.model_dump())
+            self.__add_pnmType(PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT)   
 
         elif pnm_file_type == PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY.value:
             self.logger.debug("Processing: DOWNSTREAM_CONSTELLATION_DISPLAY")
             model = self.basic_analysis_ds_constellation_display(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
+            self.__add_pnmType(PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY) 
 
         elif pnm_file_type == PnmFileType.RECEIVE_MODULATION_ERROR_RATIO.value:
             self.logger.info("Processing: RECEIVE_MODULATION_ERROR_RATIO")
             model = self.basic_analysis_rxmer(measurement)
             self.__update_result_model(model)
-            self.__update_result_dict(model.model_dump())            
+            self.__update_result_dict(model.model_dump())
+            self.__add_pnmType(PnmFileType.RECEIVE_MODULATION_ERROR_RATIO)             
 
         elif pnm_file_type == PnmFileType.DOWNSTREAM_HISTOGRAM.value:
             self.logger.debug("Processing: DOWNSTREAM_HISTOGRAM")
             model = self.basic_analysis_ds_histogram(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
+            self.__add_pnmType(PnmFileType.DOWNSTREAM_HISTOGRAM)
 
         elif pnm_file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS.value:
             self.logger.debug("Processing: UPSTREAM_PRE_EQUALIZER_COEFFICIENTS")
             model = self.basic_analysis_us_ofdma_pre_equalization(measurement)
             self.__update_result_model(model)
-            self.__update_result_dict(model.model_dump())   
+            self.__update_result_dict(model.model_dump())
+            self.__add_pnmType(PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS)   
   
         elif pnm_file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE.value:
             self.logger.debug("Stub: Processing: UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE")
             # model = self.basic_analysis_us_ofdma_pre_equalization(measurement)
             # self.__update_result_model(model)
-            # self.__update_result_dict(model.model_dump())             
+            # self.__update_result_dict(model.model_dump())
+            # self.__add_pnmType(PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS)             
             pass
 
         elif pnm_file_type == PnmFileType.OFDM_FEC_SUMMARY.value:
@@ -241,25 +248,32 @@ class Analysis:
             model = self.basic_analysis_ds_ofdm_fec_summary(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
+            self.__add_pnmType(PnmFileType.OFDM_FEC_SUMMARY)
 
         elif pnm_file_type == PnmFileType.SPECTRUM_ANALYSIS.value:
             self.logger.debug("Processing: SPECTRUM_ANALYSIS")
             model = self.basic_analysis_spectrum_analyzer(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
+            self.__add_pnmType(PnmFileType.SPECTRUM_ANALYSIS)
 
         elif pnm_file_type == PnmFileType.OFDM_MODULATION_PROFILE.value:
             self.logger.debug("Processing: OFDM_MODULATION_PROFILE")
             model = self.basic_analysis_ds_modulation_profile(measurement)
             self.__update_result_model(model)
-            self.__update_result_dict(model.model_dump())             
+            self.__update_result_dict(model.model_dump())
+            self.__add_pnmType(PnmFileType.OFDM_MODULATION_PROFILE)             
 
         elif pnm_file_type == PnmFileType.LATENCY_REPORT.value:
             self.logger.warning("Stub: Processing: LATENCY_REPORT")
+            self.__add_pnmType(PnmFileType.LATENCY_REPORT) 
             pass
 
         else:
             self.logger.error(f"Unknown PNM file type: ({pnm_file_type})")
+
+    def get_pnm_type(self) -> List[PnmFileType]: 
+        return self._processed_pnm_type
 
     def get_results(self, full_dict = True) -> Dict[str, Any]:
         """
@@ -326,6 +340,9 @@ class Analysis:
             The dictionary result to record.
         """
         self._analysis_dict.append(model)
+
+    def __add_pnmType(self, pft:PnmFileType):
+        self._processed_pnm_type.append(pft)
 
     @classmethod
     def basic_analysis_rxmer(cls, measurement: Dict[str, Any]) -> DsRxMerAnalysisModel:

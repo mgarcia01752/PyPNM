@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
@@ -8,11 +7,54 @@ import logging
 from typing import Optional, Callable, Union, List
 from pydantic import BaseModel
 
+from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
 
 class DocsIfDownstreamEntry(BaseModel):
-    docsIfDownChannelId: Optional[int] = None
+    """
+    DOCSIS downstream SC-QAM signal/quality metrics for a single channel.
+
+    Notes
+    -----
+    - Values are sourced from symbolic OIDs in DOCSIS-IF(-EXT3)-MIB (e.g.,
+      ``docsIfDownChannelId``, ``docsIfSigQCorrecteds``, etc.).
+    - ``docsIfDownChannelPower`` is converted from tenths-of-dBmV (SNMP integer)
+      to a float in dBmV.
+    - Presence of fields depends on CM/CMTS support and MIB implementation.
+
+    Attributes
+    ----------
+    docsIfDownChannelId : Optional[int]
+        Channel ID (SC-QAM), from ``docsIfDownChannelId``.
+    docsIfDownChannelFrequency : Optional[int]
+        Center frequency in Hz, from ``docsIfDownChannelFrequency``.
+    docsIfDownChannelWidth : Optional[int]
+        Channel width in Hz, from ``docsIfDownChannelWidth``.
+    docsIfDownChannelModulation : Optional[int]
+        Modulation enum value, from ``docsIfDownChannelModulation``.
+    docsIfDownChannelInterleave : Optional[int]
+        Interleave depth/setting, from ``docsIfDownChannelInterleave``.
+    docsIfDownChannelPower : Optional[float]
+        Average channel power in dBmV (float), converted from tenths-of-dBmV.
+    docsIfSigQUnerroreds : Optional[int]
+        Legacy unerrored codewords, from ``docsIfSigQUnerroreds``.
+    docsIfSigQCorrecteds : Optional[int]
+        Corrected codewords, from ``docsIfSigQCorrecteds``.
+    docsIfSigQUncorrectables : Optional[int]
+        Uncorrectable codewords, from ``docsIfSigQUncorrectables``.
+    docsIfSigQMicroreflections : Optional[int]
+        Micro-reflections metric, from ``docsIfSigQMicroreflections``.
+    docsIfSigQExtUnerroreds : Optional[int]
+        Extended unerrored codewords, from ``docsIfSigQExtUnerroreds``.
+    docsIfSigQExtCorrecteds : Optional[int]
+        Extended corrected codewords, from ``docsIfSigQExtCorrecteds``.
+    docsIfSigQExtUncorrectables : Optional[int]
+        Extended uncorrectable codewords, from ``docsIfSigQExtUncorrectables``.
+    docsIf3SignalQualityExtRxMER : Optional[float]
+        Extended RxMER (dB), from ``docsIf3SignalQualityExtRxMER``.
+    """
+    docsIfDownChannelId:int = INVALID_CHANNEL_ID
     docsIfDownChannelFrequency: Optional[int] = None
     docsIfDownChannelWidth: Optional[int] = None
     docsIfDownChannelModulation: Optional[int] = None
@@ -29,12 +71,68 @@ class DocsIfDownstreamEntry(BaseModel):
 
 
 class DocsIfDownstreamChannelEntry(BaseModel):
+    """
+    Container for a single downstream SC-QAM channel record retrieved via SNMP.
+
+    Attributes
+    ----------
+    index : int
+        Table index used to query SNMP (e.g., the instance suffix).
+    channel_id : int
+        The channel ID mirrored from the retrieved entry (0 if missing).
+    entry : DocsIfDownstreamEntry
+        The populated downstream metrics for the given index.
+
+    Examples
+    --------
+    Basic one-off fetch:
+
+    >>> snmp = Snmp_v2c(host="192.168.0.100", community="public", timeout=2.0, retries=1)
+    >>> entry = await DocsIfDownstreamChannelEntry.from_snmp(index=1, snmp=snmp)
+    >>> entry.channel_id
+    1
+
+    Batch fetch for multiple indices:
+
+    >>> indices = [1, 2, 3, 4]
+    >>> entries = await DocsIfDownstreamChannelEntry.get(snmp, indices)
+    >>> len(entries)
+    4
+    """
     index: int
     channel_id: int
     entry: DocsIfDownstreamEntry
 
     @classmethod
     async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsIfDownstreamChannelEntry":
+        """
+        Build an instance by querying SNMP for a single downstream SC-QAM index.
+
+        Parameters
+        ----------
+        index : int
+            The SNMP table index (instance) to query (e.g., ``docsIfDownChannelId.<index>``).
+        snmp : Snmp_v2c
+            Initialized SNMP v2c client used to perform ``GET`` operations.
+
+        Returns
+        -------
+        DocsIfDownstreamChannelEntry
+            A populated channel container with metrics under ``entry`` and
+            ``channel_id`` mirrored from ``docsIfDownChannelId`` (or 0 if absent).
+
+        Notes
+        -----
+        - Uses symbolic OIDs (no compiled numeric OIDs required).
+        - Gracefully handles missing/invalid values; non-parsable fields become ``None``.
+        - ``docsIfDownChannelPower`` is converted from tenths-of-dBmV to float dBmV.
+
+        Examples
+        --------
+        >>> snmp = Snmp_v2c(host="192.168.0.100", community="public")
+        >>> result = await DocsIfDownstreamChannelEntry.from_snmp(5, snmp)
+        >>> result.entry.docsIf3SignalQualityExtRxMER  # may be None if unsupported
+        """
         logger = logging.getLogger(cls.__name__)
 
         def tenthdBmV_to_float(value: str) -> Optional[float]:
@@ -80,21 +178,22 @@ class DocsIfDownstreamChannelEntry(BaseModel):
                 return None
 
         entry = DocsIfDownstreamEntry(
-            docsIfDownChannelId=await fetch("docsIfDownChannelId", int),
-            docsIfDownChannelFrequency=await fetch("docsIfDownChannelFrequency", int),
-            docsIfDownChannelWidth=await fetch("docsIfDownChannelWidth", int),
-            docsIfDownChannelModulation=await fetch("docsIfDownChannelModulation", int),
-            docsIfDownChannelInterleave=await fetch("docsIfDownChannelInterleave", int),
-            docsIfDownChannelPower=await fetch("docsIfDownChannelPower", tenthdBmV_to_float),
-            docsIfSigQUnerroreds=await fetch("docsIfSigQUnerroreds", int),
-            docsIfSigQCorrecteds=await fetch("docsIfSigQCorrecteds", int),
-            docsIfSigQUncorrectables=await fetch("docsIfSigQUncorrectables", int),
-            docsIfSigQMicroreflections=await fetch("docsIfSigQMicroreflections", int),
-            docsIfSigQExtUnerroreds=await fetch("docsIfSigQExtUnerroreds", int),
-            docsIfSigQExtCorrecteds=await fetch("docsIfSigQExtCorrecteds", int),
-            docsIfSigQExtUncorrectables=await fetch("docsIfSigQExtUncorrectables", int),
-            docsIf3SignalQualityExtRxMER=await fetch("docsIf3SignalQualityExtRxMER", to_float)
+            docsIfDownChannelId         =   await fetch("docsIfDownChannelId", int),
+            docsIfDownChannelFrequency  =   await fetch("docsIfDownChannelFrequency", int),
+            docsIfDownChannelWidth      =   await fetch("docsIfDownChannelWidth", int),
+            docsIfDownChannelModulation =   await fetch("docsIfDownChannelModulation", int),
+            docsIfDownChannelInterleave =   await fetch("docsIfDownChannelInterleave", int),
+            docsIfDownChannelPower      =   await fetch("docsIfDownChannelPower", tenthdBmV_to_float),
+            docsIfSigQUnerroreds        =   await fetch("docsIfSigQUnerroreds", int),
+            docsIfSigQCorrecteds        =   await fetch("docsIfSigQCorrecteds", int),
+            docsIfSigQUncorrectables    =   await fetch("docsIfSigQUncorrectables", int),
+            docsIfSigQMicroreflections  =   await fetch("docsIfSigQMicroreflections", int),
+            docsIfSigQExtUnerroreds     =   await fetch("docsIfSigQExtUnerroreds", int),
+            docsIfSigQExtCorrecteds     =   await fetch("docsIfSigQExtCorrecteds", int),
+            docsIfSigQExtUncorrectables =   await fetch("docsIfSigQExtUncorrectables", int),
+            docsIf3SignalQualityExtRxMER =  await fetch("docsIf3SignalQualityExtRxMER", to_float)
         )
+
 
         return cls(
             index=index,
@@ -104,6 +203,29 @@ class DocsIfDownstreamChannelEntry(BaseModel):
 
     @classmethod
     async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsIfDownstreamChannelEntry"]:
+        """
+        Fetch multiple downstream SC-QAM entries in a single call.
+
+        Parameters
+        ----------
+        snmp : Snmp_v2c
+            Initialized SNMP v2c client.
+        indices : List[int]
+            Table indices (instances) to retrieve.
+
+        Returns
+        -------
+        List[DocsIfDownstreamChannelEntry]
+            A list of populated entries. If ``indices`` is empty or any index
+            fails to fetch, the method logs a warning and continues.
+
+        Examples
+        --------
+        >>> snmp = Snmp_v2c(host="192.168.0.100", community="public")
+        >>> entries = await DocsIfDownstreamChannelEntry.get(snmp, [1, 2, 3])
+        >>> [e.channel_id for e in entries]
+        [1, 2, 3]
+        """
         logger = logging.getLogger(cls.__name__)
         results: List[DocsIfDownstreamChannelEntry] = []
 

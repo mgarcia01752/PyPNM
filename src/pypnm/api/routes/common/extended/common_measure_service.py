@@ -17,6 +17,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel
 
+from pypnm.api.routes.common.classes.analysis.analysis import SpecAnCapturePara
 from pypnm.api.routes.common.extended.common_measure_schema import (
     DownstreamOfdmParameters, UpstreamOfdmaParameters)
 from pypnm.config.system_config_settings import SystemConfigSettings
@@ -93,7 +94,8 @@ class CommonMeasureService(CommonMessagingService):
         self.config_mgr:ConfigManager               = ConfigManager()
         self.log_prefix:str                         = f"MAC: {self.cm.get_mac_address} - INET: {self.cm.get_inet_address}"
         self.save_dir                               = PnmConfigManager.get_save_dir()
-        
+        self.pnm_local_dir                          = SystemConfigSettings.save_dir
+
         if self.extra_options:
             self.logger.debug(f"{self.log_prefix} - OPTIONS: {self.extra_options}")
             self._preload_interface_parameters()
@@ -114,7 +116,11 @@ class CommonMeasureService(CommonMessagingService):
         If not present, sets interface_parameters to None.
         """
         self.interface_parameters = self.extra_options.get("interface_parameters", None)
-                
+
+    def setSpectrumCaptureParameters(self, capture_parameter:SpecAnCapturePara):
+        self.capture_parameter = capture_parameter
+
+
     async def set_and_go(self, interface_parameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = None, 
                          max_wait_count: int = 5,) -> MessageResponse:
         """
@@ -1097,27 +1103,31 @@ class CommonMeasureService(CommonMessagingService):
         # Default: only SNMP control-command, no file write
         ctl_cmd_filename = Snmp_v2c.TRUE
 
-        # Read optional overrides from extra_options
-        inactivity_timeout = self.extra_options.get("inactivity_timeout", 100)
+        if (self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER or \
+            self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA) and \
+            (not self.capture_parameter):
 
-        # Frequency range (first and last segment center frequencies)
-        first_segment_center_frequency  = self.extra_options.get("first_segment_center_freq", 300_000_000)
-        last_segment_center_frequency   = self.extra_options.get("last_segment_center_freq", 993_000_000)
+            self.logger.error('No Spectrum Parameters Found, did you set: setSpectrumCaptureParameters()')
 
-        # Per-segment configuration
-        segment_frequency_span      = self.extra_options.get("segment_freq_span", 1_000_000)
-        num_bins_per_segment        = self.extra_options.get("num_bins_per_segment", 256)
-        equivalent_noise_bandwidth  = self.extra_options.get("noise_bw", 110)
-        window_function             = self.extra_options.get("window_function", WindowFunction.HANN)
-        number_of_averages          = self.extra_options.get("num_averages", 1)
+            return  ServiceStatusCode.NO_SPECTRUM_CAPTURE_PARAMETERS, []
 
-        # Decide retrieval mode: SNMP vs. TFTP/PNM-file
-        spectrum_retrieval_type = self.extra_options.get(
-            "spectrum_retrieval_type",
-            SpectrumRetrievalType.FILE
-        )
+        capture_parameter = self.capture_parameter
 
-        if spectrum_retrieval_type == SpectrumRetrievalType.SNMP:
+        if not capture_parameter:
+
+            capture_parameter = SpecAnCapturePara (
+                inactivity_timeout          = self.extra_options.get("inactivity_timeout", 100),
+                first_segment_center_freq   = self.extra_options.get("first_segment_center_freq", 300_000_000),
+                last_segment_center_freq    = self.extra_options.get("last_segment_center_freq", 993_000_000),
+                segment_freq_span           = self.extra_options.get("segment_freq_span", 1_000_000),
+                num_bins_per_segment        = self.extra_options.get("num_bins_per_segment", 256),
+                noise_bw                    = self.extra_options.get("noise_bw", 110),
+                window_function             = self.extra_options.get("window_function", WindowFunction.HANN),
+                num_averages                = self.extra_options.get("num_averages", 1),
+                spectrum_retrieval_type     = self.extra_options.get("spectrum_retrieval_type",SpectrumRetrievalType.FILE),
+            )
+
+        if capture_parameter.spectrum_retrieval_type == SpectrumRetrievalType.SNMP:
             self.logger.info(f"{self.log_prefix} - SPECTRUM-ANALYZER - SNMP-AMPLITUDE-DATA-RETURN")
             ctl_cmd_filename = Snmp_v2c.FALSE
         
@@ -1126,30 +1136,30 @@ class CommonMeasureService(CommonMessagingService):
                 self.logger.error(f"{self.log_prefix} - Missing 'filename' for FILE retrieval mode")
                 return ServiceStatusCode.MISSING_PNM_FILENAME, []
 
-        # Create and populate the control-command object
         spectrum_cmd = DocsIf3CmSpectrumAnalysisCtrlCmd(
-            docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout=inactivity_timeout,
-            docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency=first_segment_center_frequency,
-            docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency=last_segment_center_frequency,
-            docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan=segment_frequency_span,
-            docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment=num_bins_per_segment,
-            docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth=equivalent_noise_bandwidth,
-            docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction=window_function,
-            docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages=number_of_averages,
-            docsIf3CmSpectrumAnalysisCtrlCmdEnable=Snmp_v2c.TRUE,
-            docsIf3CmSpectrumAnalysisCtrlCmdFileName=filename,
-            docsIf3CmSpectrumAnalysisCtrlCmdFileEnable=ctl_cmd_filename,)
+            docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout           =   capture_parameter.inactivity_timeout,
+            docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency =   capture_parameter.first_segment_center_freq,
+            docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency  =   capture_parameter.last_segment_center_freq,
+            docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan        =   capture_parameter.segment_freq_span,
+            docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment           =   capture_parameter.num_bins_per_segment,
+            docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth    =   capture_parameter.noise_bw,
+            docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction              =   capture_parameter.window_function,
+            docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages            =   capture_parameter.num_averages,
+            docsIf3CmSpectrumAnalysisCtrlCmdEnable                      =   Snmp_v2c.TRUE,
+            docsIf3CmSpectrumAnalysisCtrlCmdFileName                    =   filename,
+            docsIf3CmSpectrumAnalysisCtrlCmdFileEnable                  =   ctl_cmd_filename,)
 
         # Issue the SNMP SET for the control-command. The downstream logic
         # (not shown here) will branch to either:
         #   • SNMP:  set FileEnable = FALSE → wait for measurement → walk AmplitudeData
         #   • FILE:  set FileEnable = TRUE  → wait for measurement status → TFTP download
-        if not await self.cm.setDocsIf3CmSpectrumAnalysisCtrlCmd(spectrum_cmd, spectrum_retrieval_type):
+        if not await self.cm.setDocsIf3CmSpectrumAnalysisCtrlCmd(spectrum_cmd, 
+                                                                 capture_parameter.spectrum_retrieval_type):
             self.logger.error(f"{self.log_prefix} - Spectrum Analyzer is Not Available")
             return ServiceStatusCode.SPEC_ANALYZER_NOT_AVAILABLE, []
 
         # On success, return the filename (if FILE mode) or an empty list (SNMP mode)
-        if spectrum_retrieval_type == SpectrumRetrievalType.FILE:
+        if capture_parameter.spectrum_retrieval_type == SpectrumRetrievalType.FILE:
             return ServiceStatusCode.SUCCESS, [filename]
         else:
             return ServiceStatusCode.SUCCESS, []

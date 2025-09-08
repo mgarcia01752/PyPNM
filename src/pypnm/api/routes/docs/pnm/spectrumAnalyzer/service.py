@@ -56,28 +56,11 @@ class CmSpectrumAnalysisService(CommonMeasureService):
             self.logger.addHandler(handler)
             self.logger.setLevel(logging.INFO)
 
-        inactivity_timeout          = capture_parameters.inactivity_timeout
-        first_segment_center_freq   = capture_parameters.first_segment_center_freq
-        last_segment_center_freq    = capture_parameters.last_segment_center_freq
-        segment_freq_span           = capture_parameters.segment_freq_span
-        num_bins_per_segment        = capture_parameters.num_bins_per_segment
-        noise_bw                    = capture_parameters.noise_bw
-        window_function             = capture_parameters.window_function
-        num_averages                = capture_parameters.num_averages
-        spectrum_retrieval_type     = capture_parameters.spectrum_retrieval_type
-
         super().__init__(
             DocsPnmCmCtlTest.SPECTRUM_ANALYZER,
             cable_modem,
             tftp_servers,
             tftp_path,
-            cable_modem.getWriteCommunity(),
-            inactivity_timeout          =   inactivity_timeout,
-            first_segment_center_freq   =   first_segment_center_freq,
-            last_segment_center_freq    =   last_segment_center_freq,
-            segment_freq_span           =   segment_freq_span,
-            num_bins_per_segment        =   num_bins_per_segment,
-            noise_bw                    =   noise_bw,
-            window_function             =   window_function,
-            num_averages                =   num_averages,
-            spectrum_retrieval_type     =   spectrum_retrieval_type,)
+            cable_modem.getWriteCommunity(),)
+        
+        self.setSpectrumCaptureParameters(capture_parameters)

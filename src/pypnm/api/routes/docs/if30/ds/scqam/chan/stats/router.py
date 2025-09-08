@@ -5,7 +5,6 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from time import sleep
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from typing import List, Union
@@ -26,7 +25,7 @@ class DsScQamChannelRouter:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.router = APIRouter(
             prefix="/docs/if30/ds/scqam/chan",
-            tags=["DOCSIS 3.0 Downstream SC-QAM Channel Stats"])
+            tags=["DOCSIS 3.0 Downstream SC-QAM Channel"])
         
         self._add_routes()
 

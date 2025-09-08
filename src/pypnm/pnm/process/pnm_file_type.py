@@ -79,3 +79,77 @@ class PnmFileType(Enum):
         except KeyError:
             valid = ", ".join([e.name for e in cls])
             raise KeyError(f"Invalid PnmFileType name: {name!r}. Valid names: {valid}")
+        
+    @classmethod
+    def from_mmnemonic(cls, tag: str, version: int) -> 'PnmFileType':
+        """
+        Construct a PNM/PNN/LLD code from (tag, version) and return the enum member.
+
+        Args:
+            tag (str): Prefix such as "PNN", "PNM", or "LLD".
+            version (int): Version number. For "LLD" the version is zero-padded to 2
+                digits (e.g., 1 -> "01"). For "PNN"/"PNM" no padding is applied
+                (e.g., 9 -> "9", 10 -> "10").
+
+        Returns:
+            PnmFileType: Matching enum member.
+
+        Raises:
+            KeyError: If the composed code does not map to any known enum value.
+        """
+        tag_up = tag.upper()
+        if tag_up == "LLD":
+            code = f"LLD{version:02d}"
+        elif tag_up in ("PNN", "PNM"):
+            code = f"{tag_up}{version}"
+        else:
+            code = f"{tag_up}{version}"
+
+        for member in cls:
+            if member.value == code:
+                return member
+
+        valid_codes = ", ".join(m.value for m in cls)
+        raise KeyError(f"Unknown code: {code!r}. Valid codes: {valid_codes}")
+
+    @classmethod
+    def from_tag(cls, code: str) -> 'PnmFileType':
+        """
+        Resolve a file type from a full PNM/PNN/LLD tag.
+
+        Accepts values like "PNN9", "PNN10", "PNM2", "LLD1", "LLD01".
+        Matching is case-insensitive; surrounding whitespace is ignored.
+        For "LLD", a single-digit version is normalized to two digits.
+
+        Args:
+            code (str): Full tag code.
+
+        Returns:
+            PnmFileType: Matching enum member.
+
+        Raises:
+            KeyError: If the tag does not map to a known file type.
+        """
+        s = code.strip().upper()
+        if len(s) < 4:
+            raise KeyError(f"Unknown code: {code!r}. Provide a full tag like 'PNN9' or 'LLD01'.")
+
+        prefix, suffix = s[:3], s[3:]
+
+        # Normalize
+        if prefix == "LLD":
+            if not suffix.isdigit():
+                raise KeyError(f"Unknown code: {code!r}. 'LLD' suffix must be numeric.")
+            s = f"LLD{int(suffix):02d}"   # e.g., LLD1 -> LLD01
+        elif prefix in ("PNN", "PNM"):
+            if not suffix.isdigit():
+                raise KeyError(f"Unknown code: {code!r}. '{prefix}' suffix must be numeric.")
+            s = f"{prefix}{int(suffix)}"  # strip any leading zeros
+        # else: leave as-is and try exact match
+
+        for member in cls:
+            if member.value == s:
+                return member
+
+        valid_codes = ", ".join(m.value for m in cls)
+        raise KeyError(f"Unknown code: {code!r}. Normalized to {s!r}. Valid codes: {valid_codes}")

@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
@@ -26,11 +27,15 @@ AnalysisData    = List[Dict[str, Any]]
 
 class AnalysisOutputModel(BaseModel):
     """
-    Pydantic model for a single report output bundle.
+    Structured output describing the artifacts produced by a report run.
 
-    How to use:
-        Return this from `to_model()` to expose file paths and time metadata
-        after `build_report()` has generated outputs.
+    Use this as the return payload from `AnalysisReport.to_model()` after
+    `build_report()` has generated the CSVs, plots, and archive.
+
+    Typical flow:
+        report = MyReport(analysis)
+        report.build_report()
+        payload = report.to_model()
     """
     time: int               = Field(..., description="Ephoc Time")
     csv_files: PathArray    = Field(..., description="List of CSV file(s)")
@@ -39,14 +44,16 @@ class AnalysisOutputModel(BaseModel):
     
 class AnalysisReport(ABC):
     '''
-    Abstract base class for generating analysis reports from an `Analysis`.
+    Abstract base class for converting an `Analysis` into persisted artifacts
+    (CSV files, plots, and a ZIP archive), plus a lightweight model for API use.
 
-    How to use:
+    Usage pattern:
         - Subclass and implement `_process()`, `create_csv()`, and `create_matplot()`.
-        - Instantiate with an `Analysis` and call `build_report()` to produce files.
+        - Construct with an `Analysis` instance.
+        - Call `build_report()` to emit files, then `to_model()` for response data.
     '''
     def __init__(self, analysis: Analysis):
-        """Initialize report context and cache analysis reference."""
+        """Set up logging, store the `Analysis`, and initialize runtime context."""
         self.logger = logging.getLogger("AnalysisReport")
         self._analysis = analysis
         self.__init()
@@ -55,31 +62,30 @@ class AnalysisReport(ABC):
         self.plot_files: List[PathLike] = []
 
     def get_analysis_data(self) -> AnalysisData:
-        """Return the raw per-item analysis data list loaded from the `Analysis` results."""
+        """Return the raw per-item analysis data extracted from the `Analysis` results."""
         return self._data_list
 
     def get_analysis_model(self) -> Union[BaseAnalysisModel, List[BaseAnalysisModel]]:
-        """Return the parsed analysis model(s) produced by the pipeline."""
+        """Return the parsed analysis model(s) produced by the upstream pipeline."""
         return self._analysis.get_model()
 
     def get_mac_address(self) -> MacAddress:    
-        """Return the CM MAC address associated with this report session."""
+        """Return the cable-modem MAC address associated with this report session."""
         return self._mac_address
 
     def get_sys_descr(self) -> SystemDescriptor:
-        """Return the SystemDescriptor used in filenames and labeling."""
+        """Return the device SystemDescriptor used for filenames and labeling."""
         return self._sys_descr
 
     def get_group_time(self) -> int:
-        """Return the group timestamp used to namespace output filenames."""
+        """Return the session/group timestamp used to namespace output filenames."""
         return self._group_time
     
     def to_model(self) -> AnalysisOutputModel:
         """
-        Convert this instance into its Pydantic BaseModel representation.
+        Produce a serializable model of the generated artifacts (time, CSVs, plots, archive).
 
-        How to use:
-            Call after `build_report()` to return paths/time for API responses.
+        Call this after `build_report()` to pass paths and metadata to API callers.
         """
         return AnalysisOutputModel(
             time         =   self._group_time,
@@ -90,73 +96,72 @@ class AnalysisReport(ABC):
 
     def create_csv_fname(self, tags: List[str] = []) -> PathLike:
         '''
-        Build a CSV filename:
+        Build a CSV filename of the form:
             <csv_dir>/<mac>_<model>_<timestamp>[_TAGS].csv
 
-        How to use:
-            `fname = self.create_csv_fname(tags=["ch1", "rpt"])`
+        Example:
+            fname = self.create_csv_fname(tags=["ch1", "rpt"])
         '''
         return f"{self._csv_dir}/{self.create_generic_fname(tags=tags, ext='csv')}"
 
     def create_png_fname(self, tags: List[str] = []) -> PathLike:
         '''
-        Build a PNG filename:
+        Build a PNG filename of the form:
             <png_dir>/<mac>_<model>_<timestamp>[_TAGS].png
 
-        How to use:
-            `fname = self.create_png_fname(tags=["spectrum"])`
+        Example:
+            fname = self.create_png_fname(tags=["spectrum"])
         '''        
         return f"{self._png_dir}/{self.create_generic_fname(tags=tags, ext='png')}"
 
     def create_archive_fname(self, tags: List[str] = []) -> PathLike:
         '''
-        Build a ZIP archive filename:
+        Build a ZIP archive filename of the form:
             <archive_dir>/<mac>_<model>_<timestamp>[_TAGS].zip
 
-        How to use:
-            `fname = self.create_archive_fname(tags=["bundle"])`
+        Example:
+            fname = self.create_archive_fname(tags=["bundle"])
         '''        
         return f"{self._archive_dir}/{self.create_generic_fname(tags=tags, ext='zip')}"
 
     def create_generic_fname(self, tags: List[str], ext: str = "") -> str:
         """
-        Generate a generic filename with the specified tags and extension.
-        
-        Args:           
-            tags (List[str]): List of tags to include in the filename.
-            ext (str): File extension to append to the filename.
-        
-        Returns:
-            str: Generated filename.
+        Generate a generic filename using the current session metadata plus tags.
 
-        How to use:
-            `name = self.create_generic_fname(tags=["debug"], ext="json")`
+        Args:
+            tags: Optional descriptors to append (e.g., ["ch1", "rpt"]).
+            ext:  Optional file extension (e.g., "csv", ".png").
+
+        Returns:
+            The constructed filename (no directories).
+
+        Example:
+            name = self.create_generic_fname(tags=["debug"], ext="json")
         """
         return self._generate_fname(tags=tags, ext=ext)
 
     def csv_manager_factory(self) -> CSVManager:
-        """Factory for CSVManager; override in subclasses to customize CSV behavior."""
+        """Return a `CSVManager` instance. Subclasses may override to customize behavior."""
         return CSVManager()
 
     def get_base_filename(self) -> str:
         """
-        Return the base filename (without extension) derived from MAC/model/time.
+        Return the base filename (no extension) derived from MAC/model/time.
 
-        How to use:
-            Useful when constructing multiple related outputs for the same run.
+        Useful when emitting multiple related files for the same report run.
         """
         return self._generate_fname()
 
     def register_common_analysis_model(self, channel_id:int, model: CommonAnalysis) -> None:
         """
-        Add or overwrite a CommonAnalysis model keyed by channel ID.
+        Register (or overwrite) a `CommonAnalysis` model keyed by channel ID.
 
         Args:
-            channel_id (int): Channel identifier.
-            model (CommonAnalysis): Analysis model to register.
+            channel_id: Channel identifier.
+            model:      The analysis model to store.
 
-        How to use:
-            Call inside `_process()` after constructing per-channel report models.
+        Example:
+            self.register_common_analysis_model(channel_id=1, model=foo)
         """
         if not isinstance(model, CommonAnalysis):
             raise TypeError("model must be an instance of CommonAnalysis")
@@ -169,20 +174,20 @@ class AnalysisReport(ABC):
     
     def get_common_analysis_model(self, channel_id: int = -1) -> List[CommonAnalysis]:
         """
-        Retrieve CommonAnalysis models.
+        Retrieve one or more `CommonAnalysis` models.
 
         Args:
-            channel_id (int, optional): Specific channel ID; pass -1 for all (default).
+            channel_id: Specific channel ID, or -1 to return all (default).
 
         Returns:
-            List[CommonAnalysis]: One or more models, ordered by channel ID when `-1`.
+            A list of models. When `channel_id == -1`, results are ordered by channel ID.
 
         Raises:
-            KeyError: If a specific channel_id is requested but absent.
+            KeyError: If a specific `channel_id` is requested but not present.
 
-        How to use:
-            `all_models = self.get_common_analysis_model()`  
-            `one = self.get_common_analysis_model(channel_id=5)`
+        Examples:
+            all_models = self.get_common_analysis_model()
+            one = self.get_common_analysis_model(channel_id=5)
         """
         if channel_id == INVALID_CHANNEL_ID:
             # Return all models sorted by channel_id
@@ -195,22 +200,23 @@ class AnalysisReport(ABC):
 
     def get_common_analysis_models_channel_ids(self) -> List[int]:
         """
-        Return a list of channel IDs currently registered.
+        Return the list of channel IDs with registered models.
 
-        How to use:
-            `ids = self.get_common_analysis_models_channel_ids()`
+        Example:
+            ids = self.get_common_analysis_models_channel_ids()
         """
         return list(self._common_analysis_model.keys())
 
     def build_report(self) -> Path:
         """
-        Run the full report pipeline: `_process()` → CSV → plots → ZIP.
+        Run the full report pipeline: `_process()` → CSV generation → plot rendering → ZIP.
 
         Returns:
-            Path: The path to the created archive file (ZIP).
+            The path to the created ZIP archive.
 
-        How to use:
-            `archive = report.build_report()` then serve/return `archive`.
+        Typical use:
+            archive = report.build_report()
+            return report.to_model()
         """
         self._process()
 
@@ -240,39 +246,55 @@ class AnalysisReport(ABC):
 
         return self.archive_file
 
+    def get_all_generated_files(self, include_archive:bool=False) -> List[PathLike]:
+        """
+        Return a flat list of generated file paths (CSVs and plots).
+
+        Note:
+            `include_archive` is accepted for API symmetry but ignored; the
+            archive path is available via `to_model().archive_file`.
+        """
+        _:List[PathLike] = []
+        _.extend(self.csv_files)
+        _.extend(self.plot_files)
+        return _
+
     @abstractmethod
     def _process(self) -> None:
         """
-        Populate per-channel report models from raw analysis data.
+        Populate per-channel report models from analysis results.
 
-        How to use (in subclass):
-            - Parse `self.get_analysis_model()` / `self.get_analysis_data()`
-            - Build and `register_common_analysis_model(channel_id, model)`
+        Implement in subclasses:
+            - Parse `self.get_analysis_model()` and/or `self.get_analysis_data()`.
+            - Build models and register with:
+              `self.register_common_analysis_model(channel_id, model)`.
         """
         pass
 
     @abstractmethod
     def create_csv(self, **kwargs) -> List[CSVManager]:
         """
-        Create one or more CSVManager instances ready to `write()`.
+        Build one or more `CSVManager` instances ready to `write()`.
 
-        How to use (in subclass):
-            Build CSV rows from registered models and return the managers.
+        Implement in subclasses:
+            - Serialize registered models into CSV rows.
+            - Return the list of configured `CSVManager` instances.
         """
         pass
 
     @abstractmethod
     def create_matplot(self, **kwargs) -> List[MatplotManager]:
         """
-        Create one or more MatplotManager instances to render PNG plots.
+        Build one or more `MatplotManager` instances to render PNG figures.
 
-        How to use (in subclass):
-            Configure figures from registered models and return the managers.
+        Implement in subclasses:
+            - Configure figures from registered models.
+            - Return the list of configured `MatplotManager` instances.
         """
         pass
 
     def __init(self) -> None:
-        """Initialize runtime context (paths, metadata, first-item descriptors)."""
+        """Initialize runtime context: data cache, output dirs, timestamps, and descriptors."""
         # Acquire analysis data
         self._data_list: AnalysisData = list(self._analysis.get_results().get("analysis", []))
         self.logger.debug("Analysis items received: %d", len(self._data_list))
@@ -315,22 +337,22 @@ class AnalysisReport(ABC):
 
     def _generate_fname(self, tags: List[str] = [], ext: str = "") -> str:
         """
-        Generate a sanitized filename using:
-        - MAC address (no colons, lower-case)
-        - sys_descr.model (spaces → underscores, lower-case)
-        - group_time (YYYYMMDD_HHMMSS if datetime, else str())
-        - optional tags (joined with underscores)
-        - optional extension (without duplicate dots)
+        Construct a sanitized filename from:
+          - MAC address (colon-free, lowercase)
+          - device model (`sys_descr.model`, spaces → underscores, lowercase)
+          - group timestamp
+          - optional tag suffix (underscored)
+          - optional extension
 
         Args:
-            tags: List of descriptor strings to append.
-            ext: File extension (e.g. "csv" or ".png").
+            tags: Descriptive tokens to append (e.g., ["ch1", "rpt"]).
+            ext:  Extension with or without leading dot.
 
         Returns:
-            A valid filename string.
+            The finalized filename string (no directory).
 
-        How to use:
-            `_generate_fname(tags=["ch1", "rpt"], ext="csv")`
+        Example:
+            self._generate_fname(tags=["ch1", "rpt"], ext="csv")
         """
         mac = self.get_mac_address().to_mac_format()
         model = self.get_sys_descr().model.replace(" ", "_").lower()

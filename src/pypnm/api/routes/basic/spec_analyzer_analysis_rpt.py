@@ -12,10 +12,8 @@ from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAn
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema import SpectrumAnalyzerAnalysisModel
 from pypnm.lib.csv.manager import CSVManager
-from pypnm.lib.log_files import LogFile
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.types import ArrayLike, FloatSeries, IntSeries
-from pypnm.lib.utils import Utils
 
 class SpecAnaWindowAvgRptModel(BaseModel):
     """Window-average metadata and values."""
@@ -24,7 +22,6 @@ class SpecAnaWindowAvgRptModel(BaseModel):
     windows_average: FloatSeries    = Field(..., description="Smoothed magnitudes (same length as frequency).")
     length: int                     = Field(..., description="Number of samples.")
 
-
 class SpectrumAnalyzerSignalProcessRptModel(BaseModel):
     """Per-point frequency, amplitude (dBmV), linear anti-log, and windowed average."""
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
@@ -32,7 +29,6 @@ class SpectrumAnalyzerSignalProcessRptModel(BaseModel):
     amplitude: FloatSeries                  = Field(..., description="Magnitude per bin (dBmV).")
     anti_log: FloatSeries                   = Field(..., description="Linear ratio: 10^(dBmV/20).")
     window: SpecAnaWindowAvgRptModel        = Field(..., description="Moving-average for visualization.")
-
 
 class SpectrumAnalyzerAnalysisRptModel(CommonAnalysis):
     """Spectrum Analyzer report model bound to a channel."""

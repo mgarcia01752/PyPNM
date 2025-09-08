@@ -213,7 +213,7 @@ class DocsIf3CmSpectrumAnalysisCtrlCmd:
         # Check for exact divisibility
         remainder = total_range % seg_freq_span
         if remainder == 0:
-            self.logger.info(f'No changes to SpectrumAnalysisCtrlCmd due to SegmentCenterFrequency({seg_freq_span}) divisible: ({total_range})')
+            self.logger.debug(f'No changes to SpectrumAnalysisCtrlCmd due to SegmentCenterFrequency({seg_freq_span}) divisible: ({total_range})')
             return False
 
         # Adjust the last center downward to the nearest whole‐segment boundary

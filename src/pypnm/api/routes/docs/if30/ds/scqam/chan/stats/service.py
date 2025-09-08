@@ -5,7 +5,6 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from time import sleep
 from typing import Dict, List
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.DocsIfDownstreamChannel import DocsIfDownstreamChannelEntry
@@ -65,6 +64,3 @@ class DsScQamChannelService:
         
         else:
             return []
-
-
-        

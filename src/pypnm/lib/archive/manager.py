@@ -119,7 +119,7 @@ class ArchiveManager:
                     raise FileNotFoundError(src)
 
                 if arcname_map and f in arcname_map:
-                    arcname = arcname_map[f]  # type: ignore[index]
+                    arcname = arcname_map[f]
                 elif preserve_tree and arcbase is not None:
                     try:
                         arcname = str(Path(src).resolve().relative_to(Path(arcbase).resolve()))
@@ -127,6 +127,8 @@ class ArchiveManager:
                         arcname = src.name
                 else:
                     arcname = src.name
+
+                logging.info(f'Archiving: {f} to {arcname}')
 
                 zf.write(src, arcname)
         return ap
