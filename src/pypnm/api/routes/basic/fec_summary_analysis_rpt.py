@@ -98,7 +98,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
                         uc = uncorrected[idx]
                         csv_mgr.insert_row([channel_id, profile, ts, tc, cc, uc])
 
-                    self.logger.info(
+                    self.logger.debug(
                         "CSV created for Channel %s, Profile %s -> %s (rows=%d)",
                         channel_id, profile, csv_fname, csv_mgr.get_row_count()
                     )
@@ -150,7 +150,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
                     mgr = MatplotManager(default_cfg=cfg)
 
                     png_path = self.create_png_fname(tags=[str(channel_id), profile, self.FNAME_TAG])
-                    self.logger.info(f"Creating MatPlot: {png_path} for channel: {channel_id}, profile: {profile}")
+                    self.logger.debug(f"Creating MatPlot: {png_path} for channel: {channel_id}, profile: {profile}")
                     mgr.plot_multi_line(filename=png_path)
                     mgr_out.append(mgr)
 

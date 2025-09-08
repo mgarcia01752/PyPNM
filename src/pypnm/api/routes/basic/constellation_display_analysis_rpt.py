@@ -74,7 +74,7 @@ class ConstellationDisplayReport(AnalysisReport):
                                         hard_real,  hard_img, 
                                         soft_real,  soft_img])
 
-                self.logger.info(f"CSV created for channel {channel_id}: {csv_fname} (rows={csv_mgr.get_row_count()})")
+                self.logger.debug(f"CSV created for channel {channel_id}: {csv_fname} (rows={csv_mgr.get_row_count()})")
 
                 csv_mgr_list.append(csv_mgr)
 
@@ -82,7 +82,7 @@ class ConstellationDisplayReport(AnalysisReport):
                 self.logger.exception(f"Failed to create CSV for channel {channel_id}: {exc}")
 
         if not any_models:
-            self.logger.info("No analysis data available; no CSVs created.")
+            self.logger.debug("No analysis data available; no CSVs created.")
 
         return csv_mgr_list
 
@@ -117,7 +117,7 @@ class ConstellationDisplayReport(AnalysisReport):
                     grid=True, legend=True, transparent=False,)
 
                 const_disp = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG])
-                self.logger.info("Creating MatPlot: %s for channel: %s", const_disp, channel_id)
+                self.logger.debug("Creating MatPlot: %s for channel: %s", const_disp, channel_id)
 
                 mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_constellation(filename=const_disp)
@@ -128,7 +128,7 @@ class ConstellationDisplayReport(AnalysisReport):
                 self.logger.exception("Failed to create plot for channel %s: %s", channel_id, exc)
 
         if not any_models:
-            self.logger.info("No analysis data available; no plots created.")
+            self.logger.warning("No analysis data available; no plots created.")
 
         return matplot_mgr
 

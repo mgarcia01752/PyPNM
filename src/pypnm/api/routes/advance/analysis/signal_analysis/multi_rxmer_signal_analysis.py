@@ -236,7 +236,6 @@ class MultiRxMerSignalAnalysis:
                             f"[{mac}][ch={channel_id}] - PNM file parse failed: {e}")
                         continue
         
-        self.logger.info(f'Starting Processing OFDM_1')
         stats = self._PROCESS_ofdm_profile_performance_1(dsRxMerAggregator,dsModProfileAggregator,fecSummaryAggregator)
            
         return stats        
@@ -271,11 +270,11 @@ class MultiRxMerSignalAnalysis:
             if not capture_times:
                 self.logger.warning(f"No captures for channel {channel_id}, skipping")
                 continue
-            self.logger.info(f"Channel: {channel_id} - CaptureTimeCount: {len(capture_times)}")
+            self.logger.debug(f"Channel: {channel_id} - CaptureTimeCount: {len(capture_times)}")
             
             # 3) Sum FEC counters between first and last capture By Channel and Profile
             start_time, end_time = capture_times[0], capture_times[-1]
-            self.logger.info(f"Channel: {channel_id} - [CaptureStartTime: {start_time}::CaptureEndTime: {end_time}]")
+            self.logger.debug(f"Channel: {channel_id} - [CaptureStartTime: {start_time}::CaptureEndTime: {end_time}]")
             fec_summary_totals = fecSumAgg.get_summary_totals(channel_id, start_time, end_time)
 
             # 4) Build per-profile entries

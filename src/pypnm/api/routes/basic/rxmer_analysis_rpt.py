@@ -78,7 +78,7 @@ class RxMerAnalysisReport(AnalysisReport):
                 for rx, ry, s, r in zip(x, y, sh, rl):
                     csv_mgr.insert_row([chan, rx, ry, s, r])
 
-                self.logger.info("CSV created for channel %s: %s (rows=%d)", chan, csv_fname, len(x))
+                self.logger.debug("CSV created for channel %s: %s (rows=%d)", chan, csv_fname, len(x))
                 csv_mgr_list.append(csv_mgr)
 
             except Exception as exc:
@@ -99,14 +99,14 @@ class RxMerAnalysisReport(AnalysisReport):
                 for rx, ry in zip(x_agg, y_agg):
                     csv_mgr.insert_row([rx, ry])
 
-                self.logger.info(f"CSV created: {csv_fname} (rows={len(x_agg)})")
+                self.logger.debug(f"CSV created: {csv_fname} (rows={len(x_agg)})")
                 csv_mgr_list.append(csv_mgr)
 
             except Exception as exc:
                 self.logger.exception(f"Failed to create CSV, Reason: {exc}")
 
         if not any_models:
-            self.logger.info("No analysis data available; no CSVs created.")
+            self.logger.debug("No analysis data available; no CSVs created.")
 
         return csv_mgr_list
 
@@ -144,7 +144,7 @@ class RxMerAnalysisReport(AnalysisReport):
                     grid=True, legend=True, transparent=False,)
 
                 multi = self.create_png_fname(tags=[str(channel_id), 'rxmer'])
-                self.logger.info("Creating MatPlot: %s for channel: %s", multi, channel_id)
+                self.logger.debug("Creating MatPlot: %s for channel: %s", multi, channel_id)
 
                 mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_multi_line(filename=multi)
@@ -167,7 +167,7 @@ class RxMerAnalysisReport(AnalysisReport):
                     grid=True, legend=True, transparent=False,)
 
                 mod_count_fname = self.create_png_fname(tags=[str(channel_id), 'modulation_count'])
-                self.logger.info("Creating MatPlot: %s for channel: %s", mod_count_fname, channel_id)
+                self.logger.debug("Creating MatPlot: %s for channel: %s", mod_count_fname, channel_id)
 
                 mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_line(filename=mod_count_fname)
@@ -189,7 +189,7 @@ class RxMerAnalysisReport(AnalysisReport):
                     grid=True, legend=True, transparent=False,)
 
                 signal_aggregate_fname = self.create_png_fname(tags=['signal_aggregate'])
-                self.logger.info(f"Creating MatPlot: {signal_aggregate_fname} for aggregated RxMER capture")
+                self.logger.debug(f"Creating MatPlot: {signal_aggregate_fname} for aggregated RxMER capture")
 
                 mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_line(filename=signal_aggregate_fname)
@@ -197,10 +197,10 @@ class RxMerAnalysisReport(AnalysisReport):
                 out.append(mgr)
 
             except Exception as exc:
-                self.logger.exception(f"Failed to create aggregated RxMER capture plot")
+                self.logger.exception(f"Failed to create aggregated RxMER capture plot, reason: {exc}")
 
         if not any_models:
-            self.logger.info("No analysis data available; no plots created.")
+            self.logger.warning("No analysis data available; no plots created.")
 
         return out
 

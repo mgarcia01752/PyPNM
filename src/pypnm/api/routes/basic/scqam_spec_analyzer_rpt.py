@@ -237,7 +237,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
                 csv_fname = self.create_csv_fname(tags=[str(channel_id), self.FNAME_TAG])
                 csv_mgr.set_path_fname(csv_fname)
 
-                self.logger.info(
+                self.logger.debug(
                     "CSV created for channel %s: %s (rows=%s)",
                     channel_id, csv_fname, csv_mgr.get_row_count()
                 )
@@ -275,7 +275,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
             # --- Raw spectrum ---
             try:
                 fname = self.create_png_fname(tags=[str(ch), self.FNAME_TAG, "raw"])
-                self.logger.info("Creating Spectrum plot: %s", fname)
+                self.logger.debug("Creating Spectrum plot: %s", fname)
 
                 cfg = PlotConfig(
                     title   =   "Spectrum Analyzer",
@@ -293,7 +293,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
             # --- Moving average only ---
             try:
                 fname = self.create_png_fname(tags=[str(ch), self.FNAME_TAG, "moving_average"])
-                self.logger.info("Creating Spectrum plot: %s", fname)
+                self.logger.debug("Creating Spectrum plot: %s", fname)
 
                 cfg = PlotConfig(
                     title   =   f"Spectrum Analyzer - Window Average n={sig.window.window_size}",

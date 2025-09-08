@@ -78,14 +78,14 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                     real, img = cmp
                     csv_mgr.insert_row([chan, rx, ry, reg, real, img])
 
-                self.logger.info(f"CSV created for OFDMA US Pre-EQ channel {chan}: {csv_fname} (rows={len(x)})")
+                self.logger.debug(f"CSV created for OFDMA US Pre-EQ channel {chan}: {csv_fname} (rows={len(x)})")
                 csv_mgr_list.append(csv_mgr)
 
             except Exception as exc:
                 self.logger.exception(f"Failed to create CSV for OFDMA US Pre-EQ channel {chan}: {exc}")
 
         if not any_models:
-            self.logger.info("No OFDMA US Pre-EQ analysis data available; no CSVs created.")
+            self.logger.debug("No OFDMA US Pre-EQ analysis data available; no CSVs created.")
 
         return csv_mgr_list
 
@@ -121,7 +121,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                 )
 
                 multi                     = self.create_png_fname(tags=[str(chan), self.FNAME_TAG, "magnitude"])
-                self.logger.info("Creating OFDMA US Pre-EQ magnitude plot: %s for channel: %s", multi, chan)
+                self.logger.debug("Creating OFDMA US Pre-EQ magnitude plot: %s for channel: %s", multi, chan)
 
                 mgr                       = MatplotManager(default_cfg=cfg)
                 mgr.plot_multi_line(filename=multi)
@@ -140,7 +140,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                 )
 
                 multi                     = self.create_png_fname(tags=[str(chan), self.FNAME_TAG, "groupdelay"])
-                self.logger.info("Creating OFDMA US Pre-EQ group-delay plot: %s for channel: %s", multi, chan)
+                self.logger.debug("Creating OFDMA US Pre-EQ group-delay plot: %s for channel: %s", multi, chan)
 
                 mgr                       = MatplotManager(default_cfg=cfg)
                 mgr.plot_line(filename=multi)
@@ -150,7 +150,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                 self.logger.exception("Failed to create OFDMA US Pre-EQ group-delay plot for channel %s: %s", chan, exc)
 
         if not any_models:
-            self.logger.info("No OFDMA US Pre-EQ analysis data available; no plots created.")
+            self.logger.warning("No OFDMA US Pre-EQ analysis data available; no plots created.")
 
         return matplot_mgr
 

@@ -55,7 +55,7 @@ class DsHistrogramReport(AnalysisReport):
                 for idx, hit in enumerate(hit_counts):
                     csv_mgr.insert_row([channel_id, idx, int(hit), symmetry, dwell_count])
 
-                self.logger.info(f"CSV created for channel {channel_id}: {csv_fname} (rows={csv_mgr.get_row_count()})")
+                self.logger.debug(f"CSV created for channel {channel_id}: {csv_fname} (rows={csv_mgr.get_row_count()})")
                 csv_mgr_list.append(csv_mgr)
 
             except Exception as exc:
@@ -92,7 +92,7 @@ class DsHistrogramReport(AnalysisReport):
             hit_counts: List[float] = [float(v) for v in (model.parameters.hit_counts or [])]
 
             if not hit_counts:
-                self.logger.info(f"Channel {channel_id} has empty hit_counts; skipping plot.")
+                self.logger.debug(f"Channel {channel_id} has empty hit_counts; skipping plot.")
                 continue
 
             # Build a histogram from pre-binned counts: one sample per bin index with a weight equal to that bin's count.
@@ -121,7 +121,7 @@ class DsHistrogramReport(AnalysisReport):
                 png_tags.append("h")
 
             png = self.create_png_fname(tags=png_tags)
-            self.logger.info(f"Creating histogram plot: {png} for channel: {channel_id}")
+            self.logger.debug(f"Creating histogram plot: {png} for channel: {channel_id}")
 
             cfg = PlotConfig(title=title, 
                              x=bin_indices,     xlabel=xlabel, 
