@@ -1,9 +1,7 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+from __future__ import annotations
 
 import logging
 import numpy as np
@@ -303,6 +301,9 @@ class Analysis:
         """
         return self._result_model
 
+    def get_dicts(self) -> List[Dict[str,Any]]:
+        return self._analysis_dict
+
     def save_message_response(self, msg_response: MessageResponse) -> None:
         """Persist the raw message response (debug aid).
 
@@ -331,7 +332,7 @@ class Analysis:
         """
         self._result_model.append(model)
     
-    def __update_result_dict(self, model:Dict[str,Any]):
+    def __update_result_dict(self, model_dict:Dict[str,Any]):
         """Append a plain-dict analysis result to the results cache.
 
         Parameters
@@ -339,7 +340,7 @@ class Analysis:
         model : dict
             The dictionary result to record.
         """
-        self._analysis_dict.append(model)
+        self._analysis_dict.append(model_dict)
 
     def __add_pnmType(self, pft:PnmFileType):
         self._processed_pnm_type.append(pft)

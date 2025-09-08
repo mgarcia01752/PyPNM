@@ -12,29 +12,22 @@ from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport
 from pypnm.api.routes.basic.spec_analyzer_analysis_rpt import (
     SpecAnaWindowAvgRptModel, SpectrumAnalyzerAnalysisRptModel, SpectrumAnalyzerSignalProcessRptModel)
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema import BaseAnalysisModel, SpectrumAnalyzerAnalysisModel
+from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema import (
+    BaseAnalysisModel, SpectrumAnalyzerAnalysisModel)
 from pypnm.api.routes.common.classes.analysis.multi_analysis import MultiAnalysis
 from pypnm.config.pnm_config_manager import SystemConfigSettings
 from pypnm.docsis.cable_modem import MacAddress
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.csv.manager import CSVManager
-from pypnm.lib.mac_address import MacAddressFormat
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.types import ArrayLike, FloatSeries, IntSeries, Path, PathLike
 from pypnm.lib.utils import Utils
 
 
-class ScQamSpecAnalyzerAnalysisRptModel(BaseModel):
+class ScQamSpecAnalysisRptModel(BaseModel):
     """Pydantic model for a compiled SC-QAM Spectrum Analyzer report.
-
-    Notes
-    -----
-    This model represents the **aggregate** (multi-channel) report output
-    produced by :class:`ScQamSpecAnalyzerReport`. Fields will be added as the
-    reporting surface stabilizes. Use :meth:`ScQamSpecAnalyzerReport.to_model`
-    and :meth:`ScQamSpecAnalyzerReport.to_dict` to obtain structured output.
     """
-    pass
+    models:List[BaseAnalysisModel]
 
 
 class ScQamSpecAnalyzerAnalysisReport():
@@ -67,7 +60,7 @@ class ScQamSpecAnalyzerAnalysisReport():
             Source of per-channel :class:`Analysis` objects to process.
         """
         self._multi_analysis = multi_analysis
-        self._archive_path = SystemConfigSettings.archive_dir
+        self._archive_path:PathLike = SystemConfigSettings.archive_dir
         self._analysis_files:List[PathLike] = []
         self._archive_file:PathLike
 
@@ -164,18 +157,19 @@ class ScQamSpecAnalyzerAnalysisReport():
         """
         return self._archive_file
     
-    def to_model(self) -> ScQamSpecAnalyzerAnalysisRptModel:
+    def to_model(self) -> ScQamSpecAnalysisRptModel:
         """Return a structured model of the aggregated report output.
 
         Notes
         -----
         The model schema is minimal today and will evolve as fields stabilize.
         """
-        return ScQamSpecAnalyzerAnalysisRptModel()
+        return ScQamSpecAnalysisRptModel(
+            models=self._multi_analysis.to_model())
     
     def to_dict(self) -> Dict[str,Any]:
         """Return the report as a serializable ``dict`` via Pydantic's ``model_dump``."""
-        return self.to_model().model_dump()
+        return self._multi_analysis.to_dict()
 
 
 class SingleScQamSpecAnalyzerReport(AnalysisReport):

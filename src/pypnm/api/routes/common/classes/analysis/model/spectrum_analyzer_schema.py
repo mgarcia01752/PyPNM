@@ -62,4 +62,4 @@ class SpectrumAnalyzerAnalysisModel(BaseAnalysisModel):
                                           raw and smoothed magnitude data.
     """
     capture_parameters: SpecAnCapturePara   = Field(..., description="Configuration used for spectrum capture.")
-    signal_analysis: SpecAnaAnalysisResults         = Field(..., description="Computed analysis results of the spectrum capture.")
+    signal_analysis: SpecAnaAnalysisResults = Field(..., description="Computed analysis results of the spectrum capture.")
