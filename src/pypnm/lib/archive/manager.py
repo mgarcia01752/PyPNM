@@ -128,7 +128,7 @@ class ArchiveManager:
                 else:
                     arcname = src.name
 
-                logging.info(f'Archiving: {f} to {arcname}')
+                logging.debug(f'Archiving: {f} to {arcname}')
 
                 zf.write(src, arcname)
         return ap

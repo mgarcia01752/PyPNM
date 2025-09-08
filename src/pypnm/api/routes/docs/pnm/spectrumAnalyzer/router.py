@@ -64,7 +64,7 @@ class SpectrumAnalyzerRouter:
                     self.logger.error(msg)
                     return SnmpResponse(mac_address=str(mac), status=status, message=msg)                   
                 
-                service = CmSpectrumAnalysisService(cable_modem=cm, capture_parameters=request.parameters)
+                service = CmSpectrumAnalysisService(cable_modem=cm, capture_parameters=request.capture_parameters)
                 msg_rsp: MessageResponse = await service.set_and_go()
 
                 if msg_rsp.status != ServiceStatusCode.SUCCESS:
