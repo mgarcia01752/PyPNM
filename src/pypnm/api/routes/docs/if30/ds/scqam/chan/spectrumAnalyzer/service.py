@@ -130,7 +130,7 @@ class DsScQamChannelSpectrumAnalyzer:
             )
             capture_parameters.append(capture_parameter)
 
-            if attemps == 1:
+            if attemps == 0:
                 self.logger.info('+++++++++++++TEMPORARY+++++++++++++ TAKE ME OUT')
                 break
             attemps += 1
