@@ -219,7 +219,7 @@ class CmDsOfdmRxMer(PnmHeader):
             A list of decoded MER values (dB), one per active subcarrier.
         """
         if self._rx_mer_float_data:
-            self.logger.info(f"RxMER Float Data: {self._rx_mer_float_data}")
+            self.logger.debug(f"RxMER Float Data: {self._rx_mer_float_data}")
             return self._rx_mer_float_data
 
         if not self._rxmer_data:

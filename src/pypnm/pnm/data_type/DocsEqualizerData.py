@@ -74,7 +74,7 @@ class DocsEqualizerData:
             }
 
             self._coefficients_found = True
-            self.logger.info(f"Parsed equalizer data for upstream index {us_idx}")
+            self.logger.debug(f"Parsed equalizer data for upstream index {us_idx}")
             return True
 
         except Exception as e:

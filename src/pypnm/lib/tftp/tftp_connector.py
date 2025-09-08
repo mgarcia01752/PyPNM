@@ -45,13 +45,13 @@ class TFTPConnector:
         Returns:
             True on success, False on any error.
         """
-        self.logger.info(f"Starting TFTP download: {remote_filename} → {local_path}")
+        self.logger.debug(f"Starting TFTP download: {remote_filename} → {local_path}")
         
         try:
             os.makedirs(os.path.dirname(local_path) or '.', exist_ok=True)
             client = TftpClient(self.host, self.port)
             client.download(remote_filename, local_path)
-            self.logger.info(f"TFTP download complete: {local_path}")
+            self.logger.debug(f"TFTP download complete: {local_path}")
             return True
         
         except Exception as e:
@@ -75,9 +75,9 @@ class TFTPConnector:
 
         try:
             client = TftpClient(self.host, self.port)
-            self.logger.info(f"Starting TFTP upload: {local_path} → {remote_filename}")
+            self.logger.debug(f"Starting TFTP upload: {local_path} → {remote_filename}")
             client.upload(remote_filename, local_path)
-            self.logger.info(f"TFTP upload complete: {remote_filename}")
+            self.logger.debug(f"TFTP upload complete: {remote_filename}")
             return True
         except Exception as e:
             self.logger.error(f"TFTP upload failed: {e}")

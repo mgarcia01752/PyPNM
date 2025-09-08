@@ -120,7 +120,7 @@ class CmSpectrumAnalysisSnmp:
         if total_bins_count == 0:
             self.logger.warning("No spectrum groups parsed; returning empty data.")
         else:
-            self.logger.info(
+            self.logger.debug(
                 f"Parsed total of {total_bins_count} bins across {spectrum_group_idx - 1} groups."
             )
 

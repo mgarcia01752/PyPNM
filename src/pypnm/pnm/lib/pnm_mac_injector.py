@@ -95,7 +95,7 @@ class PnmMacInjector(PnmHeader):
         self.modified_bytes = (
             self.raw_bytes[:offset] + mac_bytes + self.raw_bytes[offset+6:]
         )
-        self.logger.info(f"MAC {mac} injected at offset {offset}")
+        self.logger.debug(f"MAC {mac} injected at offset {offset}")
 
     def save(self, out_path: Optional[Union[str, Path]] = None) -> Path:
         """
@@ -118,5 +118,5 @@ class PnmMacInjector(PnmHeader):
             self.logger.debug(f"Backup created: {bak}")
 
         dest.write_bytes(self.modified_bytes)
-        self.logger.info(f"Saved modified file: {dest}")
+        self.logger.debug(f"Saved modified file: {dest}")
         return dest

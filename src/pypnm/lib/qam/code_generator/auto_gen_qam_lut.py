@@ -58,7 +58,7 @@ class GenerateQamLut:
 
         lut = QamLut(src_qam_table=self.path_to_qam_table, dst_qam_lut=self.path_to_qam_lut)
         out_path = lut.write()
-        self.logger.info("QAM LUT generated successfully at %s", out_path)
+        self.logger.debug("QAM LUT generated successfully at %s", out_path)
         return out_path
 
 
@@ -122,7 +122,7 @@ class QamLut:
     def _compile(self) -> None:
         """Compile all QAM tables into the internal LUT structure."""
         for f in self._get_qam_tables():
-            self.logger.info("Loading %s to compile QAM LUT", f)
+            self.logger.debug("Loading %s to compile QAM LUT", f)
             cc, qm = self._load_table(f)
             self._update_qam_lut(qm, cc)
 
@@ -211,7 +211,7 @@ class QamLut:
         bps = int(math.log2(symbol_count))
         Es = self._scaling_factors.get(bps)
         if Es is None:
-            self.logger.info("No scaling factor for %d bits/symbol; leaving points unscaled.", bps)
+            self.logger.debug("No scaling factor for %d bits/symbol; leaving points unscaled.", bps)
             return raw_cc, qm
 
         scale = 1.0 / math.sqrt(Es)
@@ -220,7 +220,7 @@ class QamLut:
         for r, i in raw_cc.to_complex_array():
             scaled_cc.add(r * scale, i * scale)
 
-        self.logger.info(
+        self.logger.debug(
             "Loaded %s with %d symbols from %s (scaled by 1/sqrt(%s))",
             qm, symbol_count, path_to_qam_table, Es
         )
@@ -246,7 +246,7 @@ class QamLut:
         }
         """
         for order, cc in self._qam_cc.items():
-            self.logger.info("Compiling QAM LUT for %s", order)
+            self.logger.debug("Compiling QAM LUT for %s", order)
 
             cw_lut = CodeWordLutGenerator(cc.to_complex_array()).build().to_dict()
 
