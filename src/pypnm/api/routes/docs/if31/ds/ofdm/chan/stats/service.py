@@ -26,12 +26,19 @@ class DsOfdmChannelService:
         """
         entries: List[DocsIf31CmDsOfdmChanEntry] = await self.cm.getDocsIf31CmDsOfdmChanEntry()
 
+        if not entries:
+            self.logger.warning("No OFDM channel entries retrieved from the cable modem.")
+            return []
+
         result = []
         for entry in entries:
             try:
-                result.append(entry.to_dict())
+                result.append(entry.model_dump())
             except ValueError as e:
                 self.logger.warning(f"Skipping incomplete entry at index {entry.index}: {e}")
                 continue
+        
+        if not result:
+            self.logger.warning("No valid OFDM channel entries found.")
 
         return result

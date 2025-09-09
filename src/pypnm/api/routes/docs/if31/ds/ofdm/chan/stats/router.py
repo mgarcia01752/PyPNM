@@ -23,8 +23,8 @@ class DsOfdmChannelStatsRouter:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.router = APIRouter(
-            prefix="/docs/if31/ds/ofdm/channel",
-            tags=["DOCSIS 3.1 Downstream OFDM Channel Physical Layer Statistics"])
+            prefix="/docs/if31/ds/ofdm/chan",
+            tags=["DOCSIS 3.1 Downstream OFDM Channel", "Physical Layer Statistics"])
         
         self._add_routes()
 

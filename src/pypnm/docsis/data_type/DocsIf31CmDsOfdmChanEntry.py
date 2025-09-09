@@ -1,120 +1,146 @@
-
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from pypnm.snmp.compiled_oids import COMPILED_OIDS
+from typing import Optional, Callable, Union, List
+
+from pydantic import BaseModel
+from pypnm.lib.constants import INVALID_CHANNEL_ID, KHZ
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
-class DocsIf31CmDsOfdmChanEntry:
-    """
-    Represents a DOCSIS 3.1 Cable Modem Downstream OFDM Channel Entry, as defined in the 
-    `docsIf31CmDsOfdmChanTable` from the DOCSIS MIB.
 
-    This class encapsulates all relevant channel parameters for a specific OFDM channel index
-    and provides methods to populate these attributes via SNMP queries.
+class DocsIf31CmDsOfdmChanEntry(BaseModel):
     """
-    
+    DOCSIS 3.1 CM Downstream OFDM Channel attributes (docsIf31CmDsOfdmChanTable).
+
+    Notes
+    -----
+    - All values are retrieved via symbolic OIDs (no compiled OIDs).
+    - Presence of fields depends on device/MIB support.
+    """
+    docsIf31CmDsOfdmChanChannelId:                Optional[int] = INVALID_CHANNEL_ID
+    docsIf31CmDsOfdmChanChanIndicator:            Optional[int] = None
+    docsIf31CmDsOfdmChanSubcarrierZeroFreq:       Optional[int] = None
+    docsIf31CmDsOfdmChanFirstActiveSubcarrierNum: Optional[int] = None
+    docsIf31CmDsOfdmChanLastActiveSubcarrierNum:  Optional[int] = None
+    docsIf31CmDsOfdmChanNumActiveSubcarriers:     Optional[int] = None
+    docsIf31CmDsOfdmChanSubcarrierSpacing:        Optional[int] = None
+    docsIf31CmDsOfdmChanCyclicPrefix:             Optional[int] = None
+    docsIf31CmDsOfdmChanRollOffPeriod:            Optional[int] = None
+    docsIf31CmDsOfdmChanPlcFreq:                  Optional[int] = None
+    docsIf31CmDsOfdmChanNumPilots:                Optional[int] = None
+    docsIf31CmDsOfdmChanTimeInterleaverDepth:     Optional[int] = None
+    docsIf31CmDsOfdmChanPlcTotalCodewords:        Optional[int] = None
+    docsIf31CmDsOfdmChanPlcUnreliableCodewords:   Optional[int] = None
+    docsIf31CmDsOfdmChanNcpTotalFields:           Optional[int] = None
+    docsIf31CmDsOfdmChanNcpFieldCrcFailures:      Optional[int] = None
+
+
+class DocsIf31CmDsOfdmChanChannelEntry(BaseModel):
+    """
+    Container for a single downstream OFDM channel record retrieved via SNMP.
+
+    Attributes
+    ----------
+    index : int
+        Table index used to query SNMP (instance suffix).
+    channel_id : int
+        Mirrored from ``docsIf31CmDsOfdmChanChannelId``; 0 if absent.
+    entry : DocsIf31CmDsOfdmChanEntry
+        Populated OFDM channel attributes for this index.
+    """
     index: int
-    docsIf31CmDsOfdmChanChannelId: int = 0
-    docsIf31CmDsOfdmChanChanIndicator: int = 0
-    docsIf31CmDsOfdmChanSubcarrierZeroFreq: int = 0
-    docsIf31CmDsOfdmChanFirstActiveSubcarrierNum: int = 0
-    docsIf31CmDsOfdmChanLastActiveSubcarrierNum: int = 0
-    docsIf31CmDsOfdmChanNumActiveSubcarriers: int = 0
-    docsIf31CmDsOfdmChanSubcarrierSpacing: int = 0
-    docsIf31CmDsOfdmChanCyclicPrefix: int = 0
-    docsIf31CmDsOfdmChanRollOffPeriod: int = 0
-    docsIf31CmDsOfdmChanPlcFreq: int = 0
-    docsIf31CmDsOfdmChanNumPilots: int = 0
-    docsIf31CmDsOfdmChanTimeInterleaverDepth: int = 0
-    docsIf31CmDsOfdmChanPlcTotalCodewords: int = 0
-    docsIf31CmDsOfdmChanPlcUnreliableCodewords: int = 0
-    docsIf31CmDsOfdmChanNcpTotalFields: int = 0
-    docsIf31CmDsOfdmChanNcpFieldCrcFailures: int = 0
+    channel_id: int
+    entry: DocsIf31CmDsOfdmChanEntry
 
-    def __init__(self, index: int, snmp: Snmp_v2c):
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.index = index
-        self.snmp = snmp
+    @classmethod
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsIf31CmDsOfdmChanChannelEntry":
+        logger = logging.getLogger(cls.__name__)
 
-    async def start(self) -> bool:
-        """
-        Asynchronously populates the channel data from SNMP.
+        def safe_cast(value: str, cast: Callable) -> Union[int, float, str, bool, None]:
+            try:
+                return cast(value)
+            except Exception:
+                return None
 
-        Returns:
-            bool: True if SNMP queries complete successfully (even if some values are None), False otherwise.
-        """
-        fields = {
-            "docsIf31CmDsOfdmChanChannelId": ("docsIf31CmDsOfdmChanChannelId", int),
-            "docsIf31CmDsOfdmChanChanIndicator": ("docsIf31CmDsOfdmChanChanIndicator", int),
-            "docsIf31CmDsOfdmChanSubcarrierZeroFreq": ("docsIf31CmDsOfdmChanSubcarrierZeroFreq", int),
-            "docsIf31CmDsOfdmChanFirstActiveSubcarrierNum": ("docsIf31CmDsOfdmChanFirstActiveSubcarrierNum", int),
-            "docsIf31CmDsOfdmChanLastActiveSubcarrierNum": ("docsIf31CmDsOfdmChanLastActiveSubcarrierNum", int),
-            "docsIf31CmDsOfdmChanNumActiveSubcarriers": ("docsIf31CmDsOfdmChanNumActiveSubcarriers", int),
-            "docsIf31CmDsOfdmChanSubcarrierSpacing": ("docsIf31CmDsOfdmChanSubcarrierSpacing", int),
-            "docsIf31CmDsOfdmChanCyclicPrefix": ("docsIf31CmDsOfdmChanCyclicPrefix", int),
-            "docsIf31CmDsOfdmChanRollOffPeriod": ("docsIf31CmDsOfdmChanRollOffPeriod", int),
-            "docsIf31CmDsOfdmChanPlcFreq": ("docsIf31CmDsOfdmChanPlcFreq", int),
-            "docsIf31CmDsOfdmChanNumPilots": ("docsIf31CmDsOfdmChanNumPilots", int),
-            "docsIf31CmDsOfdmChanTimeInterleaverDepth": ("docsIf31CmDsOfdmChanTimeInterleaverDepth", int),
-            "docsIf31CmDsOfdmChanPlcTotalCodewords": ("docsIf31CmDsOfdmChanPlcTotalCodewords", int),
-            "docsIf31CmDsOfdmChanPlcUnreliableCodewords": ("docsIf31CmDsOfdmChanPlcUnreliableCodewords", int),
-            "docsIf31CmDsOfdmChanNcpTotalFields": ("docsIf31CmDsOfdmChanNcpTotalFields", int),
-            "docsIf31CmDsOfdmChanNcpFieldCrcFailures": ("docsIf31CmDsOfdmChanNcpFieldCrcFailures", int),
-        }
+        async def fetch(field: str, cast: Optional[Callable] = None):
+            try:
+                raw = await snmp.get(f"{field}.{index}")
+                val = Snmp_v2c.get_result_value(raw)
 
-        try:
-            for attr, (oid_key, transform) in fields.items():
+                if val is None or val == "":
+                    return None
+
+                if cast is not None:
+                    return safe_cast(val, cast)
+
+                s = str(val).strip()
+                if s.isdigit():
+                    return int(s)
+                if s.lower() in ("true", "false"):
+                    return s.lower() == "true"
                 try:
-                    result = await self.snmp.get(f"{COMPILED_OIDS[oid_key]}.{self.index}")
-                    value_list = Snmp_v2c.get_result_value(result)
+                    return float(s)
+                except ValueError:
+                    return s
+            except Exception as e:
+                logger.warning(f"Failed to fetch {field}.{index}: {e}")
+                return None
 
-                    if not value_list:
-                        self.logger.warning(f"Invalid value returned for {oid_key}.{self.index}: {value_list}")
-                        setattr(self, attr, None)
-                        continue
+        entry = DocsIf31CmDsOfdmChanEntry(
+            docsIf31CmDsOfdmChanChannelId                 = await fetch("docsIf31CmDsOfdmChanChannelId", int),
+            docsIf31CmDsOfdmChanChanIndicator             = await fetch("docsIf31CmDsOfdmChanChanIndicator", int),
+            docsIf31CmDsOfdmChanSubcarrierZeroFreq        = await fetch("docsIf31CmDsOfdmChanSubcarrierZeroFreq", int),
+            docsIf31CmDsOfdmChanFirstActiveSubcarrierNum  = await fetch("docsIf31CmDsOfdmChanFirstActiveSubcarrierNum", int),
+            docsIf31CmDsOfdmChanLastActiveSubcarrierNum   = await fetch("docsIf31CmDsOfdmChanLastActiveSubcarrierNum", int),
+            docsIf31CmDsOfdmChanNumActiveSubcarriers      = await fetch("docsIf31CmDsOfdmChanNumActiveSubcarriers", int),
+            docsIf31CmDsOfdmChanSubcarrierSpacing         = await fetch("docsIf31CmDsOfdmChanSubcarrierSpacing", int) * KHZ,
+            docsIf31CmDsOfdmChanCyclicPrefix              = await fetch("docsIf31CmDsOfdmChanCyclicPrefix", int),
+            docsIf31CmDsOfdmChanRollOffPeriod             = await fetch("docsIf31CmDsOfdmChanRollOffPeriod", int),
+            docsIf31CmDsOfdmChanPlcFreq                   = await fetch("docsIf31CmDsOfdmChanPlcFreq", int),
+            docsIf31CmDsOfdmChanNumPilots                 = await fetch("docsIf31CmDsOfdmChanNumPilots", int),
+            docsIf31CmDsOfdmChanTimeInterleaverDepth      = await fetch("docsIf31CmDsOfdmChanTimeInterleaverDepth", int),
+            docsIf31CmDsOfdmChanPlcTotalCodewords         = await fetch("docsIf31CmDsOfdmChanPlcTotalCodewords", int),
+            docsIf31CmDsOfdmChanPlcUnreliableCodewords    = await fetch("docsIf31CmDsOfdmChanPlcUnreliableCodewords", int),
+            docsIf31CmDsOfdmChanNcpTotalFields            = await fetch("docsIf31CmDsOfdmChanNcpTotalFields", int),
+            docsIf31CmDsOfdmChanNcpFieldCrcFailures       = await fetch("docsIf31CmDsOfdmChanNcpFieldCrcFailures", int),
+        )
 
-                    value = transform(value_list)
-                    setattr(self, attr, value)
-                except Exception as e:
-                    self.logger.warning(f"Failed to fetch or transform {attr} ({oid_key}): {e}")
-                    setattr(self, attr, None)
+        return cls(
+            index      = index,
+            channel_id = entry.docsIf31CmDsOfdmChanChannelId or 0,
+            entry      = entry
+        )
 
-            return True
+    @classmethod
+    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsIf31CmDsOfdmChanChannelEntry"]:
+        logger = logging.getLogger(cls.__name__)
+        results: List[DocsIf31CmDsOfdmChanChannelEntry] = []
 
-        except Exception as e:
-            self.logger.exception("Unexpected error during SNMP population")
-            return False
+        if not indices:
+            logger.warning("No OFDM channel indices provided.")
+            return results
 
-    def to_dict(self) -> dict:
+        for i in indices:
+            try:
+                results.append(await cls.from_snmp(i, snmp))
+            except Exception as e:
+                logger.warning(f"Failed to retrieve OFDM channel {i}: {e}")
+
+        return results
+
+    # NEW: entries-only helper to accommodate your existing method signature.
+    @classmethod
+    async def get_entries(cls, snmp: Snmp_v2c, indices: List[int]) -> List[DocsIf31CmDsOfdmChanEntry]:
         """
-        Converts the instance into a dictionary structured as:
-            {
-                "index": <int>,
-                "channel_id": <int>,
-                "entry": {
-                    ...remaining OFDM fields...
-                }
-            }
+        Convenience wrapper that returns only the `DocsIf31CmDsOfdmChanEntry`
+        objects (no channel wrapper), preserving a return type of
+        `List[DocsIf31CmDsOfdmChanEntry]`.
+
+        This is intended to fit code like:
+            await self.getDocsIf31CmDsOfdmChanEntry() -> List[DocsIf31CmDsOfdmChanEntry]
         """
-        data = {attr: getattr(self, attr, None) for attr in self.__annotations__}
-
-        missing = [k for k, v in data.items() if v is None]
-        if missing:
-            raise ValueError(f"Attributes not populated (call start() first): {missing}")
-
-        index = data["index"]
-        channel_id = data["docsIf31CmDsOfdmChanChannelId"]
-        entry_fields = {
-            k: v for k, v in data.items()
-            if k not in ("index", "docsIf31CmDsOfdmChanChannelId")
-        }
-
-        return {
-            "index": index,
-            "channel_id": channel_id,
-            "entry": entry_fields
-        }
+        wrappers = await cls.get(snmp, indices)
+        return [w.entry for w in wrappers]
