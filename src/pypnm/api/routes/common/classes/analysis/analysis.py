@@ -168,7 +168,7 @@ class Analysis:
                 pass
 
             if self.analysis_type == AnalysisType.BASIC:
-                self.logger.info(f'Performing Basic Analysis on PNM: {pnm_file_type} on Channel: {channel_id}')
+                self.logger.debug(f'Performing Basic Analysis on PNM: {pnm_file_type} on Channel: {channel_id}')
                 self._basic_analysis(pnm_file_type, measurement)
             
             else:

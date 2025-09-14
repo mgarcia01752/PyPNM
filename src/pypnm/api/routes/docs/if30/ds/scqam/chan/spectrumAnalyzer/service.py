@@ -110,7 +110,6 @@ class DsScQamChannelSpectrumAnalyzer:
         noise_bw                = 150
         segment_freq_span       = 1_000_000
 
-        attemps: int = 0
         for chan_id, (start_hz, center_hz, end_hz) in bw_by_channel.items():
 
             self.logger.info(f'SC-QAM Mac: {self._cm.get_mac_address} - Channel-Settings: {chan_id}, {start_hz}, {center_hz}, {end_hz}')
@@ -129,11 +128,6 @@ class DsScQamChannelSpectrumAnalyzer:
                 spectrum_retrieval_type     = SpectrumRetrievalType.FILE,
             )
             capture_parameters.append(capture_parameter)
-
-            if attemps == 0:
-                self.logger.info('+++++++++++++TEMPORARY+++++++++++++ TAKE ME OUT')
-                break
-            attemps += 1
 
         for capture_parameter in capture_parameters:
             service = ScQamChanSpecAnalyzerService(self._cm)

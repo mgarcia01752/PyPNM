@@ -5,7 +5,6 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import io
-import json
 import logging
 import os
 from typing import Union
@@ -14,7 +13,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
 from pypnm.api.routes.advance.analysis.signal_analysis.multi_rxmer_signal_analysis import (
-    MultiRxMerAnalysisType, MultiRxMerSignalAnalysis)
+    MultiRxMerAnalysisResult, MultiRxMerAnalysisType, MultiRxMerSignalAnalysis)
 from pypnm.api.routes.advance.common.abstract.service import AbstractService
 from pypnm.api.routes.advance.common.capture_data_aggregator import CaptureDataAggregator
 from pypnm.api.routes.advance.common.operation_manager import OperationManager
@@ -31,10 +30,8 @@ from pypnm.api.routes.common.classes.operation.cable_modem_precheck import Cable
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import Utils
 
 class MultiRxMerRouter(AbstractService):
     """
@@ -280,30 +277,33 @@ class MultiRxMerRouter(AbstractService):
                 capture_group_id = OperationManager.get_capture_group(request.operation_id)
             except KeyError:
                 return MultiRxMerAnalysisResponse(
-                    mac_address=request.cable_modem.mac_address,
+                    mac_address=MacAddress.null(),
                     status=ServiceStatusCode.CAPTURE_GROUP_NOT_FOUND,
                     message=f"No capture group found for operation {request.operation_id}",
-                    data={}
-                )
+                    data={})
 
             # 2) Load and index the raw PNM files
             aggregator = CaptureDataAggregator(capture_group_id)
             pcollect: PnmCollection = aggregator.getPnmCollection()
-            if not pcollect:
-                return MultiRxMerAnalysisResponse(
-                    mac_address=request.cable_modem.mac_address,
-                    status=ServiceStatusCode.FAILURE,
-                    message=f"Unable to collect PNM files for group {capture_group_id}",
-                    data={}
-                )
 
             # 3) Dispatch based on requested analysis_type
             atype = MultiRxMerAnalysisType(request.analysis.type)
             
             if atype == MultiRxMerAnalysisType.MIN_AVG_MAX:
+                self.logger.info(f'Performing Multi-RxMER Min/Avg/Max Analysis for group {capture_group_id}')
                 engine = MultiRxMerSignalAnalysis(pcollect, MultiRxMerAnalysisType.MIN_AVG_MAX)
-                analysis_rst_dict = engine.to_dict()
-                
+                multi_analysis:MultiRxMerAnalysisResult = engine.to_model()
+
+                if multi_analysis.mac_address == MacAddress.null():
+                    msg:str = f'Unable to process Multi-RxMER Min/Avg/Max Analysis for group {capture_group_id}'
+                    self.logger.error(msg)
+                    
+                    return MultiRxMerAnalysisResponse(
+                        mac_address=MacAddress.null(),
+                        status=ServiceStatusCode.DS_OFDM_MULIT_RXMER_FAILED,
+                        message=msg,
+                        data={})                    
+
             elif atype == MultiRxMerAnalysisType.OFDM_PROFILE_PERFORMANCE_1:
                 '''
                     Operation of this test:
@@ -323,29 +323,24 @@ class MultiRxMerRouter(AbstractService):
                     * Provide total FEC Stats for each profile over the time of the capture.
                 '''
                 engine = MultiRxMerSignalAnalysis(pcollect, MultiRxMerAnalysisType.OFDM_PROFILE_PERFORMANCE_1)
-                analysis_rst_dict = engine.to_dict()                
+                multi_analysis = engine.to_model()                
             
             elif atype == MultiRxMerAnalysisType.RXMER_HEAT_MAP:
                 engine = MultiRxMerSignalAnalysis(pcollect, MultiRxMerAnalysisType.RXMER_HEAT_MAP)
-                analysis_rst_dict = engine.to_dict()
+                multi_analysis = engine.to_model()
             
             else:
                 raise HTTPException(status_code=400, detail=f"Unsupported analysis type: {atype}")
 
             # 4) Map analysis output to response fields
-            data = analysis_rst_dict.get("data", [])
-            error = analysis_rst_dict.get("error")
-            status = ServiceStatusCode.SUCCESS if not error else ServiceStatusCode.FAILURE
-            message = error or f"Analysis {MultiRxMerAnalysisType(atype).name} completed for group {capture_group_id}"
+            status = ServiceStatusCode.SUCCESS 
+            message =f"Analysis {MultiRxMerAnalysisType(atype).name} completed for group {capture_group_id}"
 
-            FileProcessor(f'output/ofdm-prof-1-{Utils.time_stamp()}.json').write_file(json.dumps(data))
-            
             return MultiRxMerAnalysisResponse(
-                mac_address=request.cable_modem.mac_address,
+                mac_address=multi_analysis.mac_address,
                 status=status,
                 message=message,
-                data=data
-            )
+                data=multi_analysis.model_dump().get("data", {}))
 
 # For dynamic auto-registration
 router = MultiRxMerRouter().router

@@ -19,17 +19,17 @@ class PnmFileType(Enum):
         to_ascii(): Alias for get_pnm_cann (returns ASCII code).
         from_name(name): Class method to lookup an enum by its name.
     """
-    SYMBOL_CAPTURE                         = "PNN1"
-    OFDM_CHANNEL_ESTIMATE_COEFFICIENT      = "PNN2"
-    DOWNSTREAM_CONSTELLATION_DISPLAY       = "PNN3"
-    RECEIVE_MODULATION_ERROR_RATIO         = "PNN4"
-    DOWNSTREAM_HISTOGRAM                   = "PNN5"
-    UPSTREAM_PRE_EQUALIZER_COEFFICIENTS    = "PNN6"
-    UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE  = "PNN7"
-    OFDM_FEC_SUMMARY                       = "PNN8"
-    SPECTRUM_ANALYSIS                      = "PNN9"
-    OFDM_MODULATION_PROFILE                = "PNN10"
-    LATENCY_REPORT                         = "LLD01"
+    SYMBOL_CAPTURE                                  = "PNN1"
+    OFDM_CHANNEL_ESTIMATE_COEFFICIENT               = "PNN2"
+    DOWNSTREAM_CONSTELLATION_DISPLAY                = "PNN3"
+    RECEIVE_MODULATION_ERROR_RATIO                  = "PNN4"
+    DOWNSTREAM_HISTOGRAM                            = "PNN5"
+    UPSTREAM_PRE_EQUALIZER_COEFFICIENTS             = "PNN6"
+    UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE = "PNN7"
+    OFDM_FEC_SUMMARY                                = "PNN8"
+    SPECTRUM_ANALYSIS                               = "PNN9"
+    OFDM_MODULATION_PROFILE                         = "PNN10"
+    LATENCY_REPORT                                  = "LLD01"
 
     def __init__(self, pnm_cann: str) -> None:
         """
@@ -100,8 +100,10 @@ class PnmFileType(Enum):
         tag_up = tag.upper()
         if tag_up == "LLD":
             code = f"LLD{version:02d}"
+
         elif tag_up in ("PNN", "PNM"):
             code = f"{tag_up}{version}"
+        
         else:
             code = f"{tag_up}{version}"
 
@@ -141,10 +143,12 @@ class PnmFileType(Enum):
             if not suffix.isdigit():
                 raise KeyError(f"Unknown code: {code!r}. 'LLD' suffix must be numeric.")
             s = f"LLD{int(suffix):02d}"   # e.g., LLD1 -> LLD01
+
         elif prefix in ("PNN", "PNM"):
             if not suffix.isdigit():
                 raise KeyError(f"Unknown code: {code!r}. '{prefix}' suffix must be numeric.")
             s = f"{prefix}{int(suffix)}"  # strip any leading zeros
+        
         # else: leave as-is and try exact match
 
         for member in cls:

@@ -1,8 +1,7 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+from __future__ import annotations
 
 import logging
 import struct
@@ -14,7 +13,7 @@ from pydantic.fields import Field
 from pypnm.lib.constants import KHZ
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.signal_processing.shan.series import ShannonSeries
-from pypnm.pnm.lib.signal_statistics import SignalStatistics
+from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
 from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
@@ -54,7 +53,7 @@ class CmDsOfdmRxMerModel(PnmBaseModel):
     occupied_channel_bandwidth: int         = Field(..., ge=0, description="OFDM Occupied Bandwidth (Hz)")
     value_units:str                         = Field(default="dB", description="Non-mutable")
     values:FloatSeries                      = Field(..., description="RxMER values per active subcarrier (dB)")
-    signal_statistics:Dict[str, Any]        = Field(..., description="Aggregate statistics computed from values")
+    signal_statistics:SignalStatisticsModel = Field(..., description="Aggregate statistics computed from values")
     modulation_statistics:Dict[str, Any]    = Field(..., description="Shannon-based modulation metrics")
 
 

@@ -73,15 +73,18 @@ class PnmObjectAndParameters(PnmHeader):
         result: Dict[str, Any] = {"file_type": self.pnm_type}
         try:
             parsed = self._process()
-            # Order of keys matters for consistency
+            
+            self.logger.debug(f'{parsed}')
+
             result.update({
-                "capture_time": getattr(parsed, "capture_time", None),
-                "channel_id": getattr(parsed, "channel_id", None),
-                "mac_address": getattr(parsed, "mac_address", None),
-                "subcarrier_zero_frequency": getattr(parsed, "subcarrier_zero_frequency", None),
-                "first_active_subcarrier_index": getattr(parsed, "first_active_subcarrier_index", None),
-                "subcarrier_spacing": getattr(parsed, "subcarrier_spacing", None),
+                "capture_time":                 getattr(parsed, "capture_time", None),
+                "channel_id":                   getattr(parsed, "_channel_id", None),
+                "mac_address":                  getattr(parsed, "_mac_address", None),
+                "subcarrier_zero_frequency":    getattr(parsed, "_subcarrier_zero_frequency", None),
+                "first_active_subcarrier_index":getattr(parsed, "_first_active_subcarrier_index", None),
+                "subcarrier_spacing":           getattr(parsed, "_subcarrier_spacing", None),
             })
+
         except NotImplementedError as nie:
             result["error"] = str(nie)
         except ValueError as ve:
@@ -111,17 +114,17 @@ class PnmObjectAndParameters(PnmHeader):
         
         # Dispatch in enum order
         dispatch_map = {
-            PnmFileType.SYMBOL_CAPTURE: self._process_symbol_capture,
-            PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT: self._process_ofdm_channel_estimate,
-            PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY: self._process_constellation_display,
-            PnmFileType.RECEIVE_MODULATION_ERROR_RATIO: self._process_rxmer,
-            PnmFileType.DOWNSTREAM_HISTOGRAM: self._process_histogram,
+            PnmFileType.SYMBOL_CAPTURE:                     self._process_symbol_capture,
+            PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT:  self._process_ofdm_channel_estimate,
+            PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY:   self._process_constellation_display,
+            PnmFileType.RECEIVE_MODULATION_ERROR_RATIO:     self._process_rxmer,
+            PnmFileType.DOWNSTREAM_HISTOGRAM:               self._process_histogram,
             PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS: self._process_upstream_pre_eq,
             PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE: self._process_upstream_pre_eq_update,
-            PnmFileType.OFDM_FEC_SUMMARY: self._process_fec_summary,
-            PnmFileType.SPECTRUM_ANALYSIS: self._process_spectrum_analysis,
-            PnmFileType.OFDM_MODULATION_PROFILE: self._process_modulation_profile,
-            PnmFileType.LATENCY_REPORT: self._process_latency_report,
+            PnmFileType.OFDM_FEC_SUMMARY:                   self._process_fec_summary,
+            PnmFileType.SPECTRUM_ANALYSIS:                  self._process_spectrum_analysis,
+            PnmFileType.OFDM_MODULATION_PROFILE:            self._process_modulation_profile,
+            PnmFileType.LATENCY_REPORT:                     self._process_latency_report,
         }
 
         handler = dispatch_map.get(file_type_enum)

@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, Field
 from pypnm.api.routes.advance.common.schema.common_captuer_schema import MultiCaptureRequest
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
-    CommonAnalysisResponse, CommonMultiAnalysisRequest, CommonResponse)
+    CommonAnalysisResponse, CommonAnalysisType, CommonMultiAnalysisRequest, CommonResponse)
 
 from enum import IntEnum
 
@@ -139,8 +139,9 @@ class MultiRxMerStatusResponse(CommonResponse):
         )
     )
 
-class MultiRxMerAnalysisRequest(CommonMultiAnalysisRequest):
-    operation_id: str = Field(..., description="Operation ID to query status/results")
+class MultiRxMerAnalysisRequest(BaseModel):
+    analysis: CommonAnalysisType    = Field(..., description="Operation ID to query status/results")
+    operation_id: str               = Field(..., description="Operation ID to query status/results")
 
 class MultiRxMerAnalysisResponse(CommonAnalysisResponse):
     """

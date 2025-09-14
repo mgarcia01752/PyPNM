@@ -21,10 +21,10 @@ class Sort(enum.Enum):
     - PNM_FILE_TYPE: sort captures by `file_type` within each channel.
     - MAC_ADDRESS: sort top-level MAC keys lexically.
     """
-    CHANNEL_ID = enum.auto()
-    ASCEND_EPOCH = enum.auto()
-    PNM_FILE_TYPE = enum.auto()
-    MAC_ADDRESS = enum.auto()
+    CHANNEL_ID      = enum.auto()
+    ASCEND_EPOCH    = enum.auto()
+    PNM_FILE_TYPE   = enum.auto()
+    MAC_ADDRESS     = enum.auto()
 
 
 class PnmCollection:
@@ -69,12 +69,13 @@ class PnmCollection:
 
         for filename, byte_stream in self.capture_group:
             params = PnmObjectAndParameters(byte_stream).to_dict()
+            self.logger.debug(f'PnmObjectAndParameters: File: {filename}, len: {len(byte_stream)} -> {params}')
             entry = {
-                "file_name": filename,
-                "file_type": params.get("file_type"),
+                "file_name":    filename,
+                "file_type":    params.get("file_type"),
                 "capture_time": params.get("capture_time"),
-                "channel_id": params.get("channel_id"),
-                "data": byte_stream
+                "channel_id":   params.get("channel_id"),
+                "data":         byte_stream
             }
             mac = params.get("mac_address")
             if not mac:
@@ -121,6 +122,7 @@ class PnmCollection:
         # 2) Apply each sort stage
         result = nested
         for strategy in sort:
+
             if strategy == Sort.CHANNEL_ID:
                 # grouping is already in place
                 continue
@@ -129,13 +131,16 @@ class PnmCollection:
                 for ch_map in result.values():
                     for lst in ch_map.values():
                         lst.sort(key=lambda x: x.get("capture_time", 0))
+
             elif strategy == Sort.PNM_FILE_TYPE:
                 for ch_map in result.values():
                     for lst in ch_map.values():
                         lst.sort(key=lambda x: x.get("file_type", ""))
+            
             elif strategy == Sort.MAC_ADDRESS:
                 ordered = OrderedDict(sorted(result.items(), key=lambda kv: kv[0]))
                 result = dict(ordered)
+            
             else:
                 self.logger.warning(f"Unknown sort strategy: {strategy}")
         

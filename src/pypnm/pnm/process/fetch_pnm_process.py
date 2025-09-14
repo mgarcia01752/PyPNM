@@ -1,8 +1,8 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+
+from __future__ import annotations
 
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
@@ -55,7 +55,6 @@ class PnmFileTypeObjectFetcher(PnmHeader):
         else:
             raise ValueError(f"Unsupported PNM file type: {pnm_type}")
 
-        # Instantiate the parser
         self._parser = ParserClass(self._byte_stream)
 
     def get_parser(self):
@@ -66,7 +65,5 @@ class PnmFileTypeObjectFetcher(PnmHeader):
             RuntimeError: if parser not initialized (unsupported type).
         """
         if not self._parser:
-            raise RuntimeError(
-                "PNM parser not available; unsupported file type or initialization error"
-            )
+            raise RuntimeError("PNM parser not available; unsupported file type or initialization error")
         return self._parser
