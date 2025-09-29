@@ -74,9 +74,9 @@ class CableModem(CmSnmpOperation):
         Returns:
             bool: True if SNMP communication is successful, False otherwise.
         """
-        sys_descr = await self.getSysDescr()
+        system_description = await self.getSysDescr()
 
-        if not sys_descr:
+        if not system_description:
             self.logger.debug(
                 f"{self.__repr__()}- SNMP access failed"
             )

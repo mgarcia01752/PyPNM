@@ -153,7 +153,7 @@ class DsHistrogramReport(AnalysisReport):
         Expected per-item shape (keys are case-sensitive):
 
         {
-            "device_details": {"sys_descr": {}},
+            "device_details": {"system_description": {}},
             "pnm_header": {},
             "mac_address": "...",
             "channel_id": int,

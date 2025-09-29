@@ -20,11 +20,11 @@ class TestPnmHeader(unittest.TestCase):
 
         hdr = PnmHeader(packet)
 
-        self.assertEqual(hdr.file_type, b"PNN")
-        self.assertEqual(hdr.file_type_num, 1)
-        self.assertEqual(hdr.major_version, 2)
-        self.assertEqual(hdr.minor_version, 3)
-        self.assertEqual(hdr.capture_time, 12345678)
+        self.assertEqual(hdr._file_type, b"PNN")
+        self.assertEqual(hdr._file_type_num, 1)
+        self.assertEqual(hdr._major_version, 2)
+        self.assertEqual(hdr._minor_version, 3)
+        self.assertEqual(hdr._capture_time, 12345678)
         self.assertEqual(hdr.pnm_data, data_bytes)
 
         header_dict = hdr.getPnmHeader()
@@ -43,11 +43,11 @@ class TestPnmHeader(unittest.TestCase):
 
         hdr = PnmHeader(packet)
 
-        self.assertEqual(hdr.file_type, b"PNN")
-        self.assertEqual(hdr.file_type_num, 10)
-        self.assertEqual(hdr.major_version, 2)
-        self.assertEqual(hdr.minor_version, 8)
-        self.assertEqual(hdr.capture_time, 0)  # not set in special case
+        self.assertEqual(hdr._file_type, b"PNN")
+        self.assertEqual(hdr._file_type_num, 10)
+        self.assertEqual(hdr._major_version, 2)
+        self.assertEqual(hdr._minor_version, 8)
+        self.assertEqual(hdr._capture_time, 0)  # not set in special case
         self.assertEqual(hdr.pnm_data, data_bytes)
 
     def test_get_pnm_file_type_match(self):

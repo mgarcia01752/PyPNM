@@ -30,12 +30,7 @@ class OperationManager:
         ...
     }
     """
-
-    def __init__(
-        self,
-        capture_group_id: str,
-        db_path: Optional[Path] = None
-    ) -> None:
+    def __init__(self, capture_group_id: str, db_path: Optional[Path] = None) -> None:
         """
         Initialize a new operation manager for a given capture group.
 
@@ -125,11 +120,7 @@ class OperationManager:
         return self.operation_id
 
     @classmethod
-    def get_capture_group(
-        cls,
-        operation_id: str,
-        db_path: Optional[Path] = None
-    ) -> str:
+    def get_capture_group(cls, operation_id: str, db_path: Optional[Path] = None) -> str:
         """
         Retrieve the capture_group_id for a given operation_id.
 
@@ -155,10 +146,7 @@ class OperationManager:
             return ""
 
     @classmethod
-    def list_operations(
-        cls,
-        db_path: Optional[Path] = None
-    ) -> List[str]:
+    def list_operations(cls, db_path: Optional[Path] = None) -> List[str]:
         """
         List all registered operation IDs.
 

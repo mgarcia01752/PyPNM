@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 from pydantic import BaseModel, Field
-from pypnm.api.routes.advance.common.schema.common_captuer_schema import (
+from pypnm.api.routes.advance.common.schema.common_capture_schema import (
     MultiCaptureParametersResponse, MultiCaptureRequest)
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
     CommonAnalysisResponse, CommonMultiAnalysisRequest, CommonResponse)

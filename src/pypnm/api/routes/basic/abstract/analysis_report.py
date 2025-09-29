@@ -73,9 +73,9 @@ class AnalysisReport(ABC):
         """Return the cable-modem MAC address associated with this report session."""
         return self._mac_address
 
-    def get_sys_descr(self) -> SystemDescriptor:
+    def get_system_description(self) -> SystemDescriptor:
         """Return the device SystemDescriptor used for filenames and labeling."""
-        return self._sys_descr
+        return self._system_description
 
     def get_group_time(self) -> int:
         """Return the session/group timestamp used to namespace output filenames."""
@@ -332,14 +332,14 @@ class AnalysisReport(ABC):
 
         # System descriptor (robust to missing keys)
         dev_details: Dict[str, Any]                   = cast(Dict[str, Any], first_dict.get("device_details", {}))
-        sys_descr_dict: Dict[str, Any]                = cast(Dict[str, Any], dev_details.get("sys_descr", {}))
-        self._sys_descr: SystemDescriptor             = SystemDescriptor.load_from_dict(sys_descr_dict)
+        system_description_dict: Dict[str, Any]                = cast(Dict[str, Any], dev_details.get("system_description", {}))
+        self._system_description: SystemDescriptor             = SystemDescriptor.load_from_dict(system_description_dict)
 
     def _generate_fname(self, tags: List[str] = [], ext: str = "") -> str:
         """
         Construct a sanitized filename from:
           - MAC address (colon-free, lowercase)
-          - device model (`sys_descr.model`, spaces → underscores, lowercase)
+          - device model (`system_description.model`, spaces → underscores, lowercase)
           - group timestamp
           - optional tag suffix (underscored)
           - optional extension
@@ -355,7 +355,7 @@ class AnalysisReport(ABC):
             self._generate_fname(tags=["ch1", "rpt"], ext="csv")
         """
         mac = self.get_mac_address().to_mac_format()
-        model = self.get_sys_descr().model.replace(" ", "_").lower()
+        model = self.get_system_description().model.replace(" ", "_").lower()
         ts = str(self.get_group_time())
 
         clean_tags = []

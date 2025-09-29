@@ -45,7 +45,7 @@ class PlotConfig:
     xlabel: Optional[str] = None
     ylabel: Optional[str] = None
     zlabel: Optional[str] = None
-    title: Optional[str] = None
+    title:  Optional[str] = None
 
     # Limits and style
     xlim: Optional[Tuple[Number, Number]] = None
@@ -55,7 +55,7 @@ class PlotConfig:
     transparent: Optional[bool] = None
 
     # Constellation
-    qam: Optional[QamModulation] = None
+    qam:  Optional[QamModulation] = None
     soft: Optional[ComplexArray] = None
     hard: Optional[ComplexArray] = None
 

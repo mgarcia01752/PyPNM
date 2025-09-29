@@ -16,7 +16,7 @@ class FileEntry(BaseModel):
     filename: str = Field(..., description="Name of the file")
     pnm_test_type: str = Field(..., description="Type of PNM test performed")
     timestamp: str = Field(..., description="Human-readable timestamp")
-    sys_descr: Optional[dict] = Field(None, description="System description details")
+    system_description: Optional[dict] = Field(None, description="System description details")
 
 class FileQueryResponse(BaseModel):
     files: Dict[str, List[FileEntry]] = Field(

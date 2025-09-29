@@ -1,147 +1,255 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-import enum
-import logging
-from typing import Any, Dict, List, Tuple
-from collections import OrderedDict
+from __future__ import annotations
 
+import logging
+from collections import OrderedDict
+from typing import Any, Dict, Iterator, List, Optional, Union, cast
+
+from typing_extensions import deprecated
+from pydantic import Field
+
+from pypnm.api.routes.advance.common.types.types import (
+    DeviceDetailsPayload, EntryDict, FlatIndex, GroupedIndex, Sort, SortOrder, TransactionFileCollection,)
+from pypnm.api.routes.common.classes.file_capture.transaction_record_parser import DeviceDetailsModel
+from pypnm.api.routes.common.classes.file_capture.types import TransactionRecord, TransactionRecordModel
+from pypnm.docsis.data_type.sysDescr import SystemDescriptorModel, SystemDescriptor
+from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import ChannelId, MacAddressStr
 from pypnm.pnm.process.pnm_parameter import PnmObjectAndParameters
 
-
-class Sort(enum.Enum):
-    """
-    Sorting strategies for PnmCollection.get().
-
-    - CHANNEL_ID: group entries by channel (implicit grouping).
-    - ASCEND_EPOCH: sort captures by `capture_time` ascending within each channel.
-    - PNM_FILE_TYPE: sort captures by `file_type` within each channel.
-    - MAC_ADDRESS: sort top-level MAC keys lexically.
-    """
-    CHANNEL_ID      = enum.auto()
-    ASCEND_EPOCH    = enum.auto()
-    PNM_FILE_TYPE   = enum.auto()
-    MAC_ADDRESS     = enum.auto()
-
+class PnmCollectionModel(TransactionRecordModel):
+    data: bytes  = Field(..., description="Raw file bytes (PNM stream).")
 
 class PnmCollection:
-    """
-    Manage and query a set of PNM capture files.
+    def __init__(self, trans_collection: TransactionFileCollection, trans_record: TransactionRecord) -> None:
+        self.logger: logging.Logger = logging.getLogger(self.__class__.__name__)
+        self.capture_group: TransactionFileCollection = trans_collection
+        self.trans_record: TransactionRecord = trans_record  # keep reference (avoids unused param)
 
-    - Build an index by MAC address
-    - Group captures by channel ID
-    - Support multi-stage sorting of the results
+        self.index: FlatIndex = {}
+        self.grouped: GroupedIndex = {}
+        self._default_order: SortOrder = [Sort.CHANNEL_ID, Sort.ASCEND_EPOCH]
 
-    Usage:
-        coll = PnmCollection(capture_group)
-        # Default: group by channel, then sort by timestamp
-        results = coll.get()
-    """
-
-    def __init__(
-        self,
-        capture_group: List[Tuple[str, bytes]]
-    ) -> None:
-        """
-        Initialize and index the capture group.
-
-        Args:
-            capture_group: List of (filename, raw_bytes) tuples.
-        """
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.capture_group = capture_group
-        self.index: Dict[str, List[Dict[str, Any]]] = {}
         self._process()
 
     def _process(self) -> None:
-        """
-        Populate `self.index` mapping MAC -> list of entry dicts:
-          - file_name: original filename
-          - file_type: 4-char PNM code
-          - capture_time: epoch seconds
-          - channel_id: channel identifier
-          - data: raw byte stream
-        """
         self.index.clear()
+        self.grouped.clear()
 
-        for filename, byte_stream in self.capture_group:
-            params = PnmObjectAndParameters(byte_stream).to_dict()
-            self.logger.debug(f'PnmObjectAndParameters: File: {filename}, len: {len(byte_stream)} -> {params}')
-            entry = {
-                "file_name":    filename,
-                "file_type":    params.get("file_type"),
-                "capture_time": params.get("capture_time"),
-                "channel_id":   params.get("channel_id"),
-                "data":         byte_stream
-            }
-            mac = params.get("mac_address")
+        for tx_id, filename, byte_stream in self.capture_group:
+            
+            self.logger.info("[_process] tx_id=%s file=%s data=%s", tx_id, filename, self._bytes_preview(byte_stream))
+
+            try:
+                params: Dict[str, Any] = PnmObjectAndParameters(byte_stream).to_dict()
+                self.logger.debug("[_process] parsed params for %s -> %s", filename, params)
+            except Exception as e:
+                self.logger.error("Failed to parse parameters for %s: %s", filename, e)
+                continue
+
+            mac: Optional[str] = cast(Optional[str], params.get("mac_address"))
             if not mac:
-                self.logger.error(f"Missing MAC for file '{filename}', skipping entry")
-                continue
-            self.index.setdefault(mac, []).append(entry)
-
-    def get(
-        self,
-        sort: List[Sort] = [Sort.CHANNEL_ID, Sort.ASCEND_EPOCH]
-    ) -> Dict[Any, Any]:
-        """
-        Retrieve captures grouped by MAC and channel, applying sorts in sequence.
-
-        Args:
-            sort: Ordered list of Sort enums. Default: [CHANNEL_ID, ASCEND_EPOCH].
-
-        Returns:
-            Nested dict of form:
-                {
-                  mac_address: {
-                      channel_id: [entry_dict, ...],
-                      ...
-                  },
-                  ...
-                }
-            Sort stages:
-              - CHANNEL_ID: implicit grouping by channel.
-              - ASCEND_EPOCH: sort each channel list by capture_time.
-              - PNM_FILE_TYPE: then sort by file_type.
-              - MAC_ADDRESS: reorder top-level keys lexically.
-        """
-        # 1) Build nested grouping: MAC -> channel_id -> list of entries
-        nested: Dict[str, Dict[int, List[Dict[str, Any]]]] = {}
-        for mac, entries in self.index.items():
-            channel_map: Dict[int, List[Dict[str, Any]]] = {}
-            for e in entries:
-                ch = e.get("channel_id")
-                if ch is None:
-                    continue
-                channel_map.setdefault(ch, []).append(e.copy())
-            nested[mac] = channel_map
-
-        # 2) Apply each sort stage
-        result = nested
-        for strategy in sort:
-
-            if strategy == Sort.CHANNEL_ID:
-                # grouping is already in place
+                self.logger.error("Missing MAC for file '%s', skipping entry", filename)
                 continue
 
-            if strategy == Sort.ASCEND_EPOCH:
-                for ch_map in result.values():
-                    for lst in ch_map.values():
-                        lst.sort(key=lambda x: x.get("capture_time", 0))
+            entry: EntryDict = {
+                "transaction_id": tx_id,
+                "file_name": cast(str, params.get("file_name") or filename),
+                "file_type": cast(str, params.get("file_type") or "UNKNOWN"),
+                "capture_time": cast(int, params.get("capture_time") or 0),
+                "channel_id": cast(Optional[int], params.get("channel_id")),
+                "device_details": cast(DeviceDetailsPayload, params.get("device_details")),
+                "data": byte_stream,
+                "mac_address": mac,
+            }
 
-            elif strategy == Sort.PNM_FILE_TYPE:
-                for ch_map in result.values():
-                    for lst in ch_map.values():
-                        lst.sort(key=lambda x: x.get("file_type", ""))
-            
-            elif strategy == Sort.MAC_ADDRESS:
-                ordered = OrderedDict(sorted(result.items(), key=lambda kv: kv[0]))
-                result = dict(ordered)
-            
-            else:
-                self.logger.warning(f"Unknown sort strategy: {strategy}")
-        
+            self.logger.debug(
+                f"[_process] tx_id={tx_id}, entry mac={mac} ch={entry['channel_id']} "
+                f"type={entry['file_type']} t={entry['capture_time']}"
+            )
+
+            mac_key = MacAddressStr(mac)
+            self.index.setdefault(mac_key, []).append(entry)
+
+            ch = entry["channel_id"]
+            if ch is not None:
+                ch_key = int(ch)
+                self.grouped.setdefault(mac_key, {}).setdefault(ch_key, []).append(entry)
+
+        self.logger.debug("[_process] complete mac_count=%d", len(self.index))
+
+    def mac_addresses(self) -> List[MacAddressStr]:
+        return list(self.index.keys())
+
+    def grouped_by_mac_channel(self, sort: Optional[SortOrder] = None) -> GroupedIndex:
+        if not sort:
+            return self.grouped
+
+        result: GroupedIndex = self.grouped
+
+        if Sort.MAC_ADDRESS in sort:
+            result = dict(OrderedDict(sorted(result.items(), key=lambda kv: kv[0])))
+
+        if any(s in (Sort.ASCEND_EPOCH, Sort.PNM_FILE_TYPE) for s in sort):
+            out: GroupedIndex = {}
+            for mac, ch_map in result.items():
+                new_ch_map: Dict[int, List[EntryDict]] = {}
+                for ch_id, lst in ch_map.items():
+                    seq = list(lst)
+                    if Sort.ASCEND_EPOCH in sort:
+                        seq.sort(key=lambda x: cast(int, x.get("capture_time", 0)))
+                    if Sort.PNM_FILE_TYPE in sort:
+                        seq.sort(key=lambda x: cast(str, x.get("file_type", "")))
+                    new_ch_map[ch_id] = seq
+                out[mac] = new_ch_map
+            return out
+
         return result
+
+    def iter_entries(
+        self,
+        mac: Optional[Union[MacAddressStr, MacAddress]] = None,
+        channel_id: Optional[ChannelId] = None,
+        sort: Optional[SortOrder] = None,
+    ) -> Iterator[EntryDict]:
+        if mac is not None and not isinstance(mac, str):
+            mac = MacAddressStr(str(mac))
+
+        grouped_view = self.grouped_by_mac_channel(sort=sort)
+
+        mac_keys: List[MacAddressStr]
+        if mac is not None:
+            mac_keys = [mac] if mac in grouped_view else []
+        else:
+            mac_keys = list(grouped_view.keys())
+
+        if sort and (Sort.MAC_ADDRESS in sort):
+            mac_keys = sorted(mac_keys, key=lambda m: str(m))
+
+        for m in mac_keys:
+            ch_map = grouped_view.get(m, {})
+            if channel_id is not None:
+                ch_keys = [int(channel_id)] if int(channel_id) in ch_map else []
+            else:
+                ch_keys = list(ch_map.keys())
+
+            if sort and (Sort.CHANNEL_ID in sort):
+                ch_keys = sorted(ch_keys)
+
+            for ch in ch_keys:
+                seq = list(ch_map.get(ch, []))
+                if sort and (Sort.ASCEND_EPOCH in sort):
+                    seq.sort(key=lambda x: cast(int, x.get("capture_time", 0)))
+                if sort and (Sort.PNM_FILE_TYPE in sort):
+                    seq.sort(key=lambda x: cast(str, x.get("file_type", "")))
+                for e in seq:
+                    yield e
+
+    def sort_inplace(self, order: Optional[SortOrder] = None) -> None:
+        order = order or self._default_order
+
+        if Sort.MAC_ADDRESS in order:
+            self.grouped = dict(OrderedDict(sorted(self.grouped.items(), key=lambda kv: kv[0])))
+
+        if Sort.CHANNEL_ID in order:
+            self.grouped = {
+                mac: dict(OrderedDict(sorted(ch_map.items(), key=lambda kv: kv[0])))
+                for mac, ch_map in self.grouped.items()
+            }
+
+        if any(s in (Sort.ASCEND_EPOCH, Sort.PNM_FILE_TYPE) for s in order):
+            for ch_map in self.grouped.values():
+                for lst in ch_map.values():
+                    if Sort.ASCEND_EPOCH in order:
+                        lst.sort(key=lambda x: cast(int, x.get("capture_time", 0)))
+                    if Sort.PNM_FILE_TYPE in order:
+                        lst.sort(key=lambda x: cast(str, x.get("file_type", "")))
+
+    def to_model(self, mac_address: MacAddress = MacAddress(MacAddress.null())) -> List[PnmCollectionModel]:
+        records: List[PnmCollectionModel] = []
+        txn = 0
+
+        if not mac_address.null():
+            mac_str = str(mac_address)
+            selected = {MacAddressStr(mac_str): self.index.get(MacAddressStr(mac_str), [])}
+            self.logger.debug("[to_model] filter mac=%s count=%d", mac_str, len(selected[MacAddressStr(mac_str)]))
+            if not selected[MacAddressStr(mac_str)]:
+                self.logger.warning("No entries found for MAC address: %s", mac_str)
+        else:
+            selected = self.index
+            self.logger.debug("[to_model] filter mac=ALL mac_count=%d", len(selected))
+
+        for mac_key, mac_entries in selected.items():
+            self.logger.info("Building model records for MAC: %s", mac_key)
+
+            for e in mac_entries:
+                txn += 1
+
+                filename        = cast(str, e.get("file_name") or "")
+                file_type       = cast(str, e.get("file_type") or "UNKNOWN")
+                capture_time    = cast(int, e.get("capture_time") or 0)
+                device_raw      = cast(DeviceDetailsPayload, e.get("device_details"))
+                data            = cast(bytes, e.get("data") or b"")
+
+                self.logger.debug(
+                    f"[to_model] txn={txn} mac={mac_key} file={filename} "
+                    f"type={file_type} t={capture_time} data={self._bytes_preview(data)}"
+                )
+
+                sys_model = self._coerce_system_description(device_raw)
+                dev_details = DeviceDetailsModel(system_description=sys_model)
+
+                model = PnmCollectionModel(
+                    transaction     =   txn,
+                    capture_time    =   capture_time,
+                    mac_address     =   mac_key,
+                    file_type       =   self._derive_pnm_test_type(file_type),
+                    filename        =   filename,
+                    device_details  =   dev_details,
+                    data            =   data,
+                )
+                records.append(model)
+
+        records.sort(key=lambda m: (m.capture_time, m.mac_address, m.transaction))
+        self.logger.debug("[to_model] complete records=%d", len(records))
+        return records
+
+    @deprecated("Use to_model() instead")
+    def get_DEPRECATE(self, sort: Optional[List[Sort]] = None) -> Dict[str, Dict[int, List[Dict[str, Any]]]]:
+        return {}
+
+    @staticmethod
+    def _derive_pnm_test_type(file_type_code: str) -> str:
+        return file_type_code
+
+    @staticmethod
+    def _coerce_system_description(payload: DeviceDetailsPayload) -> SystemDescriptorModel:
+        try:
+            if isinstance(payload, SystemDescriptorModel):
+                return payload
+            if isinstance(payload, dict):
+                if "system_description" in payload:
+                    return PnmCollection._coerce_system_description(cast(DeviceDetailsPayload, payload["system_description"]))
+                sys_keys = {"HW_REV", "VENDOR", "BOOTR", "SW_REV", "MODEL"}
+                if any(k in payload for k in sys_keys):
+                    return SystemDescriptor.load_from_dict(payload).to_model()
+            if isinstance(payload, SystemDescriptor):
+                return payload.to_model()
+            if isinstance(payload, str):
+                return SystemDescriptor.parse(payload).to_model()
+        except Exception:
+            pass
+        return SystemDescriptor.empty().to_model()
+
+    @staticmethod
+    def _bytes_preview(b: bytes, n: int = 16) -> str:
+        if not b:
+            return "bytes(0)"
+        head = b[:n].hex()
+        return f"bytes(len={len(b)}, head=0x{head}...)"
+
+    @staticmethod
+    def _type_name(x: Any) -> str:
+        return type(x).__name__

@@ -41,15 +41,15 @@ class PnmObjectAndParameters(PnmHeader):
         self.byte_stream = byte_stream
         
         # Normalize header type fields to ASCII strings
-        if isinstance(self.file_type, (bytes, bytearray)):
-            file_type_str = self.file_type.decode('ascii', errors='ignore')
+        if isinstance(self._file_type, (bytes, bytearray)):
+            file_type_str = self._file_type.decode('ascii', errors='ignore')
         else:
-            file_type_str = str(self.file_type)
+            file_type_str = str(self._file_type)
 
-        if isinstance(self.file_type_num, (bytes, bytearray)):
-            file_type_num_str = self.file_type_num.decode('ascii', errors='ignore')
+        if isinstance(self._file_type_num, (bytes, bytearray)):
+            file_type_num_str = self._file_type_num.decode('ascii', errors='ignore')
         else:
-            file_type_num_str = str(self.file_type_num)
+            file_type_num_str = str(self._file_type_num)
 
         self.pnm_type = f"{file_type_str}{file_type_num_str}"
         self.logger.debug(f"Processing PNM-Type: ({self.pnm_type})")

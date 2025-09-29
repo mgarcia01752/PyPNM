@@ -6,9 +6,9 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, Field
-from pypnm.api.routes.advance.common.schema.common_captuer_schema import MultiCaptureRequest
+from pypnm.api.routes.advance.common.schema.common_capture_schema import MultiCaptureRequest
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
-    CommonAnalysisResponse, CommonAnalysisType, CommonMultiAnalysisRequest, CommonResponse)
+    CommonAnalysisResponse, CommonAnalysisType, CommonMultiAnalysisRequest, CommonOutput, CommonResponse)
 
 from enum import IntEnum
 
@@ -141,6 +141,7 @@ class MultiRxMerStatusResponse(CommonResponse):
 
 class MultiRxMerAnalysisRequest(BaseModel):
     analysis: CommonAnalysisType    = Field(..., description="Operation ID to query status/results")
+    output:   CommonOutput          = Field(description="Output type: JSON or file")
     operation_id: str               = Field(..., description="Operation ID to query status/results")
 
 class MultiRxMerAnalysisResponse(CommonAnalysisResponse):

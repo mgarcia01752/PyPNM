@@ -7,16 +7,17 @@ import logging
 import struct
 from typing import Any, Dict, Optional
 from pydantic import BaseModel, Field
+from pypnm.lib.types import CaptureTime
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 
 class PnmHeaderParameters(BaseModel):
     """Typed fields parsed from a PNM header."""
 
-    file_type: Optional[str]         = Field(None, description="PNM file type identifier (e.g., 'PNN')")
-    file_type_version: Optional[int] = Field(None, description="Numeric version of the file type (e.g., 10 for PNN10)")
-    major_version: Optional[int]     = Field(None, description="Major version of the PNM format")
-    minor_version: Optional[int]     = Field(None, description="Minor version of the PNM format")
-    capture_time: Optional[int]      = Field(None, description="Capture timestamp as epoch seconds since 1970-01-01")
+    file_type: Optional[str]            = Field(None, description="PNM file type identifier (e.g., 'PNN')")
+    file_type_version: Optional[int]    = Field(None, description="Numeric version of the file type (e.g., 10 for PNN10)")
+    major_version: Optional[int]        = Field(None, description="Major version of the PNM format")
+    minor_version: Optional[int]        = Field(None, description="Minor version of the PNM format")
+    capture_time:CaptureTime            = Field(description="Capture timestamp as epoch seconds since 1970-01-01")
 
 
 class PnmHeaderModel(BaseModel):
@@ -51,11 +52,11 @@ class PnmHeader:
 
         self._pnmheader_model: PnmHeaderModel
         self._parameters: PnmHeaderParameters
-        self.file_type: Optional[bytes] = None
-        self.file_type_num: Optional[int] = None
-        self.major_version: Optional[int] = None
-        self.minor_version: Optional[int] = None
-        self.capture_time: Optional[int] = None
+        self._file_type: Optional[bytes] = None
+        self._file_type_num: Optional[int] = None
+        self._major_version: Optional[int] = None
+        self._minor_version: Optional[int] = None
+        self._capture_time: Optional[int] = None
         self.pnm_data: bytes = b""
 
         self.__parse_header(byte_array)
@@ -78,7 +79,7 @@ class PnmHeader:
             size = struct.calcsize(fmt)
             if len(byte_array) < size:
                 raise ValueError("insufficient bytes for little-endian header")
-            self.file_type, self.file_type_num, self.major_version, self.minor_version = struct.unpack(
+            self._file_type, self._file_type_num, self._major_version, self._minor_version = struct.unpack(
                 fmt, byte_array[:size]
             )
         else:
@@ -87,22 +88,22 @@ class PnmHeader:
             if len(byte_array) < size:
                 raise ValueError("insufficient bytes for big-endian header")
             (
-                self.file_type,
-                self.file_type_num,
-                self.major_version,
-                self.minor_version,
-                self.capture_time,
+                self._file_type,
+                self._file_type_num,
+                self._major_version,
+                self._minor_version,
+                self._capture_time,
             ) = struct.unpack(fmt, byte_array[:size])
 
         self.pnm_data = bytes(byte_array[size:])
 
     def __build_pnm_header_model(self):
         self._parameters = PnmHeaderParameters(
-            file_type           =   self.file_type.decode("utf-8").strip() if self.file_type else None,
-            file_type_version   =   self.file_type_num,
-            major_version       =   self.major_version,
-            minor_version       =   self.minor_version,
-            capture_time        =   self.capture_time,
+            file_type           =   self._file_type.decode("utf-8").strip() if self._file_type else None,
+            file_type_version   =   self._file_type_num,
+            major_version       =   self._major_version,
+            minor_version       =   self._minor_version,
+            capture_time        =   self._capture_time,
         )
         self._pnmheader_model = PnmHeaderModel(pnm_header=self._parameters)
     
@@ -152,8 +153,8 @@ class PnmHeader:
         Returns:
             Optional[PnmFileType]: Matching enum or None if unrecognized.
         """
-        if self.file_type and self.file_type_num is not None:
-            pnm_id: str = f"{self.file_type.decode('utf-8').strip()}{self.file_type_num}"
+        if self._file_type and self._file_type_num is not None:
+            pnm_id: str = f"{self._file_type.decode('utf-8').strip()}{self._file_type_num}"
             for t in PnmFileType:
                 if t.value == pnm_id:
                     return t

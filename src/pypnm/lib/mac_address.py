@@ -7,7 +7,9 @@ from __future__ import annotations
 from enum import Enum, auto
 import logging
 import re
-from typing import Union
+from typing import Union, cast
+
+from pypnm.lib.types import MacAddressStr
 
 try:
     from pysnmp.proto.rfc1902 import OctetString
@@ -59,18 +61,18 @@ class MacAddress:
             raise TypeError(f"Unsupported type for mac_address: {type(mac_address).__name__}")
 
     @staticmethod
-    def null() -> str:
-        return "00:00:00:00:00:00"
+    def null() -> MacAddressStr:
+        return cast(MacAddressStr, "00:00:00:00:00:00")
     
     @property
-    def mac_address(self) -> str:
+    def mac_address(self) -> MacAddressStr:
         """
         Internal raw MAC address (no separators).
 
         Returns:
             str: 12-character hexadecimal MAC address.
         """
-        return self._mac
+        return cast(MacAddressStr, self._mac)
 
     def __str__(self) -> str:
         """
@@ -90,7 +92,7 @@ class MacAddress:
         """
         return int(self.mac_address[0:2], 16) & 1 == 1
 
-    def to_mac_format(self, fmt: MacAddressFormat = MacAddressFormat.FLAT) -> str:
+    def to_mac_format(self, fmt: MacAddressFormat = MacAddressFormat.FLAT) -> MacAddressStr:
         """
         Convert the MAC address to a specific string format.
 
@@ -100,19 +102,48 @@ class MacAddress:
         Returns:
             str: Formatted MAC address.
         """
+
         hex_str = self.mac_address
 
         if fmt == MacAddressFormat.FLAT:
             return hex_str
+
         elif fmt == MacAddressFormat.COLON:
-            return ':'.join(hex_str[i:i+2] for i in range(0, 12, 2))
+            return cast(MacAddressStr, ':'.join(hex_str[i:i+2] for i in range(0, 12, 2)))
+        
         elif fmt == MacAddressFormat.HYPHEN:
-            return '-'.join(hex_str[i:i+2] for i in range(0, 12, 2))
+            return cast(MacAddressStr, '-'.join(hex_str[i:i+2] for i in range(0, 12, 2)))
+        
         elif fmt == MacAddressFormat.CISCO:
-            return f"{hex_str[:4]}.{hex_str[4:8]}.{hex_str[8:]}"
+            return cast(MacAddressStr, f"{hex_str[:4]}.{hex_str[4:8]}.{hex_str[8:]}")
+        
         else:
             raise ValueError(f"Unsupported MAC address format: {fmt}")
-    
+ 
+    def is_null(self) -> bool:
+        """
+        Check if the MAC address is the null address (00:00:00:00:00:00).
+
+        Returns:
+            bool: True if null address, False otherwise.
+        """
+        return self.mac_address == "000000000000"
+
+    def __hash__(self) -> int:
+        """
+        Hash based on the normalized raw MAC address string (12 lowercase hex chars).
+
+        This ensures that any MacAddress instance with the same underlying
+        normalized MAC value will be treated as equal in sets and dicts.
+        """
+        return hash(self._mac)
+
+    def __eq__(self, other: object) -> bool:
+        """
+        Equality check based on normalized MAC string.
+        """
+        return isinstance(other, MacAddress) and self._mac == other._mac
+
     @staticmethod
     def is_valid(mac_address: Union[str, bytes, bytearray, 'OctetString']) -> bool:
         """

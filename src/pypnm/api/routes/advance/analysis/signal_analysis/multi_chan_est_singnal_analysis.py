@@ -127,7 +127,7 @@ class MultiChanEstimationSignalAnalysis:
         channel_amplitudes: Dict[int, List[List[float]]] = {}
         channel_frequencies: Dict[int, List[float]] = {}
 
-        nested = self.collection.get()
+        nested = self.collection.get_DEPRECATE()
         for mac, channel_map in nested.items():
             for channel_id, entries in channel_map.items():
                 for entry in entries:
@@ -218,7 +218,7 @@ class MultiChanEstimationSignalAnalysis:
         channel_amplitudes: Dict[int, List[List[float]]] = {}
         channel_frequencies: Dict[int, List[float]] = {}
 
-        nested = self.collection.get()
+        nested = self.collection.get_DEPRECATE()
         for mac, channel_map in nested.items():
             for channel_id, entries in channel_map.items():
                 for entry in entries:
@@ -278,7 +278,7 @@ class MultiChanEstimationSignalAnalysis:
         channel_complex: Dict[int, List[List[float]]] = {}
         channel_frequencies: Dict[int, List[float]] = {}
         
-        nested = self.collection.get()
+        nested = self.collection.get_DEPRECATE()
         for mac, channel_map in nested.items():
             for channel_id, entries in channel_map.items():
                 for entry in entries:
@@ -341,7 +341,7 @@ class MultiChanEstimationSignalAnalysis:
         channel_complex: Dict[int, List[List[float]]] = {}
         channel_frequencies: Dict[int, List[float]] = {}
         
-        nested = self.collection.get()
+        nested = self.collection.get_DEPRECATE()
         for mac, channel_map in nested.items():
             for channel_id, entries in channel_map.items():
                 for entry in entries:
@@ -403,7 +403,7 @@ class MultiChanEstimationSignalAnalysis:
         channel_frequencies: Dict[int, List[float]] = {}
         occ_chan_bw:Dict[int,int] = {}
         
-        nested = self.collection.get()
+        nested = self.collection.get_DEPRECATE()
         for mac, channel_map in nested.items():
             for channel_id, entries in channel_map.items():
                 for entry in entries:

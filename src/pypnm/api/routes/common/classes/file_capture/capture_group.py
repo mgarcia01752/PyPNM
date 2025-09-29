@@ -1,8 +1,7 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+from __future__ import annotations
 
 import json
 import uuid
@@ -43,11 +42,8 @@ class CaptureGroup:
         txns = cg2.get_transactions()
     """
 
-    def __init__(
-        self,
-        group_id: Optional[str] = None,
-        db_path: Optional[Path] = None
-    ) -> None:
+    def __init__(self, group_id: Optional[str] = None, 
+                 db_path: Optional[Path] = None) -> None:
         """
         Initialize the CaptureGroup manager.
 
@@ -155,7 +151,7 @@ class CaptureGroup:
             self._save_db()
             self.logger.debug(f"Added txn {txn_id} to group {gid}")
 
-    def get_transactions(self) -> List[str]:
+    def getTransactionIds(self) -> List[str]:
         """
         Return all transaction IDs for this group (empty list if none).
         """

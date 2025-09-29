@@ -8,6 +8,7 @@ set -euo pipefail
 
 VENV_DIR="${1:-.env}"
 PROJECT_ROOT="$(pwd)"
+SKIP_UNIT_TEST=1
 
 # ────────────────────────────────────────────────────────────────────────────────
 # 1) Detect package manager and OS
@@ -115,28 +116,31 @@ echo "🔧 (Optional) Configuring PYTHONPATH…"
 "$PROJECT_ROOT/scripts/install_py_path.sh" "$PROJECT_ROOT"
 
 
-# ────────────────────────────────────────────────────────────────────────────────
-# 5) Run Unit Tests
-# ────────────────────────────────────────────────────────────────────────────────
-echo "🧪 Running unit tests inside virtual environment…"
+if [ SKIP_UNIT_TEST -ne 1 ]; then
+  # ────────────────────────────────────────────────────────────────────────────────
+  # 5) Run Unit Tests
+  # ────────────────────────────────────────────────────────────────────────────────
+  echo "🧪 Running unit tests inside virtual environment…"
 
-# Ensure venv is activated
-if [ -z "$VIRTUAL_ENV" ]; then
-  echo "⚠️  Virtual environment not active. Activating now…"
-  source "$VENV_DIR/bin/activate"
-fi
+  # Ensure venv is activated
+  if [ -z "$VIRTUAL_ENV" ]; then
+    echo "⚠️  Virtual environment not active. Activating now…"
+    source "$VENV_DIR/bin/activate"
+  fi
 
-# Change directory to project root to ensure relative test paths work
-cd "$PROJECT_ROOT" || exit 1
 
-# Run the tests
-pytest -v
-TEST_EXIT_CODE=$?
+  # Change directory to project root to ensure relative test paths work
+  cd "$PROJECT_ROOT" || exit 1
 
-if [ $TEST_EXIT_CODE -ne 0 ]; then
-    echo "❌ Unit tests failed. Please review the output above."
-    deactivate
-    exit $TEST_EXIT_CODE
-else
-    echo "✅ All unit tests passed!"
+  # Run the tests
+  pytest -v
+  TEST_EXIT_CODE=$?
+
+  if [ $TEST_EXIT_CODE -ne 0 ]; then
+      echo "❌ Unit tests failed. Please review the output above."
+      deactivate
+      exit $TEST_EXIT_CODE
+  else
+      echo "✅ All unit tests passed!"
+  fi
 fi

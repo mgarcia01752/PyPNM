@@ -32,8 +32,8 @@ class SystemSnmpService:
 
         Returns:
             SysDescrResponse: 
-              - on success: status=SUCCESS, sys_descr contains OID→description map
-              - on failure: status=FAILURE, message=error text, sys_descr=None
+              - on success: status=SUCCESS, system_description contains OID→description map
+              - on failure: status=FAILURE, message=error text, system_description=None
         """
         try:
             logger.info(f"Fetching sysDescr for {request.cable_modem.mac_address}@{request.cable_modem.ip_address}")
@@ -41,12 +41,12 @@ class SystemSnmpService:
                 mac_address=MacAddress(request.cable_modem.mac_address),
                 inet=Inet(request.cable_modem.ip_address)
             )
-            sys_descr: SystemDescriptor = await cm.getSysDescr()
+            system_description: SystemDescriptor = await cm.getSysDescr()
                         
             return SysDescrResponse(
                 mac_address=request.cable_modem.mac_address,
                 status=ServiceStatusCode.SUCCESS,
-                results={"sysDescr":sys_descr},
+                results={"sysDescr":system_description},
             )
             
         except Exception as e:

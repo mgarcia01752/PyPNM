@@ -864,7 +864,7 @@ class Analysis:
         Expected input (keys are case-sensitive)
         ----------------------------------------
         {
-            "device_details": {"sys_descr": {...}},
+            "device_details": {"system_description": {...}},
             "pnm_header": {...},
             "channel_id": int,
             "mac_address": "xx:xx:xx:xx:xx:xx",

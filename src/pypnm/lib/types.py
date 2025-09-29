@@ -88,6 +88,8 @@ SNRln        = NewType("SNRln", float)
 ChannelId    = NewType("ChannelId", int)        # downstream/upstream logical channel id
 SubcarrierId = NewType("SubcarrierId", int)
 
+CaptureTime  = NewType("CaptureTime", int)
+
 # SNMP identifiers
 OidStr       = NewType("OidStr", str)           # symbolic or dotted-decimal
 OidNumTuple  = NewType("OidNumTuple", Tuple[int, ...])
@@ -100,6 +102,7 @@ IPv6Str       = NewType("IPv6Str", str)         # "2001:db8::1"
 # File tokens
 FileStem = NewType("FileStem", str)             # name without extension
 FileExt  = NewType("FileExt", str)              # ".csv", ".png", …
+FileName = NewType("FileName", str) 
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Analysis-specific small tuples
@@ -128,7 +131,7 @@ __all__ = [
     # unit-tagged
     "TimestampSec", "SampleIndex",
     "FrequencyHz", "BandwidthHz", "PowerdBmV", "PowerdB", "MERdB", "SNRdB", "MagnitudeSeries",
-    "ChannelId", "SubcarrierId",
+    "ChannelId", "SubcarrierId", "CaptureTime",
     "OidStr", "OidNumTuple",
     "MacAddressStr", "IPv4Str", "IPv6Str",
     "FileStem", "FileExt",

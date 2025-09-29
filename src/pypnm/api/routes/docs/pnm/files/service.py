@@ -75,7 +75,7 @@ class PnmFileService:
                         filename=entry["filename"],
                         pnm_test_type=entry["pnm_test_type"],
                         timestamp=entry["timestamp"],
-                        sys_descr=entry["device_details"]["sys_descr"]
+                        system_description=entry["device_details"]["system_description"]
                     )
                 )
 

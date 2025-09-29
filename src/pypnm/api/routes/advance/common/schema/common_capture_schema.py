@@ -9,6 +9,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import BaseDeviceConnectRequest
 from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_response import BaseDeviceResponse
+from pypnm.docsis.data_type.sysDescr import SystemDescriptorModel
 
 class CaptureParameters(BaseModel):
     """

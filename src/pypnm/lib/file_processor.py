@@ -7,7 +7,6 @@ from __future__ import annotations
 import csv
 import json
 import logging
-import shutil
 import tarfile
 import zipfile
 from pathlib import Path

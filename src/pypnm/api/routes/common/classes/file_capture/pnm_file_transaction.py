@@ -1,21 +1,23 @@
-
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from datetime import datetime
 import json
 import hashlib
 import time
 from typing import Dict, Optional
 from pathlib import Path
+from datetime import datetime
 
+from pypnm.api.routes.common.classes.file_capture.transaction_record_parser import TransactionRecordParser
+from pypnm.api.routes.common.classes.file_capture.types import TransactionRecordModel
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.lib.mac_address import MacAddress
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
+
 
 class PnmFileTransaction:
     """
@@ -42,35 +44,25 @@ class PnmFileTransaction:
     Attributes:
         transaction_db_path (Path): Path to the JSON file where all transactions are recorded.
 
-    Methods:
-        set(cable_modem, pnm_test_type, filename): Creates and stores a new transaction.
-        set_file_by_user(mac_address, pnm_test_type, filename): Creates a transaction without a full CableModem object.
-        get(transaction_id): Retrieves metadata for a given transaction ID.
-        _load_db(): Reads and parses the transaction database file.
-        _save_db(data): Writes updated transaction data back to disk.
-        
     Record:
-    
         {
             "<transaction_id>": {
-                "timestamp":int <EPHOC>,
-                "mac_address":MacAddress "<cable modem mac address>",
-                "pnm_test_type":str "<PNM Test Type>",
-                "filename":str "<FileName>",
+                "timestamp": int,
+                "mac_address": "<cable modem mac address>",
+                "pnm_test_type": "<PNM Test Type>",
+                "filename": "<FileName>",
                 "device_details": {
-                    "sys_descr":Dict[str,str] ,
+                    "system_description": { ... }
                 }
             }
-        }    
-    
+        }
     """
 
-    PNM_TEST_TYPE = 'pnm_test_type'
-    FILE_NAME = 'filename'
-    DEVICE_DETAILS = 'device_details'
+    PNM_TEST_TYPE = "pnm_test_type"
+    FILE_NAME = "filename"
+    DEVICE_DETAILS = "device_details"
 
     def __init__(self):
-        """Initializes the transaction manager and prepares the transaction database path."""
         self.transaction_db_path = Path(SystemConfigSettings.transaction_db)
         self.transaction_db_path.parent.mkdir(parents=True, exist_ok=True)
         if not self.transaction_db_path.exists():
@@ -79,128 +71,96 @@ class PnmFileTransaction:
     async def insert(self, cable_modem: CableModem, pnm_test_type: DocsPnmCmCtlTest, filename: str) -> str:
         """
         Records a transaction initiated from an actual cable modem test.
-
-        Args:
-            cable_modem (CableModem): Cable modem instance used to retrieve the MAC address.
-            pnm_test_type (DocsPnmCmCtlTest): Enum indicating the test type.
-            filename (str): Name of the associated binary file.
-
-        Returns:
-            str: A unique transaction ID.
         """
-        sd:SystemDescriptor = await cable_modem.getSysDescr()
-        return self._insert_generic(mac_address=cable_modem.get_mac_address, 
-                                 pnm_test_type=pnm_test_type, 
-                                 filename=filename,
-                                 sys_descriptor=sd.to_dict())
+        sd: SystemDescriptor = await cable_modem.getSysDescr()
+        return self._insert_generic(
+            mac_address     = cable_modem.get_mac_address(),
+            pnm_test_type   = pnm_test_type,
+            filename        = filename,
+            system_description=sd.to_dict(),
+        )
 
     @staticmethod
     def set_file_by_user(mac_address: MacAddress, pnm_test_type: DocsPnmCmCtlTest, filename: str) -> str:
         """
         Records a transaction manually initiated by a user (e.g., uploaded file).
-
-        Args:
-            mac_address (MacAddress): MAC address tied to the file.
-            pnm_test_type (DocsPnmCmCtlTest): Enum for the associated test type.
-            filename (str): The uploaded or externally generated file.
-
-        Returns:
-            str: The generated transaction ID.
         """
         txn = PnmFileTransaction()
-        return txn._insert_generic(mac_address=mac_address, 
-                                pnm_test_type=pnm_test_type, 
-                                filename=filename)
+        return txn._insert_generic(
+            mac_address=mac_address,
+            pnm_test_type=pnm_test_type,
+            filename=filename,
+        )
 
-    def get_record(self, transaction_id: str) -> Optional[dict]:
+    # ---------------------------
+    # Safe read helpers (no recursion)
+    # ---------------------------
+
+    def _load_record_dict(self, transaction_id: str) -> dict | None:
         """
-        Retrieve metadata for a specified PNM file transaction.
-
-        Example entry in the transaction database:
-        {
-            "<transaction_id>": {
-                "timestamp": <ephoc>,
-                "mac_address": "<cable modem mac address>",
-                "pnm_test_type": "<PNM Test Type>",
-                "filename": "<FileName>",
-                "device_details": {
-                    "sys_descr": sys_descriptor,
-                }
-            }
-        }
-
-        Args:
-            transaction_id (str): 
-                The 16-character transaction ID generated when the file was recorded.
-
-        Returns:
-            Optional[dict]: 
-                A dict with the following keys if found:
-                - `timestamp` (int): Epoch seconds when the file was created.
-                - `mac_address` (str): Normalized MAC of the source cable modem.
-                - `pnm_test_type` (str): Name of the PNM test enum used.
-                - `filename` (str): Stored filename of the binary payload.
-                Returns `None` if no entry exists for the given ID.
-
-        Notes:
-            - Corrupt or missing JSON DB files are treated as empty, so this method
-            will simply return `None` rather than raising.
+        Load the raw JSON record for a transaction_id directly from disk.
         """
         db = self._load_db()
         return db.get(transaction_id)
 
+    def get_record(self, transaction_id: str) -> dict | None:
+        """
+        Return a plain dictionary representation of a transaction record, or None.
+        """
+        rec = self._load_record_dict(transaction_id)
+        return rec if rec else None
+
+    # Optional convenience alias if other code expects .get(...)
+    def get(self, transaction_id: str) -> dict | None:
+        return self.get_record(transaction_id)
+
+    def getRecordModel(self, transaction_id: str) -> TransactionRecordModel:
+        """
+        Return a Pydantic model for a transaction record, or a null() model if missing.
+        """
+        rec = self._load_record_dict(transaction_id)
+        if not rec:
+            return TransactionRecordModel.null()
+        # Delegate to the parser to construct the canonical model
+        return TransactionRecordParser.from_id(transaction_id)
+
     def get_file_info_via_macaddress(self, mac_address: MacAddress) -> Optional[list[dict]]:
         """
-        Searches the transaction database for all entries matching the given MAC address.
-
-        Args:
-            mac_address (MacAddress): The MAC address to search for.
-
-        Returns:
-            list[dict] | None: A list of transaction metadata including transaction_id, or None if no match is found.
+        Find all transactions for a given MAC address.
         """
         db = self._load_db()
         mac_str = str(mac_address).lower()
-        results = []
+        results: list[dict] = []
 
         for txn_id, record in db.items():
             if record.get("mac_address", "").lower() == mac_str:
-                results.append({
-                    "transaction_id": txn_id,
-                    "pnm_test_type": record.get("pnm_test_type"),
-                    "filename": record.get("filename"),
-                    "timestamp": datetime.fromtimestamp(record.get("timestamp", 0)).strftime("%Y-%m-%d %H:%M:%S UTC"),
-                    "device_details": record.get("device_details","sys_descr"),
-                })
+                results.append(
+                    {
+                        "transaction_id": txn_id,
+                        "pnm_test_type": record.get("pnm_test_type"),
+                        "filename": record.get("filename"),
+                        "timestamp": datetime.utcfromtimestamp(record.get("timestamp", 0)).strftime(
+                            "%Y-%m-%d %H:%M:%S UTC"
+                        ),
+                        "device_details": record.get("device_details", {}),
+                    }
+                )
 
         return results if results else None
-   
-    def _insert_generic(self, mac_address: MacAddress, 
-                        pnm_test_type: DocsPnmCmCtlTest, 
-                        filename: str, 
-                        sys_descriptor:Dict[str,str]=SystemDescriptor.empty()) -> str: # type: ignore
+
+    # ---------------------------
+    # Write helpers
+    # ---------------------------
+
+    def _insert_generic(
+        self,
+        mac_address: MacAddress,
+        pnm_test_type: DocsPnmCmCtlTest,
+        filename: str,
+        system_description: Dict[str, str] | None = None,
+    ) -> str:
         """
         Common logic for creating a transaction record.
-
-        {
-            "<transaction_id>": {
-                "timestamp": <ephoc>,
-                "mac_address": "<cable modem mac address>",
-                "pnm_test_type": "<PNM Test Type>",
-                "filename": "<FileName>",
-                "device_details": {
-                    "sys_descr": sys_descriptor,
-                }
-            }
-        }
-
-        Args:
-            mac_address (MacAddress): MAC address associated with the record.
-            pnm_test_type (DocsPnmCmCtlTest): Test type.
-            filename (str): File name.
-
-        Returns:
-            str: A generated transaction ID.
         """
         timestamp = int(time.time())
         hash_input = f"{filename}{timestamp}".encode("utf-8")
@@ -213,18 +173,15 @@ class PnmFileTransaction:
             "pnm_test_type": pnm_test_type.name,
             "filename": filename,
             "device_details": {
-                "sys_descr": sys_descriptor,
-            }
+                "system_description": system_description or {},
+            },
         }
         self._save_db(db)
         return transaction_id
 
     def _load_db(self) -> dict:
         """
-        Loads the transaction database from the configured JSON file.
-
-        Returns:
-            dict: Parsed JSON content or empty dict on failure.
+        Load the transaction database from JSON; return {} on parse errors.
         """
         try:
             with self.transaction_db_path.open("r") as f:
@@ -232,18 +189,9 @@ class PnmFileTransaction:
         except json.JSONDecodeError:
             return {}
 
-    def _save_db(self, db: dict):
+    def _save_db(self, db: dict) -> None:
         """
-        Persists the transaction database to disk.
-
-        Args:
-            db (dict): The transaction dictionary to be saved.
-
-        Raises:
-            RuntimeError: If file saving fails.
+        Persist the transaction database to disk.
         """
-        try:
-            with self.transaction_db_path.open("w") as f:
-                json.dump(db, f, indent=4)
-        except Exception as e:
-            raise RuntimeError(f"Failed to save transaction DB: {e}")
+        with self.transaction_db_path.open("w") as f:
+            json.dump(db, f, indent=4)
