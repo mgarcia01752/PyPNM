@@ -119,3 +119,17 @@ class CableModem(CmSnmpOperation):
         """
         return f"Mac: {self.__str__()} - Inet: {self.get_inet_address}"
         
+    def __hash__(self) -> int:
+        """
+        Hash based on the normalized raw MAC address string (12 lowercase hex chars).
+
+        This ensures that any MacAddress instance with the same underlying
+        normalized MAC value will be treated as equal in sets and dicts.
+        """
+        return hash(self._mac_address.mac_address)
+
+    def __eq__(self, other: object) -> bool:
+        """
+        Equality check based on normalized MAC string.
+        """
+        return isinstance(other, MacAddress) and self._mac_address == other._mac
