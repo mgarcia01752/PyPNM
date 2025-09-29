@@ -74,7 +74,7 @@ class PnmFileTransaction:
         """
         sd: SystemDescriptor = await cable_modem.getSysDescr()
         return self._insert_generic(
-            mac_address     = cable_modem.get_mac_address(),
+            mac_address     = cable_modem.get_mac_address,
             pnm_test_type   = pnm_test_type,
             filename        = filename,
             system_description=sd.to_dict(),

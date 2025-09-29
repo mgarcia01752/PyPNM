@@ -17,7 +17,7 @@ class PnmHeaderParameters(BaseModel):
     file_type_version: Optional[int]    = Field(None, description="Numeric version of the file type (e.g., 10 for PNN10)")
     major_version: Optional[int]        = Field(None, description="Major version of the PNM format")
     minor_version: Optional[int]        = Field(None, description="Minor version of the PNM format")
-    capture_time:CaptureTime            = Field(description="Capture timestamp as epoch seconds since 1970-01-01")
+    capture_time: Optional[CaptureTime] = Field(None, description="Capture timestamp as epoch seconds since 1970-01-01")
 
 
 class PnmHeaderModel(BaseModel):
