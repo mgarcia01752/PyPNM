@@ -4,11 +4,12 @@ set -euo pipefail
 # ────────────────────────────────────────────────────────────────────────────────
 # install.sh — Unified OS prerequisite installer and PyPNM bootstrapper
 # Usage: ./install.sh [venv_dir]
+# Env var: SKIP_UNIT_TEST=0 ./install.sh → run unit tests
 # ────────────────────────────────────────────────────────────────────────────────
 
 VENV_DIR="${1:-.env}"
 PROJECT_ROOT="$(pwd)"
-SKIP_UNIT_TEST=1
+SKIP_UNIT_TEST="${SKIP_UNIT_TEST:-1}"  # default: skip tests
 
 # ────────────────────────────────────────────────────────────────────────────────
 # 1) Detect package manager and OS
@@ -41,11 +42,10 @@ elif command -v brew >/dev/null 2>&1; then
 else
   PM="none"
   echo "⚠️  Unsupported OS: please manually install 'ssh', 'sshpass', and Python venv support."
-
 fi
 
 # ────────────────────────────────────────────────────────────────────────────────
-# 2) Update package cache (if supported)
+# 2) Update package cache
 # ────────────────────────────────────────────────────────────────────────────────
 if [[ "$PM" != "none" && -n "${PM_UPDATE:-}" ]]; then
   echo "🔄 Updating package cache..."
@@ -61,11 +61,9 @@ echo "✅ Installing OS prerequisites..."
 if ! command -v ssh >/dev/null 2>&1; then
   echo "🔧 Installing ssh..."
   case "$PM" in
-    apt-get) $PM_INSTALL openssh-client;;
-    dnf|yum) $PM_INSTALL openssh-clients;;
-    zypper)  $PM_INSTALL openssh;;
-    apk)     $PM_INSTALL openssh;;
-    brew)    $PM_INSTALL openssh;;
+    apt-get) $PM_INSTALL openssh-client ;;
+    dnf|yum) $PM_INSTALL openssh-clients ;;
+    zypper|apk|brew) $PM_INSTALL openssh ;;
   esac
 fi
 
@@ -75,73 +73,55 @@ if ! command -v sshpass >/dev/null 2>&1; then
   $PM_INSTALL sshpass
 fi
 
-# Python detection and venv install
-PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>/dev/null || echo "3")
-PYTHON_CMD="python${PYTHON_VERSION}"
-PYTHON_VENV_PKG="python${PYTHON_VERSION}-venv"
-
-if ! command -v "$PYTHON_CMD" >/dev/null 2>&1; then
-  echo "❌ Python $PYTHON_VERSION is not installed or not in PATH."
-  echo "   Please install Python 3.x before running this script."
+# Python
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "❌ Python 3.x not found. Please install Python before continuing."
   exit 1
 fi
 
-echo "🔧 Installing $PYTHON_VENV_PKG if missing..."
+echo "🔧 Ensuring python3-venv is installed..."
 case "$PM" in
-  apt-get) $PM_INSTALL "$PYTHON_VENV_PKG" ;;
-  dnf|yum) $PM_INSTALL python3-virtualenv ;;
-  zypper)  $PM_INSTALL python3-virtualenv ;;
+  apt-get) $PM_INSTALL python3-venv ;;
+  dnf|yum|zypper) $PM_INSTALL python3-virtualenv ;;
   apk)     $PM_INSTALL python3 ;;
   brew)    $PM_INSTALL python ;;
-  *)       echo "⚠️ Unknown or unsupported package manager for Python venv setup" ;;
 esac
 
 # ────────────────────────────────────────────────────────────────────────────────
-# 4) Bootstrap PyPNM (editable + dev deps)
+# 4) Bootstrap PyPNM
 # ────────────────────────────────────────────────────────────────────────────────
 echo "🛠  Creating virtual environment in '$VENV_DIR'…"
-$PYTHON_CMD -m venv "$VENV_DIR"
+python3 -m venv "$VENV_DIR"
 
 echo "🚀 Activating '$VENV_DIR'…"
 # shellcheck source=/dev/null
 source "$VENV_DIR/bin/activate"
 
 echo "⬆️  Upgrading pip, setuptools, wheel…"
-pip install --upgrade pip setuptools wheel
+python -m pip install --upgrade pip setuptools wheel
 
 echo "📥 Installing PyPNM (with dev dependencies)…"
-pip install -e "$PROJECT_ROOT"[dev]
+python -m pip install -e "$PROJECT_ROOT"[dev]
 
-echo "🔧 (Optional) Configuring PYTHONPATH…"
-"$PROJECT_ROOT/scripts/install_py_path.sh" "$PROJECT_ROOT"
+echo "🔧 Configuring PYTHONPATH (if script exists)…"
+if [[ -f "$PROJECT_ROOT/scripts/install_py_path.sh" ]]; then
+  "$PROJECT_ROOT/scripts/install_py_path.sh" "$PROJECT_ROOT"
+fi
 
-
-if [ SKIP_UNIT_TEST -ne 1 ]; then
-  # ────────────────────────────────────────────────────────────────────────────────
-  # 5) Run Unit Tests
-  # ────────────────────────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────────────────────────
+# 5) Run Unit Tests (optional)
+# ────────────────────────────────────────────────────────────────────────────────
+if [ "$SKIP_UNIT_TEST" -ne 1 ]; then
   echo "🧪 Running unit tests inside virtual environment…"
-
-  # Ensure venv is activated
-  if [ -z "$VIRTUAL_ENV" ]; then
-    echo "⚠️  Virtual environment not active. Activating now…"
-    source "$VENV_DIR/bin/activate"
-  fi
-
-
-  # Change directory to project root to ensure relative test paths work
   cd "$PROJECT_ROOT" || exit 1
-
-  # Run the tests
-  
+  python -m pytest -v
   TEST_EXIT_CODE=$?
 
   if [ $TEST_EXIT_CODE -ne 0 ]; then
-      pytest -v
-      echo "❌ Unit tests failed. Please review the output above."
-      deactivate
-      exit $TEST_EXIT_CODE
+    echo "❌ Unit tests failed. Please review the output above."
+    deactivate
+    exit $TEST_EXIT_CODE
   else
-      echo "✅ All unit tests passed!"
+    echo "✅ All unit tests passed!"
   fi
 fi
