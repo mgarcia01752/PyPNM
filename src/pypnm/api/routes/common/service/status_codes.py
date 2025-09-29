@@ -65,6 +65,7 @@ class ServiceStatusCode(IntEnum):
     
     DS_OFDM_MULIT_RXMER_FAILED              = 500
     MEASURE_MODE_INVALID                    = 501
+    DS_OFDM_MULIT_RXMER_ANALYSIS_TYPE       = 502
     
     DS_OFDM_CHAN_EST_NOT_AVAILABLE          = 600
     

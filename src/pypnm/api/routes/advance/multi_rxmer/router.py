@@ -29,9 +29,7 @@ from pypnm.api.routes.docs.pnm.files.service import FileType, PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
-from pypnm.lib.log_files import LogFile
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import Utils
 
 class MultiRxMerRouter(AbstractService):
     """
@@ -285,8 +283,17 @@ class MultiRxMerRouter(AbstractService):
                     data={})
 
             cda = CaptureDataAggregator(capture_group_id)
-            atype = MultiRxMerAnalysisType(request.analysis.type)
             
+            try:
+                atype = MultiRxMerAnalysisType(request.analysis.type)
+            except ValueError:
+                msg = f'Invalid Analysis Type, reason: {request.analysis.type}'
+                return MultiRxMerAnalysisResponse(
+                    mac_address =   MacAddress.null(),
+                    status      =   ServiceStatusCode.DS_OFDM_MULIT_RXMER_ANALYSIS_TYPE,
+                    message     =   msg,
+                    data        =   {})               
+
             if atype == MultiRxMerAnalysisType.MIN_AVG_MAX:
 
                 self.logger.info(f'Performing Multi-RxMER Min/Avg/Max Analysis for group: {capture_group_id}')
@@ -330,21 +337,41 @@ class MultiRxMerRouter(AbstractService):
                 multi_analysis = engine.to_model()
             
             else:
-                raise HTTPException(status_code=400, detail=f"Unsupported analysis type: {atype}")
+                msg = f'Invalid Analysis Type {atype}'
+                return MultiRxMerAnalysisResponse(
+                    mac_address =   MacAddress.null(),
+                    status      =   ServiceStatusCode.DS_OFDM_MULIT_RXMER_ANALYSIS_TYPE,
+                    message     =   msg,
+                    data        =   {})
 
             # 4) Map analysis output to response fields
-            message =f"Analysis {MultiRxMerAnalysisType(atype).name} completed for group {capture_group_id}"
+            analysis_name = MultiRxMerAnalysisType(atype).name
+            message = f"Analysis {analysis_name} completed for group {capture_group_id}"
 
-            if request.output.type == FileType.JSON:
+            output_type = FileType(request.output.type)
+            mac_address = multi_analysis.mac_address
+
+            if output_type == FileType.JSON:
+                data = multi_analysis.model_dump().get("data", {})
                 return MultiRxMerAnalysisResponse(
-                    mac_address =   multi_analysis.mac_address,
+                    mac_address =   mac_address,
                     status      =   ServiceStatusCode.SUCCESS,
                     message     =   message,
-                    data        =   multi_analysis.model_dump().get("data", {}))
-            
-            if request.output.type == FileType.ARCHIVE:
+                    data        =   data,
+                )
+
+            if output_type == FileType.ARCHIVE:
                 rpt = engine.build_report()
                 return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)
+
+            # Fallback for unsupported output types
+            return MultiRxMerAnalysisResponse(
+                mac_address =   mac_address,
+                status      =   ServiceStatusCode.INVALID_OUTPUT_TYPE,
+                message     =   f"Unsupported output type: {output_type}",
+                data        =   {},
+            )
+
 
 # For dynamic auto-registration
 router = MultiRxMerRouter().router
