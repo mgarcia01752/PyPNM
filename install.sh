@@ -133,10 +133,11 @@ if [ SKIP_UNIT_TEST -ne 1 ]; then
   cd "$PROJECT_ROOT" || exit 1
 
   # Run the tests
-  pytest -v
+  
   TEST_EXIT_CODE=$?
 
   if [ $TEST_EXIT_CODE -ne 0 ]; then
+      pytest -v
       echo "❌ Unit tests failed. Please review the output above."
       deactivate
       exit $TEST_EXIT_CODE

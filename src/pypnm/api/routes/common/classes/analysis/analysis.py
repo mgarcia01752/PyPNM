@@ -29,6 +29,7 @@ from pypnm.lib.log_files import LogFile
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.qam.lut_mgr import QamLutManager
 from pypnm.lib.qam.types import QamModulation
+from pypnm.lib.signal_processing.averager import MovingAverage
 from pypnm.lib.signal_processing.complex_array_ops import ComplexArrayOps
 from pypnm.lib.signal_processing.group_delay import GroupDelay
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
@@ -39,7 +40,6 @@ from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsMo
 from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ModulationOrderType
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
-from tests.test_sliding_window_averager import MovingAverage
 
 class RxMerCarrierType(Enum):
     """
