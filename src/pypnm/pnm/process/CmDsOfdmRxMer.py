@@ -5,8 +5,7 @@ from __future__ import annotations
 
 import logging
 import struct
-
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from pydantic.fields import Field
 
@@ -17,7 +16,7 @@ from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsMo
 from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
-from pypnm.lib.types import FloatSeries
+from pypnm.lib.types import FloatSeries, FrequencySeriesHz, MacAddressStr
 
 class CmDsOfdmRxMerModel(PnmBaseModel):
     """
@@ -105,14 +104,14 @@ class CmDsOfdmRxMer(PnmHeader):
         self.logger = logging.getLogger(self.__class__.__name__)
         self._rxmer_model:CmDsOfdmRxMerModel
 
-        self._channel_id: Optional[int]                     = 0
-        self._mac_address: Optional[str]                    = MacAddress.null()
-        self._subcarrier_zero_frequency: Optional[int]      = 0
-        self._first_active_subcarrier_index: Optional[int]  = 0
-        self._subcarrier_spacing: Optional[int]             = 0
-        self._rxmer_data_length: Optional[int]              = 0
-        self._rxmer_data: Optional[bytes]                    
-        self._rx_mer_float_data: Optional[FloatSeries]      = []
+        self._channel_id: int                     = 0
+        self._mac_address: MacAddressStr          = MacAddress.null()
+        self._subcarrier_zero_frequency: int      = 0
+        self._first_active_subcarrier_index: int  = 0
+        self._subcarrier_spacing: int             = 0
+        self._rxmer_data_length: int              = 0
+        self._rxmer_data: bytes                    
+        self._rx_mer_float_data: FloatSeries      = []
 
         self._process()
       
@@ -230,6 +229,31 @@ class CmDsOfdmRxMer(PnmHeader):
         self.logger.debug(f"Decoded {len(self._rx_mer_float_data)} RxMER float values.")
 
         return self._rx_mer_float_data
+
+    def get_frequencies(self) -> FrequencySeriesHz:
+        """
+        Compute per-subcarrier center frequencies (Hz).
+
+        Formula
+        -------
+        f[k] = subcarrier_zero_frequency + subcarrier_spacing * (first_active_subcarrier_index + k)
+
+        Returns
+        -------
+        FrequencySeriesHz
+            List of per-subcarrier frequencies in Hz, one entry per RxMER value.
+        """
+        spacing = int(self._subcarrier_spacing)
+        f_zero = int(self._subcarrier_zero_frequency)
+        first_idx = int(self._first_active_subcarrier_index)
+        n = int(self._rxmer_data_length)
+
+        if spacing <= 0 or n <= 0:
+            return []
+
+        start = f_zero + spacing * first_idx
+        freqs: FrequencySeriesHz = [start + i * spacing for i in range(n)]
+        return freqs
 
     def to_model(self) -> CmDsOfdmRxMerModel:
         """

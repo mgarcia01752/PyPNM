@@ -14,13 +14,13 @@ from pypnm.api.routes.common.classes.analysis.analysis import Analysis, DsHistog
 from pypnm.lib.constants import INVALID_CHANNEL_ID, T
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
-from pypnm.lib.types import IntSeries
+from pypnm.lib.types import FloatSeries
 
 class DsHistrogramParameters(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
     symmetry: int           = Field(..., description="Histogram symmetry flag (implementation-defined)")
-    dwell_count: IntSeries  = Field(..., description="Capture dwell count (implementation-defined)")
-    hit_counts: IntSeries   = Field(default_factory=list, description="Histogram bin hit counts")
+    dwell_count: FloatSeries  = Field(..., description="Capture dwell count (implementation-defined)")
+    hit_counts: FloatSeries   = Field(default_factory=list, description="Histogram bin hit counts")
 
 
 class DsHistrogramAnalysisRpt(CommonAnalysis):
@@ -44,7 +44,7 @@ class DsHistrogramReport(AnalysisReport):
             channel_id: int         = model.channel_id
             symmetry: int           = model.parameters.symmetry
             dwell_count: int        = model.parameters.dwell_count
-            hit_counts: IntSeries   = model.parameters.hit_counts
+            hit_counts: FloatSeries   = model.parameters.hit_counts
 
             try:
                 csv_mgr: CSVManager = self.csv_manager_factory()
@@ -171,7 +171,7 @@ class DsHistrogramReport(AnalysisReport):
                 hit_counts  = model.hit_counts
 
                 raw_x = list(range(len(hit_counts)))
-                raw_y:IntSeries = hit_counts
+                raw_y:FloatSeries = hit_counts
 
                 model = DsHistrogramAnalysisRpt(
                     channel_id  =   INVALID_CHANNEL_ID, 

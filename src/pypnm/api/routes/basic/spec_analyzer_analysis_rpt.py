@@ -13,7 +13,7 @@ from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema import SpectrumAnalyzerAnalysisModel
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
-from pypnm.lib.types import ArrayLike, FloatSeries, IntSeries
+from pypnm.lib.types import ArrayLike, FloatSeries, FloatSeries
 
 class SpecAnaWindowAvgRptModel(BaseModel):
     """Window-average metadata and values."""
@@ -25,7 +25,7 @@ class SpecAnaWindowAvgRptModel(BaseModel):
 class SpectrumAnalyzerSignalProcessRptModel(BaseModel):
     """Per-point frequency, amplitude (dBmV), linear anti-log, and windowed average."""
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
-    frequency: IntSeries                    = Field(..., description="Frequencies in Hz for each bin (all segments).")
+    frequency: FloatSeries                    = Field(..., description="Frequencies in Hz for each bin (all segments).")
     amplitude: FloatSeries                  = Field(..., description="Magnitude per bin (dBmV).")
     anti_log: FloatSeries                   = Field(..., description="Linear ratio: 10^(dBmV/20).")
     window: SpecAnaWindowAvgRptModel        = Field(..., description="Moving-average for visualization.")
@@ -133,7 +133,7 @@ class SpectrumAnalyzerReport(AnalysisReport):
             # LogFile().write(fname=f"{self.FNAME_TAG}.{Utils.time_stamp()}.json", data=amodel.model_dump_json())
 
             sig_analysis = _model.signal_analysis
-            freq_hz: IntSeries      = [int(f) for f in sig_analysis.frequencies]
+            freq_hz: FloatSeries      = [int(f) for f in sig_analysis.frequencies]
             mag_dbmv: FloatSeries   = list(sig_analysis.magnitudes)
             ma_vals: FloatSeries    = list(sig_analysis.window_average.magnitudes)
 

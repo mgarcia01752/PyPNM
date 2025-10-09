@@ -7,14 +7,17 @@ from __future__ import annotations
 from typing import Optional
 from pydantic import BaseModel, Field
 
+from pypnm.api.routes.common.classes.file_capture.types import TransactionId
+from pypnm.lib.types import TimeStamp
+
 class CaptureSample(BaseModel):
     """
     Represents a single RxMER capture iteration and its associated metadata.
 
     Attributes:
-        timestamp (float):
+        timestamp (TimeStamp):
             Unix epoch time when the capture was initiated.
-        transaction_id (str):
+        transaction_id (TransactionId):
             Unique TFTP transaction identifier provided by the cable modem.
         filename (str):
             Name of the file uploaded via TFTP containing the capture data.
@@ -31,19 +34,7 @@ class CaptureSample(BaseModel):
         )
         ```
     """
-    timestamp: float = Field(
-        ..., 
-        description="Unix timestamp (seconds since epoch) when the capture was triggered"
-    )
-    transaction_id: str = Field(
-        ..., 
-        description="TFTP transaction ID returned by the cable modem"
-    )
-    filename: str = Field(
-        ..., 
-        description="Name of the uploaded capture file containing RxMER data"
-    )
-    error: Optional[str] = Field(
-        None, 
-        description="Error message if capture or upload failed (otherwise None)"
-    )
+    timestamp: TimeStamp            = Field(..., description="Unix timestamp (seconds since epoch) when the capture was triggered")
+    transaction_id: TransactionId   = Field(...,description="TFTP transaction ID returned by the cable modem")
+    filename: str                   = Field(...,description="Name of the uploaded capture file containing RxMER data")
+    error: Optional[str]            = Field(None, description="Error message if capture or upload failed (otherwise None)")

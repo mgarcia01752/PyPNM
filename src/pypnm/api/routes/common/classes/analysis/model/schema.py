@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 # Author: Maurice Garcia (2025)
 
 from __future__ import annotations
@@ -10,7 +12,7 @@ from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.qam.types import QamModulation
 from pypnm.lib.signal_processing.shan.series import ShannonSeriesModel
-from pypnm.lib.types import ComplexArray, FloatSeries, IntSeries
+from pypnm.lib.types import ComplexArray, FloatSeries, FloatSeries
 from pypnm.pnm.lib.signal_statistics import SignalStatisticsModel
 
 class BaseAnalysisModel(BaseModel):
@@ -27,7 +29,7 @@ class GrpDelayStatsModel(BaseModel):
 class ComplexDataCarrierModel(BaseModel):
     carrier_count             : int              = Field(..., description="Total number of active subcarriers included in the estimation.")
     frequency_unit            : str              = Field(default="Hz", description="Unit of the frequency axis (default: Hertz).")
-    frequency                 : IntSeries        = Field(..., description="List of subcarrier center frequencies.")
+    frequency                 : FloatSeries        = Field(..., description="List of subcarrier center frequencies.")
     complex                   : ComplexArray     = Field(..., description="Raw complex channel estimation coefficients as [real, imag] pairs.")
     complex_dimension         : int              = Field(..., description="Dimensionality of the complex array (should be 1 for per-carrier sequence).")
     magnitudes                : FloatSeries      = Field(..., description="Per-subcarrier magnitude response in linear scale.")
@@ -66,8 +68,8 @@ class DsHistogramAnalysisModel(BaseAnalysisModel):
     """
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
     symmetry: int             = Field(..., description="Histogram symmetry flag as reported by the device (implementation- or vendor-defined).")
-    dwell_count: IntSeries    = Field(..., description="Measurement dwell/accumulation count used when collecting the histogram.")
-    hit_counts: IntSeries     = Field(..., description="Per-bin hit counts; index i corresponds to bin i. Length equals number of bins.")
+    dwell_count: FloatSeries    = Field(..., description="Measurement dwell/accumulation count used when collecting the histogram.")
+    hit_counts: FloatSeries     = Field(..., description="Per-bin hit counts; index i corresponds to bin i. Length equals number of bins.")
 
 class FecSummaryCodeWordModel(BaseModel):
     """Vectorized FEC codeword summary for a single OFDM profile.
@@ -104,8 +106,8 @@ class RxMerCarrierValuesModel(BaseModel):
     frequency_unit: str                 = Field(default="Hz", description="")    
     carrier_count: int                  = Field(..., description="")
     magnitude: FloatSeries              = Field(..., description="")
-    frequency: IntSeries                = Field(..., description="")
-    carrier_status:IntSeries            = Field(..., description="")
+    frequency: FloatSeries                = Field(..., description="")
+    carrier_status:FloatSeries            = Field(..., description="")
 
 class DsRxMerAnalysisModel(BaseAnalysisModel):
     subcarrier_spacing:int                      = Field(..., description="")

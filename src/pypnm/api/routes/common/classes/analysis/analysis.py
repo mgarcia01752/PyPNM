@@ -33,7 +33,7 @@ from pypnm.lib.signal_processing.averager import MovingAverage
 from pypnm.lib.signal_processing.complex_array_ops import ComplexArrayOps
 from pypnm.lib.signal_processing.group_delay import GroupDelay
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
-from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, FrequencySeriesHz, IntSeries
+from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, FrequencySeriesHz
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import WindowFunction
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
@@ -400,7 +400,7 @@ class Analysis:
             raise ValueError("No RxMER values provided in measurement.")
 
         base_freq = (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency
-        freqs:IntSeries = [base_freq + (i * subcarrier_spacing) for i in range(len(values))]
+        freqs:FloatSeries = [base_freq + (i * subcarrier_spacing) for i in range(len(values))]
         magnitudes:FloatSeries = values
 
         def classify(v: float) -> int:
@@ -569,20 +569,24 @@ class Analysis:
             - pnm_header : Mapping[str, Any] (optional passthrough)
             - profiles : list of dicts:
                     {
-                    "profile_id": int,
-                    "schemes": list[SchemeModel-like]
+                        "profile_id": int,
+                        "schemes": list[SchemeModel-like]
                     }
 
             Each scheme item is one of:
             - schema_type = 0 (range):
-                    { "schema_type": 0,
-                    "modulation_order": "qam_256" | "plc" | "exclusion" | "continuous_pilot" | ...,
-                    "num_subcarriers": int }
+                    { 
+                        "schema_type": 0,
+                        "modulation_order": "qam_256" | "plc" | "exclusion" | "continuous_pilot" | ...,
+                        "num_subcarriers": int 
+                    }
             - schema_type = 1 (skip):
-                    { "schema_type": 1,
-                    "main_modulation_order": "...",
-                    "skip_modulation_order": "...",
-                    "num_subcarriers": int }
+                    { 
+                        "schema_type": 1,
+                        "main_modulation_order": "...",
+                        "skip_modulation_order": "...",
+                        "num_subcarriers": int 
+                    }
 
         split_carriers : bool, default True
             Controls how per-carrier results are represented in the output:
@@ -606,8 +610,7 @@ class Analysis:
 
         if active_index < 0 or zero_freq < 0 or spacing <= 0:
             raise ValueError(
-                f"Invalid parameters: spacing={spacing}, active_index={active_index}, zero_freq={zero_freq}"
-            )
+                f"Invalid parameters: spacing={spacing}, active_index={active_index}, zero_freq={zero_freq}")
 
         #Calculate Start Frequency
         start_freq = zero_freq + spacing * active_index
@@ -627,9 +630,9 @@ class Analysis:
             profile_id  = int(profile.get("profile_id", INVALID_PROFILE_ID))
             schemes     = profile.get("schemes", []) or []
 
-            freq_list: List[int]        = []
-            mod_list:  List[str]        = []
-            shan_list: List[float]      = []
+            freq_list: FrequencySeriesHz    = []
+            mod_list:  List[str]    = []
+            shan_list: List[float]  = []
             carrier_items: List[CarrierItemModel] = []
 
             freq_ptr = start_freq

@@ -5,19 +5,8 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import (
-    Any,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    MutableMapping,
-    MutableSequence,
-    NewType,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+    Any, Dict, List, NewType,
+    Sequence, Tuple, Union,)
 
 import numpy as np
 from numpy.typing import NDArray
@@ -44,9 +33,9 @@ NDArrayF64      = NDArray[np.float64]
 NDArrayI64      = NDArray[np.int64]
 
 # Simple series types
-FloatSeries     = List[float]
-IntSeries       = List[int]
-TwoDFloatSeries = List[FloatSeries]  # e.g., heatmaps
+FloatSeries     = NewType("FloatSeries", List[float])
+TwoDFloatSeries = NewType("TwoDFloatSeries",List[FloatSeries]) # e.g., heatmaps
+FloatSequence   = NewType("FloatSequence", Sequence[float])
 
 # Complex Number
 Complex         = Tuple[float, float]
@@ -72,12 +61,16 @@ JSONValue = Union[JSONScalar, JSONDict, JSONList]
 # Use these in public APIs to signal semantics without heavy wrappers.
 # ────────────────────────────────────────────────────────────────────────────────
 # Time / index
-TimestampSec = NewType("TimestampSec", float)   # seconds since epoch or relative
+CaptureTime  = NewType("CaptureTime", int)
+TimeStamp    = NewType("TimeStamp", int)
+TimestampSec = NewType("TimestampSec", int)
+TimestampMs  = NewType("TimestampMs", int)
 SampleIndex  = NewType("SampleIndex", int)
 
 # RF / PHY units (floats)
-FrequencyHz  = NewType("FrequencyHz", float)
-BandwidthHz  = NewType("BandwidthHz", float)
+FrequencyHz  = NewType("FrequencyHz", int)
+BandwidthHz  = NewType("BandwidthHz", int)
+
 PowerdBmV    = NewType("PowerdBmV", float)
 PowerdB      = NewType("PowerdB", float)        # generic dB (e.g., MER/SNR)
 MERdB        = NewType("MERdB", float)
@@ -87,8 +80,6 @@ SNRln        = NewType("SNRln", float)
 # DOCSIS identifiers
 ChannelId    = NewType("ChannelId", int)        # downstream/upstream logical channel id
 SubcarrierId = NewType("SubcarrierId", int)
-
-CaptureTime  = NewType("CaptureTime", int)
 
 # SNMP identifiers
 OidStr       = NewType("OidStr", str)           # symbolic or dotted-decimal
@@ -121,13 +112,17 @@ MagnitudeSeries   = FloatSeries
 # ────────────────────────────────────────────────────────────────────────────────
 __all__ = [
     "ByteArray",
+    
     # numerics
     "Number", "Float64", "ArrayLike", "ArrayLikeF64", "NDArrayF64", "NDArrayI64",
-    "FloatSeries", "IntSeries", "TwoDFloatSeries",
+    "FloatSeries", "FloatSeries", "TwoDFloatSeries",
+    
     # paths
     "PathLike",
+    
     # JSON
     "JSONScalar", "JSONDict", "JSONList", "JSONValue",
+    
     # unit-tagged
     "TimestampSec", "SampleIndex",
     "FrequencyHz", "BandwidthHz", "PowerdBmV", "PowerdB", "MERdB", "SNRdB", "MagnitudeSeries",
@@ -135,6 +130,7 @@ __all__ = [
     "OidStr", "OidNumTuple",
     "MacAddressStr", "IPv4Str", "IPv6Str",
     "FileStem", "FileExt",
+    
     # analysis tuples / series
     "RegressionCoeffs", "RegressionStats",
     "FrequencySeriesHz", "MerSeriesdB", "ShannonSeriesdB",

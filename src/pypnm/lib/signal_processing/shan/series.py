@@ -4,19 +4,18 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-import json
-from typing import Sequence, List, Dict, Any
+from typing import List, Dict, Any
 
 from pydantic import BaseModel, Field
 
-from pypnm.lib.types import FloatSeries, IntSeries, StringArray
+from pypnm.lib.types import FloatSequence, FloatSeries, SNRdB, StringArray
 from .shannon import Shannon
 
 class ShannonSeriesModel(BaseModel):
-    snr_db_values:FloatSeries                   = Field(...,description="")
-    bits_per_symbol:IntSeries                   = Field(...,description="")
+    snr_db_values:List[SNRdB]                   = Field(...,description="")
+    bits_per_symbol:FloatSeries                 = Field(...,description="")
     modulations:StringArray                     = Field(...,description="")
-    snr_db_limit:FloatSeries                    = Field(...,description="")
+    snr_db_limit:List[SNRdB]                    = Field(...,description="")
     supported_modulation_counts: Dict[str,int]  = Field(...,description="")
 
 class ShannonSeries:
@@ -28,7 +27,7 @@ class ShannonSeries:
         bits_list        : Supported bits per symbol for each SNR.
         modulations      : Recommended QAM modulation names per SNR.
     """
-    def __init__(self, snr_db_values: Sequence[float]):
+    def __init__(self, snr_db_values: FloatSequence):
         """
         Initialize the series calculator.
 
@@ -43,11 +42,11 @@ class ShannonSeries:
             If any SNR value is negative or non-finite.
         """
         # Validate inputs
-        self.snr_db_values: List[float] = []
+        self.snr_db_values: List[SNRdB] = []
         for db in snr_db_values:
             if not isinstance(db, (int, float)) or db < 0 or db != db or db == float('inf'):
                 raise ValueError(f"Invalid SNR dB value: {db}")
-            self.snr_db_values.append(float(db))
+            self.snr_db_values.append(SNRdB(db))
 
         # Compute Shannon instances per entry
         self._instances: List[Shannon] = [Shannon(db) for db in self.snr_db_values]
@@ -55,7 +54,7 @@ class ShannonSeries:
         # Extract bits and modulations
         self.bits_list: List[int]       = [inst.bits for inst in self._instances]
         self.modulations: List[str]     = [inst.get_modulation() for inst in self._instances]
-        self.snr_db_limit: List[float]  = self.limit()
+        self.snr_db_limit: List[SNRdB]  = self.limit()
 
         self._model:ShannonSeriesModel = self.__build_model()
 
@@ -65,8 +64,8 @@ class ShannonSeries:
             bits_per_symbol             =   self.bits_list,
             modulations                 =   self.modulations,
             snr_db_values               =   self.snr_db_values,
-            supported_modulation_counts = self.supported_modulation_counts(),
-            snr_db_limit                = self.limit()
+            supported_modulation_counts =   self.supported_modulation_counts(),
+            snr_db_limit                =   self.limit()
         )
         
         return _
@@ -140,13 +139,13 @@ class ShannonSeries:
                 return inst.get_modulation()
         return "UNKNOWN"
 
-    def limit(self) -> List[float]:
+    def limit(self) -> List[SNRdB]:
         """
         Compute the Shannon limit for each SNR value in the series.
 
         Returns
         -------
-        List[float]
+        List[SNRdB]
             List of Shannon limits corresponding to each SNR in dB.
         """
         return Shannon.snr_to_snr_limit(self.snr_db_values)

@@ -6,15 +6,19 @@ from __future__ import annotations
 import logging
 from enum import IntEnum
 from struct import calcsize, unpack
-from typing import Any, Dict, List, Union, Annotated
+from typing import Any, Dict, List, NewType, Union, Annotated
 from typing_extensions import Literal
 
 from pydantic import BaseModel, Field, ConfigDict
 
 from pypnm.lib.constants import KHZ
+from pypnm.lib.types import FrequencySeriesHz
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
+
+
+ProfileId = NewType("ProfileId", int)
 
 class ModulationOrderType(IntEnum):
     zero_bit_loaded   = 0
@@ -52,13 +56,12 @@ class SkipModulationProfileSchemaModel(BaseModel):
 
 SchemeModel = Annotated[
     Union[RangeModulationProfileSchemaModel, SkipModulationProfileSchemaModel],
-    Field(discriminator="schema_type")
-]
+    Field(discriminator="schema_type")]
 
 class ModulationProfileModel(BaseModel):
     """One OFDM modulation profile (profile_id + list of scheme chunks)."""
     model_config = ConfigDict(extra="ignore")
-    profile_id: int             = Field(..., ge=0, description="Profile identifier")
+    profile_id: ProfileId       = Field(..., ge=0, description="Profile identifier")
     schemes: List[SchemeModel]  = Field(default_factory=list, description="Schema chunks composing the profile")
 
 class CmDsOfdmModulationProfileModel(PnmBaseModel):
@@ -240,6 +243,32 @@ class CmDsOfdmModulationProfile(PnmHeader):
 
         return results
 
+    def get_frequencies(self) -> FrequencySeriesHz:
+        """
+        Compute per-subcarrier center frequencies (Hz).
+
+        Formula
+        -------
+        f[k] = subcarrier_zero_frequency + subcarrier_spacing * (first_active_subcarrier_index + k)
+
+        Returns
+        -------
+        FrequencySeriesHz
+            List of per-subcarrier frequencies in Hz, one entry per RxMER value.
+        """
+        spacing = int(self._model.subcarrier_spacing)
+        f_zero = int(self._model.subcarrier_zero_frequency)
+        first_idx = int(self._model.first_active_subcarrier_index)
+        #TODO: Need to calculate the number of subcarries using Profile-A 
+        n = int(0)
+
+        if spacing <= 0 or n <= 0:
+            return []
+
+        start = f_zero + spacing * first_idx
+        freqs: FrequencySeriesHz = [start + i * spacing for i in range(n)]
+        return freqs
+
     def to_model(self) -> CmDsOfdmModulationProfileModel:
         """
         Return the parsed modulation profile as a validated Pydantic model.
@@ -300,54 +329,6 @@ class CmDsOfdmModulationProfile(PnmHeader):
         }
         """
         return self._model.model_dump()
-
-    def to_json(self, indent: int = 2) -> str:
-        """
-        Return the parsed modulation profile as a JSON string.
-
-        Parameters
-        ----------
-        indent : int, optional
-            Number of spaces for indentation (default = 2).
-
-        Returns
-        -------
-        str
-            JSON representation of the parsed modulation profile.
-
-        Example
-        -------
-        >>> js = parser.to_json(indent=2)
-        >>> print(js)
-        {
-          "pnm_header": {...},
-          "channel_id": 1,
-          "mac_address": "aa:bb:cc:dd:ee:ff",
-          "subcarrier_zero_frequency": 120000000,
-          "first_active_subcarrier_index": 128,
-          "subcarrier_spacing": 25000,
-          "num_profiles": 2,
-          "profile_data_length_bytes": 64,
-          "profiles": [
-            {
-              "profile_id": 1,
-              "schemes": [
-                { 
-                    "schema_type": 0, 
-                    "modulation_order": qam_16,         <- ModulationOrderType() 
-                    "num_subcarriers": 192 
-                },
-                { "schema_type": 1, 
-                    "main_modulation_order": qam_256,   <- ModulationOrderType() 
-                    "skip_modulation_order": qam_512,   <- ModulationOrderType()
-                    "num_subcarriers": 48 
-                }
-              ]
-            }
-          ]
-        }
-        """
-        return self._model.model_dump_json(indent=indent)
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}"

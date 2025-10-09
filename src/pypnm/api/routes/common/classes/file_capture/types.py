@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, NewType
 
 from pydantic import BaseModel, Field
 
@@ -12,13 +12,11 @@ from pypnm.docsis.cm_snmp_operation import SystemDescriptor
 from pypnm.docsis.data_type.sysDescr import SystemDescriptorModel
 from pypnm.lib.types import FileName, MacAddressStr, TimestampSec
 
+GroupId             = NewType("GroupId", str)
+TransactionId       = NewType("TransactionId", str)
 
-TransactionId       = str
 Record              = Dict[str, Any]
 TransactionRecord   = Dict[TransactionId, Record]
-'''
-TransactionRecord = Dict[TransactionId, Record]
-'''
 
 class DeviceDetailsModel(BaseModel):
     system_description: SystemDescriptorModel = Field(..., description="Parsed system descriptor")

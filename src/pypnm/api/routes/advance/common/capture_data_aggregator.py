@@ -11,7 +11,7 @@ from pypnm.api.routes.advance.common.transactionsCollection import TransactionCo
 from pypnm.api.routes.advance.common.types.types import TransactionFileCollection
 from pypnm.api.routes.common.classes.file_capture.capture_group import CaptureGroup
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
-from pypnm.api.routes.common.classes.file_capture.types import TransactionId, TransactionRecordModel
+from pypnm.api.routes.common.classes.file_capture.types import GroupId, TransactionId, TransactionRecordModel
 from pypnm.config.system_config_settings import SystemConfigSettings
     
 class CaptureDataAggregator:
@@ -24,7 +24,7 @@ class CaptureDataAggregator:
         collection = aggregator.getPnmCollection()
     """
 
-    def __init__(self, capture_group_id: str) -> None:
+    def __init__(self, capture_group_id: GroupId) -> None:
         """
         Parameters
         ----------
@@ -32,7 +32,7 @@ class CaptureDataAggregator:
             Identifier for the capture group.
         """
         self.logger = logging.getLogger(self.__class__.__name__)
-        self._capture_group_id = capture_group_id
+        self._capture_group_id:GroupId = capture_group_id
         self._save_dir = Path(SystemConfigSettings.save_dir)
         self._trans_file_bin_entries: TransactionFileCollection = []
         self._trans_collection: TransactionCollection = TransactionCollection()
@@ -56,20 +56,21 @@ class CaptureDataAggregator:
 
             record: TransactionRecordModel = PnmFileTransaction().getRecordModel(txn_id)
             file_path = self._safe_join(self._save_dir, record.filename)
-            self.logger.debug(f'Reading capture - count={file_count}  txn={txn_id}  file={file_path}')
-
+            
             try:
                 bin:bytes = file_path.read_bytes()
+                self.logger.info(f'Reading capture - count={file_count},  txn={txn_id},  file={file_path.name}, size={len(bin)}')
 
             except FileNotFoundError:
-                self.logger.error("Capture file not found: %s", file_path)
+                self.logger.error(f'Capture file not found: {file_path}')
                 raise
 
             except Exception as exc:
-                self.logger.error("Error reading file %s: %s", file_path, exc)
+                self.logger.error(f'Error reading file {file_path}: {exc}')
                 continue
 
             if not self._trans_collection.add(record, bin):
+                self.logger.error(f'Unable to add [{record.filename}] to Transaction Collection')
                 continue
 
         return self._trans_collection

@@ -19,7 +19,7 @@ from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.numeric_scaler import NumericScaler
 from pypnm.lib.signal_processing.shan.series import Shannon
-from pypnm.lib.types import ArrayLike, FloatSeries, IntSeries
+from pypnm.lib.types import ArrayLike, FloatSeries, FloatSeries
 
 class RxMerParametersAnalysisRpt(BaseModel):
     """
@@ -262,7 +262,7 @@ class RxMerAnalysisReport(AnalysisReport):
         # Finalize signal capture aggregation
         self._sig_cap_agg.reconstruct()
 
-    def __modulation_order_count_to_series(self, mod_count: Mapping[str, int]) -> Tuple[IntSeries, IntSeries]:
+    def __modulation_order_count_to_series(self, mod_count: Mapping[str, int]) -> Tuple[FloatSeries, FloatSeries]:
         """
         Convert {"qam_<M>": count} → (bits_per_symbol_series, count_series),
         sorted by ascending QAM order M. Skips malformed entries with warnings.
@@ -317,8 +317,8 @@ class RxMerAnalysisReport(AnalysisReport):
         # stable, deterministic series
         items.sort(key=lambda t: t[0])  # sort by QAM order M
 
-        order_bits: IntSeries = [bps for _, bps, _ in items]
-        order_counts: IntSeries = [c for _, _, c in items]
+        order_bits: FloatSeries = [bps for _, bps, _ in items]
+        order_counts: FloatSeries = [c for _, _, c in items]
         
         self.logger.debug(f"Modulation order series: {order_bits}")
         self.logger.debug(f"Modulation order series: {order_counts}")

@@ -5,17 +5,19 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-import json
-from typing import Any, Dict, List
-from struct import Struct, unpack, calcsize, iter_unpack
+from typing import Any, Dict, List, cast
+from struct import Struct, iter_unpack
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
 from pypnm.lib.constants import INVALID_CHANNEL_ID
-from pypnm.lib.types import IntSeries
+from pypnm.lib.qam.types import CodeWord, CodeWordArray
+from pypnm.lib.types import CaptureTime, ChannelId, FloatSeries, MacAddressStr, TimeStamp
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader, PnmHeaderParameters
 from pypnm.lib.mac_address import MacAddress
+
+
 
 
 # -------- Struct formats (network/big-endian) --------
@@ -34,10 +36,10 @@ class OfdmFecSumCodeWordEntryModel(BaseModel):
     - All lists must be the same length (aligned time buckets).
     - `timestamp` values are Unix epoch seconds for each aggregation window.
     """
-    timestamp: List[int]       = Field(..., description="Unix timestamps (seconds) for each aggregation interval")
-    total_codewords: List[int] = Field(..., description="Total codewords observed in each interval")
-    corrected: List[int]       = Field(..., description="FEC-corrected codewords per interval")
-    uncorrectable: List[int]   = Field(..., description="Uncorrectable codewords per interval")
+    timestamp: List[TimeStamp]  = Field(..., description="Unix timestamps (seconds) for each aggregation interval")
+    total_codewords: CodeWordArray  = Field(..., description="Total codewords observed in each interval")
+    corrected: CodeWordArray        = Field(..., description="FEC-corrected codewords per interval")
+    uncorrectable: CodeWordArray    = Field(..., description="Uncorrectable codewords per interval")
 
     @model_validator(mode="after")
     def _validate_lengths(self):
@@ -75,8 +77,8 @@ class CmDsOfdmFecSummaryModel(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     pnm_header: PnmHeaderParameters                 = Field(..., description="PNM header metadata for this capture")
-    channel_id: int                                 = Field(INVALID_CHANNEL_ID, description="Downstream channel ID")
-    mac_address: str                                = Field(default_factory=MacAddress.null, description="Cable modem MAC address")
+    channel_id: ChannelId                           = Field(INVALID_CHANNEL_ID, description="Downstream channel ID")
+    mac_address: MacAddressStr                      = Field(default_factory=MacAddress.null, description="Cable modem MAC address")
     summary_type: int                               = Field(..., description="Aggregation type/window code (implementation-defined; e.g., 2 = 24-hour)")
     num_profiles: int                               = Field(..., description="Number of OFDM profiles reported in this summary")
     fec_summary_data: List[OfdmFecSumDataModel]     = Field(..., description="Per-profile FEC summary datasets")
@@ -134,8 +136,8 @@ class CmDsOfdmFecSummary(PnmHeader):
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
 
-        self._channel_id: int
-        self._mac_address: str
+        self._channel_id: ChannelId
+        self._mac_address: MacAddressStr
         self._summary_type: int
         self._num_profiles: int
         self._model: CmDsOfdmFecSummaryModel
@@ -201,12 +203,13 @@ class CmDsOfdmFecSummary(PnmHeader):
             set_bytes_len = number_of_sets * SET_REC.size
             sets_slice = mv[pos:pos + set_bytes_len]
 
-            ts: IntSeries = []
-            tc: IntSeries = []
-            cc: IntSeries = []
-            uc: IntSeries = []
+            ts: FloatSeries = []
+            tc: FloatSeries = []
+            cc: FloatSeries = []
+            uc: FloatSeries = []
 
             for timestamp, total, corrected, uncorrectable in iter_unpack(SET_FMT, sets_slice):
+                self.logger.debug(f"Profile {profile_id} Set: ts={timestamp}, total={total}, corrected={corrected}, uncorrectable={uncorrectable}")
                 ts.append(timestamp)
                 tc.append(total)
                 cc.append(corrected)
@@ -215,42 +218,41 @@ class CmDsOfdmFecSummary(PnmHeader):
             pos += set_bytes_len
 
             cwe_model = OfdmFecSumCodeWordEntryModel(
-                timestamp=ts,
-                total_codewords=tc,
-                corrected=cc,
-                uncorrectable=uc,
+                timestamp       =   ts,
+                total_codewords =   tc,
+                corrected       =   cc,
+                uncorrectable   =   uc,
             )
 
             profile_entry = OfdmFecSumDataModel(
-                profile_id=profile_id,
-                number_of_sets=number_of_sets,
-                codeword_entries=cwe_model,
+                profile_id          =   profile_id,
+                number_of_sets      =   number_of_sets,
+                codeword_entries    =   cwe_model,
             )
             profile_entries.append(profile_entry)
 
         if len(profile_entries) != self._num_profiles:
             self.logger.debug(
-                f"Parsed {len(profile_entries)} profile(s), header declared {self._num_profiles}"
-            )
+                f"Parsed {len(profile_entries)} profile(s), header declared {self._num_profiles}")
+
+        # Get the first timestamp for reference/logging
+        first_timestamp: CaptureTime = cast(CaptureTime, profile_entries[0].codeword_entries.timestamp[0])
+ 
+        if not self.override_capture_time(first_timestamp):
+            self.logger.error(f'Unable to update CaptureTime from {self._capture_time} -> {first_timestamp}')
 
         # 4) Build the pydantic model
-        self._model = CmDsOfdmFecSummaryModel(
+        self._model = CmDsOfdmFecSummaryModel (
             pnm_header      = self.getPnmHeaderParameterModel(),
             channel_id      = self._channel_id,
             mac_address     = self._mac_address,
             summary_type    = self._summary_type,
             num_profiles    = self._num_profiles,
-            fec_summary_data=profile_entries,
-        )
+            fec_summary_data=profile_entries,)
 
     def to_model(self) -> CmDsOfdmFecSummaryModel:
         """Return the structured pydantic model for the parsed FEC summary."""
         return self._model
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert the FEC summary model to a plain Python dictionary."""
+    def to_dict(self, header_only: bool = False) -> Dict[str, Any]:
         return self.to_model().model_dump()
-
-    def to_json(self) -> str:
-        """Convert the processed FEC summary data to a JSON string."""
-        return self.to_model().model_dump_json(indent=4)

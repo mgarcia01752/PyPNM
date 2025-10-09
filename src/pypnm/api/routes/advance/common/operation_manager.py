@@ -11,7 +11,10 @@ import logging
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
+from pypnm.api.routes.advance.common.types.types import OperationId
+from pypnm.api.routes.common.classes.file_capture.types import GroupId
 from pypnm.config.system_config_settings import SystemConfigSettings
+from pypnm.lib.constants import cast
 
 class OperationManager:
     """
@@ -30,7 +33,7 @@ class OperationManager:
         ...
     }
     """
-    def __init__(self, capture_group_id: str, db_path: Optional[Path] = None) -> None:
+    def __init__(self, capture_group_id: GroupId, db_path: Optional[Path] = None) -> None:
         """
         Initialize a new operation manager for a given capture group.
 
@@ -41,8 +44,8 @@ class OperationManager:
                      [PnmFileRetrieval].operation_db.
         """
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.capture_group_id = capture_group_id
-        self.operation_id = uuid.uuid4().hex[:16]
+        self.capture_group_id: GroupId = capture_group_id
+        self.operation_id: OperationId = cast(OperationId, uuid.uuid4().hex[:16])
 
         # Resolve DB file path
         if db_path:
@@ -88,7 +91,7 @@ class OperationManager:
         except Exception as e:
             self.logger.error(f"Failed to save operation DB: {e}")
 
-    def register(self) -> str:
+    def register(self) -> OperationId:
         """
         Register this operation with its capture group ID in the DB.
 
@@ -120,7 +123,7 @@ class OperationManager:
         return self.operation_id
 
     @classmethod
-    def get_capture_group(cls, operation_id: str, db_path: Optional[Path] = None) -> str:
+    def get_capture_group(cls, operation_id: str, db_path: Optional[Path] = None) -> GroupId:
         """
         Retrieve the capture_group_id for a given operation_id.
 
@@ -132,6 +135,7 @@ class OperationManager:
             capture_group_id if found, otherwise None.
             Exception thrown
         """
+        
         if not db_path:
             db_str = SystemConfigSettings.operation_db
             db_path = Path(db_str)

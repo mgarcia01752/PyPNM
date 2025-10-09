@@ -14,7 +14,7 @@ from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_PROFILE_ID
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
-from pypnm.lib.types import FloatSeries, FrequencySeriesHz, IntSeries, StringArray
+from pypnm.lib.types import FloatSeries, FrequencySeriesHz, FloatSeries, StringArray
 
 
 class ModulationProfileRptModel(BaseModel):
@@ -114,7 +114,7 @@ class ModulationProfileReport(AnalysisReport):
             for profile in model.parameters.profiles:
                 profile_id: int = profile.profile_id
                 try:
-                    bpsym: IntSeries = self._align_len(profile.bits_per_symbol, len(freq), fill=0)
+                    bpsym: FloatSeries = self._align_len(profile.bits_per_symbol, len(freq), fill=0)
                     min_mer: FloatSeries = self._align_len(profile.shannon_min_mer, len(freq), fill=float("nan"))
                     mod_lbls: StringArray = self._align_len(profile.modulation, len(freq), fill="UNKNOWN")
                     mod_order: List[int] = [self._derive_qam_order(lbl) for lbl in mod_lbls]

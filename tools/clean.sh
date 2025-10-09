@@ -18,6 +18,7 @@ Options:
   --python      Clean only Python caches (__pycache__, *.pyc, .pytest_cache)
   --build       Clean build/, dist/, *.egg-info
   --pnm         Clean data/pnm/ and data/db/
+  --plot-data   Clean data/png/, .data/csv/ and data/archive/
   --output      Clean output/
   -h, --help    Show this help and exit
 
@@ -37,7 +38,7 @@ declare -a ACTIONS=()
 # -----------------------------------------------------------------------------
 while (( $# )); do
   case "$1" in
-    --all|--logs|--python|--build|--pnm|--output)
+    --all|--logs|--python|--build|--pnm|--output|--plot-data)
       ACTIONS+=("$1")
       shift
       ;;
@@ -124,6 +125,13 @@ clean_output() {
   safe_rm "$ROOT_DIR/output/"*
 }
 
+clean_plot_data() {
+  echo "📤 Cleaning plot data and archive files..."
+  safe_rm "$ROOT_DIR/png/"*
+  safe_rm "$ROOT_DIR/csv/"*
+  safe_rm "$ROOT_DIR/archive/"*
+}
+
 # -----------------------------------------------------------------------------
 # Dispatch actions
 # -----------------------------------------------------------------------------
@@ -139,6 +147,7 @@ for action in "${ACTIONS[@]}"; do
       clean_excel
       clean_output
       clean_png
+      clean_plot_data
       ;;
 
     --archive)
@@ -163,6 +172,10 @@ for action in "${ACTIONS[@]}"; do
 
     --excel)
       clean_excel
+      ;;
+      
+    --plot-data)
+      clean_plot_data
       ;;
 
     --output)

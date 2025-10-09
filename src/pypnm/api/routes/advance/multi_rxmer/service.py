@@ -5,7 +5,6 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from math import ceil
 import math
 
 from pypnm.api.routes.advance.common.capture_service import AbstractCaptureService
@@ -114,21 +113,21 @@ class MultiRxMer_Ofdm_Performance_1_Service(AbstractCaptureService):
 
     async def _capture_message_response(self) -> MessageResponse:
         """
-        Operation of this test:
+        Operation:
         -----------------------
-            * Collect a series of RxMER
-            * Collect at least 1 Modualtion Profile at 50% duration
-            * Collect a Fec Summary at:
-                - 1 FecSummary every 10 Min (10 Min provides sec-by-sec accounting)
-                - At end of the test
+        * Collect a series of RxMER
+        * Collect at least 1 Modualtion Profile at 50% duration
+        * Collect a Fec Summary at:
+            - 1 FecSummary every 10 Min (10 Min provides sec-by-sec accounting)
+            - At end of the test
             
         OFDM_PROFILE_MEASUREMENT_1
         --------------------------    
-            * Calculate the Avg RxMER of the series
-            * Calculate Shannon for each subcarrier
-            * Compare each Modualtion Profile against the RxMER Average
-            * Calculate the percentage of subcarries that are outside a given profile
-            * Provide total FEC Stats for each profile over the time of the capture.
+        * Calculate the Avg RxMER of the series
+        * Calculate Shannon for each subcarrier
+        * Compare each Modualtion Profile against the RxMER Average
+        * Calculate the percentage of subcarries that are outside a given profile
+        * Provide total FEC Stats for each profile over the time of the capture.
 
         Returns:
             A list of CaptureSample objects. On success, one per file-transfer
@@ -153,7 +152,7 @@ class MultiRxMer_Ofdm_Performance_1_Service(AbstractCaptureService):
         if not self._mod_profile_done and time_remaining <= self._half_life:
             self._mod_profile_done = True
             
-            self.logger.debug(f'Collecting a Modulation Profile @ {time_remaining}s')
+            self.logger.info(f'Collecting a Modulation Profile @ {time_remaining}s')
             try:
                 msg_rsp = await CmDsOfdmModProfileService(self.cm).set_and_go()
                 
@@ -162,19 +161,21 @@ class MultiRxMer_Ofdm_Performance_1_Service(AbstractCaptureService):
                 return MessageResponse(ServiceStatusCode.DS_OFDM_MOD_PROFILE_NOT_AVALAIBLE)
             
             if msg_rsp.status != ServiceStatusCode.SUCCESS:
+                self.logger.error(f'Unable to get OFDM Modualtion Profile, status={msg_rsp.status.name}')
                 return MessageResponse(ServiceStatusCode.DS_OFDM_MOD_PROFILE_NOT_AVALAIBLE)
 
-        # Every 10 min (and once at end), FEC summary
-        self.logger.debug(f'Checking FEC Summary @ {time_remaining}s')
+        # Every 10 min/600 seconds (and once at end), FEC summary
+        self.logger.info(f'Checking FEC Summary @ TimeRemaining={time_remaining}s')
+
         for thresh in self._fec_thresholds:
-            self.logger.debug(f'INSIDE-THRESH-LOOP({thresh}): Checking FEC Summary @ {time_remaining}s - Thresh-holds: {self._fec_thresholds}')
-            self.logger.debug(f'Final-Invovcation: {self.getOperationFinalInvocation(operation_id)}')
-            
-            if self.getOperationFinalInvocation(operation_id) or time_remaining <= thresh and thresh not in self._handled_fec_thresholds:
-                
+            self.logger.info(f'INSIDE-THRESH-LOOP({thresh}): Checking FEC Summary @ TimeRemaining={time_remaining}s - Thresholds: {self._fec_thresholds}')
+            self.logger.info(f'Final-Invovcation: {self.getOperationFinalInvocation(operation_id)}')
+
+            if self.getOperationFinalInvocation(operation_id) or (time_remaining <= thresh) and (thresh not in self._handled_fec_thresholds):
+
                 self._handled_fec_thresholds.add(thresh)
-                
-                self.logger.debug(f'Collecting a FEC Summary @ {time_remaining}s (threshold={thresh})')    
+                self.logger.info(f'Collecting a FEC Summary @ TimeRemaining={time_remaining}s (threshold={thresh})')
+                 
                 try:
                     msg_rsp = await CmDsOfdmFecSummaryService(self.cm, FecSummaryType.TEN_MIN).set_and_go()
                     
@@ -183,8 +184,9 @@ class MultiRxMer_Ofdm_Performance_1_Service(AbstractCaptureService):
                     return MessageResponse(ServiceStatusCode.DS_OFDM_FEC_SUMMARY_NOT_AVALIABLE)
                 
                 if msg_rsp.status != ServiceStatusCode.SUCCESS:
+                    self.logger.error(f'Unable to get last FecSummary, status={msg_rsp.status.name}')
                     return MessageResponse(ServiceStatusCode.DS_OFDM_FEC_SUMMARY_NOT_AVALIABLE)
                 
-                break  # only one FEC summary per invocation
+                break
 
         return msg_rsp

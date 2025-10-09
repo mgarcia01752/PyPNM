@@ -8,6 +8,7 @@ from typing import List, Union, Dict, Any
 
 from pydantic import BaseModel, Field
 
+from pypnm.lib.types import FloatSeries
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
 
 
@@ -34,9 +35,9 @@ class MinAvgMaxModel(BaseModel):
     signal_statistics : MinAvgMaxSignalStatisticsModel
         Aggregate statistics computed over each of the three arrays.
     """
-    min: List[float]                                 = Field(..., description="Per-index minimum values")
-    avg: List[float]                                 = Field(..., description="Per-index average values")
-    max: List[float]                                 = Field(..., description="Per-index maximum values")
+    min: FloatSeries                                 = Field(..., description="Per-index minimum values")
+    avg: FloatSeries                                 = Field(..., description="Per-index average values")
+    max: FloatSeries                                 = Field(..., description="Per-index maximum values")
     precision: int                                   = Field(..., ge=0, description="Rounding precision (decimal places)")
     signal_statistics: MinAvgMaxSignalStatisticsModel = Field(..., description="Aggregate stats of min/avg/max arrays")
 

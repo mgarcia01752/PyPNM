@@ -5,7 +5,7 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import enum
-from typing import Any, Dict, List, Optional, Tuple, TypedDict, Union
+from typing import Any, Dict, List, NewType, Optional, Tuple, TypedDict, Union
 from pypnm.api.routes.common.classes.file_capture.types import TransactionId
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor
 from pypnm.docsis.data_type.sysDescr import SystemDescriptorModel
@@ -32,10 +32,11 @@ class Sort(enum.Enum):
     PNM_FILE_TYPE   = enum.auto()
     MAC_ADDRESS     = enum.auto()
 
-TransactionFile = Tuple[TransactionId, FileName, bytes]
-TransactionFileCollection = List[TransactionFile]
-FlatIndex    = Dict[MacAddressStr, List[EntryDict]]
-GroupedIndex = Dict[MacAddressStr, Dict[int, List[EntryDict]]]
-SortOrder    = List[Sort]
+OperationId                 = NewType("OperationId", str)
+TransactionFile             = Tuple[TransactionId, FileName, bytes]
+TransactionFileCollection   = List[TransactionFile]
+FlatIndex                   = Dict[MacAddressStr, List[EntryDict]]
+GroupedIndex                = Dict[MacAddressStr, Dict[int, List[EntryDict]]]
+SortOrder                   = List[Sort]
 
 

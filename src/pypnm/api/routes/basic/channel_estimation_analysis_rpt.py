@@ -18,7 +18,7 @@ from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.numeric_scaler import NumericScaler
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
-from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, IntSeries, PathLike
+from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, FloatSeries, PathLike
 
 
 class ChanEstimationParametersRptModel(BaseModel):
@@ -93,7 +93,7 @@ class ChanEstimationReport(AnalysisReport):
         """
         matplot_mgr: List[MatplotManager]   = []
         any_models:bool                     = False
-        chan_id_list: IntSeries = []
+        chan_id_list: FloatSeries = []
 
         for common_model in self.get_common_analysis_model():
             any_models          = True

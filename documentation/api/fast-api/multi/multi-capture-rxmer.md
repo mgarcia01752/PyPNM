@@ -41,8 +41,10 @@
 
 **Note:** Choose the appropriate measure mode according to desired capture type:
 
-* `mode = 0` for **continuous sampling** (needed for MIN\_AVG\_MAX and RXMER\_HEAT\_MAP analyses).
-* `mode = 1` for **OFDM performance** captures (needed for OFDM\_PROFILE\_PERFORMANCE analysis).
+| Mode | Description               | Required for Analysis Types          |
+|------|---------------------------|--------------------------------------|
+| `0`  | Continuous Sampling of RxMER | MIN\_AVG\_MAX, RXMER\_HEAT\_MAP       |
+| `1`  | OFDM Performance Capture  | MIN\_AVG\_MAX, RXMER\_HEAT\_MAP, OFDM\_PROFILE\_PERFORMANCE          |
 
 **Request** (`MultiRxMerRequest` schema):
 
@@ -233,9 +235,12 @@ DELETE /advance/multiRxMer/stop/{operation_id}
 
   * `analysis.analysis_type` (integer):
 
-    * `0` = MIN\_AVG\_MAX (returns minimum, average, and maximum RxMER). Requires continuous sampling mode.
-    * `1` = OFDM\_PROFILE\_PERFORMANCE (returns per-subcarrier performance). Requires OFDM analysis mode.
-    * `2` = RXMER\_HEAT\_MAP (returns a time-by-frequency heatmap grid). Requires continuous sampling mode.
+    | Type                     | Description                                      | Requires Measure Mode        |
+    |--------------------------|--------------------------------------------------|------------------------------|
+    | `0` = MIN\_AVG\_MAX         | Returns minimum, average, and maximum RxMER.         | Continuous sampling (mode=0) |
+    | `1` = OFDM\_PROFILE\_PERFORMANCE | Returns per-subcarrier performance metrics.         | OFDM analysis (mode=1)       |
+    | `2` = RXMER\_HEAT\_MAP      | Returns a time-by-frequency heatmap grid.          | | Continuous sampling (mode=0) |
+
     * *(Additional types can be added in the future.)*
   * `operation_id`: ID of the completed capture session to analyze.
 

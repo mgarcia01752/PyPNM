@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-
 from __future__ import annotations
 
 import io
@@ -53,7 +52,7 @@ class MultiRxMerRouter(AbstractService):
     def _add_routes(self) -> None:
         @self.router.post("/start",
             response_model=Union[MultiRxMerStartResponse, SnmpResponse],
-            summary="Start a multi-sample RxMER capture",)
+            summary="Start a Multi RxMER capture",)
         async def start_multi_rxmer(request: MultiRxMerRequest) -> Union[MultiRxMerStartResponse, SnmpResponse]:
             """
             **Start Multi-RxMER Capture**
@@ -88,13 +87,14 @@ class MultiRxMerRouter(AbstractService):
                 mac_address=MacAddress(request.cable_modem.mac_address),
                 inet=Inet(request.cable_modem.ip_address),)
 
-            status, msg = await CableModemServicePreCheck(cable_modem=cable_modem).run_precheck()
+            status, msg = await CableModemServicePreCheck(cable_modem=cable_modem,
+                                                          validate_ofdm_exist=True,
+                                                          validate_pnm_ready_status=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
                     mac_address=str(request.cable_modem.mac_address),
-                    status=status,
-                    message=msg)   
+                    status=status, message=msg)   
 
             if measure_modes == MeasureModes.CONTINUOUS:
                 msg=f'Starting Multi-RxMER capture for MAC={request.cable_modem.mac_address}'
@@ -293,23 +293,11 @@ class MultiRxMerRouter(AbstractService):
                     status      =   ServiceStatusCode.DS_OFDM_MULIT_RXMER_ANALYSIS_TYPE,
                     message     =   msg,
                     data        =   {})               
+            self.logger.info(f'Performing Multi-RxMER Min/Avg/Max Analysis for group: {capture_group_id}')
 
-            if atype == MultiRxMerAnalysisType.MIN_AVG_MAX:
-
-                self.logger.info(f'Performing Multi-RxMER Min/Avg/Max Analysis for group: {capture_group_id}')
+            if atype == MultiRxMerAnalysisType.MIN_AVG_MAX:    
                 engine = MultiRxMerSignalAnalysis(cda, atype)
                 multi_analysis:MultiRxMerAnalysisResult = engine.to_model()
-
-                if multi_analysis.mac_address == MacAddress.null():
-                    self.logger.error(f'Null MacAddress: {multi_analysis.mac_address} Found - No Resuls for Multi-RxMER Min/Avg/Max Analysis for group {capture_group_id}')
-                    msg:str = f'Unable to process Multi-RxMER Min/Avg/Max Analysis for group {capture_group_id}, reason: Null Macaddress Found: {multi_analysis.mac_address}'
-                    self.logger.error(msg)
-                    
-                    return MultiRxMerAnalysisResponse(
-                        mac_address =   MacAddress.null(),
-                        status      =   ServiceStatusCode.DS_OFDM_MULIT_RXMER_FAILED,
-                        message     =   msg,
-                        data        =   {})                    
 
             elif atype == MultiRxMerAnalysisType.OFDM_PROFILE_PERFORMANCE_1:
                 '''

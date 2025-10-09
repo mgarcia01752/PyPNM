@@ -9,7 +9,7 @@ import logging
 from struct import calcsize, unpack
 
 from pydantic import BaseModel, Field
-from pypnm.lib.types import IntSeries
+from pypnm.lib.types import FloatSeries
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader, PnmHeaderParameters
 from pypnm.lib.mac_address import MacAddress
@@ -21,9 +21,9 @@ class CmDsHistModel(BaseModel):
     mac_address:str                 = Field(default=MacAddress.null(), description="Device MAC address")
     symmetry: int                   = Field(..., description="Histogram symmetry indicator (device-specific meaning).")
     dwell_count_values_length: int  = Field(..., description="Number of dwell count entries reported.")
-    dwell_count_values: IntSeries   = Field(..., description="Dwell count values per bin.")
+    dwell_count_values: FloatSeries   = Field(..., description="Dwell count values per bin.")
     hit_count_values_length: int    = Field(..., description="Number of hit count entries reported.")
-    hit_count_values: IntSeries     = Field(..., description="Hit count values per bin.")
+    hit_count_values: FloatSeries     = Field(..., description="Hit count values per bin.")
 
 
 class CmDsHist(PnmHeader):
@@ -51,9 +51,9 @@ class CmDsHist(PnmHeader):
         self._mac_address: str
         self._symmetry: int
         self._dwell_count_values_length: int
-        self._dwell_count_values: IntSeries
+        self._dwell_count_values: FloatSeries
         self._hit_count_values_length: int
-        self._hit_count_values: IntSeries
+        self._hit_count_values: FloatSeries
         self._model:CmDsHistModel
 
         self.__process()

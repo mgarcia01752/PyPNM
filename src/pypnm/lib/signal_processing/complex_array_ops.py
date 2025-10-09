@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 # Author: Maurice Garcia (2025)
 
 from __future__ import annotations

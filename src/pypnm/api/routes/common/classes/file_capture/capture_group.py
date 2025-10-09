@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 from json import JSONDecodeError
 
+from pypnm.api.routes.common.classes.file_capture.types import GroupId, TransactionId
 from pypnm.config.system_config_settings import SystemConfigSettings
 
 class CaptureGroup:
@@ -42,7 +43,7 @@ class CaptureGroup:
         txns = cg2.get_transactions()
     """
 
-    def __init__(self, group_id: Optional[str] = None, 
+    def __init__(self, group_id: Optional[GroupId] = None, 
                  db_path: Optional[Path] = None) -> None:
         """
         Initialize the CaptureGroup manager.
@@ -70,7 +71,7 @@ class CaptureGroup:
 
         # Load in-memory state
         self._db: Dict[str, Any] = {}
-        self._grp_id = group_id
+        self._grp_id: GroupId = group_id
         self._load_db()
         self._create_group_id()
 
@@ -115,7 +116,7 @@ class CaptureGroup:
             self._grp_id = uuid.uuid4().hex[:16]
         return self._grp_id
 
-    def get_group_id(self) -> str:
+    def get_group_id(self) -> GroupId:
         """
         Get the current active group ID.
         Raises AssertionError if uninitialized.
@@ -123,7 +124,7 @@ class CaptureGroup:
         assert self._grp_id, "Group ID not initialized"
         return self._grp_id
 
-    def create_group(self) -> str:
+    def create_group(self) -> GroupId:
         """
         Add the current group to the DB (no-op if exists).
         Returns the group ID.
@@ -151,7 +152,7 @@ class CaptureGroup:
             self._save_db()
             self.logger.debug(f"Added txn {txn_id} to group {gid}")
 
-    def getTransactionIds(self) -> List[str]:
+    def getTransactionIds(self) -> List[TransactionId]:
         """
         Return all transaction IDs for this group (empty list if none).
         """

@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 # Run with your test runner or: python -m unittest -q
 
 import unittest

@@ -119,11 +119,11 @@ class DocsPnmCmCtlStatus(Enum):
     test initiation constraints on the Cable Modem (CM).
     """
 
-    OTHER = 1
-    READY = 2
-    TEST_IN_PROGRESS = 3
-    TEMP_REJECT = 4
-    SNMP_ERROR = 255
+    OTHER               = 1
+    READY               = 2
+    TEST_IN_PROGRESS    = 3
+    TEMP_REJECT         = 4
+    SNMP_ERROR          = 255
 
     def __str__(self) -> str:
         return self.name.lower()
@@ -132,8 +132,8 @@ class FecSummaryType(Enum):
     """
     Enum for FEC Summary Type used in DOCSIS PNM SNMP operations.
     """
-    TEN_MIN = 2
-    TWENTY_FOUR_HOUR = 3
+    TEN_MIN             = 2
+    TWENTY_FOUR_HOUR    = 3
 
     @classmethod
     def choices(cls):

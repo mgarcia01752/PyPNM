@@ -1,18 +1,19 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-import abc
+from __future__ import annotations
+
+from abc import ABC
 from typing import TypeVar, Type, Any, Tuple, Dict
 
 from pypnm.api.routes.advance.common.capture_service import AbstractCaptureService
+from pypnm.api.routes.advance.common.types.types import OperationId
+from pypnm.api.routes.common.classes.file_capture.types import GroupId
 
 T = TypeVar("T", bound=AbstractCaptureService)
 
-class AbstractService(abc.ABC):
-    """
+class AbstractService(ABC):
+    """ 
     Base router class managing the lifecycle of capture service instances.
 
     Responsibilities:
@@ -31,11 +32,7 @@ class AbstractService(abc.ABC):
         """
         self._service_store: Dict[str, AbstractCaptureService] = {}
 
-    async def loadService(
-        self,
-        service_cls: Type[T],
-        *args: Any,
-        **kwargs: Any) -> Tuple[str, str]:
+    async def loadService(self, service_cls: Type[T], *args: Any, **kwargs: Any) -> Tuple[GroupId, OperationId]:
         """
         Instantiate, start, and register a capture service.
 
@@ -45,7 +42,7 @@ class AbstractService(abc.ABC):
             **kwargs: Keyword args for the service constructor.
 
         Returns:
-            Tuple[str, str]: (group_id, operation_id) returned by service.start().
+            Tuple[GroupId, OperationId]: (group_id, operation_id) returned by service.start().
 
         Raises:
             Exception: Propagates errors from instantiation or startup.

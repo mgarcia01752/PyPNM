@@ -1,15 +1,44 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from typing import Any, Dict, List, Optional
+from __future__ import annotations
 
+import logging
+
+from typing import Any, Dict, List
+from typing_extensions import override
+
+from pydantic import BaseModel, Field
+
+from pypnm.api.routes.common.classes.collection.abstract.multi_pnm_aggreator import MultiPnmCollection, MultiPnmCollectionObject
+from pypnm.docsis.cm_snmp_operation import FecSummaryType
+from pypnm.lib.types import ChannelId, TimeStamp
 from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
+from pypnm.pnm.process.CmDsOfdmModulationProfile import ProfileId
 
 
-class FecSummaryAggregator:
+class CodewordSummaryTotalsModel(BaseModel):
+    total_codewords: int    = Field(..., description="Total codewords observed")
+    corrected: int          = Field(..., description="FEC-corrected codewords")
+    uncorrectable: int      = Field(..., description="Uncorrectable codewords")
+
+class ProfileSummaryTotalsModel(BaseModel):
+    profile_id: ProfileId               = Field(..., description="")
+    summary: CodewordSummaryTotalsModel = Field(..., description="")
+
+class TimeStampProfileCollectionModel(BaseModel):
+    timestamp: TimeStamp                                    = Field(..., description="")
+    profiles: Dict[ProfileId, ProfileSummaryTotalsModel]    = Field(..., description="")
+
+TimeStampProfileCollection = Dict[TimeStamp, TimeStampProfileCollectionModel]
+    
+class FecSummaryTotalsModel(BaseModel):
+    start:TimeStamp         = Field(description="")
+    end: TimeStamp          = Field(description="")
+    summary:CodewordSummaryTotalsModel
+
+
+class FecSummaryAggregator(MultiPnmCollection):
     """
     Aggregates FEC summary data by channel directly in a master dictionary.
 
@@ -22,82 +51,42 @@ class FecSummaryAggregator:
         """
         Initialize an empty master data store and unset MAC.
         """
-        self._data: Dict[int, Dict[int, Dict[int, Dict[str, Any]]]] = {}
-        self._mac_address: Optional[str] = None
-
-    def add(self, summary_service: CmDsOfdmFecSummary) -> None:
-        """
-        Ingest a FEC summary service instance, merging its data.
-
-        Raises:
-            ValueError: if channel_id or mac_address is missing,
-                        or if MAC mismatches a previous summary.
-        """
-        summary = summary_service.to_dict()
-        cid = summary.get('channel_id')
-        mac = summary.get('mac_address')
-        if cid is None:
-            raise ValueError("Missing channel_id in FEC summary")
-        if mac is None:
-            raise ValueError("Missing mac_address in FEC summary")
-        # Enforce same MAC address after first add
-        if self._mac_address is None:
-            self._mac_address = mac
-        elif mac != self._mac_address:
-            raise ValueError(
-                f"MAC address mismatch: expected {self._mac_address}, got {mac}"
-            )
-        # Merge entries
-        for profile in summary.get('fec_summary_data', []):
-            pid = profile.get('profile_id')
-            if pid is None:
-                continue
-            for entry in profile.get('codeword_entries', []):
-                ts = entry.get('timestamp')
-                if ts is None:
-                    continue
-                # insert/overwrite entry
-                self._data.setdefault(cid, {}).setdefault(pid, {})[ts] = entry.copy()
-
-    def get_channel_ids(self) -> List[int]:
-        """
-        Retrieve a sorted list of all channel IDs for which RxMER captures have been ingested.
-
-        Returns:
-            List[int]: Channel IDs currently stored in this aggregator, in ascending order.
-        """
-        return sorted(self._data.keys())
-
-    def get_profile_ids(self, channel_id: int) -> List[int]:
-        """Return sorted list of profile IDs for a channel."""
-        return sorted(self._data.get(channel_id, {}).keys())
-
-    def get_timestamps(self, channel_id: int, profile_id: int) -> List[int]:
-        """Return sorted list of timestamps for a given channel and profile."""
-        return sorted(self._data.get(channel_id, {}).get(profile_id, {}).keys())
-
-    def has_entry(self, channel_id: int, profile_id: int, timestamp: int) -> bool:
-        """Check existence of data for channel/profile/timestamp."""
-        return (
-            channel_id in self._data and
-            profile_id in self._data[channel_id] and
-            timestamp in self._data[channel_id][profile_id]
-        )
-
-    def get_entry(self, channel_id: int, profile_id: int, timestamp: int) -> Dict[str, Any]:
-        """Retrieve entry for channel/profile/timestamp; raises KeyError if missing."""
-        return self._data[channel_id][profile_id][timestamp]
-
-    def to_dict(self) -> Dict[int, Dict[int, Dict[int, Dict[str, Any]]]]:
-        """Export the entire master data store."""
-        return self._data
+        super().__init__(CmDsOfdmFecSummary)
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self._store_channel_timestamps:Dict[ChannelId, Dict[TimeStamp, TimeStampProfileCollectionModel]] = {}
     
-    def get_summary_totals(
-        self,
-        channel_id: int,
-        start_time: int,
-        end_time: int
-    ) -> Dict[int, Dict[str, int]]:
+    @override
+    def add(self, obj: MultiPnmCollectionObject) -> None:
+        if not isinstance(obj, CmDsOfdmFecSummary):
+            raise TypeError(f"FecSummaryAggregator only accepts CmDsOfdmFecSummary instances, got {type(obj)}")
+        super().add(obj)
+
+        self.__update_channel_temporal_db(obj)
+
+
+    def get_summary_type(self, channel_id: ChannelId) -> FecSummaryType:
+        return FecSummaryType.TEN_MIN
+
+    def get_profile_ids(self, channel_id: ChannelId) -> List[ProfileId]:
+        """Return sorted list of profile IDs for a channel."""
+        return []
+
+    def get_timestamps(self, channel_id: ChannelId, profile_id: ProfileId) -> List[TimeStamp]:
+        """Return sorted list of timestamps for a given channel and profile."""
+        return []
+
+    def has_entry(self, channel_id: ChannelId, profile_id: ProfileId, timestamp: TimeStamp) -> bool:
+        """Check existence of data for channel/profile/timestamp."""
+        return False
+
+    def get_entry(self, channel_id: ChannelId, profile_id: ProfileId, timestamp: TimeStamp, closest_entry: int = 0) -> Dict[str, Any]:
+        """
+        Retrieve entry for channel/profile/timestamp.
+        closest_entry : 0 = floor ; 1 = ceiling
+        """
+        pass
+
+    def get_summary_totals(self, channel_id: ChannelId, start_time: TimeStamp, end_time: TimeStamp) -> FecSummaryTotalsModel:
         """
         Aggregate FEC summary counters per profile between two timestamps (inclusive).
 
@@ -106,28 +95,74 @@ class FecSummaryAggregator:
             start_time: Lower bound timestamp (inclusive).
             end_time: Upper bound timestamp (inclusive).
 
-        Returns:
-            A dict mapping profile_id to a dict of summed counters.
-        Raises:
-            KeyError: if no data exists for the given channel.
         """
-        if channel_id not in self._data:
-            raise KeyError(f"No data for channel {channel_id}")
+        pass
 
-        summary: Dict[int, Dict[str, int]] = {}
-        for profile_id, ts_entries in self._data[channel_id].items():
-            agg: Dict[str, int] = {}
-            
-            for ts, entry in ts_entries.items():
-                if ts < start_time or ts > end_time:
-                    continue
-            
-                for key, val in entry.items():
-                    # Skip the timestamp field and non-numeric values
-                    if key == "timestamp" or not isinstance(val, (int, float)):
-                        continue
-                    agg[key] = agg.get(key, 0) + int(val)
-            
-            summary[profile_id] = agg
+    def __update_channel_temporal_db(self, obj: CmDsOfdmFecSummary) -> None:
+        """
+        Merge one CmDsOfdmFecSummary parse into the channel→timestamp→profiles store.
 
-        return summary
+        Policy
+        ------
+        - Idempotent per (channel_id, profile_id, timestamp).
+        - If an entry already exists for the same key and values differ,
+        last-writer wins (overwrite) and emit a debug log.
+        """
+        model = obj.to_model()
+
+        channel_id = model.channel_id
+        channel_store = self._store_channel_timestamps.setdefault(channel_id, {})
+
+        for profile_block in model.fec_summary_data:
+            profile_id:ProfileId = ProfileId(profile_block.profile_id)
+            entries = profile_block.codeword_entries
+
+            for ts, total, corrected, uncorrectable in zip(
+                entries.timestamp,
+                entries.total_codewords,
+                entries.corrected,
+                entries.uncorrectable,
+            ):
+                ts_bucket = channel_store.get(ts)
+                if ts_bucket is None:
+                    ts_bucket = TimeStampProfileCollectionModel(
+                        timestamp   =   ts,
+                        profiles    =   {}
+                    )
+                    channel_store[ts] = ts_bucket
+
+                profiles_map = ts_bucket.profiles
+
+                new_summary = CodewordSummaryTotalsModel(
+                    total_codewords =   total,
+                    corrected       =   corrected,
+                    uncorrectable   =   uncorrectable,
+                )
+                new_profile_totals = ProfileSummaryTotalsModel(
+                    profile_id  =   profile_id,
+                    summary     =   new_summary,
+                )
+
+                existing = profiles_map.get(profile_id)
+                if existing is not None:
+                    if (
+                        existing.summary.total_codewords != new_summary.total_codewords or
+                        existing.summary.corrected != new_summary.corrected or
+                        existing.summary.uncorrectable != new_summary.uncorrectable
+                    ):
+                        self.logger.debug(
+                            "FEC overwrite: ch=%s ts=%s profile=%s "
+                            "old={total:%s corr:%s uncor:%s} -> new={total:%s corr:%s uncor:%s}",
+                            channel_id,
+                            ts,
+                            profile_id,
+                            existing.summary.total_codewords,
+                            existing.summary.corrected,
+                            existing.summary.uncorrectable,
+                            new_summary.total_codewords,
+                            new_summary.corrected,
+                            new_summary.uncorrectable,
+                        )
+
+                profiles_map[profile_id] = new_profile_totals
+

@@ -1,8 +1,7 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+from __future__ import annotations
 
 import logging
 from typing import Dict
@@ -113,7 +112,7 @@ class CommonProcessService(CommonMessagingService):
         device_details:Dict[str, str] = transaction_record[PnmFileTransaction.DEVICE_DETAILS]
         pnm_data = FileProcessor(file_name_dst).read_file()
 
-        if   pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR.name:
+        if pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR.name:
             pnm_dict = self._add_device_details(CmDsOfdmRxMer(binary_data=pnm_data).to_dict(), device_details)
             self.build_msg(ServiceStatusCode.SUCCESS, pnm_dict)
             

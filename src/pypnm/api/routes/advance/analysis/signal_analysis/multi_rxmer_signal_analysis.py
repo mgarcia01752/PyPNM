@@ -19,13 +19,12 @@ from pypnm.api.routes.common.classes.collection.fec_summary_aggregator import Fe
 from pypnm.lib.constants import INVALID_CAPTURE_TIME
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
-from pypnm.lib.signal_processing.shan.shannon import Shannon
+from pypnm.lib.signal_processing.shan.series import ShannonSeries
 from pypnm.lib.types import (ArrayLike, CaptureTime, ChannelId, FloatSeries, 
-                             FrequencySeriesHz, IntSeries, MacAddressStr, 
-                             MagnitudeSeries, TimestampSec)
+                             FrequencySeriesHz, MacAddressStr, MagnitudeSeries, TimestampSec)
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
 from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
-from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
+from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ProfileId
 from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer, CmDsOfdmRxMerModel
 
 # ---------------------------
@@ -47,16 +46,23 @@ class MinAvgMaxAnalysisModel(MultiRxMerAnalysisBaseModel):
     avg:       FloatSeries       = Field(..., description="Per-subcarrier average values.")
     max:       FloatSeries       = Field(..., description="Per-subcarrier maximum values.")
 
+class FecSummaryTotalsModel(BaseModel):
+    profile_id: ProfileId = Field(..., description="Modulation profile ID.")
+    capture_time_range: Tuple[CaptureTime, CaptureTime] = Field(..., description="Start , Stop Capture Times")
+    total: int          = Field(..., description="Total codewords (corrected + uncorrected).")
+    uncorrected: int    = Field(..., description="Total uncorrected codewords.")
+    correctable: int    = Field(..., description="Total correctable codewords.")
+
 class ProfileEntryModel(BaseModel):
-    capture_time:   int       = Field(..., description="Epoch capture timestamp.")
-    profile_index:  int       = Field(..., description="Modulation profile index for the capture.")
-    profile_limits: IntSeries = Field(..., description="Per-subcarrier Shannon limits (bits/s/Hz) for the profile.")
-    capacity_delta: IntSeries = Field(..., description="MER-limit minus profile-limit per subcarrier.")
+    capture_time: CaptureTime       = Field(..., description="Epoch capture timestamp.")
+    profile_id: ProfileId           = Field(..., description="Modulation profile index for the capture.")
+    profile_limits: FloatSeries     = Field(..., description="Per-subcarrier Shannon limits (bits/s/Hz) for the profile.")
+    capacity_delta: FloatSeries     = Field(..., description="MER-limit minus profile-limit per subcarrier.")
+    fec_summary: FecSummaryTotalsModel   = Field(..., description="")
 
 class ChannelOfdmProfilePerfModel(MultiRxMerAnalysisBaseModel):
     avg_mer:            FloatSeries             = Field(..., description="Per-subcarrier average MER (dB).")
-    mer_shannon_limits: IntSeries               = Field(..., description="Per-subcarrier Shannon limits derived from avg MER.")
-    fec_summary_total:  Dict[str, int]          = Field(..., description="Aggregated FEC counters between first and last capture.")
+    mer_shannon_limits: FloatSeries             = Field(..., description="Per-subcarrier Shannon limits derived from avg MER.")
     profiles:           List[ProfileEntryModel] = Field(..., description="Per-capture per-profile deltas/limits.")
 
 class ChannelHeatMapModel(MultiRxMerAnalysisBaseModel):
@@ -139,6 +145,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
     # -----------------------
 
     def _get_temporal_pnm_data(self) -> List[TemporalMapping]:
+        self.logger.info(f'Temporal PNM Data - Record Count: [{len(self._sorted_temporal_mapping)}]')
         return self._sorted_temporal_mapping
     
     def _get_capture_times(self, channel_id:ChannelId, obj_type:type) -> List[TimestampSec]:
@@ -160,7 +167,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
             return self._analyze_min_avg_max_models()
         
         if self.analysis_type == MultiRxMerAnalysisType.OFDM_PROFILE_PERFORMANCE_1:
-            return self._analyze_ofdm_profile_perf_models()
+            return self._analyze_ofdm_profile_perf_1_models()
         
         if self.analysis_type == MultiRxMerAnalysisType.RXMER_HEAT_MAP:
             return self._analyze_rxmer_heat_map_models()
@@ -226,71 +233,96 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
         return mamap
 
-    def _analyze_ofdm_profile_perf_models(self) -> OfdmProfilePerfMap:
+    def _analyze_ofdm_profile_perf_1_models(self) -> OfdmProfilePerfMap:
+        """
 
-        ds_rxmer = DsRxMerAggregator()
-        ds_mod   = DsModulationProfileAggregator()
-        fec_sum  = FecSummaryAggregator()
+        Operation of this test:
+        -----------------------
+        * Collect a seriers of RxMER
+        * Collect at least 1 Modualtion Profile=
+        * Collect a Fec Summary at:
+            - 1 FecSummary every 10 Min
+            - At end of the test
+            
+        OFDM_PROFILE_MEASUREMENT_1
+        --------------------------    
+        * Calculate the Avg RxMER of the series
+        * Calculate Shannon for each subcarrier
+        * Compare each modualtion profile against the RxMER Average
+        * Calculate the percentage of subcarries that are outside a given profile
+        * Provide total FEC Stats for each profile over the time of the capture.
 
-        for ch_id, entries in ch_map.items():
-            prefix = f"[{mac}][ch={ch_id}]"
-            for entry in entries:
-                data_stream = entry.get("data")
-                if data_stream is None:
-                    self.logger.error(f"{prefix} - No DataStream Found")
-                    continue
-                self._route_pnm_file(data_stream, ds_rxmer, ds_mod, fec_sum, prefix)
+
+        Returns
+        -------
+        OfdmProfilePerfMap
+            Mapping of ChannelId -> ChannelOfdmProfilePerfModel
+        """
+        rxmer_agg   = DsRxMerAggregator()
+        mod_pro_agg = DsModulationProfileAggregator()
+        fec_sum_agg = FecSummaryAggregator()
 
         models: OfdmProfilePerfMap = {}
-        for ch_id in ds_rxmer.get_channel_ids():
-            # NOTE: assuming aggregator exposes getMinAvgMax(ch_id)
-            mam = ds_rxmer.getMinAvgMax(ch_id)  # If your method name differs, align here.
 
-            # Shannon conversion path: ensure snr_to_limit accepts dB inputs or convert as needed.
-            mer_bit_limits: List[int] = Shannon.snr_to_limit(mam.avg_values)
+        # Aggregate data by type and temporal order
+        for _, obj in self._get_temporal_pnm_data():
 
-            capture_times = ds_rxmer.get_capture_times(ch_id)
-            if not capture_times:
-                self.logger.warning(f"[{mac}][ch={ch_id}] No captures for channel, skipping")
+            if isinstance(obj, CmDsOfdmRxMer):
+                rxmer_agg.add(obj)
                 continue
 
-            start_time, end_time = capture_times[0], capture_times[-1]
-            fec_totals = fec_sum.get_summary_totals(ch_id, start_time, end_time)
+            elif isinstance(obj, CmDsOfdmModulationProfile):
+                mod_pro_agg.add(obj)
+                continue
 
-            entries: List[ProfileEntryModel] = []
-            for ct in capture_times:
-                result = ds_mod.basic_analysis(ch_id, ct)
-                profiles = result.get("profiles", []) if isinstance(result, dict) else result
-                if not isinstance(profiles, list):
-                    continue
+            elif isinstance(obj, CmDsOfdmFecSummary):
+                fec_sum_agg.add(obj)
+                continue            
 
-                for idx, prof in enumerate(profiles):
-                    cv = prof.get("carrier_values") if isinstance(profiles, list) and isinstance(prof, dict) else None
-                    if not isinstance(cv, dict):
-                        continue
+            else:
+                self.logger.debug('Skipping non-DOCSIS object: %s', type(obj).__name__)
+                continue       
 
-                    shannon_vals = cv.get("shannon_limit")
-                    if not isinstance(shannon_vals, list) or not shannon_vals:
-                        continue
+        
+        """     
+        OFDM_PROFILE_MEASUREMENT_1
+        --------------------------    
+        * Calculate the Avg RxMER of the series
+        * Calculate Shannon for each subcarrier
+        * Compare each modualtion profile against the RxMER Average
+        * Calculate the percentage of subcarries that are outside a given profile
+        * Provide total FEC Stats for each profile over the time of the capture 
+        """
+        
+        for ch_id in rxmer_agg.get_channel_ids():
+            self.logger.info('Building ChannelOfdmProfilePerfModel for Channel: %s', ch_id)
+            
+            mam = rxmer_agg.get_min_avg_max(ch_id)
+            mer_limit = ShannonSeries(mam.avg).to_model()
 
-                    prof_limits = Shannon.snr_to_limit(shannon_vals)
-                    capacity_delta = [m - p for p, m in zip(prof_limits, mer_bit_limits)]
+            profile_entries:List[ProfileEntryModel] = []
 
-                    entries.append(
-                        ProfileEntryModel(
-                            capture_time=ct,
-                            profile_index=idx,
-                            profile_limits=prof_limits,
-                            capacity_delta=capacity_delta,
-                        )
-                    )
+            profiles = mod_pro_agg.get_profiles(ch_id)
+            profiles = sorted(profiles.keys())
+
+            # Get Start/Stop for FEC Summary
+            capture_times = rxmer_agg.get_capture_times(ch_id)
+            capture_times = sorted(capture_times)            
+            start = capture_times[0] if len(capture_times) > 0 else INVALID_CAPTURE_TIME
+            stop  = capture_times[-1] if len(capture_times) > 0 else INVALID_CAPTURE_TIME
+            
+            pem = ProfileEntryModel (
+
+            )
+
+            profile_entries.app
 
             models[cast(ChannelId, ch_id)] = ChannelOfdmProfilePerfModel(
                 channel_id          =   cast(ChannelId, ch_id),
-                avg_mer             =   mam.avg_values,
-                mer_shannon_limits  =   mer_bit_limits,
-                fec_summary_total   =   fec_totals,
-                profiles            =   entries,
+                frequency           =   rxmer_agg.get_frequencies(),
+                avg_mer             =   mam.avg,
+                mer_shannon_limits  =   mer_limit,
+                profiles            =   profile_entries,
             )
 
         return models
@@ -374,7 +406,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
         self.logger.info(f'TransactionCollectionModel Count: {len(tcms)}')
 
         # Groom data for general use due to various Analysis that is performed
-        for tcm in tcms:
+        for count, tcm in enumerate(tcms):
 
             try:
                 dorm = CmDsOfdmRxMer(tcm.data)
@@ -382,8 +414,8 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 temporal_mapping[capture_time] = dorm
                 continue
 
-            except Exception:
-                self.logger.debug('PNM file is not compatible, skipping')
+            except Exception as e:
+                self.logger.info(f'PNM file {count} is not compatible with CmDsOfdmRxMer, skipping: {e}')
 
             try:
                 dofs = CmDsOfdmFecSummary(tcm.data)
@@ -391,8 +423,8 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 temporal_mapping[capture_time] = dofs
                 continue
 
-            except Exception:
-                self.logger.debug('PNM file is not compatible, skipping')
+            except Exception as e:
+                self.logger.info(f'PNM file {count} is not compatible with CmDsOfdmFecSummary, skipping: {e}')
 
             try:
                 domp = CmDsOfdmModulationProfile(tcm.data)
@@ -400,8 +432,8 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 temporal_mapping[capture_time] = domp
                 continue
 
-            except Exception:
-                self.logger.debug('PNM file is not compatible, skipping')
+            except Exception as e:
+                self.logger.info(f'PNM file {count} is not compatible with CmDsOfdmModulationProfile, skipping: {e}')
 
         # Create a sorted list of tuples based on capture_time (ascending)
         self._sorted_temporal_mapping = sorted(temporal_mapping.items(), key=lambda x: x[0])

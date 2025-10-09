@@ -1,8 +1,7 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+from __future__ import annotations
 
 from typing import List, TypeVar, cast
 from pypnm.lib.types import CaptureTime, ChannelId, Number
@@ -18,5 +17,7 @@ INVALID_PROFILE_ID:int              = -1
 INVALID_START_VAULE: int            = -1
 INVALID_SCHEMA_TYPE: int            = -1
 INVALID_CAPTURE_TIME: CaptureTime   = cast(CaptureTime,-1)
+
+DEFAULT_CAPTURE_TIME: CaptureTime = cast(CaptureTime,19700101)  # epoch start
 
 T = TypeVar("T")

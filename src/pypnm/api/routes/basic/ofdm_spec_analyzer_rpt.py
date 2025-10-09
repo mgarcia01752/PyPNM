@@ -20,7 +20,7 @@ from pypnm.docsis.cable_modem import MacAddress
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
-from pypnm.lib.types import ArrayLike, FloatSeries, IntSeries, Path, PathLike
+from pypnm.lib.types import ArrayLike, FloatSeries, FloatSeries, Path, PathLike
 from pypnm.lib.utils import Utils
 
 
@@ -320,7 +320,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
             # LogFile().write(fname=f"{self.FNAME_TAG}.{Utils.time_stamp()}.json", data=amodel.model_dump_json())
 
             sig_analysis = _model.signal_analysis
-            freq_hz: IntSeries      = [int(f) for f in sig_analysis.frequencies]
+            freq_hz: FloatSeries      = [int(f) for f in sig_analysis.frequencies]
             mag_dbmv: FloatSeries   = list(sig_analysis.magnitudes)
             ma_vals: FloatSeries    = list(sig_analysis.window_average.magnitudes)
 

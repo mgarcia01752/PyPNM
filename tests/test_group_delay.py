@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 # pytest -q
 import unittest
 import numpy as np
