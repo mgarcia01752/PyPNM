@@ -15,21 +15,19 @@ from pypnm.api.routes.advance.common.capture_data_aggregator import CaptureDataA
 from pypnm.api.routes.advance.common.transactionsCollection import TransactionCollectionModel
 from pypnm.api.routes.common.classes.collection.ds_modulation_profile_aggregator import DsModulationProfileAggregator
 from pypnm.api.routes.common.classes.collection.ds_rxmer_aggregator import DsRxMerAggregator
-from pypnm.api.routes.common.classes.collection.fec_summary_aggregator import FecSummaryAggregator
+from pypnm.api.routes.common.classes.collection.fec_summary_aggregator import FecSummaryAggregator, FecSummaryTotalsModel
 from pypnm.lib.constants import INVALID_CAPTURE_TIME
 from pypnm.lib.csv.manager import CSVManager
+from pypnm.lib.log_files import LogFile
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.shan.series import ShannonSeries
 from pypnm.lib.types import (ArrayLike, CaptureTime, ChannelId, FloatSeries, 
-                             FrequencySeriesHz, MacAddressStr, MagnitudeSeries, TimestampSec)
+                             FrequencySeriesHz, MacAddressStr, MagnitudeSeries, 
+                             TimestampSec)
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
 from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
-from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ProfileId
+from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ModulationOrderType, ProfileId
 from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer, CmDsOfdmRxMerModel
-
-# ---------------------------
-# Result Models (Pydantic v2)
-# ---------------------------
 
 class MultiRxMerAnalysisType(Enum):
     MIN_AVG_MAX                = 0
@@ -46,21 +44,14 @@ class MinAvgMaxAnalysisModel(MultiRxMerAnalysisBaseModel):
     avg:       FloatSeries       = Field(..., description="Per-subcarrier average values.")
     max:       FloatSeries       = Field(..., description="Per-subcarrier maximum values.")
 
-class FecSummaryTotalsModel(BaseModel):
-    profile_id: ProfileId = Field(..., description="Modulation profile ID.")
-    capture_time_range: Tuple[CaptureTime, CaptureTime] = Field(..., description="Start , Stop Capture Times")
-    total: int          = Field(..., description="Total codewords (corrected + uncorrected).")
-    uncorrected: int    = Field(..., description="Total uncorrected codewords.")
-    correctable: int    = Field(..., description="Total correctable codewords.")
-
 class ProfileEntryModel(BaseModel):
-    capture_time: CaptureTime       = Field(..., description="Epoch capture timestamp.")
-    profile_id: ProfileId           = Field(..., description="Modulation profile index for the capture.")
-    profile_limits: FloatSeries     = Field(..., description="Per-subcarrier Shannon limits (bits/s/Hz) for the profile.")
-    capacity_delta: FloatSeries     = Field(..., description="MER-limit minus profile-limit per subcarrier.")
-    fec_summary: FecSummaryTotalsModel   = Field(..., description="")
+    capture_time: CaptureTime               = Field(..., description="Epoch capture timestamp.")
+    profile_id: ProfileId                   = Field(..., description="Modulation profile index for the capture.")
+    profile_min_mer: FloatSeries            = Field(..., description="Per-subcarrier Shannon limits (bits/s/Hz) for the profile.")
+    capacity_delta: FloatSeries             = Field(..., description="Average measured MER Subcarrier vs. Min Subcarrier Shannon MER")
+    fec_summary: FecSummaryTotalsModel      = Field(..., description="")
 
-class ChannelOfdmProfilePerfModel(MultiRxMerAnalysisBaseModel):
+class ChannelOfdmProfilePerf01Model(MultiRxMerAnalysisBaseModel):
     avg_mer:            FloatSeries             = Field(..., description="Per-subcarrier average MER (dB).")
     mer_shannon_limits: FloatSeries             = Field(..., description="Per-subcarrier Shannon limits derived from avg MER.")
     profiles:           List[ProfileEntryModel] = Field(..., description="Per-capture per-profile deltas/limits.")
@@ -71,16 +62,17 @@ class ChannelHeatMapModel(MultiRxMerAnalysisBaseModel):
 
 MultiRxMerTemporalObjType   = Union[CmDsOfdmRxMer, CmDsOfdmFecSummary, CmDsOfdmModulationProfile]
 MinAvgMaxMap                = Dict[ChannelId, MinAvgMaxAnalysisModel]
-OfdmProfilePerfMap          = Dict[ChannelId, ChannelOfdmProfilePerfModel]
+OfdmProfilePerf01Map        = Dict[ChannelId, ChannelOfdmProfilePerf01Model]
 HeatMapMap                  = Dict[ChannelId, ChannelHeatMapModel]
 TemporalMapping             = Tuple[CaptureTime, MultiRxMerTemporalObjType]
-MultiRxMerAnalysisMap       = Union[MinAvgMaxMap, OfdmProfilePerfMap, HeatMapMap]
+MultiRxMerAnalysisMap       = Union[MinAvgMaxMap, OfdmProfilePerf01Map, HeatMapMap]
 
 class MultiRxMerAnalysisResult(BaseModel):
-    mac_address:    MacAddressStr
-    analysis_type:  MultiRxMerAnalysisType
-    data:           MultiRxMerAnalysisMap
-    error:          Optional[str] = ""
+    mac_address:   MacAddressStr              = Field(..., description="Cable modem MAC address associated with this analysis.")
+    analysis_type: MultiRxMerAnalysisType     = Field(..., description="Type of multi-RxMER analysis performed.")
+    data:          MultiRxMerAnalysisMap      = Field(..., description="Analysis results mapping (per-channel model).")
+    error:         Optional[str]              = Field(default="", description="Optional error message if analysis failed.")
+
 
 # ---------------------------
 # Analyzer (models built during processing; single CM)
@@ -233,7 +225,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
         return mamap
 
-    def _analyze_ofdm_profile_perf_1_models(self) -> OfdmProfilePerfMap:
+    def _analyze_ofdm_profile_perf_1_models(self) -> OfdmProfilePerf01Map:
         """
 
         Operation of this test:
@@ -258,72 +250,94 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
         OfdmProfilePerfMap
             Mapping of ChannelId -> ChannelOfdmProfilePerfModel
         """
+        self.logger.info("Building OFDM Profile Performance Analysis (Type 1)")
+
         rxmer_agg   = DsRxMerAggregator()
         mod_pro_agg = DsModulationProfileAggregator()
         fec_sum_agg = FecSummaryAggregator()
+        models: OfdmProfilePerf01Map = {}
 
-        models: OfdmProfilePerfMap = {}
-
-        # Aggregate data by type and temporal order
+        # Aggregate all temporal data first
         for _, obj in self._get_temporal_pnm_data():
-
             if isinstance(obj, CmDsOfdmRxMer):
                 rxmer_agg.add(obj)
-                continue
-
             elif isinstance(obj, CmDsOfdmModulationProfile):
                 mod_pro_agg.add(obj)
-                continue
-
             elif isinstance(obj, CmDsOfdmFecSummary):
                 fec_sum_agg.add(obj)
-                continue            
 
-            else:
-                self.logger.debug('Skipping non-DOCSIS object: %s', type(obj).__name__)
-                continue       
-
-        
-        """     
-        OFDM_PROFILE_MEASUREMENT_1
-        --------------------------    
-        * Calculate the Avg RxMER of the series
-        * Calculate Shannon for each subcarrier
-        * Compare each modualtion profile against the RxMER Average
-        * Calculate the percentage of subcarries that are outside a given profile
-        * Provide total FEC Stats for each profile over the time of the capture 
-        """
-        
+        # For each channel, perform combined analysis
         for ch_id in rxmer_agg.get_channel_ids():
-            self.logger.info('Building ChannelOfdmProfilePerfModel for Channel: %s', ch_id)
-            
             mam = rxmer_agg.get_min_avg_max(ch_id)
-            mer_limit = ShannonSeries(mam.avg).to_model()
+            shannon_model = ShannonSeries(mam.avg).to_model()
 
-            profile_entries:List[ProfileEntryModel] = []
+            frequencies = rxmer_agg.get_frequencies(ch_id)
+            profiles_by_time = mod_pro_agg.get_profiles(ch_id)
+            if not profiles_by_time:
+                self.logger.warning("No modulation profiles for channel %s", ch_id)
+                continue
 
-            profiles = mod_pro_agg.get_profiles(ch_id)
-            profiles = sorted(profiles.keys())
+            capture_times = sorted(rxmer_agg.get_capture_times(ch_id))
+            if not capture_times:
+                self.logger.warning("No RxMER captures for channel %s", ch_id)
+                continue
 
-            # Get Start/Stop for FEC Summary
-            capture_times = rxmer_agg.get_capture_times(ch_id)
-            capture_times = sorted(capture_times)            
-            start = capture_times[0] if len(capture_times) > 0 else INVALID_CAPTURE_TIME
-            stop  = capture_times[-1] if len(capture_times) > 0 else INVALID_CAPTURE_TIME
-            
-            pem = ProfileEntryModel (
+            start, stop = capture_times[0], capture_times[-1]
+            fec_summary: FecSummaryTotalsModel = fec_sum_agg.get_summary_totals(ch_id, start, stop)
 
+            profile_entries: List[ProfileEntryModel] = []
+
+            # Iterate all modulation profiles across captures
+            for ct, profiles in profiles_by_time.items():
+                for prof in profiles:
+                    pid = prof.profile_id
+
+                    # Compute average bits/symbol for this modulation profile
+                    total_sc = 0
+                    weighted_bits = 0.0
+                    for scheme in prof.schemes:
+                        if scheme.schema_type == 0:
+                            order_bits = np.log2(ModulationOrderType[scheme.modulation_order].value) if ModulationOrderType[scheme.modulation_order].value > 1 else 0
+                            weighted_bits += scheme.num_subcarriers * order_bits
+                            total_sc += scheme.num_subcarriers
+                        elif scheme.schema_type == 1:
+                            main_bits = np.log2(ModulationOrderType[scheme.main_modulation_order].value)
+                            skip_bits = np.log2(ModulationOrderType[scheme.skip_modulation_order].value)
+                            weighted_bits += (scheme.num_subcarriers / 2) * (main_bits + skip_bits)
+                            total_sc += scheme.num_subcarriers
+                    
+                    # Calculate per-subcarrier profile capacity vs. Shannon limit
+                    capacity_delta = [float(a - b) for a, b in zip(mam.avg, shannon_model.snr_db_min)]
+
+                    # Extract matching FEC record (if any)
+                    fec_entry = next((p for p in fec_summary.summary if p.profile_id == pid), None)
+                    fec_payload = fec_summary if fec_entry is None else FecSummaryTotalsModel(
+                        start       = fec_summary.start,
+                        end         = fec_summary.end,
+                        channel_id  = fec_summary.channel_id,
+                        summary     = [fec_entry],
+                    )
+
+                    # Build per-profile record
+                    profile_entries.append(
+                        ProfileEntryModel(
+                            capture_time    = ct,
+                            profile_id      = pid,
+                            profile_min_mer = cast(FloatSeries, shannon_model.snr_db_min),
+                            capacity_delta  = cast(FloatSeries, capacity_delta),
+                            fec_summary     = fec_payload,
+                        )
+                    )
+
+            models[ch_id] = ChannelOfdmProfilePerf01Model(
+                channel_id          = ch_id,
+                frequency           = frequencies,
+                avg_mer             = mam.avg,
+                mer_shannon_limits  = cast(FloatSeries, shannon_model.snr_db_min),
+                profiles            = profile_entries,
             )
 
-            profile_entries.app
-
-            models[cast(ChannelId, ch_id)] = ChannelOfdmProfilePerfModel(
-                channel_id          =   cast(ChannelId, ch_id),
-                frequency           =   rxmer_agg.get_frequencies(),
-                avg_mer             =   mam.avg,
-                mer_shannon_limits  =   mer_limit,
-                profiles            =   profile_entries,
-            )
+            LogFile().write(f'{self.analysis_type.name}-{ch_id}.json', models[ch_id])
 
         return models
 
@@ -374,7 +388,6 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
             )
 
         return heatmap_map
-
 
     """Abstract Required methods"""
 

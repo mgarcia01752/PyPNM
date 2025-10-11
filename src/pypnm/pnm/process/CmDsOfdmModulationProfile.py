@@ -6,19 +6,16 @@ from __future__ import annotations
 import logging
 from enum import IntEnum
 from struct import calcsize, unpack
-from typing import Any, Dict, List, NewType, Union, Annotated
+from typing import Any, Dict, List, Union, Annotated
 from typing_extensions import Literal
 
 from pydantic import BaseModel, Field, ConfigDict
 
 from pypnm.lib.constants import KHZ
-from pypnm.lib.types import FrequencySeriesHz
+from pypnm.lib.types import FrequencySeriesHz, ProfileId
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
-
-
-ProfileId = NewType("ProfileId", int)
 
 class ModulationOrderType(IntEnum):
     zero_bit_loaded   = 0

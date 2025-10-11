@@ -43,6 +43,10 @@ ComplexArray    = List[Complex]
 ComplexSeries   = List[complex]
 
 # ────────────────────────────────────────────────────────────────────────────────
+# Modualtion profile identifiers
+ProfileId = NewType("ProfileId", int)
+
+# ────────────────────────────────────────────────────────────────────────────────
 # Paths / filesystem
 # ────────────────────────────────────────────────────────────────────────────────
 PathLike = Union[str, Path]
@@ -106,6 +110,10 @@ FrequencySeriesHz = FloatSeries                  # alias for intent
 MerSeriesdB       = FloatSeries
 ShannonSeriesdB   = FloatSeries
 MagnitudeSeries   = FloatSeries
+
+BitsPerSymbol       = NewType("BitsPerSymbol", int)
+BitsPerSymbolSeries = NewType("BitsPerSymbolSeries", List[BitsPerSymbol])
+
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Explicit public surface

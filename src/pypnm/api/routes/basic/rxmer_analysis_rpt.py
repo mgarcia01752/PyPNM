@@ -217,7 +217,7 @@ class RxMerAnalysisReport(AnalysisReport):
                 ms              = data.modulation_statistics
                 x_raw           = data.carrier_values.frequency
                 y_raw           = data.carrier_values.magnitude
-                snr_db_limit    = data.modulation_statistics.snr_db_limit
+                snr_db_limit    = data.modulation_statistics.snr_db_min
                 mod_count:Dict[str,int] = data.modulation_statistics.supported_modulation_counts
 
                 def coerce_finite(seq, name: str) -> List[float]:

@@ -1,22 +1,22 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+from __future__ import annotations
 
 from typing import List, Dict, Any
 
 from pydantic import BaseModel, Field
 
-from pypnm.lib.types import FloatSequence, FloatSeries, SNRdB, StringArray
+from pypnm.lib.types import BitsPerSymbolSeries, FloatSequence, SNRdB, StringArray
 from .shannon import Shannon
 
 class ShannonSeriesModel(BaseModel):
-    snr_db_values:List[SNRdB]                   = Field(...,description="")
-    bits_per_symbol:FloatSeries                 = Field(...,description="")
-    modulations:StringArray                     = Field(...,description="")
-    snr_db_limit:List[SNRdB]                    = Field(...,description="")
-    supported_modulation_counts: Dict[str,int]  = Field(...,description="")
+    snr_db_values: List[SNRdB]                  = Field(..., description="Input SNR values in dB per subcarrier.")
+    bits_per_symbol: BitsPerSymbolSeries        = Field(..., description="Computed bits-per-symbol (capacity) for each SNR.")
+    modulations: StringArray                    = Field(..., description="Recommended QAM modulation names per SNR sample.")
+    snr_db_min: List[SNRdB]                     = Field(..., description="Minimum SNR thresholds corresponding to each supported modulation.")
+    supported_modulation_counts: Dict[str, int] = Field(..., description="Mapping of modulation name → number of supported subcarriers.")
+
 
 class ShannonSeries:
     """
@@ -65,7 +65,7 @@ class ShannonSeries:
             modulations                 =   self.modulations,
             snr_db_values               =   self.snr_db_values,
             supported_modulation_counts =   self.supported_modulation_counts(),
-            snr_db_limit                =   self.limit()
+            snr_db_min                  =   self.limit()
         )
         
         return _
