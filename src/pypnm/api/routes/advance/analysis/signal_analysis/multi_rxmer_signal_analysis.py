@@ -227,6 +227,108 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
     def _analyze_ofdm_profile_perf_1_models(self) -> OfdmProfilePerf01Map:
         """
+        Perform OFDM Profile Performance Analysis (Type 1).
+
+        Integrates data from RxMER, Modulation Profile, and FEC Summary aggregators.
+
+        Steps
+        -----
+        1. Aggregate temporal PNM data by channel.
+        2. For each channel:
+            - Compute average RxMER and Shannon limits.
+            - Retrieve modulation profile analysis results via `mod_pro_agg.basic_analysis()`.
+            - Align FEC summary totals.
+        3. Build and return structured per-channel performance results.
+
+        Returns
+        -------
+        OfdmProfilePerf01Map
+            Mapping of ChannelId → ChannelOfdmProfilePerf01Model.
+        """
+        self.logger.info("Running OFDM Profile Performance Analysis (Type 1)")
+
+        rxmer_agg   = DsRxMerAggregator()
+        mod_pro_agg = DsModulationProfileAggregator()
+        fec_sum_agg = FecSummaryAggregator()
+        models: OfdmProfilePerf01Map = {}
+
+        # Step 1: aggregate PNM objects
+        for _, obj in self._get_temporal_pnm_data():
+            if isinstance(obj, CmDsOfdmRxMer):
+                rxmer_agg.add(obj)
+            elif isinstance(obj, CmDsOfdmModulationProfile):
+                mod_pro_agg.add(obj)
+            elif isinstance(obj, CmDsOfdmFecSummary):
+                fec_sum_agg.add(obj)
+
+        # Step 2: analyze per channel
+        for ch_id in rxmer_agg.get_channel_ids():
+            mam = rxmer_agg.get_min_avg_max(ch_id)
+            shannon_model = ShannonSeries(mam.avg).to_model()
+            frequencies = rxmer_agg.get_frequencies(ch_id)
+
+            # Perform basic modulation profile analysis for this channel
+            mod_analysis_map = mod_pro_agg.basic_analysis(ch_id)
+            mod_analysis_list = mod_analysis_map.get(ch_id, [])
+            if not mod_analysis_list:
+                self.logger.warning("No modulation analysis results for channel %s", ch_id)
+                continue
+
+            capture_times = sorted(rxmer_agg.get_capture_times(ch_id))
+            if not capture_times:
+                self.logger.warning("No RxMER captures for channel %s", ch_id)
+                continue
+
+            start, stop = capture_times[0], capture_times[-1]
+            fec_summary = fec_sum_agg.get_summary_totals(ch_id, start, stop)
+
+            profile_entries: List[ProfileEntryModel] = []
+
+            for mod_analysis in mod_analysis_list:
+                # Each DsModulationProfileAnalysisModel corresponds to a snapshot
+                capture_time = getattr(mod_analysis, "capture_time", start)
+                for profile_entry in mod_analysis.profiles:
+                    pid = profile_entry.profile_id
+                    shannon_min = profile_entry.carrier_values.shannon_min_mer
+                    capacity_delta = [float(a - b) for a, b in zip(mam.avg, shannon_min)]
+
+                    # Match corresponding FEC summary per profile
+                    fec_entry = next((p for p in fec_summary.summary if p.profile_id == pid), None)
+                    fec_payload = (
+                        fec_summary if fec_entry is None
+                        else FecSummaryTotalsModel(
+                            start      = fec_summary.start,
+                            end        = fec_summary.end,
+                            channel_id = fec_summary.channel_id,
+                            summary    = [fec_entry],
+                        )
+                    )
+
+                    profile_entries.append(
+                        ProfileEntryModel(
+                            capture_time    = capture_time,
+                            profile_id      = pid,
+                            profile_min_mer = shannon_min,
+                            capacity_delta  = capacity_delta,
+                            fec_summary     = fec_payload,
+                        )
+                    )
+
+            models[ch_id] = ChannelOfdmProfilePerf01Model(
+                channel_id          = ch_id,
+                frequency           = frequencies,
+                avg_mer             = mam.avg,
+                mer_shannon_limits  = shannon_model.snr_db_min,
+                profiles            = profile_entries,
+            )
+
+            # LogFile().write(f"{self.analysis_type.name}-{ch_id}.json", models[ch_id])
+
+        return models
+
+
+    def __analyze_ofdm_profile_perf_1_models__(self) -> OfdmProfilePerf01Map:
+        """
 
         Operation of this test:
         -----------------------
@@ -490,7 +592,37 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 out.append(csv_mgr)
 
         elif self.analysis_type == MultiRxMerAnalysisType.OFDM_PROFILE_PERFORMANCE_1:
-            pass
+            data = cast(OfdmProfilePerf01Map, model.data)
+
+            for ch_id, ch_model in data.items():
+                ch_model = cast(ChannelOfdmProfilePerf01Model, ch_model)
+
+                for profile_model in ch_model.profiles:
+                    csv_mgr: CSVManager = self.csv_manager_factory()
+                    header = [
+                        "ProfileID", "Frequency(Hz)", "AvgMER(dB)",
+                        "ProfileMin(dB)", "CapacityDelta(Avg vs. ProfileMin)",
+                        "FECTotal", "FECCorrected", "FECUncorrectable"
+                    ]
+                    csv_mgr.set_header(header)
+
+                    pid   = profile_model.profile_id
+                    fec_e = profile_model.fec_summary.summary[0] if profile_model.fec_summary.summary else None
+                    total = fec_e.summary.total_codewords if fec_e else 0
+                    corr  = fec_e.summary.corrected if fec_e else 0
+                    uncor = fec_e.summary.uncorrectable if fec_e else 0
+
+                    for freq, avg_mer, prof_lim, delta in zip(
+                        ch_model.frequency,
+                        ch_model.avg_mer,
+                        profile_model.profile_min_mer,
+                        profile_model.capacity_delta,
+                    ):
+                        csv_mgr.insert_row([pid, freq, avg_mer, prof_lim, delta, total, corr, uncor])
+
+                    csv_fname = self.create_csv_fname(tags=["ofdm_profile_perf_1", f"ch{ch_id}", f"pid{pid}"])
+                    csv_mgr.set_path_fname(csv_fname)
+                    out.append(csv_mgr)
 
         elif self.analysis_type == MultiRxMerAnalysisType.RXMER_HEAT_MAP:
             data = cast(HeatMapMap, model.data)
@@ -553,7 +685,46 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 out.append(mat_mgr)
 
         elif self.analysis_type == MultiRxMerAnalysisType.OFDM_PROFILE_PERFORMANCE_1:
-            pass
+            data = cast(OfdmProfilePerf01Map, model.data)
+
+            for ch_id, ch_model in data.items():
+                ch_model = cast(ChannelOfdmProfilePerf01Model, ch_model)
+
+                for profile_model in ch_model.profiles:
+                    pid   = profile_model.profile_id
+                    fec_e = profile_model.fec_summary.summary[0] if profile_model.fec_summary.summary else None
+                    total = fec_e.summary.total_codewords if fec_e else 0
+                    corr  = fec_e.summary.corrected if fec_e else 0
+                    uncor = fec_e.summary.uncorrectable if fec_e else 0
+
+                    # Combine FEC info inline with legend text
+                    fec_label = f"FEC(Total={total}, Corr={corr}, Uncorr={uncor})"
+
+                    # Frequency axis in kHz for readability
+                    freq_khz = [f / 1_000.0 for f in ch_model.frequency]
+
+                    # Only AvgMER and ProfileMin are plotted
+                    series = [
+                        (freq_khz, ch_model.avg_mer,              f"AvgMER (dB) {fec_label}"),
+                        (freq_khz, profile_model.profile_min_mer, "ProfileMin (dB)"),
+                    ]
+
+                    cfg = PlotConfig(
+                        title   = f"OFDM PROFILE PERFORMANCE 1 - Ch {ch_id} Profile {pid}",
+                        xlabel  = "Frequency (kHz)",
+                        ylabel  = "MER (dB)",
+                        grid    = True, legend  = True,
+                        transparent = False, theme   = "dark",)
+
+                    fname = self.create_png_fname(tags=[f"{ch_id}", f"profile_{pid}", "ofdm_profile_perf_1"])
+
+                    plot_mgr = MatplotManager()
+                    plot_mgr.plot_multi_line(
+                        filename    =   fname,
+                        series      =   [(x, y, lbl) for (x, y, lbl) in series],
+                        linewidth   =   1.6, marker = None, cfg=cfg,)
+                    
+                    out.append(plot_mgr)
 
         elif self.analysis_type == MultiRxMerAnalysisType.RXMER_HEAT_MAP:
             data = cast(HeatMapMap, model.data)

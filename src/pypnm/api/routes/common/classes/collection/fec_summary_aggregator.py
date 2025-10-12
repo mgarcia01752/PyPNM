@@ -21,20 +21,19 @@ class CodewordSummaryTotalsModel(BaseModel):
     corrected: int          = Field(..., description="FEC-corrected codewords")
     uncorrectable: int      = Field(..., description="Uncorrectable codewords")
 
-
 class ProfileSummaryTotalsModel(BaseModel):
-    profile_id: ProfileId                 = Field(..., description="")
-    summary: CodewordSummaryTotalsModel   = Field(..., description="")
+    profile_id: ProfileId                 = Field(..., description="Modulation profile identifier.")
+    summary:   CodewordSummaryTotalsModel = Field(..., description="Aggregated FEC codeword summary for the profile.")
 
 class FecSummaryTotalsModel(BaseModel):
-    start: TimeStamp                            = Field(..., description="")
-    end: TimeStamp                              = Field(..., description="")   
-    channel_id: ChannelId                       = Field(..., description="")
-    summary: List[ProfileSummaryTotalsModel]   = Field(..., description="")
+    start:       TimeStamp                       = Field(..., description="Start timestamp for the aggregated FEC interval.")
+    end:         TimeStamp                       = Field(..., description="End timestamp for the aggregated FEC interval.")
+    channel_id:  ChannelId                       = Field(..., description="OFDM downstream channel identifier.")
+    summary:     List[ProfileSummaryTotalsModel] = Field(..., description="List of profile-level FEC summaries within the interval.")
 
 class TimeStampProfileCollectionModel(BaseModel):
-    timestamp: TimeStamp                                    = Field(..., description="")
-    profiles: Dict[ProfileId, ProfileSummaryTotalsModel]    = Field(..., description="")
+    timestamp:  TimeStamp                                   = Field(..., description="Capture timestamp (epoch seconds).")
+    profiles:   Dict[ProfileId, ProfileSummaryTotalsModel]  = Field(..., description="Mapping of profile_id → FEC summary totals for that timestamp.")
 
 
 TimeStampProfileCollection = Dict[TimeStamp, TimeStampProfileCollectionModel]

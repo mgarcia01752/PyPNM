@@ -121,44 +121,57 @@ class DsModulationProfileAggregator(MultiPnmCollection):
     @overload
     def basic_analysis(self, channel_id: ChannelId, capture_time: CaptureTime) -> Dict[ChannelId, List[DsModulationProfileAnalysisModel]]: ...
 
-    def basic_analysis(self, channel_id: Optional[ChannelId] = None, capture_time: Optional[CaptureTime] = None) -> Dict[ChannelId, List[DsModulationProfileAnalysisModel]]:
+    def basic_analysis(
+        self,
+        channel_id: Optional[ChannelId] = None,
+        capture_time: Optional[CaptureTime] = None
+    ) -> Dict[ChannelId, List[DsModulationProfileAnalysisModel]]:
         """
-        Perform basic modulation profile analysis via `Analysis.basic_analysis_ds_modulation_profile`.
+        Perform basic modulation profile analysis via
+        `Analysis.basic_analysis_ds_modulation_profile_from_model`.
 
         Returns
         -------
         Dict[ChannelId, List[DsModulationProfileAnalysisModel]]
-            - no args         -> results for **all channels**
-            - channel only    -> {channel_id: results for all captures (time-ordered)}
-            - channel+time    -> {channel_id: [result for that single snapshot]}
+            - no args         → results for **all channels**
+            - channel only    → {channel_id: results for all captures (time-ordered)}
+            - channel+time    → {channel_id: [result for that single snapshot]}
 
         Notes
         -----
-        - Each capture is converted with `.to_model().model_dump()` before analysis.
+        - Each capture is converted with `.to_model()` before analysis.
         - Raises KeyError for missing channel/snapshot when specified.
         """
+        out: Dict[ChannelId, List[DsModulationProfileAnalysisModel]] = {}
+
+        # --- Case 1: No channel_id → process all channels ---
         if channel_id is None:
-            out: Dict[ChannelId, List[DsModulationProfileAnalysisModel]] = {}
             for ch in self.get_channel_ids():
-                payload: List[Dict[str, Any]] = []
+                results: List[DsModulationProfileAnalysisModel] = []
                 for _, obj in self.get(ch):
                     cap: CmDsOfdmModulationProfile = obj  # type: ignore[assignment]
-                    payload.append(cap.to_model().model_dump())
-                res = Analysis.basic_analysis_ds_modulation_profile(payload)
-                out[ch] = list(res) if isinstance(res, list) else ([] if res is None else [res])
+                    model = cap.to_model()
+                    result = Analysis.basic_analysis_ds_modulation_profile_from_model(model)
+                    results.append(result)
+                out[ch] = results
             return out
 
+        # --- Case 2: Specific channel, all captures ---
         if capture_time is None:
-            payload: List[Dict[str, Any]] = []
+            results: List[DsModulationProfileAnalysisModel] = []
             for _, obj in self.get(channel_id):
                 cap: CmDsOfdmModulationProfile = obj  # type: ignore[assignment]
-                payload.append(cap.to_model().model_dump())
-            res = Analysis.basic_analysis_ds_modulation_profile(payload)
-            return {channel_id: (list(res) if isinstance(res, list) else ([] if res is None else [res]))}
+                model = cap.to_model()
+                result = Analysis.basic_analysis_ds_modulation_profile_from_model(model)
+                results.append(result)
+            return {channel_id: results}
 
+        # --- Case 3: Specific channel + specific capture ---
         capture: Optional[CmDsOfdmModulationProfile] = self.get(channel_id, capture_time)  # type: ignore[assignment]
         if capture is None:
             raise KeyError(f"No capture for channel_id={channel_id} capture_time={capture_time}")
-        payload = [capture.to_model().model_dump()]
-        res = Analysis.basic_analysis_ds_modulation_profile(payload)
-        return {channel_id: (list(res) if isinstance(res, list) else ([] if res is None else [res]))}
+
+        model = capture.to_model()
+        result = Analysis.basic_analysis_ds_modulation_profile_from_model(model)
+        return {channel_id: [result]}
+

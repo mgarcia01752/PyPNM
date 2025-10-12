@@ -37,7 +37,7 @@ from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, FrequencySerie
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import WindowFunction
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
-from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ModulationOrderType
+from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, CmDsOfdmModulationProfileModel, ModulationOrderType, RangeModulationProfileSchemaModel, SkipModulationProfileSchemaModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
 
@@ -1071,3 +1071,107 @@ class Analysis:
             capture_parameters = capture_parameters,
             signal_analysis    = results,
         )
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
+    @classmethod
+    def basic_analysis_ds_modulation_profile_from_model(cls, model: CmDsOfdmModulationProfileModel, split_carriers: bool = True
+    ) -> DsModulationProfileAnalysisModel:
+        """
+        Analyze a Downstream OFDM Modulation Profile using a parsed model
+        from :class:`CmDsOfdmModulationProfile`.
+        """
+        spacing: int      = int(model.subcarrier_spacing)
+        active_index: int = int(model.first_active_subcarrier_index)
+        zero_freq: int    = int(model.subcarrier_zero_frequency)
+
+        if active_index < 0 or zero_freq < 0 or spacing <= 0:
+            raise ValueError(
+                f"Invalid parameters: spacing={spacing}, active_index={active_index}, zero_freq={zero_freq}"
+            )
+
+        start_freq = zero_freq + spacing * active_index
+
+        result = DsModulationProfileAnalysisModel(
+            device_details      = {},
+            pnm_header          = model.pnm_header.model_dump() if hasattr(model.pnm_header, "model_dump") else {},
+            mac_address         = str(model.mac_address),
+            channel_id          = int(model.channel_id),
+            frequency_unit      = "Hz",
+            shannon_min_unit    = "dB",
+            profiles            = [],
+        )
+
+        for profile in model.profiles:
+            profile_id = int(profile.profile_id)
+            freq_list: FrequencySeriesHz = []
+            mod_list: list[str] = []
+            shan_list: list[float] = []
+            carrier_items: list[CarrierItemModel] = []
+            freq_ptr = start_freq
+
+            for scheme in profile.schemes:
+                # ---- branch by schema type / model ----
+                if isinstance(scheme, RangeModulationProfileSchemaModel):
+                    mod_name = str(scheme.modulation_order)
+                    count = int(scheme.num_subcarriers)
+
+                elif isinstance(scheme, SkipModulationProfileSchemaModel):
+                    mod_name = str(scheme.main_modulation_order)
+                    count = int(scheme.num_subcarriers)
+
+                else:
+                    logging.warning(
+                        f"Unknown modulation profile schema type: {getattr(scheme, 'schema_type', '?')}"
+                    )
+                    continue
+
+                for _ in range(count):
+                    if mod_name in (
+                        ModulationOrderType.continuous_pilot.name,
+                        ModulationOrderType.exclusion.name,
+                    ):
+                        s_min = 0.0
+                    elif mod_name == ModulationOrderType.plc.name:
+                        s_min = Shannon.bits_to_snr(4)
+                    else:
+                        s_min = Shannon.snr_from_modulation(mod_name)
+
+                    s_min = round(float(s_min), 2)
+                    f_val = int(freq_ptr)
+
+                    if split_carriers:
+                        freq_list.append(f_val)
+                        mod_list.append(mod_name)
+                        shan_list.append(s_min)
+                    else:
+                        carrier_items.append(
+                            CarrierItemModel(
+                                frequency       = f_val,
+                                modulation      = mod_name,
+                                shannon_min_mer = s_min,
+                            )
+                        )
+                    freq_ptr += spacing
+
+            if split_carriers:
+                carrier_values: CarrierValuesModel = CarrierValuesSplitModel(
+                    layout          = "split",
+                    frequency       = freq_list,
+                    modulation      = mod_list,
+                    shannon_min_mer = shan_list,
+                )
+            else:
+                carrier_values = CarrierValuesListModel(
+                    layout      = "list",
+                    carriers    = carrier_items,
+                )
+
+            result.profiles.append(
+                ProfileAnalysisEntryModel(
+                    profile_id      = profile_id,
+                    carrier_values  = carrier_values,
+                )
+            )
+
+        return result
