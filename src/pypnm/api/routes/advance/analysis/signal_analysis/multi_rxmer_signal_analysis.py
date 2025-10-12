@@ -18,7 +18,6 @@ from pypnm.api.routes.common.classes.collection.ds_rxmer_aggregator import DsRxM
 from pypnm.api.routes.common.classes.collection.fec_summary_aggregator import FecSummaryAggregator, FecSummaryTotalsModel
 from pypnm.lib.constants import INVALID_CAPTURE_TIME
 from pypnm.lib.csv.manager import CSVManager
-from pypnm.lib.log_files import LogFile
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.shan.series import ShannonSeries
 from pypnm.lib.types import (ArrayLike, CaptureTime, ChannelId, FloatSeries, 
@@ -26,13 +25,13 @@ from pypnm.lib.types import (ArrayLike, CaptureTime, ChannelId, FloatSeries,
                              TimestampSec)
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
 from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
-from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ModulationOrderType, ProfileId
+from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ProfileId
 from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer, CmDsOfdmRxMerModel
 
 class MultiRxMerAnalysisType(Enum):
     MIN_AVG_MAX                = 0
-    OFDM_PROFILE_PERFORMANCE_1 = 1
-    RXMER_HEAT_MAP             = 2
+    RXMER_HEAT_MAP             = 1
+    OFDM_PROFILE_PERFORMANCE_1 = 2
 
 
 class MultiRxMerAnalysisBaseModel(BaseModel):
@@ -322,125 +321,6 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 profiles            = profile_entries,
             )
 
-            # LogFile().write(f"{self.analysis_type.name}-{ch_id}.json", models[ch_id])
-
-        return models
-
-
-    def __analyze_ofdm_profile_perf_1_models__(self) -> OfdmProfilePerf01Map:
-        """
-
-        Operation of this test:
-        -----------------------
-        * Collect a seriers of RxMER
-        * Collect at least 1 Modualtion Profile=
-        * Collect a Fec Summary at:
-            - 1 FecSummary every 10 Min
-            - At end of the test
-            
-        OFDM_PROFILE_MEASUREMENT_1
-        --------------------------    
-        * Calculate the Avg RxMER of the series
-        * Calculate Shannon for each subcarrier
-        * Compare each modualtion profile against the RxMER Average
-        * Calculate the percentage of subcarries that are outside a given profile
-        * Provide total FEC Stats for each profile over the time of the capture.
-
-
-        Returns
-        -------
-        OfdmProfilePerfMap
-            Mapping of ChannelId -> ChannelOfdmProfilePerfModel
-        """
-        self.logger.info("Building OFDM Profile Performance Analysis (Type 1)")
-
-        rxmer_agg   = DsRxMerAggregator()
-        mod_pro_agg = DsModulationProfileAggregator()
-        fec_sum_agg = FecSummaryAggregator()
-        models: OfdmProfilePerf01Map = {}
-
-        # Aggregate all temporal data first
-        for _, obj in self._get_temporal_pnm_data():
-            if isinstance(obj, CmDsOfdmRxMer):
-                rxmer_agg.add(obj)
-            elif isinstance(obj, CmDsOfdmModulationProfile):
-                mod_pro_agg.add(obj)
-            elif isinstance(obj, CmDsOfdmFecSummary):
-                fec_sum_agg.add(obj)
-
-        # For each channel, perform combined analysis
-        for ch_id in rxmer_agg.get_channel_ids():
-            mam = rxmer_agg.get_min_avg_max(ch_id)
-            shannon_model = ShannonSeries(mam.avg).to_model()
-
-            frequencies = rxmer_agg.get_frequencies(ch_id)
-            profiles_by_time = mod_pro_agg.get_profiles(ch_id)
-            if not profiles_by_time:
-                self.logger.warning("No modulation profiles for channel %s", ch_id)
-                continue
-
-            capture_times = sorted(rxmer_agg.get_capture_times(ch_id))
-            if not capture_times:
-                self.logger.warning("No RxMER captures for channel %s", ch_id)
-                continue
-
-            start, stop = capture_times[0], capture_times[-1]
-            fec_summary: FecSummaryTotalsModel = fec_sum_agg.get_summary_totals(ch_id, start, stop)
-
-            profile_entries: List[ProfileEntryModel] = []
-
-            # Iterate all modulation profiles across captures
-            for ct, profiles in profiles_by_time.items():
-                for prof in profiles:
-                    pid = prof.profile_id
-
-                    # Compute average bits/symbol for this modulation profile
-                    total_sc = 0
-                    weighted_bits = 0.0
-                    for scheme in prof.schemes:
-                        if scheme.schema_type == 0:
-                            order_bits = np.log2(ModulationOrderType[scheme.modulation_order].value) if ModulationOrderType[scheme.modulation_order].value > 1 else 0
-                            weighted_bits += scheme.num_subcarriers * order_bits
-                            total_sc += scheme.num_subcarriers
-                        elif scheme.schema_type == 1:
-                            main_bits = np.log2(ModulationOrderType[scheme.main_modulation_order].value)
-                            skip_bits = np.log2(ModulationOrderType[scheme.skip_modulation_order].value)
-                            weighted_bits += (scheme.num_subcarriers / 2) * (main_bits + skip_bits)
-                            total_sc += scheme.num_subcarriers
-                    
-                    # Calculate per-subcarrier profile capacity vs. Shannon limit
-                    capacity_delta = [float(a - b) for a, b in zip(mam.avg, shannon_model.snr_db_min)]
-
-                    # Extract matching FEC record (if any)
-                    fec_entry = next((p for p in fec_summary.summary if p.profile_id == pid), None)
-                    fec_payload = fec_summary if fec_entry is None else FecSummaryTotalsModel(
-                        start       = fec_summary.start,
-                        end         = fec_summary.end,
-                        channel_id  = fec_summary.channel_id,
-                        summary     = [fec_entry],
-                    )
-
-                    # Build per-profile record
-                    profile_entries.append(
-                        ProfileEntryModel(
-                            capture_time    = ct,
-                            profile_id      = pid,
-                            profile_min_mer = cast(FloatSeries, shannon_model.snr_db_min),
-                            capacity_delta  = cast(FloatSeries, capacity_delta),
-                            fec_summary     = fec_payload,
-                        )
-                    )
-
-            models[ch_id] = ChannelOfdmProfilePerf01Model(
-                channel_id          = ch_id,
-                frequency           = frequencies,
-                avg_mer             = mam.avg,
-                mer_shannon_limits  = cast(FloatSeries, shannon_model.snr_db_min),
-                profiles            = profile_entries,
-            )
-
-            LogFile().write(f'{self.analysis_type.name}-{ch_id}.json', models[ch_id])
-
         return models
 
     def _analyze_rxmer_heat_map_models(self) -> HeatMapMap:
@@ -684,6 +564,33 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
                 out.append(mat_mgr)
 
+        elif self.analysis_type == MultiRxMerAnalysisType.RXMER_HEAT_MAP:
+            data = cast(HeatMapMap, model.data)
+
+            for ch_id, ch_model in data.items():
+                ch_model = cast(ChannelHeatMapModel, ch_model)
+
+                # Prepare configuration for the heatmap
+                cfg = PlotConfig(
+                    title   =   f"HeatMap RxMER Channel: {ch_id}",
+                    x       =   [f / 1_000.0 for f in ch_model.frequency],  # Hz → kHz
+                    xlabel  =   "Frequency (kHz)",
+                    ylabel  =   "Capture Index",
+                    grid    =   False, transparent=False,
+                    theme   =   "dark",)
+
+                # Convert values to a 2D NumPy array for plotting
+                Z = np.array(ch_model.values, dtype=float)
+
+                # Filename for this channel's heatmap image
+                png_name = self.create_png_fname(tags=[str(ch_id), "rxmer_heat_map"])
+
+                # Create and save the heatmap using MatplotManager
+                mat_mgr = MatplotManager(default_cfg=cfg)
+                mat_mgr.heatmap2d(Z.tolist(), png_name, add_colorbar=True)
+
+                out.append(mat_mgr)
+
         elif self.analysis_type == MultiRxMerAnalysisType.OFDM_PROFILE_PERFORMANCE_1:
             data = cast(OfdmProfilePerf01Map, model.data)
 
@@ -726,34 +633,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                     
                     out.append(plot_mgr)
 
-        elif self.analysis_type == MultiRxMerAnalysisType.RXMER_HEAT_MAP:
-            data = cast(HeatMapMap, model.data)
-
-            for ch_id, ch_model in data.items():
-                ch_model = cast(ChannelHeatMapModel, ch_model)
-
-                # Prepare configuration for the heatmap
-                cfg = PlotConfig(
-                    title   =   f"HeatMap RxMER Channel: {ch_id}",
-                    x       =   [f / 1_000.0 for f in ch_model.frequency],  # Hz → kHz
-                    xlabel  =   "Frequency (kHz)",
-                    ylabel  =   "Capture Index",
-                    grid    =   False, transparent=False,)
-
-                # Convert values to a 2D NumPy array for plotting
-                Z = np.array(ch_model.values, dtype=float)
-
-                # Filename for this channel's heatmap image
-                png_name = self.create_png_fname(tags=[str(ch_id), "rxmer_heat_map"])
-
-                # Create and save the heatmap using MatplotManager
-                mat_mgr = MatplotManager(default_cfg=cfg)
-                mat_mgr.heatmap2d(Z.tolist(), png_name, add_colorbar=True)
-
-                out.append(mat_mgr)
-
         return out
-
 
     """Helpers"""
 

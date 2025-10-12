@@ -57,30 +57,6 @@ The Multi-DS Channel Estimation API allows clients to schedule periodic captures
 }
 ```
 
-**Response** (`MultiChanEstimationStartResponse` stub):
-
-```json
-{
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "status": "RUNNING",
-  "message": null,
-  "group_id": "grp-abc123",
-  "operation_id": "op-xyz789"
-}
-```
-
-**Response** (`MultiChanEstimationStartResponse` stub):
-
-```json
-{
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "status": "RUNNING",
-  "message": null,
-  "group_id": "grp-abc123",
-  "operation_id": "op-xyz789"
-}
-```
-
 ### 2. Status Check
 
 **Request**: `GET /advance/multiChannelEstimation/status/{operation_id}`
@@ -108,17 +84,9 @@ The Multi-DS Channel Estimation API allows clients to schedule periodic captures
 
 **Response**: ZIP archive (`application/zip`) containing files:
 
-```
-op-xyz789/chan_est_0001.pnm
-op-xyz789/chan_est_0002.pnm
-... etc.
-```
+```shell
 
-op-xyz789/chan\_est\_0001.pnm
-op-xyz789/chan\_est\_0002.pnm
-... etc.
-
-````
+```
 
 ### 4. Stop Capture Early
 
@@ -141,6 +109,16 @@ op-xyz789/chan\_est\_0002.pnm
 ````
 
 ### 5. Analysis
+
+
+| Analysis Type                | Value | Description                                                                                                  |
+| ---------------------------- | ----- | ------------------------------------------------------------------------------------------------------------ |
+| `MIN_AVG_MAX`                | `0`   | Computes minimum, average, and maximum amplitude or phase values across all channels and capture snapshots.  |
+| `GROUP_DELAY`                | `1`   | Calculates per-subcarrier group delay from the channel frequency response (phase derivative vs frequency).   |
+| `LTE_DETECTION_PHASE_SLOPE`  | `2`   | Detects potential LTE interference patterns using phase-slope anomalies across the OFDM spectrum.            |
+| `ECHO_DETECTION_PHASE_SLOPE` | `3`   | Identifies in-channel echoes or reflections by evaluating abnormal phase slope discontinuities.              |
+| `ECHO_DETECTION_IFFT`        | `4`   | Performs echo detection via inverse FFT of channel estimation coefficients to reveal impulse-response peaks. |
+
 
 **Request** (`MultiChanEstimationAnalysisRequest` stub):
 
