@@ -346,8 +346,7 @@ class MultiRxMerRouter(AbstractService):
                     mac_address =   mac_address,
                     status      =   ServiceStatusCode.SUCCESS,
                     message     =   message,
-                    data        =   data,
-                )
+                    data        =   data,)
 
             if output_type == FileType.ARCHIVE:
                 rpt = engine.build_report()

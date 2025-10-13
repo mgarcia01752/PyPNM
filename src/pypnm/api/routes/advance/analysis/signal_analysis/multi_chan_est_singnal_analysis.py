@@ -6,79 +6,72 @@ from __future__ import annotations
 import logging
 from enum import Enum
 from typing import List, Optional, Union, Dict
-
 from pydantic import BaseModel, Field
 
 from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.ifft import IfftEchoDetector
 from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.phase_slope import PhaseSlopeEchoDetector
 from pypnm.api.routes.advance.analysis.signal_analysis.detection.lte.phase_slope_lte_detection import GroupDelayAnomalyDetector
 from pypnm.api.routes.advance.analysis.signal_analysis.group_delay_calculator import GroupDelayCalculator
+from pypnm.api.routes.advance.analysis.signal_analysis.multi_rxmer_signal_analysis import MultiAnalysisRpt
 from pypnm.api.routes.advance.common.capture_data_aggregator import CaptureDataAggregator
-from pypnm.api.routes.advance.common.transactionsCollection import TransactionCollection, TransactionCollectionModel
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.api.routes.common.classes.file_capture.types import GroupId
+from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.log_files import LogFile
-from pypnm.lib.types import (
-    ChannelId, FloatSeries, FrequencySeriesHz, ComplexArray, ComplexSeries, MacAddressStr,)
+from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
+from pypnm.lib.types import ChannelId, FloatSeries, FrequencySeriesHz, ComplexArray, ComplexSeries
 from pypnm.lib.utils import TimeUnit, Utils
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
 from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 
 
-# ---------------------------------------------------------------------
-# Aggregated multi-capture type aliases
-# ---------------------------------------------------------------------
-ChannelAmplitudeMap       = Dict[ChannelId, List[FloatSeries]]
-ChannelFrequencyMap       = Dict[ChannelId, FrequencySeriesHz]
-ChannelComplexMap         = Dict[ChannelId, List[ComplexArray]]
-ChannelObwMap             = Dict[ChannelId, float]
-ChannelComplexSeriesMap   = Dict[ChannelId, List[ComplexSeries]]
+# ──────────────────────────────────────────────────────────────
+# Aliases
+# ──────────────────────────────────────────────────────────────
+ChannelAmplitudeMap = Dict[ChannelId, List[FloatSeries]]
+ChannelFrequencyMap = Dict[ChannelId, FrequencySeriesHz]
+ChannelComplexMap = Dict[ChannelId, List[ComplexArray]]
+ChannelObwMap = Dict[ChannelId, float]
+ChannelComplexSeriesMap = Dict[ChannelId, List[ComplexSeries]]
 
 
-# ---------------------------------------------------------------------
-# Result Models
-# ---------------------------------------------------------------------
+# ──────────────────────────────────────────────────────────────
+# Models
+# ──────────────────────────────────────────────────────────────
 class MinAvgMaxModel(BaseModel):
-    """Statistical amplitude summary for a single channel."""
-    channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
-    frequency: FrequencySeriesHz    = Field(..., description="Subcarrier frequency bins (Hz)")
-    min: FloatSeries                = Field(..., description="Minimum amplitude (dB) across captures per subcarrier")
-    avg: FloatSeries                = Field(..., description="Average amplitude (dB) across captures per subcarrier")
-    max: FloatSeries                = Field(..., description="Maximum amplitude (dB) across captures per subcarrier")
+    channel_id: ChannelId = Field(..., description="OFDM downstream channel ID")
+    frequency: FrequencySeriesHz = Field(..., description="Subcarrier frequency bins (Hz)")
+    min: FloatSeries = Field(..., description="Minimum amplitude (dB) per subcarrier")
+    avg: FloatSeries = Field(..., description="Average amplitude (dB) per subcarrier")
+    max: FloatSeries = Field(..., description="Maximum amplitude (dB) per subcarrier")
 
 
 class GroupDelayAnalysisModel(BaseModel):
-    """Group-delay metrics derived from phase slope of channel-estimation coefficients."""
-    channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
-    frequency: FrequencySeriesHz    = Field(..., description="Subcarrier frequency bins (Hz)")
-    group_delay_us: FloatSeries     = Field(..., description="Per-subcarrier group delay (microseconds)")
+    channel_id: ChannelId = Field(..., description="OFDM downstream channel ID")
+    frequency: FrequencySeriesHz = Field(..., description="Subcarrier frequency bins (Hz)")
+    group_delay_us: FloatSeries = Field(..., description="Per-subcarrier group delay (µs)")
 
 
 class LteDetectionModel(BaseModel):
-    """LTE interference detection using group-delay ripple anomalies."""
-    channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
-    anomalies: FloatSeries          = Field(..., description="Detected LTE interference amplitudes or anomaly indices")
-    threshold: float                = Field(..., description="Group-delay ripple threshold (seconds or equivalent)")
-    bin_widths: FloatSeries         = Field(..., description="Frequency bin widths used for anomaly segmentation (Hz)")
+    channel_id: ChannelId = Field(..., description="OFDM downstream channel ID")
+    anomalies: FloatSeries = Field(..., description="Detected LTE interference magnitudes/indices")
+    threshold: float = Field(..., description="Group-delay ripple threshold")
+    bin_widths: FloatSeries = Field(..., description="Bin widths used for segmentation (Hz)")
 
 
 class EchoDetectionPhaseSlopeModel(BaseModel):
-    """Echo detection based on discontinuities in the channel phase slope."""
-    channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
-    slope_profile: FloatSeries      = Field(..., description="Phase-slope values across subcarriers (radians/Hz)")
-    frequency: FrequencySeriesHz    = Field(..., description="Subcarrier frequency bins (Hz)")
+    channel_id: ChannelId = Field(..., description="OFDM downstream channel ID")
+    slope_profile: FloatSeries = Field(..., description="Phase-slope values (radians/Hz)")
+    frequency: FrequencySeriesHz = Field(..., description="Subcarrier frequency bins (Hz)")
 
 
 class EchoDetectionIfftModel(BaseModel):
-    """Echo detection based on inverse FFT of the complex channel impulse response."""
-    channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
-    impulse_response: FloatSeries   = Field(..., description="Magnitude of impulse response vs delay (linear units)")
-    sample_rate: float              = Field(..., description="Sample rate used for IFFT reconstruction (Hz)")
+    channel_id: ChannelId = Field(..., description="OFDM downstream channel ID")
+    impulse_response: FloatSeries = Field(..., description="Impulse-response magnitude vs delay")
+    sample_rate: float = Field(..., description="Sample rate used for IFFT (Hz)")
 
 
 class MultiChanEstimationResult(BaseModel):
-    """Unified result model for multi-channel estimation analysis."""
-    analysis_type: str              = Field(..., description="Name of the executed analysis type")
+    analysis_type: str = Field(..., description="Name of executed analysis type")
     results: List[
         Union[
             MinAvgMaxModel,
@@ -87,246 +80,324 @@ class MultiChanEstimationResult(BaseModel):
             EchoDetectionPhaseSlopeModel,
             EchoDetectionIfftModel,
         ]
-    ]                               = Field(default_factory=list, description="List of per-channel analysis results")
-    error: Optional[str]            = Field(default=None, description="Error message if analysis failed")
+    ] = Field(default_factory=list, description="List of per-channel analysis results")
+    error: Optional[str] = Field(default=None, description="Error message if analysis failed")
 
     def to_json(self, indent: int = 2) -> str:
-        """Return the result as a JSON string."""
         return self.model_dump_json(indent=indent)
 
 
-# ---------------------------------------------------------------------
-# Analysis Executor
-# ---------------------------------------------------------------------
+# ──────────────────────────────────────────────────────────────
+# Enum
+# ──────────────────────────────────────────────────────────────
 class MultiChanEstimationAnalysisType(Enum):
-    """Signal analysis routines for Multi-Channel-Estimation data."""
-    MIN_AVG_MAX                    = 0
-    GROUP_DELAY                    = 1
-    LTE_DETECTION_PHASE_SLOPE      = 2
-    ECHO_DETECTION_PHASE_SLOPE     = 3
-    ECHO_DETECTION_IFFT            = 4
+    MIN_AVG_MAX                 = 0
+    GROUP_DELAY                 = 1
+    LTE_DETECTION_PHASE_SLOPE   = 2
+    ECHO_DETECTION_PHASE_SLOPE  = 3
+    ECHO_DETECTION_IFFT         = 4
 
 
-class MultiChanEstimationSignalAnalysis:
-    """Performs signal-quality analyses on grouped Multi-Channel-Estimation captures."""
+# ──────────────────────────────────────────────────────────────
+# Main Class
+# ──────────────────────────────────────────────────────────────
+class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
+    """Performs signal-quality analyses on grouped Multi-ChannelEstimation captures."""
 
-    def __init__(self, capture_group_id: GroupId, analysis_type: MultiChanEstimationAnalysisType) -> None:
-        self.logger                 = logging.getLogger(self.__class__.__name__)
-        self._capture_group_id      = capture_group_id
-        self._analysis_type         = analysis_type
+    def __init__(self, capt_data_agg: CaptureDataAggregator, analysis_type: MultiChanEstimationAnalysisType) -> None:
+        super().__init__(capt_data_agg)
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self._analysis_type = analysis_type
         self._results: Optional[MultiChanEstimationResult] = None
 
-        # Initialize the aggregator for this capture group
-        self._aggregator             = CaptureDataAggregator(capture_group_id)
-        self._trans_collect:TransactionCollection = self._aggregator.collect()
+    # ──────────────────────────────────────────────────────────
+    # Internals
+    # ──────────────────────────────────────────────────────────
+    def _log_result(self, tag: str, mac: str, data: List[BaseModel]) -> None:
+        fname = f"{tag}_{mac}_{Utils.time_stamp(TimeUnit.NANOSECONDS)}.dict"
+        for r in data:
+            LogFile().write(fname, r)
 
-    def _process(self) -> MultiChanEstimationResult:
+    def _process(self):
+        if self._results is None:
+            self._results = self.__process()
 
-        self.logger.info(f'[_process] {self._analysis_type.name} for MacAddress: {self.get_mac_address()}')
+    def __process(self) -> MultiChanEstimationResult:
+        mac = self.getMacAddresses()[0]
+        self.logger.info(f"[_process] {self._analysis_type.name} for MAC={mac}")
 
-        if self._analysis_type == MultiChanEstimationAnalysisType.MIN_AVG_MAX:
-            data = self._analyze_min_avg_max()
-        elif self._analysis_type == MultiChanEstimationAnalysisType.GROUP_DELAY:
-            data = self._analyze_group_delay()
-        elif self._analysis_type == MultiChanEstimationAnalysisType.LTE_DETECTION_PHASE_SLOPE:
-            data = self._analyze_lte_detection()
-        elif self._analysis_type == MultiChanEstimationAnalysisType.ECHO_DETECTION_PHASE_SLOPE:
-            data = self._analyze_echo_detection_phase_slope()
-        elif self._analysis_type == MultiChanEstimationAnalysisType.ECHO_DETECTION_IFFT:
-            data = self._analyze_echo_detection_ifft()
-        else:
-            raise ValueError(f"Unsupported analysis type: {self._analysis_type}")
-        
-        fname = f'{self._analysis_type.name}_{self.get_mac_address()}_{Utils.time_stamp(TimeUnit.NANOSECONDS)}.dict'
-        for _ in data:
-            LogFile().write(fname, _)
+        match self._analysis_type:
+            case MultiChanEstimationAnalysisType.MIN_AVG_MAX:
+                data = self._analyze_min_avg_max()
+            case MultiChanEstimationAnalysisType.GROUP_DELAY:
+                data = self._analyze_group_delay()
+            case MultiChanEstimationAnalysisType.LTE_DETECTION_PHASE_SLOPE:
+                data = self._analyze_lte_detection()
+            case MultiChanEstimationAnalysisType.ECHO_DETECTION_PHASE_SLOPE:
+                data = self._analyze_echo_detection_phase_slope()
+            case MultiChanEstimationAnalysisType.ECHO_DETECTION_IFFT:
+                data = self._analyze_echo_detection_ifft()
+            case _:
+                raise ValueError(f"Unsupported analysis type: {self._analysis_type}")
 
+        self._log_result(self._analysis_type.name, str(mac), data)
         return MultiChanEstimationResult(analysis_type=self._analysis_type.name, results=data)
 
-    def get_mac_address(self) -> MacAddressStr:
-
-        if len(self._trans_collect.getMacAddresses()) > 1:
-            self.logger.warning(f'Unexpected number of MacAddresses Found: total: {len(self._trans_collect.getMacAddresses())}')
-
-        return self._trans_collect.getMacAddresses()[0].mac_address
-
-
     def to_model(self) -> MultiChanEstimationResult:
-        """Run the analysis and return a structured model."""
         if self._results is None:
             try:
-                self._results = self._process()
+                self._results = self.__process()
             except Exception as e:
                 return MultiChanEstimationResult(
-                    analysis_type   =   self._analysis_type.name, 
-                    results         =   [], 
-                    error           =   str(e))
+                    analysis_type=self._analysis_type.name,
+                    results=[],
+                    error=str(e),
+                )
         return self._results
 
-    # -----------------------------------------------------------------
-    # MIN / AVG / MAX
-    # -----------------------------------------------------------------
+    # ──────────────────────────────────────────────────────────
+    # CSV
+    # ──────────────────────────────────────────────────────────
+    def create_csv(self, **kwargs) -> List[CSVManager]:
+        csvs: List[CSVManager] = []
+        model = self.to_model()
+
+        for r in model.results:
+            csv = CSVManager()
+
+            match self._analysis_type:
+                # ───────────────────────────────
+                case MultiChanEstimationAnalysisType.MIN_AVG_MAX:
+                    if not isinstance(r, MinAvgMaxModel): 
+                        continue
+                    csv.set_header(["Frequency (Hz)", "Min (dB)", "Avg (dB)", "Max (dB)"])
+                    for f, mn, av, mx in zip(r.frequency, r.min, r.avg, r.max):
+                        csv.insert_row([f, mn, av, mx])
+                    csv.set_path_fname(self.create_csv_fname(tags=[f"ch{r.channel_id}", "minavgmax"]))
+                    csv.write()
+                    csvs.append(csv)
+
+                # ───────────────────────────────
+                case MultiChanEstimationAnalysisType.GROUP_DELAY:
+                    if not isinstance(r, GroupDelayAnalysisModel): 
+                        continue
+                    csv.set_header(["Frequency (Hz)", "Group Delay (µs)"])
+                    for f, gd in zip(r.frequency, r.group_delay_us):
+                        csv.insert_row([f, gd])
+                    csv.set_path_fname(self.create_csv_fname(tags=[f"ch{r.channel_id}", "groupdelay"]))
+                    csv.write()
+                    csvs.append(csv)
+
+                # ───────────────────────────────
+                case MultiChanEstimationAnalysisType.LTE_DETECTION_PHASE_SLOPE:
+                    if not isinstance(r, LteDetectionModel): 
+                        continue
+                    csv.set_header(["Bin Width (Hz)", "Anomaly Magnitude"])
+                    for bw, anom in zip(r.bin_widths, r.anomalies):
+                        csv.insert_row([bw, anom])
+                    csv.insert_row(["Threshold", r.threshold])
+                    csv.set_path_fname(self.create_csv_fname(tags=[f"ch{r.channel_id}", "lte-detect"]))
+                    csv.write()
+                    csvs.append(csv)
+
+                # ───────────────────────────────
+                case MultiChanEstimationAnalysisType.ECHO_DETECTION_PHASE_SLOPE:
+                    if not isinstance(r, EchoDetectionPhaseSlopeModel): 
+                        continue
+                    csv.set_header(["Frequency (Hz)", "Phase Slope (rad/Hz)"])
+                    for f, s in zip(r.frequency, r.slope_profile):
+                        csv.insert_row([f, s])
+                    csv.set_path_fname(self.create_csv_fname(tags=[f"ch{r.channel_id}", "echo-slope"]))
+                    csv.write()
+                    csvs.append(csv)
+
+                # ───────────────────────────────
+                case MultiChanEstimationAnalysisType.ECHO_DETECTION_IFFT:
+                    if not isinstance(r, EchoDetectionIfftModel): 
+                        continue
+                    csv.set_header(["Sample Index", "Amplitude"])
+                    for i, amp in enumerate(r.impulse_response):
+                        csv.insert_row([i, amp])
+                    csv.insert_row(["Sample Rate (Hz)", r.sample_rate])
+                    csv.set_path_fname(self.create_csv_fname(tags=[f"ch{r.channel_id}", "echo-ifft"]))
+                    csv.write()
+                    csvs.append(csv)
+
+        return csvs
+    
+    # ──────────────────────────────────────────────────────────
+    # Matplot
+    # ──────────────────────────────────────────────────────────
+    def create_matplot(self, **kwargs) -> List[MatplotManager]:
+        plots: List[MatplotManager] = []
+        model = self.to_model()
+
+        match self._analysis_type:
+            case MultiChanEstimationAnalysisType.MIN_AVG_MAX:
+                for r in model.results:
+                    if not isinstance(r, MinAvgMaxModel):
+                        continue
+                    cfg = PlotConfig(
+                        x=r.frequency,
+                        y_multi=[r.min, r.avg, r.max],
+                        y_multi_label=["Min", "Avg", "Max"],
+                        xlabel="Subcarrier Frequency (Hz)",
+                        ylabel="Amplitude (dB)",
+                        title=f"Channel {r.channel_id} — Min/Average/Max Amplitude",
+                        grid=True, legend=True, theme="dark")
+                    mp = MatplotManager(default_cfg=cfg)
+                    mp.plot_multi_line(self.create_png_fname(tags=[f"ch{r.channel_id}", "minavgmax"]))
+                    plots.append(mp)
+
+            case MultiChanEstimationAnalysisType.GROUP_DELAY:
+                for r in model.results:
+                    if not isinstance(r, GroupDelayAnalysisModel):
+                        continue
+                    cfg = PlotConfig(
+                        x=r.frequency, y=r.group_delay_us,
+                        xlabel="Subcarrier Frequency (Hz)",
+                        ylabel="Group Delay (µs)",
+                        title=f"Channel {r.channel_id} — Group Delay",
+                        grid=True, legend=False, theme="dark")
+                    mp = MatplotManager(default_cfg=cfg)
+                    mp.plot_line(self.create_png_fname(tags=[f"ch{r.channel_id}", "groupdelay"]))
+                    plots.append(mp)
+
+            case MultiChanEstimationAnalysisType.LTE_DETECTION_PHASE_SLOPE:
+                for r in model.results:
+                    if not isinstance(r, LteDetectionModel):
+                        continue
+                    cfg = PlotConfig(
+                        x=r.bin_widths, y=r.anomalies,
+                        xlabel="Frequency Bin Width (Hz)",
+                        ylabel="Anomaly Magnitude",
+                        title=f"Channel {r.channel_id} — LTE Detection (Threshold={r.threshold:.2e})",
+                        grid=True, legend=False, theme="dark")
+                    mp = MatplotManager(default_cfg=cfg)
+                    mp.plot_bar(r.bin_widths, r.anomalies,
+                                self.create_png_fname(tags=[f"ch{r.channel_id}", "lte-detect"]))
+                    plots.append(mp)
+
+            case MultiChanEstimationAnalysisType.ECHO_DETECTION_PHASE_SLOPE:
+                for r in model.results:
+                    if not isinstance(r, EchoDetectionPhaseSlopeModel):
+                        continue
+                    cfg = PlotConfig(
+                        x=r.frequency, y=r.slope_profile,
+                        xlabel="Subcarrier Frequency (Hz)",
+                        ylabel="Phase Slope (rad/Hz)",
+                        title=f"Channel {r.channel_id} — Echo Detection (Phase Slope)",
+                        grid=True, legend=False, theme="dark")
+                    mp = MatplotManager(default_cfg=cfg)
+                    mp.plot_line(self.create_png_fname(tags=[f"ch{r.channel_id}", "echo-slope"]))
+                    plots.append(mp)
+
+            case MultiChanEstimationAnalysisType.ECHO_DETECTION_IFFT:
+                for r in model.results:
+                    if not isinstance(r, EchoDetectionIfftModel):
+                        continue
+                    cfg = PlotConfig(
+                        x=list(range(len(r.impulse_response))), y=r.impulse_response,
+                        xlabel="Sample Index",
+                        ylabel="Amplitude (Linear Units)",
+                        title=f"Channel {r.channel_id} — Echo Detection (IFFT Impulse Response)",
+                        grid=True, legend=False, theme="dark")
+                    mp = MatplotManager(default_cfg=cfg)
+                    mp.plot_line(self.create_png_fname(tags=[f"ch{r.channel_id}", "echo-ifft"]))
+                    plots.append(mp)
+
+        return plots
+
+    # ──────────────────────────────────────────────────────────
+    # Analysis Methods
+    # ──────────────────────────────────────────────────────────
     def _analyze_min_avg_max(self) -> List[MinAvgMaxModel]:
-
-        amplitudes: ChannelAmplitudeMap = {}
-        freqs: ChannelFrequencyMap = {}
-
-        # Iterate TransactionCollection models (typed)
+        amplitudes, freqs = {}, {}
         for tcm in self._trans_collect.getTransactionCollectionModel():
             try:
-                data_bytes = tcm.data
-                ocef = CmDsOfdmChanEstimateCoef(data_bytes)
-                model = ocef.to_model()
+                model = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
                 result = Analysis.basic_analysis_ds_chan_est_from_model(model)
-
-                ch_id = ChannelId(result.channel_id)
-                mags = result.carrier_values.magnitudes
-                freqs[ch_id] = result.carrier_values.frequency
-                if mags:
-                    amplitudes.setdefault(ch_id, []).append(mags)
+                ch = ChannelId(result.channel_id)
+                if result.carrier_values.magnitudes:
+                    amplitudes.setdefault(ch, []).append(result.carrier_values.magnitudes)
+                freqs[ch] = result.carrier_values.frequency
             except Exception as e:
                 self.logger.error(f"[file={tcm.filename}] MIN_AVG_MAX parse failed: {e}")
-                continue
+        return [
+            MinAvgMaxModel(channel_id=ch, frequency=freqs.get(ch, []), **MinAvgMax(amps).to_dict())
+            for ch, amps in amplitudes.items()
+        ]
 
-        out: List[MinAvgMaxModel] = []
-        for ch_id, amp_lists in amplitudes.items():
-            calc = MinAvgMax(amp_lists)
-            stats = calc.to_dict()
-            out.append(
-                MinAvgMaxModel(
-                    channel_id  =   ch_id,
-                    frequency   =   freqs.get(ch_id, []),
-                    min         =   stats["min"],
-                    avg         =   stats["avg"],
-                    max         =   stats["max"],))
-        return out
-
-    # -----------------------------------------------------------------
-    # GROUP DELAY
-    # -----------------------------------------------------------------
     def _analyze_group_delay(self) -> List[GroupDelayAnalysisModel]:
-        channel_data: ChannelComplexMap = {}
-        freqs_map: ChannelFrequencyMap = {}
-
+        channel_data, freqs = {}, {}
         for tcm in self._trans_collect.getTransactionCollectionModel():
             try:
-                ocef = CmDsOfdmChanEstimateCoef(tcm.data)
-                model = ocef.to_model()
+                model = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
                 result = Analysis.basic_analysis_ds_chan_est_from_model(model)
-
-                ch_id = ChannelId(result.channel_id)
-                channel_data.setdefault(ch_id, []).append(result.carrier_values.complex)
-                freqs_map[ch_id] = result.carrier_values.frequency
+                ch = ChannelId(result.channel_id)
+                channel_data.setdefault(ch, []).append(result.carrier_values.complex)
+                freqs[ch] = result.carrier_values.frequency
             except Exception as e:
                 self.logger.error(f"[file={tcm.filename}] GROUP_DELAY parse failed: {e}")
-                continue
+        out = []
+        for ch, cplx in channel_data.items():
+            gd = GroupDelayCalculator(cplx, freqs[ch]).to_dict()
+            out.append(GroupDelayAnalysisModel(channel_id=ch, frequency=gd.get("freqs", []), group_delay_us=gd.get("tau_us", [])))
+        return out
 
-        results: List[GroupDelayAnalysisModel] = []
-        for ch_id, complex_lists in channel_data.items():
-            calc = GroupDelayCalculator(complex_lists, freqs_map[ch_id])
-            gd = calc.to_dict()
-            results.append(
-                GroupDelayAnalysisModel(
-                    channel_id      =   ch_id,
-                    frequency       =   gd.get("freqs", []),
-                    group_delay_us  =   gd.get("tau_us", []),))
-        return results
-
-    # -----------------------------------------------------------------
-    # LTE DETECTION
-    # -----------------------------------------------------------------
     def _analyze_lte_detection(self) -> List[LteDetectionModel]:
-        channel_data: ChannelComplexMap = {}
-        freqs_map: ChannelFrequencyMap = {}
-        threshold = 1e-9
-        bin_widths = [1e6, 5e5, 1e5]
-
+        channel_data, freqs, threshold, bin_widths = {}, {}, 1e-9, [1e6, 5e5, 1e5]
         for tcm in self._trans_collect.getTransactionCollectionModel():
             try:
-                ocef = CmDsOfdmChanEstimateCoef(tcm.data)
-                model = ocef.to_model()
+                model = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
                 result = Analysis.basic_analysis_ds_chan_est_from_model(model)
-
-                ch_id = ChannelId(result.channel_id)
-                channel_data.setdefault(ch_id, []).append(result.carrier_values.complex)
-                freqs_map[ch_id] = result.carrier_values.frequency
+                ch = ChannelId(result.channel_id)
+                channel_data.setdefault(ch, []).append(result.carrier_values.complex)
+                freqs[ch] = result.carrier_values.frequency
             except Exception as e:
                 self.logger.error(f"[file={tcm.filename}] LTE_DETECTION_PHASE_SLOPE parse failed: {e}")
-                continue
-
-        out: List[LteDetectionModel] = []
-        for ch_id, complex_lists in channel_data.items():
-            calc = GroupDelayAnomalyDetector(complex_lists, freqs_map[ch_id])
-            res = calc.run(bin_widths=bin_widths, threshold=threshold)
-            out.append(
-                LteDetectionModel(
-                    channel_id      =   ch_id,
-                    anomalies       =   res.get("anomalies", []),
-                    threshold       =   threshold,
-                    bin_widths      =   bin_widths,))
+        out = []
+        for ch, cplx in channel_data.items():
+            res = GroupDelayAnomalyDetector(cplx, freqs[ch]).run(bin_widths=bin_widths, threshold=threshold)
+            out.append(LteDetectionModel(channel_id=ch, anomalies=res.get("anomalies", []), threshold=threshold, bin_widths=bin_widths))
         return out
 
-    # -----------------------------------------------------------------
-    # ECHO DETECTION (Phase Slope)
-    # -----------------------------------------------------------------
     def _analyze_echo_detection_phase_slope(self) -> List[EchoDetectionPhaseSlopeModel]:
-        channel_data: ChannelComplexMap = {}
-        freqs_map: ChannelFrequencyMap = {}
-
+        channel_data, freqs = {}, {}
         for tcm in self._trans_collect.getTransactionCollectionModel():
             try:
-                ocef = CmDsOfdmChanEstimateCoef(tcm.data)
-                model = ocef.to_model()
+                model = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
                 result = Analysis.basic_analysis_ds_chan_est_from_model(model)
-
-                ch_id = ChannelId(result.channel_id)
-                channel_data.setdefault(ch_id, []).append(result.carrier_values.complex)
-                freqs_map[ch_id] = result.carrier_values.frequency
+                ch = ChannelId(result.channel_id)
+                channel_data.setdefault(ch, []).append(result.carrier_values.complex)
+                freqs[ch] = result.carrier_values.frequency
             except Exception as e:
                 self.logger.error(f"[file={tcm.filename}] ECHO_DETECTION_PHASE_SLOPE parse failed: {e}")
-                continue
-
-        out: List[EchoDetectionPhaseSlopeModel] = []
-        for ch_id, complex_lists in channel_data.items():
-            calc = PhaseSlopeEchoDetector(complex_lists, freqs_map[ch_id])
-            slope_data = calc.to_dict()
-            out.append(
-                EchoDetectionPhaseSlopeModel(
-                    channel_id      =   ch_id,
-                    slope_profile   =   slope_data.get("slope_profile", []),
-                    frequency       =   slope_data.get("frequency", []),))
+        out = []
+        for ch, cplx in channel_data.items():
+            slope = PhaseSlopeEchoDetector(cplx, freqs[ch]).to_dict()
+            out.append(EchoDetectionPhaseSlopeModel(channel_id=ch, slope_profile=slope.get("slope_profile", []), frequency=slope.get("frequency", [])))
         return out
 
-    # -----------------------------------------------------------------
-    # ECHO DETECTION (IFFT)
-    # -----------------------------------------------------------------
     def _analyze_echo_detection_ifft(self) -> List[EchoDetectionIfftModel]:
-        channel_data: ChannelComplexMap = {}
-        obw_map: ChannelObwMap = {}
-
+        channel_data, obw = {}, {}
         for tcm in self._trans_collect.getTransactionCollectionModel():
             try:
-                ocef = CmDsOfdmChanEstimateCoef(tcm.data)
-                model = ocef.to_model()
+                model = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
                 result = Analysis.basic_analysis_ds_chan_est_from_model(model)
-
-                ch_id = ChannelId(result.channel_id)
-                channel_data.setdefault(ch_id, []).append(result.carrier_values.complex)
-                obw_map[ch_id] = result.carrier_values.occupied_channel_bandwidth
+                ch = ChannelId(result.channel_id)
+                channel_data.setdefault(ch, []).append(result.carrier_values.complex)
+                obw[ch] = result.carrier_values.occupied_channel_bandwidth
             except Exception as e:
                 self.logger.error(f"[file={tcm.filename}] ECHO_DETECTION_IFFT parse failed: {e}")
+        out = []
+        for ch, cplx in channel_data.items():
+            bw = obw.get(ch, 0)
+            if not bw:
                 continue
-
-        out: List[EchoDetectionIfftModel] = []
-        for ch_id, complex_lists in channel_data.items():
-            obw = obw_map.get(ch_id, 0)
-            if not obw:
-                continue
-            calc = IfftEchoDetector(complex_lists, sample_rate=float(obw))
-            ifft_res = calc.to_dict()
-            out.append(
-                EchoDetectionIfftModel(
-                    channel_id      =   ch_id,
-                    impulse_response=   ifft_res.get("impulse_response", []),
-                    sample_rate     =   float(obw),))
+            ifft = IfftEchoDetector(cplx, sample_rate=float(bw)).to_dict()
+            out.append(EchoDetectionIfftModel(
+                    channel_id          =   ch, 
+                    impulse_response    =   ifft.get("impulse_response", []), 
+                    sample_rate         =   float(bw)))
         return out

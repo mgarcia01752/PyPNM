@@ -68,6 +68,7 @@ class ServiceStatusCode(IntEnum):
     DS_OFDM_MULIT_RXMER_ANALYSIS_TYPE       = 502
     
     DS_OFDM_CHAN_EST_NOT_AVAILABLE          = 600
+    DS_OFDM_CHAN_EST_INVALID_ANALYSIS_TYPE  = 601
     
     DS_OFDM_FEC_SUMMARY_NOT_AVALIABLE       = 700
     
