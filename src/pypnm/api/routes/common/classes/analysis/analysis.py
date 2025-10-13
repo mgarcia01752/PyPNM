@@ -37,6 +37,7 @@ from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, FrequencySerie
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import WindowFunction
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
+from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoefModel
 from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, CmDsOfdmModulationProfileModel, ModulationOrderType, RangeModulationProfileSchemaModel, SkipModulationProfileSchemaModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
@@ -1075,8 +1076,7 @@ class Analysis:
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 
     @classmethod
-    def basic_analysis_ds_modulation_profile_from_model(cls, model: CmDsOfdmModulationProfileModel, split_carriers: bool = True
-    ) -> DsModulationProfileAnalysisModel:
+    def basic_analysis_ds_modulation_profile_from_model(cls, model: CmDsOfdmModulationProfileModel, split_carriers: bool = True) -> DsModulationProfileAnalysisModel:
         """
         Analyze a Downstream OFDM Modulation Profile using a parsed model
         from :class:`CmDsOfdmModulationProfile`.
@@ -1175,3 +1175,91 @@ class Analysis:
             )
 
         return result
+
+    @classmethod
+    def basic_analysis_ds_chan_est_from_model(cls, model: CmDsOfdmChanEstimateCoefModel) -> DsChannelEstAnalysisModel:
+        """
+        Model-based variant of downstream channel estimation analysis.
+
+        Parameters
+        ----------
+        model : CmDsOfdmChanEstimateCoefModel
+            Parsed coefficients + metadata for DS OFDM channel estimation.
+
+        Returns
+        -------
+        DsChannelEstAnalysisModel
+            Typed analysis result identical in shape to the dict-based version.
+
+        Raises
+        ------
+        ValueError
+            If required parameters are invalid or values are empty.
+        """
+        # --- required params ---
+        subcarrier_spacing: int            = int(getattr(model, "subcarrier_spacing", INVALID_START_VAULE))
+        first_active_subcarrier_index: int = int(getattr(model, "first_active_subcarrier_index", INVALID_START_VAULE))
+        subcarrier_zero_frequency: int     = int(getattr(model, "subcarrier_zero_frequency", INVALID_START_VAULE))
+        occupied_channel_bandwidth: int    = int(getattr(model, "occupied_channel_bandwidth", 0))
+
+        if (first_active_subcarrier_index < 0) or (subcarrier_zero_frequency < 0) or (subcarrier_spacing <= 0):
+            raise ValueError(
+                f"Active index: {first_active_subcarrier_index} or "
+                f"zero frequency: {subcarrier_zero_frequency} or "
+                f"spacing: {subcarrier_spacing} must be non-negative"
+            )
+
+        values: ComplexArray = cast(ComplexArray, getattr(model, "values", []))
+        if not values:
+            raise ValueError("No complex channel estimation values provided in model.")
+
+        # --- frequency axis ---
+        start_freq: int  = (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency
+        freqs: List[int] = [start_freq + (i * subcarrier_spacing) for i in range(len(values))]
+
+        # --- group delay from complex H(f) ---
+        gd         = GroupDelay.from_channel_estimate(Hhat=values, df_hz=subcarrier_spacing, f0_hz=start_freq)
+        gd_results = gd.to_result()
+
+        # --- magnitudes (power in dB from complex coefficients) ---
+        cao = ComplexArrayOps(values)
+        magnitudes_db: FloatSeries = cao.to_list(cao.power_db())
+
+        # --- signal statistics on magnitudes ---
+        signal_stats_model = SignalStatistics(magnitudes_db).compute()
+
+        # --- complex dimensionality (metadata only) ---
+        complex_ndim: int = int(np.asarray(values, dtype=complex).ndim)
+
+        # --- nested models ---
+        group_delay_stats: GrpDelayStatsModel = GrpDelayStatsModel(
+            group_delay_unit="microsecond",
+            magnitude=ComplexArrayOps.to_list(gd_results.group_delay_us),
+        )
+
+        carrier_values: ChanEstCarrierModel = ChanEstCarrierModel(
+            carrier_count=len(freqs),
+            frequency_unit="Hz",
+            frequency=freqs,
+            complex=values,
+            complex_dimension=complex_ndim,
+            magnitudes=magnitudes_db,                 # power dB series
+            group_delay=group_delay_stats,
+            occupied_channel_bandwidth=occupied_channel_bandwidth,
+        )
+
+        # --- assemble top-level result ---
+        result_model: DsChannelEstAnalysisModel = DsChannelEstAnalysisModel(
+            device_details=getattr(model, "device_details", {}),  # model may not carry device details
+            pnm_header=model.pnm_header.model_dump() if hasattr(model.pnm_header, "model_dump") else {},
+            mac_address=str(getattr(model, "mac_address", "")),
+            channel_id=int(getattr(model, "channel_id", INVALID_START_VAULE)),
+            subcarrier_spacing=subcarrier_spacing,
+            first_active_subcarrier_index=first_active_subcarrier_index,
+            subcarrier_zero_frequency=subcarrier_zero_frequency,
+            carrier_values=carrier_values,
+            signal_statistics=signal_stats_model,
+        )
+
+        return result_model
+

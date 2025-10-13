@@ -114,6 +114,7 @@ MagnitudeSeries   = FloatSeries
 BitsPerSymbol       = NewType("BitsPerSymbol", int)
 BitsPerSymbolSeries = NewType("BitsPerSymbolSeries", List[BitsPerSymbol])
 
+Microseconds = NewType("Microseconds", float)
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Explicit public surface

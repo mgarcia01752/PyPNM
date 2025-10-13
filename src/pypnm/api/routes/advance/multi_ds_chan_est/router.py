@@ -1,8 +1,7 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+from __future__ import annotations
 
 import io
 import logging
@@ -19,13 +18,13 @@ from pypnm.api.routes.advance.common.abstract.service import AbstractService
 from pypnm.api.routes.advance.common.capture_data_aggregator import CaptureDataAggregator
 from pypnm.api.routes.advance.common.operation_manager import OperationManager
 from pypnm.api.routes.advance.common.operation_state import OperationState
-from pypnm.api.routes.advance.common.pnm_collection import PnmCollection
 from pypnm.api.routes.advance.multi_ds_chan_est.schemas import (
     MultiChanEstimationAnalysisRequest, MultiChanEstimationAnalysisResponse, 
     MultiChanEstimationRequest, MultiChanEstimationResponseStatus, 
     MultiChanEstimationStartResponse, MultiChanEstimationStatusResponse)
 from pypnm.api.routes.advance.multi_ds_chan_est.service import MultiChannelEstimationService
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+from pypnm.api.routes.common.classes.file_capture.types import GroupId
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.system_config_settings import SystemConfigSettings
@@ -78,39 +77,36 @@ class MultiDsChanEstRouter(AbstractService):
             
             duration = request.capture.parameters.measurement_duration
             interval = request.capture.parameters.sample_interval
+            mac = request.cable_modem.mac_address
+            ip_address = request.cable_modem.ip_address
 
             self.logger.info(
                 f"Starting multi-ChannelEstimation capture for MAC={request.cable_modem.mac_address} "
                 f"(duration={duration}s, interval={interval}s)")
 
-            cm = CableModem(
-                mac_address=MacAddress(request.cable_modem.mac_address),
-                inet=Inet(request.cable_modem.ip_address),
-            )
+            cm = CableModem(mac_address=MacAddress(mac),inet=Inet(ip_address),)
 
-            status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
+            status, msg = await CableModemServicePreCheck(cable_modem=cm,
+                                                          validate_ofdm_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
-                    mac_address=str(request.cable_modem.mac_address),
-                    status=status,
-                    message=msg
-                )   
+                    mac_address =   mac,
+                    status      =   status,
+                    message     =   msg)   
 
             group_id, operation_id = await self.loadService(
                 MultiChannelEstimationService,
                 cm,
-                duration=duration,
-                interval=interval,
-            )
+                duration    =   duration,
+                interval    =   interval,)
 
             return MultiChanEstimationStartResponse(
-                mac_address=request.cable_modem.mac_address,
-                status=OperationState.RUNNING,
-                message=None,
-                group_id=group_id,
-                operation_id=operation_id,
-            )
+                mac_address     =   mac,
+                status          =   OperationState.RUNNING,
+                message         =   None,
+                group_id        =   group_id,
+                operation_id    =   operation_id,)
 
         @self.router.get("/status/{operation_id}",
             response_model=MultiChanEstimationStatusResponse,
@@ -118,18 +114,6 @@ class MultiDsChanEstRouter(AbstractService):
         def get_status(operation_id: str) -> MultiChanEstimationStatusResponse:
             """
             **Retrieve Status of Multi-Channel Estimation Operation**
-
-            Returns the current state of an active or completed downstream OFDM channel estimation task.
-            This includes how many capture samples have been collected and whether the process is still
-            running, completed, or failed.
-
-            Useful for polling the status after initiating a long-running multi-capture process.
-
-            ---
-            - `operation_id` corresponds to the unique identifier returned when starting the capture.
-            - The response includes `start_time`, `sample_count`, and `status` (e.g., IN_PROGRESS, COMPLETE).
-
-            [API Guide - Multi-Channel Estimation Operation Retrive Status](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-chan-est.md)
             """
             try:
                 service:MultiChannelEstimationService = self.getService(operation_id) # type: ignore
@@ -140,17 +124,15 @@ class MultiDsChanEstRouter(AbstractService):
             status = service.status(operation_id)
 
             return MultiChanEstimationStatusResponse(
-                mac_address=str(service.cm.get_mac_address),
-                status="success",
-                message=None,
+                mac_address     =   str(service.cm.get_mac_address),
+                status          =   "success",
+                message         =   None,
                 operation=MultiChanEstimationResponseStatus(
-                    operation_id=operation_id,
-                    state=status["state"],
-                    collected=status["collected"],
-                    time_remaining=status["time_remaining"],
-                    message=None,
-                ),
-            )
+                    operation_id    =   operation_id,
+                    state           =   status["state"],
+                    collected       =   status["collected"],
+                    time_remaining  =   status["time_remaining"],
+                    message         =   None,),)
 
         @self.router.get("/results/{operation_id}",
             summary="Download a ZIP archive of all ChannelEstimation capture files",
@@ -164,16 +146,6 @@ class MultiDsChanEstRouter(AbstractService):
         def download_results_zip(operation_id: str) -> StreamingResponse:
             """
             **Download Captured Channel Estimation Results as ZIP**
-
-            Streams a compressed ZIP archive containing all PNM raw capture files (e.g., `.bin`) 
-            generated by a multi-channel downstream OFDM Channel Estimation operation.
-
-            ---
-            - `operation_id` identifies the capture session to retrieve files for.
-            - The ZIP includes per-channel result files and metadata associated with the operation.
-            - Ideal for batch download or offline analysis tools.
-
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-chan-est.md)
             """
             svc:MultiChannelEstimationService = self.getService(operation_id) # type: ignore
             samples = svc.results(operation_id)
@@ -204,16 +176,6 @@ class MultiDsChanEstRouter(AbstractService):
         def stop_capture(operation_id: str) -> MultiChanEstimationStatusResponse:
             """
             **Stop Multi-Channel Estimation Capture Operation**
-
-            Sends a signal to gracefully stop an active OFDM Channel Estimation operation after 
-            completing the current measurement cycle. This avoids mid-capture truncation and ensures 
-            all in-progress samples are saved.
-
-            ---
-            - `operation_id` must refer to an active capture session.
-            - The operation will finalize pending tasks before returning status.
-
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-chan-est.md)
             """
             try:
                 service:MultiChannelEstimationService = self.getService(operation_id) # type: ignore
@@ -228,13 +190,11 @@ class MultiDsChanEstRouter(AbstractService):
                 status=OperationState.STOPPED,
                 message=None,
                 operation=MultiChanEstimationResponseStatus(
-                    operation_id=operation_id,
-                    state=status["state"],
-                    collected=status["collected"],
-                    time_remaining=status["time_remaining"],
-                    message=None,
-                ),
-            )
+                    operation_id    =   operation_id,
+                    state           =   status["state"],
+                    collected       =   status["collected"],
+                    time_remaining  =   status["time_remaining"],
+                    message         =   None,),)
 
         @self.router.post("/analysis",
             response_model=MultiChanEstimationAnalysisResponse,
@@ -242,77 +202,56 @@ class MultiDsChanEstRouter(AbstractService):
         def analysis(request: MultiChanEstimationAnalysisRequest) -> MultiChanEstimationAnalysisResponse:
             """
             **Perform Post-Capture Analysis on Multi-DS Channel Estimation Data**
-
-            Executes structured analysis on previously captured downstream OFDM Channel Estimation files.
-            Computes and returns per-channel statistics such as group delay, tap energy profiles, 
-            equalization effectiveness, and visualization summaries (if applicable).
-
-            ---
-            - Requires a completed capture operation ID.
-            - Returns results as structured JSON; Excel or plot output optional via extended request.
-
-            📘 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-chan-est.md)
             """
             try:
-                capture_group_id:str = OperationManager.get_capture_group(request.operation_id)
+                capture_group_id:GroupId = OperationManager.get_capture_group(request.operation_id)
             except KeyError:
                 return MultiChanEstimationAnalysisResponse(
-                    mac_address=request.cable_modem.mac_address,
-                    status=ServiceStatusCode.CAPTURE_GROUP_NOT_FOUND,
-                    message=f"No capture group found for operation {request.operation_id}",
-                    data={}
-                )
+                    mac_address =   MacAddress.null(),
+                    status      =   ServiceStatusCode.CAPTURE_GROUP_NOT_FOUND,
+                    message     =   f"No capture group found for operation {request.operation_id}",
+                    data        =   {})
 
-            # 2) Load and index the raw PNM files
-            aggregator = CaptureDataAggregator(capture_group_id)
-            pcollect: PnmCollection = aggregator.getPnmCollection()
-            if not pcollect:
-                return MultiChanEstimationAnalysisResponse(
-                    mac_address=request.cable_modem.mac_address,
-                    status=ServiceStatusCode.FAILURE,
-                    message=f"Unable to collect PNM files for group {capture_group_id}",
-                    data={}
-                )
-
-            # 3) Dispatch based on requested analysis_type
             atype = MultiChanEstimationAnalysisType(request.analysis.type)
             
             if atype == MultiChanEstimationAnalysisType.MIN_AVG_MAX:
-                engine = MultiChanEstimationSignalAnalysis(pcollect, MultiChanEstimationAnalysisType.MIN_AVG_MAX)
-                analysis_rst_dict = engine.to_dict()
+                engine = MultiChanEstimationSignalAnalysis(capture_group_id, MultiChanEstimationAnalysisType.MIN_AVG_MAX)
+                analysis_rst = engine.to_model()
                 
             elif atype == MultiChanEstimationAnalysisType.GROUP_DELAY:
-                engine = MultiChanEstimationSignalAnalysis(pcollect, MultiChanEstimationAnalysisType.GROUP_DELAY)
-                analysis_rst_dict = engine.to_dict()
+                engine = MultiChanEstimationSignalAnalysis(capture_group_id, MultiChanEstimationAnalysisType.GROUP_DELAY)
+                analysis_rst = engine.to_model()
                             
             elif atype == MultiChanEstimationAnalysisType.LTE_DETECTION_PHASE_SLOPE:
-                engine = MultiChanEstimationSignalAnalysis(pcollect, MultiChanEstimationAnalysisType.LTE_DETECTION_PHASE_SLOPE)
-                analysis_rst_dict = engine.to_dict()
-                print(analysis_rst_dict)
+                engine = MultiChanEstimationSignalAnalysis(capture_group_id, MultiChanEstimationAnalysisType.LTE_DETECTION_PHASE_SLOPE)
+                analysis_rst = engine.to_model()
                 
             elif atype == MultiChanEstimationAnalysisType.ECHO_DETECTION_PHASE_SLOPE:
-                engine = MultiChanEstimationSignalAnalysis(pcollect, MultiChanEstimationAnalysisType.ECHO_DETECTION_PHASE_SLOPE)
-                analysis_rst_dict = engine.to_dict()                
+                engine = MultiChanEstimationSignalAnalysis(capture_group_id, MultiChanEstimationAnalysisType.ECHO_DETECTION_PHASE_SLOPE)
+                analysis_rst = engine.to_model()                
 
             elif atype == MultiChanEstimationAnalysisType.ECHO_DETECTION_IFFT:
-                engine = MultiChanEstimationSignalAnalysis(pcollect, MultiChanEstimationAnalysisType.ECHO_DETECTION_IFFT)
-                analysis_rst_dict = engine.to_dict()   
+                engine = MultiChanEstimationSignalAnalysis(capture_group_id, MultiChanEstimationAnalysisType.ECHO_DETECTION_IFFT)
+                analysis_rst = engine.to_model()   
             
             else:
                 raise HTTPException(status_code=400, detail=f"Unsupported analysis type: {atype}")
 
-            # 4) Map analysis output to response fields
-            data = analysis_rst_dict.get("data", [])
-            error = analysis_rst_dict.get("error")
+            # 4) Map analysis output to response fields (typed model)
+            #    analysis_rst is MultiChanEstimationResult
+            data_payload = {
+                "analysis_type": analysis_rst.analysis_type,
+                "results": [r.model_dump() for r in analysis_rst.results],
+            }
+            error = analysis_rst.error
             status = ServiceStatusCode.SUCCESS if not error else ServiceStatusCode.FAILURE
-            message = error or f"Analysis {MultiChanEstimationAnalysisType(atype).name} completed for group {capture_group_id}"
+            message = error or f"Analysis {analysis_rst.analysis_type} completed for group {capture_group_id}"
 
             return MultiChanEstimationAnalysisResponse(
-                mac_address=request.cable_modem.mac_address,
-                status=status,
-                message=message,
-                data=data
-            )
+                mac_address =   engine.get_mac_address(),
+                status      =   status,
+                message     =   message,
+                data        =   data_payload)
 
 # For dynamic auto-registration
 router = MultiDsChanEstRouter().router

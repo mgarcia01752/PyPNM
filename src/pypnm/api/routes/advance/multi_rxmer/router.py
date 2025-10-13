@@ -22,6 +22,7 @@ from pypnm.api.routes.advance.multi_rxmer.schemas import (
     MultiRxMerResponseStatus, MultiRxMerStartResponse, MultiRxMerStatusResponse)
 from pypnm.api.routes.advance.multi_rxmer.service import MultiRxMer_Ofdm_Performance_1_Service, MultiRxMerService
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+from pypnm.api.routes.common.classes.file_capture.types import GroupId
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.files.service import FileType, PnmFileService
@@ -272,15 +273,15 @@ class MultiRxMerRouter(AbstractService):
 
             """
             try:
-                capture_group_id = OperationManager.get_capture_group(request.operation_id)
+                capture_group_id:GroupId = OperationManager.get_capture_group(request.operation_id)
                 self.logger.info(f'[analysis] - OperationID: {request.operation_id} -> CaptureGroup: {capture_group_id}')
 
             except KeyError:
                 return MultiRxMerAnalysisResponse(
-                    mac_address=MacAddress.null(),
-                    status=ServiceStatusCode.CAPTURE_GROUP_NOT_FOUND,
-                    message=f"No capture group found for operation {request.operation_id}",
-                    data={})
+                    mac_address =   MacAddress.null(),
+                    status      =   ServiceStatusCode.CAPTURE_GROUP_NOT_FOUND,
+                    message     =   f"No capture group found for operation {request.operation_id}",
+                    data        =   {})
 
             cda = CaptureDataAggregator(capture_group_id)
             

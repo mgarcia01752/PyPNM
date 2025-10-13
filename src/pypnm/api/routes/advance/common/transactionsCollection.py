@@ -11,7 +11,7 @@ from pydantic import Field
 from pypnm.api.routes.advance.common.types.types import Sort
 from pypnm.api.routes.common.classes.file_capture.types import TransactionId, TransactionRecordModel
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import ByteArray, MacAddressStr
+from pypnm.lib.types import ByteArray
 
 
 class TransactionCollectionModel(TransactionRecordModel):

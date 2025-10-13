@@ -1,51 +1,67 @@
+Excellent — here’s your **final, clean Markdown documentation** with a **summary table at the top** linking directly to each endpoint section.
+The formatting is strictly functional (no emojis or decorative icons), preserving your project’s documentation style and SPDX header convention.
+
+---
+
+````markdown
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 # Multi-DS Channel Estimation API Guide
 
-The Multi-DS Channel Estimation API allows clients to schedule periodic captures of downstream OFDM channel estimation coefficients, monitor progress, retrieve the raw PNM sample files, stop an in-progress capture, and perform post-capture analysis.
+The Multi-DS Channel Estimation API provides mechanisms to schedule periodic captures of downstream OFDM channel estimation coefficients, monitor capture progress, retrieve raw PNM sample files, stop an in-progress capture, and perform post-capture analysis.
+
+## Endpoint Summary
+
+| Endpoint | HTTP Method | Section Reference | Description |
+|-----------|--------------|-------------------|--------------|
+| `/advance/multiChannelEstimation/start` | `POST` | [Start Capture](#1-start-capture) | Begin a multi-sample ChannelEstimation capture |
+| `/advance/multiChannelEstimation/status/{operation_id}` | `GET` | [Check Status](#2-check-status) | Retrieve capture progress and status |
+| `/advance/multiChannelEstimation/results/{operation_id}` | `GET` | [Download Results](#3-download-results) | Download a ZIP of captured PNM files |
+| `/advance/multiChannelEstimation/stop/{operation_id}` | `DELETE` | [Stop Capture Early](#4-stop-capture-early) | Stop an active capture gracefully |
+| `/advance/multiChannelEstimation/analysis` | `POST` | [Analysis](#5-analysis) | Run signal analysis on collected data |
+
+---
 
 ## Workflow Overview
 
-1. **Start a Capture** (`POST /advance/multiChannelEstimation/start`)
+1. **Start a Capture** (`POST /advance/multiChannelEstimation/start`)  
+   Submit capture parameters (duration, interval) and SNMP settings.  
+   Returns a `group_id` and `operation_id` for tracking.
 
-   * Submit capture parameters (duration, interval) and SNMP settings.
-   * Returns a `group_id` and `operation_id` for tracking.
+2. **Check Status** (`GET /advance/multiChannelEstimation/status/{operation_id}`)  
+   Poll the capture state, number of samples collected, and time remaining.
 
-2. **Check Status** (`GET /advance/multiChannelEstimation/status/{operation_id}`)
+3. **Download Results** (`GET /advance/multiChannelEstimation/results/{operation_id}`)  
+   Stream a ZIP archive containing all captured PNM files for the operation.
 
-   * Poll to obtain current state, number of samples collected, and time remaining.
+4. **Stop Early** (`DELETE /advance/multiChannelEstimation/stop/{operation_id}`)  
+   Signal the background process to stop after the current iteration and return the final status.
 
-3. **Download Results** (`GET /advance/multiChannelEstimation/results/{operation_id}`)
+5. **Analysis** (`POST /advance/multiChannelEstimation/analysis`)  
+   Provide an `operation_id` and `analysis_type` to run signal-analysis routines on collected samples.
 
-   * Stream a ZIP archive containing all captured PNM files for the operation.
+---
 
-4. **Stop Early** (`DELETE /advance/multiChannelEstimation/stop/{operation_id}`)
+## 1. Start Capture
 
-   * Signal the background task to cease after the current iteration; returns final status.
-
-5. **Analysis** (`POST /advance/multiChannelEstimation/analysis`)
-
-   * Provide `operation_id` and an `analysis_type` to run signal-analysis routines on collected samples.
-
-
-## Endpoint Stubs
-
-### 1. Start Capture
-
-**Request** (`MultiChanEstimationRequest` stub):
+**Request** (`MultiChanEstimationRequest`):
 
 ```json
 {
   "cable_modem": {
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": { "community": "public" },
-    "snmpV3": {
-      "username": "user",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "password",
-      "privProtocol": "DES",
-      "privPassword": "password"
+    "mac_address": "aa:bb:cc:dd:ee:ff",
+    "ip_address": "192.168.0.100",
+    "snmp": {
+      "snmpV2C": { "community": "public" },
+      "snmpV3": {
+        "username": "user",
+        "securityLevel": "noAuthNoPriv",
+        "authProtocol": "MD5",
+        "authPassword": "password",
+        "privProtocol": "DES",
+        "privPassword": "password"
+      }
     }
   },
   "capture": {
@@ -55,13 +71,17 @@ The Multi-DS Channel Estimation API allows clients to schedule periodic captures
     }
   }
 }
-```
+````
 
-### 2. Status Check
+---
 
-**Request**: `GET /advance/multiChannelEstimation/status/{operation_id}`
+## 2. Check Status
 
-**Response** (`MultiChanEstimationStatusResponse` stub):
+**Request**
+
+`GET /advance/multiChannelEstimation/status/3df9f479d7a549b7`
+
+**Response** (`MultiChanEstimationStatusResponse`):
 
 ```json
 {
@@ -69,7 +89,7 @@ The Multi-DS Channel Estimation API allows clients to schedule periodic captures
   "status": "success",
   "message": null,
   "operation": {
-    "operation_id": "op-xyz789",
+    "operation_id": "3df9f479d7a549b7",
     "state": "RUNNING",
     "collected": 3,
     "time_remaining": 105,
@@ -78,61 +98,76 @@ The Multi-DS Channel Estimation API allows clients to schedule periodic captures
 }
 ```
 
-### 3. Download Results
+---
 
-**Request**: `GET /advance/multiChannelEstimation/results/{operation_id}`
+## 3. Download Results
 
-**Response**: ZIP archive (`application/zip`) containing files:
+**Request**
 
-```shell
+`GET /advance/multiChannelEstimation/results/3df9f479d7a549b7`
+
+**Response**
+
+ZIP archive (`application/zip`) containing captured ChannelEstimation files.
+
+Example archive contents:
 
 ```
 
-### 4. Stop Capture Early
+```
 
-**Request**: `DELETE /advance/multiChannelEstimation/stop/{operation_id}`
+---
 
-**Response** (`MultiChanEstimationStatusResponse` stub):
+## 4. Stop Capture Early
+
+**Request**
+
+`DELETE /advance/multiChannelEstimation/stop/3df9f479d7a549b7`
+
+**Response** (`MultiChanEstimationStatusResponse`):
+
 ```json
 {
   "mac_address": "aa:bb:cc:dd:ee:ff",
   "status": "STOPPED",
   "message": null,
   "operation": {
-    "operation_id": "op-xyz789",
+    "operation_id": "3df9f479d7a549b7",
     "state": "STOPPED",
     "collected": 5,
     "time_remaining": 0,
     "message": null
   }
 }
-````
+```
 
-### 5. Analysis
+---
 
+## 5. Analysis
 
-| Analysis Type                | Value | Description                                                                                                  |
-| ---------------------------- | ----- | ------------------------------------------------------------------------------------------------------------ |
-| `MIN_AVG_MAX`                | `0`   | Computes minimum, average, and maximum amplitude or phase values across all channels and capture snapshots.  |
-| `GROUP_DELAY`                | `1`   | Calculates per-subcarrier group delay from the channel frequency response (phase derivative vs frequency).   |
-| `LTE_DETECTION_PHASE_SLOPE`  | `2`   | Detects potential LTE interference patterns using phase-slope anomalies across the OFDM spectrum.            |
-| `ECHO_DETECTION_PHASE_SLOPE` | `3`   | Identifies in-channel echoes or reflections by evaluating abnormal phase slope discontinuities.              |
-| `ECHO_DETECTION_IFFT`        | `4`   | Performs echo detection via inverse FFT of channel estimation coefficients to reveal impulse-response peaks. |
+**Available Analysis Types**
 
+| Analysis Type                | Value | Description                                                                                     |
+| ---------------------------- | ----- | ----------------------------------------------------------------------------------------------- |
+| `MIN_AVG_MAX`                | `0`   | Computes minimum, average, and maximum amplitude or phase values across all captures.           |
+| `GROUP_DELAY`                | `1`   | Calculates per-subcarrier group delay from the channel frequency response.                      |
+| `LTE_DETECTION_PHASE_SLOPE`  | `2`   | Detects potential LTE interference using phase-slope anomalies across the OFDM spectrum.        |
+| `ECHO_DETECTION_PHASE_SLOPE` | `3`   | Identifies in-channel echoes or reflections by evaluating abnormal phase slope discontinuities. |
+| `ECHO_DETECTION_IFFT`        | `4`   | Performs echo detection via inverse FFT to reveal impulse-response peaks.                       |
 
-**Request** (`MultiChanEstimationAnalysisRequest` stub):
+**Request** (`MultiChanEstimationAnalysisRequest`):
 
 ```json
 {
   "mac_address": "aa:bb:cc:dd:ee:ff",
-  "operation_id": "op-xyz789",
+  "operation_id": "3df9f479d7a549b7",
   "analysis": {
-    "analysis_type": 1  // e.g., GROUP_DELAY
+    "analysis_type": 1
   }
 }
 ```
 
-**Response** (`MultiChanEstimationAnalysisResponse` stub):
+**Response** (`MultiChanEstimationAnalysisResponse`):
 
 ```json
 {
@@ -140,7 +175,10 @@ The Multi-DS Channel Estimation API allows clients to schedule periodic captures
   "status": 0,
   "message": "Analysis GROUP_DELAY completed for group grp-abc123",
   "data": {
-    // Results structure varies by analysis_type
+    "194": {
+      "frequency": [90000000, 90001562, 90003125],
+      "group_delay_us": [0.08, 0.07, 0.09]
+    }
   }
 }
 ```
