@@ -5,7 +5,8 @@ from __future__ import annotations
 
 import logging
 from enum import Enum
-from typing import List, Optional, Union, Dict
+from typing import List, Optional, Union, Dict, cast
+from numpy.typing import ArrayLike
 from pydantic import BaseModel, Field
 
 from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.ifft import IfftEchoDetector
@@ -237,12 +238,12 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                     if not isinstance(r, MinAvgMaxModel):
                         continue
                     cfg = PlotConfig(
-                        x=r.frequency,
-                        y_multi=[r.min, r.avg, r.max],
-                        y_multi_label=["Min", "Avg", "Max"],
-                        xlabel="Subcarrier Frequency (Hz)",
-                        ylabel="Amplitude (dB)",
                         title=f"Channel {r.channel_id} — Min/Average/Max Amplitude",
+                        x       =   cast(ArrayLike, r.frequency),
+                        xlabel  =   "Subcarrier Frequency (Hz)",
+                        y_multi         =   [r.min, r.avg, r.max],
+                        y_multi_label   =   ["Min", "Avg", "Max"],
+                        ylabel          =   "Amplitude (dB)",
                         grid=True, legend=True, theme="dark")
                     mp = MatplotManager(default_cfg=cfg)
                     mp.plot_multi_line(self.create_png_fname(tags=[f"ch{r.channel_id}", "minavgmax"]))

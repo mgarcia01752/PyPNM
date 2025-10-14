@@ -299,9 +299,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                             start      = fec_summary.start,
                             end        = fec_summary.end,
                             channel_id = fec_summary.channel_id,
-                            summary    = [fec_entry],
-                        )
-                    )
+                            summary    = [fec_entry],))
 
                     profile_entries.append(
                         ProfileEntryModel(
@@ -318,8 +316,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 frequency           = frequencies,
                 avg_mer             = mam.avg,
                 mer_shannon_limits  = shannon_model.snr_db_min,
-                profiles            = profile_entries,
-            )
+                profiles            = profile_entries,)
 
         return models
 
