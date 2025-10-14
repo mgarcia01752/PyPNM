@@ -120,7 +120,7 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
         
         mac = request.cable_modem.mac_address
         ip = request.cable_modem.ip_address
-        self.logger.info(f"Generating RxMER Analysis: {request.analysis.type} for MAC: {request.cable_modem.mac_address}")
+        self.logger.info(f"Generating RxMER Analysis: {request.analysis.type} for MAC: {mac}")
 
         cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
         

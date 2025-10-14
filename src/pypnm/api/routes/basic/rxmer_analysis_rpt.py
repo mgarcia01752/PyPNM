@@ -19,7 +19,7 @@ from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.numeric_scaler import NumericScaler
 from pypnm.lib.signal_processing.shan.series import Shannon
-from pypnm.lib.types import ArrayLike, FloatSeries, FloatSeries
+from pypnm.lib.types import ArrayLike, FloatSeries
 
 class RxMerParametersAnalysisRpt(BaseModel):
     """
@@ -130,7 +130,7 @@ class RxMerAnalysisReport(AnalysisReport):
             x_khz, _ = NumericScaler().to_prefix(values=x_hz, target="k")
             chan_id_list.append(channel_id)
 
-            title_prefix = f'RxMER OFDM Channels: ({chan_id_list})'
+            title_prefix = f'RxMER OFDM Channel: ({channel_id})'
 
             '''
             RxMER with Regression Line - All OFDM DS Channels
@@ -139,9 +139,9 @@ class RxMerAnalysisReport(AnalysisReport):
 
                 cfg = PlotConfig(
                     title=f'{title_prefix}',
-                    x=x_khz,            xlabel="Frequency (kHz)",
+                    x=x_khz,xlabel="Frequency (kHz)",
                     y_multi=[y_db, rl], y_multi_label=["RxMER", "Regression Line"],
-                    grid=True, legend=True, transparent=False,)
+                    grid=True, legend=True, transparent=False, theme="dark")
 
                 multi = self.create_png_fname(tags=[str(channel_id), 'rxmer'])
                 self.logger.debug("Creating MatPlot: %s for channel: %s", multi, channel_id)
@@ -162,9 +162,9 @@ class RxMerAnalysisReport(AnalysisReport):
                 
                 cfg = PlotConfig(
                     title=f"{title_prefix} - Modulation Order Count",
-                    x=bpsym,                  xlabel="Bits Per Symbol (bps)",
-                    y=order_count,            ylabel="Order Count",
-                    grid=True, legend=True, transparent=False,)
+                    x=bpsym, xlabel="Bits Per Symbol (bps)",
+                    y=order_count, ylabel="Order Count",
+                    grid=True, legend=True, transparent=False, theme="dark")
 
                 mod_count_fname = self.create_png_fname(tags=[str(channel_id), 'modulation_count'])
                 self.logger.debug("Creating MatPlot: %s for channel: %s", mod_count_fname, channel_id)
@@ -184,9 +184,9 @@ class RxMerAnalysisReport(AnalysisReport):
                 x, y = self._sig_cap_agg.get_series()
                 cfg = PlotConfig(
                     title=f"{title_prefix}",
-                    x=x,            xlabel="Frequency(Hz)",
-                    y=y,            ylabel="Magnitude(dB)",
-                    grid=True, legend=True, transparent=False,)
+                    x=x, xlabel="Frequency(Hz)",
+                    y=y, ylabel="MER(dB)",
+                    grid=True, legend=True, transparent=False, theme="dark")
 
                 signal_aggregate_fname = self.create_png_fname(tags=['signal_aggregate'])
                 self.logger.debug(f"Creating MatPlot: {signal_aggregate_fname} for aggregated RxMER capture")

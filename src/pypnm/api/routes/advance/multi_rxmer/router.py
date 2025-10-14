@@ -265,10 +265,10 @@ class MultiRxMerRouter(AbstractService):
             - **0 - Min/Avg/Max**  
             [View Spec](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/rest/multi-rxmer-min-avg-max.md)
 
-            - **1 - OFDM Profile Performance**  
+            - **1 - RxMER Heat Map**  
             *(Documentation link pending)*
 
-            - **2 - RxMER Heat Map**  
+            - **2 - OFDM Profile Performance 1**  
             *(Documentation link pending)*
 
             """
