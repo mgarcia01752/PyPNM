@@ -4,9 +4,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import (
-    Any, Dict, List, NewType,
-    Sequence, Tuple, Union,)
+from typing import (Any, Dict, List, NewType, Sequence, Tuple, Union,)
 
 import numpy as np
 from numpy.typing import NDArray
@@ -33,6 +31,7 @@ NDArrayF64      = NDArray[np.float64]
 NDArrayI64      = NDArray[np.int64]
 
 # Simple series types
+IntSeries       = NewType("IntSeries", List[int])
 FloatSeries     = NewType("FloatSeries", List[float])
 TwoDFloatSeries = NewType("TwoDFloatSeries",List[FloatSeries]) # e.g., heatmaps
 FloatSequence   = NewType("FloatSequence", Sequence[float])
@@ -106,7 +105,7 @@ RegressionCoeffs = Tuple[float, float]          # (slope, intercept)
 RegressionStats  = Tuple[float, float, float]    # (slope, intercept, r2)
 
 # RxMER / spectrum containers
-FrequencySeriesHz = FloatSeries                  # alias for intent
+FrequencySeriesHz = NewType("FrequencySeriesHz", List[int])
 MerSeriesdB       = FloatSeries
 ShannonSeriesdB   = FloatSeries
 MagnitudeSeries   = FloatSeries
@@ -123,8 +122,9 @@ __all__ = [
     "ByteArray",
     
     # numerics
-    "Number", "Float64", "ArrayLike", "ArrayLikeF64", "NDArrayF64", "NDArrayI64",
-    "FloatSeries", "FloatSeries", "TwoDFloatSeries",
+    "Number",       "Float64",      "ArrayLike",    "ArrayLikeF64", 
+    "NDArrayF64",   "NDArrayI64",
+    "FloatSeries",  "FloatSeries",  "TwoDFloatSeries",
     
     # paths
     "PathLike",
@@ -134,11 +134,11 @@ __all__ = [
     
     # unit-tagged
     "TimestampSec", "SampleIndex",
-    "FrequencyHz", "BandwidthHz", "PowerdBmV", "PowerdB", "MERdB", "SNRdB", "MagnitudeSeries",
-    "ChannelId", "SubcarrierId", "CaptureTime",
-    "OidStr", "OidNumTuple",
-    "MacAddressStr", "IPv4Str", "IPv6Str",
-    "FileStem", "FileExt",
+    "FrequencyHz",  "BandwidthHz",  "PowerdBmV",    "PowerdB",  "MERdB",    "SNRdB",    "MagnitudeSeries",
+    "ChannelId",    "SubcarrierId", "CaptureTime",
+    "OidStr",       "OidNumTuple",
+    "MacAddressStr","IPv4Str",      "IPv6Str",
+    "FileStem",     "FileExt",
     
     # analysis tuples / series
     "RegressionCoeffs", "RegressionStats",

@@ -12,6 +12,7 @@ from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_snmp import SNMPConfig
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import MacAddressStr
 
 # Default settings
 default_mac = SystemConfigSettings.default_mac_address
@@ -36,9 +37,9 @@ class PnmParameters(BaseModel):
 # -----------------------------
 
 class CableModemConfig(BaseModel):
-    mac_address: str = Field(default=default_mac, description="MAC address of the cable modem")
-    ip_address: str = Field(default=default_ip, description="IP address of the cable modem")
-    pnm_parameters: PnmParameters = Field(description="PNM Parameters including SNMP and TFTP")
+    mac_address: MacAddressStr      = Field(default=default_mac, description="MAC address of the cable modem")
+    ip_address: str                 = Field(default=default_ip, description="IP address of the cable modem")
+    pnm_parameters: PnmParameters   = Field(description="PNM Parameters including SNMP and TFTP")
 
     @field_validator("mac_address")
     def validate_mac(cls, v: str) -> str:
@@ -73,7 +74,7 @@ class CommonAnalysisRequest(BaseModel):
     output: CommonOutput = Field(description="Output type: JSON or file")
 
 class CommonResponse(BaseModel):
-    mac_address: str = Field(default=default_mac, description="MAC address of the cable modem")
+    mac_address: MacAddressStr = Field(default=default_mac, description="MAC address of the cable modem")
     status: Optional[Union[ServiceStatusCode, OperationState, str]] = Field(default="success", description="Operation status")
     message: Optional[str] = Field(default=None, description="Additional information or error details")
 

@@ -52,22 +52,22 @@ class GroupDelayAnalysisModel(BaseModel):
 
 
 class LteDetectionModel(BaseModel):
-    channel_id: ChannelId = Field(..., description="OFDM downstream channel ID")
-    anomalies: FloatSeries = Field(..., description="Detected LTE interference magnitudes/indices")
-    threshold: float = Field(..., description="Group-delay ripple threshold")
+    channel_id: ChannelId   = Field(..., description="OFDM downstream channel ID")
+    anomalies: FloatSeries  = Field(..., description="Detected LTE interference magnitudes/indices")
+    threshold: float        = Field(..., description="Group-delay ripple threshold")
     bin_widths: FloatSeries = Field(..., description="Bin widths used for segmentation (Hz)")
 
 
 class EchoDetectionPhaseSlopeModel(BaseModel):
-    channel_id: ChannelId = Field(..., description="OFDM downstream channel ID")
-    slope_profile: FloatSeries = Field(..., description="Phase-slope values (radians/Hz)")
-    frequency: FrequencySeriesHz = Field(..., description="Subcarrier frequency bins (Hz)")
+    channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
+    slope_profile: FloatSeries      = Field(..., description="Phase-slope values (radians/Hz)")
+    frequency: FrequencySeriesHz    = Field(..., description="Subcarrier frequency bins (Hz)")
 
 
 class EchoDetectionIfftModel(BaseModel):
-    channel_id: ChannelId = Field(..., description="OFDM downstream channel ID")
-    impulse_response: FloatSeries = Field(..., description="Impulse-response magnitude vs delay")
-    sample_rate: float = Field(..., description="Sample rate used for IFFT (Hz)")
+    channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
+    impulse_response: FloatSeries   = Field(..., description="Impulse-response magnitude vs delay")
+    sample_rate: float              = Field(..., description="Sample rate used for IFFT (Hz)")
 
 
 class MultiChanEstimationResult(BaseModel):
@@ -149,10 +149,9 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                 self._results = self.__process()
             except Exception as e:
                 return MultiChanEstimationResult(
-                    analysis_type=self._analysis_type.name,
-                    results=[],
-                    error=str(e),
-                )
+                    analysis_type   =   self._analysis_type.name,
+                    results         =   [],
+                    error           =   str(e),)
         return self._results
 
     # ──────────────────────────────────────────────────────────

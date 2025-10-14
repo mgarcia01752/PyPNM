@@ -13,6 +13,7 @@ from fastapi.responses import FileResponse
 
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
+from pypnm.api.routes.common.classes.file_capture.types import TransactionId
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlTest
 from pypnm.lib.mac_address import MacAddress
@@ -85,7 +86,7 @@ class PnmFileService:
             self.logger.error(f"Failed to search files for MAC {req.mac_address}: {e}")
             return FileQueryResponse(files={req.mac_address: []})
 
-    def get_file_by_transaction_id(self, transaction_id: str) -> FileResponse:
+    def get_file_by_transaction_id(self, transaction_id: TransactionId) -> FileResponse:
         """
         Retrieves and serves the binary file associated with the given transaction ID.
 
@@ -147,10 +148,9 @@ class PnmFileService:
         )
 
         return PushFileResponse(
-            mac_address=req.mac_address,
-            filename=req.filename,
-            transaction_id=transaction_id
-        )
+            mac_address     =   req.mac_address,
+            filename        =   req.filename,
+            transaction_id  =   transaction_id)
 
     def get_analysis(self, req: FileAnalysisRequest) -> AnalysisResponse:
         """
@@ -185,7 +185,7 @@ class PnmFileService:
         safe_name = Path(filename).name
 
         # Optional: Further sanitize the filename, ensure it's safe and has a valid extension.
-        valid_extensions = ['.csv', '.json', '.xlsx', '.zip']
+        valid_extensions = ['.csv', '.json', '.zip']
         if not any(safe_name.endswith(ext) for ext in valid_extensions):
             raise HTTPException(status_code=400, detail=f"Invalid file extension, file: {safe_name}")
 
@@ -197,13 +197,7 @@ class PnmFileService:
         elif file_type == FileType.JSON:
             base_dir = SystemConfigSettings.json_dir
             media_type = "application/json"
-        
-        elif file_type == FileType.XLSX:
-            base_dir = SystemConfigSettings.xlsx_dir
-            media_type = (
-                "application/vnd.openxmlformats-officedocument."
-                "spreadsheetml.sheet")
-        
+                
         elif file_type == FileType.ARCHIVE:
             base_dir = SystemConfigSettings.archive_dir
             media_type = "application/zip"

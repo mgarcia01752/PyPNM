@@ -619,7 +619,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                     cfg = PlotConfig(
                         title   = f"OFDM PROFILE PERFORMANCE 1 - Ch {ch_id} Profile {pid}",
                         xlabel  = "Frequency (kHz)",
-                        ylabel  = "MER (dB)",
+                        ylabel  = "Average MER (dB)",
                         grid    = True, legend  = True,
                         transparent = False, theme   = "dark",)
 
