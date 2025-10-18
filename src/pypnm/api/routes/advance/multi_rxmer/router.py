@@ -15,6 +15,7 @@ from pypnm.api.routes.advance.analysis.signal_analysis.multi_rxmer_signal_analys
     MultiRxMerAnalysisResult, MultiRxMerAnalysisType, MultiRxMerSignalAnalysis)
 from pypnm.api.routes.advance.common.abstract.service import AbstractService
 from pypnm.api.routes.advance.common.capture_data_aggregator import CaptureDataAggregator
+from pypnm.api.routes.advance.common.capture_service import OperationId
 from pypnm.api.routes.advance.common.operation_manager import OperationManager
 from pypnm.api.routes.advance.common.operation_state import OperationState
 from pypnm.api.routes.advance.multi_rxmer.schemas import (
@@ -136,7 +137,7 @@ class MultiRxMerRouter(AbstractService):
         @self.router.get("/status/{operation_id}",
             response_model=MultiRxMerStatusResponse,
             summary="Get status of a multi-sample RxMER capture",)
-        def get_status(operation_id: str) -> MultiRxMerStatusResponse:
+        def get_status(operation_id: OperationId) -> MultiRxMerStatusResponse:
             """
             **Check Multi-RxMER Capture Status**
 
@@ -337,7 +338,16 @@ class MultiRxMerRouter(AbstractService):
             analysis_name = MultiRxMerAnalysisType(atype).name
             message = f"Analysis {analysis_name} completed for group {capture_group_id}"
 
-            output_type = FileType(request.output.type)
+            try:
+                output_type = FileType(request.output.type)
+            except ValueError:
+                msg = f'Invalid Output Type Selected: ({request.output.type})'
+                return MultiRxMerAnalysisResponse(
+                    mac_address =   MacAddress.null(),
+                    status      =   ServiceStatusCode.INVALID_OUTPUT_TYPE,
+                    message     =   msg,
+                    data        =   {})
+            
             mac_address = multi_analysis.mac_address
 
             if output_type == FileType.JSON:
@@ -348,17 +358,19 @@ class MultiRxMerRouter(AbstractService):
                     message     =   message,
                     data        =   data,)
 
-            if output_type == FileType.ARCHIVE:
+            elif output_type == FileType.ARCHIVE:
                 rpt = engine.build_report()
                 return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)
+            
+            else:
 
-            # Fallback for unsupported output types
-            return MultiRxMerAnalysisResponse(
-                mac_address =   mac_address,
-                status      =   ServiceStatusCode.INVALID_OUTPUT_TYPE,
-                message     =   f"Unsupported output type: {output_type}",
-                data        =   {},
-            )
+                # Fallback for unsupported output types
+                return MultiRxMerAnalysisResponse(
+                    mac_address =   mac_address,
+                    status      =   ServiceStatusCode.INVALID_OUTPUT_TYPE,
+                    message     =   f"Unsupported output type: {output_type}",
+                    data        =   {},
+                )
 
 
 # For dynamic auto-registration

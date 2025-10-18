@@ -336,13 +336,27 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                 result = Analysis.basic_analysis_ds_chan_est_from_model(model)
                 ch = ChannelId(result.channel_id)
                 channel_data.setdefault(ch, []).append(result.carrier_values.complex)
-                freqs[ch] = result.carrier_values.frequency
+                freqs[ch] = result.carrier_values.frequency  # keep native FrequencySeriesHz (List[int])
             except Exception as e:
                 self.logger.error(f"[file={tcm.filename}] GROUP_DELAY parse failed: {e}")
-        out = []
+
+        out: List[GroupDelayAnalysisModel] = []
         for ch, cplx in channel_data.items():
-            gd = GroupDelayCalculator(cplx, freqs[ch]).to_dict()
-            out.append(GroupDelayAnalysisModel(channel_id=ch, frequency=gd.get("freqs", []), group_delay_us=gd.get("tau_us", [])))
+            # Use the new Pydantic model
+            gd_model = GroupDelayCalculator(cplx, freqs[ch]).to_model()
+
+            # Pull averaged-channel per-subcarrier group delay (seconds) and convert to microseconds
+            tau_g_sec = gd_model.group_delay_full.tau_g
+            tau_g_us  = [x * 1e6 for x in tau_g_sec]
+
+            # Use the capture-provided frequency vector to satisfy FrequencySeriesHz (List[int])
+            out.append(
+                GroupDelayAnalysisModel(
+                    channel_id=ch,
+                    frequency=freqs[ch],
+                    group_delay_us=tau_g_us,
+                )
+            )
         return out
 
     def _analyze_lte_detection(self) -> List[LteDetectionModel]:

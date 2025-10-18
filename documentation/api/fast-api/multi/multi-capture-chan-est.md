@@ -1,12 +1,3 @@
-Excellent — here’s your **final, clean Markdown documentation** with a **summary table at the top** linking directly to each endpoint section.
-The formatting is strictly functional (no emojis or decorative icons), preserving your project’s documentation style and SPDX header convention.
-
----
-
-````markdown
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
-
 # Multi-DS Channel Estimation API Guide
 
 The Multi-DS Channel Estimation API provides mechanisms to schedule periodic captures of downstream OFDM channel estimation coefficients, monitor capture progress, retrieve raw PNM sample files, stop an in-progress capture, and perform post-capture analysis.
@@ -72,8 +63,19 @@ The Multi-DS Channel Estimation API provides mechanisms to schedule periodic cap
   }
 }
 ````
+**Response** (`MultiChanEstimationStartResponse`):
 
----
+```json
+{
+  "mac_address": "aa:bb:cc:dd:ee:ff",
+  "status": "started",
+  "message": null,
+  "operation": {
+    "group_id": "grp-abc123",
+    "operation_id": "3df9f479d7a549b7"
+  }
+}
+```
 
 ## 2. Check Status
 
@@ -141,8 +143,6 @@ Example archive contents:
 }
 ```
 
----
-
 ## 5. Analysis
 
 **Available Analysis Types**
@@ -159,11 +159,13 @@ Example archive contents:
 
 ```json
 {
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "operation_id": "3df9f479d7a549b7",
   "analysis": {
-    "analysis_type": 1
-  }
+    "type": 0
+  },
+  "output": {
+    "type": 4
+  },
+  "operation_id": "hash-like-string"
 }
 ```
 

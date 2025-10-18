@@ -65,8 +65,8 @@ class AbstractCaptureService(ABC):
             self.logger.error(f"Failed to initialize CaptureGroup, reason={exc}", exc_info=True)
             raise
         
-        self._capture_group_id = ""
-        self._operation_id = ""
+        self._capture_group_id: GroupId = GroupId("")
+        self._operation_id: OperationId = OperationId("")
         
     async def start(self) -> Tuple[GroupId, OperationId]:
         """
@@ -194,26 +194,26 @@ class AbstractCaptureService(ABC):
         
         return group_id, operation_id
 
-    def getCaptureGroupID(self) -> str:
+    def getCaptureGroupID(self) -> GroupId:
         return self._capture_group_id
 
-    def getOperationID(self) -> str:
+    def getOperationID(self) -> OperationId:
         return self._operation_id
     
-    def getOperation(self, operation_id:str) -> Dict[str, Dict[str, Any]]:
+    def getOperation(self, operation_id:OperationId) -> Dict[str, Dict[str, Any]]:
         return self._ops[operation_id]
     
-    def getOperationState(self,operation_id:str) -> OperationState:
+    def getOperationState(self,operation_id:OperationId) -> OperationState:
         return self._ops[operation_id]["state"]
     
-    def setOperationFinalInvocation(self, operation_id:str, state:bool) -> None:
+    def setOperationFinalInvocation(self, operation_id:OperationId, state:bool) -> None:
             "Indicate that Runner is done, and invocate any final operations"
             self._ops[operation_id]["final_invocation"] = state
 
-    def getOperationFinalInvocation(self, operation_id:str) -> bool:
+    def getOperationFinalInvocation(self, operation_id:OperationId) -> bool:
             return self._ops[operation_id]["final_invocation"]
     
-    def status(self, operation_id: str) -> Dict[str, Any]:
+    def status(self, operation_id: OperationId) -> Dict[str, Any]:
         """
         Get the current state and sample count for a capture operation.
 
@@ -235,7 +235,7 @@ class AbstractCaptureService(ABC):
             "time_remaining": op.get("time_remaining", 0)
         }
 
-    def results(self, operation_id: str) -> List[CaptureSample]:
+    def results(self, operation_id: OperationId) -> List[CaptureSample]:
         """
         Retrieve all CaptureSample objects collected for the operation.
 
@@ -248,7 +248,7 @@ class AbstractCaptureService(ABC):
         op = self._ops.get(operation_id)
         return op["samples"] if op else []
 
-    def stop(self, operation_id: str) -> None:
+    def stop(self, operation_id: OperationId) -> None:
         """
         Signal the background runner to stop after the current iteration.
 
