@@ -193,9 +193,9 @@ Starts a background RxMER capture with a fixed duration and sample interval.
 
 | Code | Name                       | Description                        | Requires Mode |
 | ---: | -------------------------- | ---------------------------------- | ------------- |
-|  `0` | `MIN_AVG_MAX`              | Min/avg/max Channel Estimation across samples   | `0`           |
-|  `1` | `Group Delay`              | Min/avg/max Channel Estimation across samples   | `0`           |
-
+|  `0` | `MIN_AVG_MAX`              | Min/avg/max RxMER across samples   | `0`           |
+|  `1` | `RXMER_HEAT_MAP`           | Time×frequency heatmap grid        | `0`           |
+|  `2` | `OFDM_PROFILE_PERFORMANCE` | Per‑subcarrier performance metrics | `0` or `1`    |
 
 **Output Types** (`output.type`)
 
