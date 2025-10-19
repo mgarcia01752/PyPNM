@@ -68,5 +68,3 @@ Defines standardized status codes returned by both SNMP and PNM operations, such
 
 * **Reference:** [Service Status Codes](status/fast-api-status-codes.md)
 
-
-> **Note:** Update link stubs above to match your documentation structure once the detailed guides exist.

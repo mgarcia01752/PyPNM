@@ -1,0 +1,793 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.22">
+    
+    
+      
+        <title>Multi‑RxMER Capture & Analysis API - PyPNM Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.84d31ad4.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#multirxmer-capture-analysis-api" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="PyPNM Docs" class="md-header__button md-logo" aria-label="PyPNM Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PyPNM Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Multi‑RxMER Capture &amp; Analysis API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="PyPNM Docs" class="md-nav__button md-logo" aria-label="PyPNM Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    PyPNM Docs
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../master-index.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Master index
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      📚 Contents
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      At a Glance
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workflow
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Endpoints
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-start-capture" class="md-nav__link">
+    <span class="md-ellipsis">
+      1) Start Capture
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-status-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      2) Status Check
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-download-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      3) Download Results
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-stop-capture-early" class="md-nav__link">
+    <span class="md-ellipsis">
+      4) Stop Capture Early
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      5) Analysis
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#timing-polling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Timing &amp; Polling
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Timing &amp; Polling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#capture-timing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Capture Timing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polling-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Polling Strategy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#results-availability" class="md-nav__link">
+    <span class="md-ellipsis">
+      Results Availability
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stop-semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Stop Semantics
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compatibility-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compatibility Matrix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conventions
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="multirxmer-capture-analysis-api">Multi‑RxMER Capture &amp; Analysis API</h1>
+<p>A concise, implementation‑ready reference for orchestrating downstream OFDM RxMER captures, status polling, result retrieval, early termination, and post‑capture analysis.</p>
+<h2 id="contents">📚 Contents</h2>
+<ul>
+<li><a href="#at-a-glance">At a Glance</a></li>
+<li><a href="#workflow">Workflow</a></li>
+<li>
+<p><a href="#endpoints">Endpoints</a></p>
+</li>
+<li>
+<p><a href="#1-start-capture">1) Start Capture</a></p>
+</li>
+<li><a href="#2-status-check">2) Status Check</a></li>
+<li><a href="#3-download-results">3) Download Results</a></li>
+<li><a href="#4-stop-capture-early">4) Stop Capture Early</a></li>
+<li><a href="#5-analysis">5) Analysis</a></li>
+<li><a href="#timing--polling">Timing &amp; Polling</a></li>
+<li><a href="#compatibility-matrix">Compatibility Matrix</a></li>
+<li><a href="#conventions">Conventions</a></li>
+</ul>
+<h2 id="at-a-glance">At a Glance</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Step</th>
+<th style="text-align: left;">HTTP</th>
+<th style="text-align: left;">Path</th>
+<th style="text-align: left;">Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">POST</td>
+<td style="text-align: left;"><code>/advance/multiRxMer/start</code></td>
+<td style="text-align: left;">Begin a background capture</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/advance/multiRxMer/status/{operation_id}</code></td>
+<td style="text-align: left;">Poll capture progress</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/advance/multiRxMer/results/{operation_id}</code></td>
+<td style="text-align: left;">Download a ZIP of captured PNM files</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">DELETE</td>
+<td style="text-align: left;"><code>/advance/multiRxMer/stop/{operation_id}</code></td>
+<td style="text-align: left;">Stop the capture after current iteration</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">POST</td>
+<td style="text-align: left;"><code>/advance/multiRxMer/analysis</code></td>
+<td style="text-align: left;">Run post‑capture analytics</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Identifiers</strong></p>
+<ul>
+<li><code>group_id</code>: Logical grouping for related operations.</li>
+<li><code>operation_id</code>: Unique handle for one capture session. Use it for status, stop, results, and analysis.</li>
+</ul>
+<h2 id="workflow">Workflow</h2>
+<ol>
+<li><strong>Start Capture</strong> → receive <code>group_id</code> and <code>operation_id</code>.</li>
+<li><strong>Poll Status</strong> until <code>state ∈ ["completed","stopped"]</code>.</li>
+<li><strong>Download Results</strong> once finished or stopped.</li>
+<li><strong>(Optional)</strong> <strong>Stop Early</strong> to end after the current iteration.</li>
+<li><strong>Run Analysis</strong> on the finished capture using <code>operation_id</code> + analysis type.</li>
+</ol>
+<h2 id="endpoints">Endpoints</h2>
+<h3 id="1-start-capture">1) Start Capture</h3>
+<p>Starts a background RxMER capture with a fixed duration and sample interval.</p>
+<p><strong>Request</strong> <code>POST /advance/multiRxMer/start</code>
+<strong>Body</strong> (<code>MultiRxMerRequest</code>):</p>
+<pre><code class="language-json">{
+  &quot;cable_modem&quot;: {
+    &quot;mac_address&quot;: &quot;aa:bb:cc:dd:ee:ff&quot;,
+    &quot;ip_address&quot;: &quot;192.168.0.100&quot;
+  },
+  &quot;snmp&quot;: {
+    &quot;snmpV2C&quot;: { &quot;community&quot;: &quot;public&quot; },
+    &quot;snmpV3&quot;: {
+      &quot;username&quot;: &quot;user&quot;,
+      &quot;securityLevel&quot;: &quot;noAuthNoPriv&quot;,
+      &quot;authProtocol&quot;: &quot;MD5&quot;,
+      &quot;authPassword&quot;: &quot;password&quot;,
+      &quot;privProtocol&quot;: &quot;DES&quot;,
+      &quot;privPassword&quot;: &quot;password&quot;
+    }
+  },
+  &quot;capture&quot;: {
+    &quot;parameters&quot;: {
+      &quot;measurement_duration&quot;: 60,
+      &quot;sample_interval&quot;: 10
+    }
+  },
+  &quot;measure&quot;: { &quot;mode&quot;: 0 }
+}
+</code></pre>
+<p><strong>Fields</strong></p>
+<ul>
+<li><code>cable_modem.mac_address</code> <em>(string)</em> – CM MAC.</li>
+<li><code>cable_modem.ip_address</code> <em>(string)</em> – IPv4/IPv6 address.</li>
+<li><code>snmp</code> <em>(object)</em> – Either <code>snmpV2C</code> <strong>or</strong> <code>snmpV3</code>.</li>
+<li><code>capture.parameters.measurement_duration</code> <em>(int, s)</em> – Total runtime.</li>
+<li><code>capture.parameters.sample_interval</code> <em>(int, s)</em> – Interval between samples.</li>
+<li><code>measure.mode</code> <em>(int)</em> – <code>0</code> = continuous sampling; <code>1</code> = OFDM performance.</li>
+</ul>
+<p><strong>Response</strong> (<code>MultiRxMerStartResponse</code>):</p>
+<pre><code class="language-json">{
+  &quot;mac_address&quot;: &quot;aa:bb:cc:dd:ee:ff&quot;,
+  &quot;status&quot;: &quot;running&quot;,
+  &quot;message&quot;: null,
+  &quot;group_id&quot;: &quot;3bd6f7c107ad465b&quot;,
+  &quot;operation_id&quot;: &quot;4aca137c1e9d4eb6&quot;
+}
+</code></pre>
+<ul>
+<li><code>status</code> is <code>"running"</code> immediately after start.</li>
+</ul>
+<h3 id="2-status-check">2) Status Check</h3>
+<p><strong>Request</strong> <code>GET /advance/multiRxMer/status/4aca137c1e9d4eb6</code></p>
+<p><strong>Response</strong> (<code>MultiRxMerStatusResponse</code>):</p>
+<pre><code class="language-json">{
+  &quot;mac_address&quot;: &quot;aa:bb:cc:dd:ee:ff&quot;,
+  &quot;status&quot;: &quot;success&quot;,
+  &quot;message&quot;: null,
+  &quot;operation&quot;: {
+    &quot;operation_id&quot;: &quot;4aca137c1e9d4eb6&quot;,
+    &quot;state&quot;: &quot;running&quot;,
+    &quot;collected&quot;: 2,
+    &quot;time_remaining&quot;: 50,
+    &quot;message&quot;: null
+  }
+}
+</code></pre>
+<p><strong>Operation Fields</strong></p>
+<ul>
+<li><code>state</code> ∈ <code>running | completed | stopped</code></li>
+<li><code>collected</code> <em>(int)</em> – number of samples captured so far</li>
+<li><code>time_remaining</code> <em>(int, s)</em> – rough remaining seconds</li>
+<li><code>message</code> <em>(string|null)</em> – optional details</li>
+</ul>
+<h3 id="3-download-results">3) Download Results</h3>
+<p><strong>Request</strong> <code>GET /advance/multiRxMer/results/4aca137c1e9d4eb6</code></p>
+<p><strong>Response</strong></p>
+<ul>
+<li><code>Content-Type: application/zip</code></li>
+<li>Zip name: <code>multiRxMer_&lt;mac&gt;_4aca137c1e9d4eb6.zip</code></li>
+<li>Contains PNM files like:</li>
+</ul>
+<p><code>text
+  ds_ofdm_rxmer_per_subcar_aabbccddeeff_193_1751762613.bin
+  ds_ofdm_rxmer_per_subcar_aabbccddeeff_194_1751762613.bin
+  ...</code></p>
+<p><strong>Notes</strong></p>
+<ul>
+<li>Each file = one snapshot at <code>sample_interval</code> cadence.</li>
+<li>File count == <code>operation.collected</code>.</li>
+</ul>
+<h3 id="4-stop-capture-early">4) Stop Capture Early</h3>
+<p><strong>Request</strong> <code>DELETE /advance/multiRxMer/stop/4aca137c1e9d4eb6</code></p>
+<p><strong>Response</strong> (<code>MultiRxMerStatusResponse</code>):</p>
+<pre><code class="language-json">{
+  &quot;mac_address&quot;: &quot;aa:bb:cc:dd:ee:ff&quot;,
+  &quot;status&quot;: &quot;stopped&quot;,
+  &quot;message&quot;: null,
+  &quot;operation&quot;: {
+    &quot;operation_id&quot;: &quot;4aca137c1e9d4eb6&quot;,
+    &quot;state&quot;: &quot;stopped&quot;,
+    &quot;collected&quot;: 4,
+    &quot;time_remaining&quot;: 42,
+    &quot;message&quot;: null
+  }
+}
+</code></pre>
+<ul>
+<li><code>status</code> is <code>"stopped"</code> when accepted.</li>
+<li>Expect up to one <code>sample_interval</code> for the stop to take effect.</li>
+</ul>
+<h3 id="5-analysis">5) Analysis</h3>
+<p><strong>Request</strong> <code>POST /advance/multiRxMer/analysis</code>
+<strong>Body</strong> (<code>MultiRxMerAnalysisRequest</code>):</p>
+<pre><code class="language-json">{
+  &quot;analysis&quot;: {
+    &quot;type&quot;: 0
+  },
+  &quot;output&quot;: {
+    &quot;type&quot;: 4
+  },
+  &quot;operation_id&quot;: &quot;hash-like-string&quot;
+}
+</code></pre>
+<p><strong>Analysis Types</strong> (<code>analysis.type</code>)</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Code</th>
+<th>Name</th>
+<th>Description</th>
+<th>Requires Mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><code>0</code></td>
+<td><code>MIN_AVG_MAX</code></td>
+<td>Min/avg/max RxMER across samples</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>1</code></td>
+<td><code>RXMER_HEAT_MAP</code></td>
+<td>Time×frequency heatmap grid</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>2</code></td>
+<td><code>OFDM_PROFILE_PERFORMANCE</code></td>
+<td>Per‑subcarrier performance metrics</td>
+<td><code>0</code> or <code>1</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Output Types</strong> (<code>output.type</code>)</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Code</th>
+<th>Name</th>
+<th>Description</th>
+<th>Media Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><code>0</code></td>
+<td><code>JSON</code></td>
+<td>Structured JSON body</td>
+<td><code>application/json</code></td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>4</code></td>
+<td><code>ARCHIVE</code></td>
+<td>ZIP containing multiple output artifacts</td>
+<td><code>application/zip</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Response</strong> (<code>MultiRxMerAnalysisResponse</code>):</p>
+<pre><code class="language-json">{
+  &quot;mac_address&quot;: &quot;aa:bb:cc:dd:ee:ff&quot;,
+  &quot;status&quot;: 0,
+  &quot;message&quot;: &quot;Analysis MIN_AVG_MAX completed for group 3bd6f7c107ad465b&quot;,
+  &quot;data&quot;: { &quot;min&quot;: 28.5, &quot;avg&quot;: 31.2, &quot;max&quot;: 33.8 }
+}
+</code></pre>
+<ul>
+<li><code>status</code> <code>0</code> = success; non‑zero indicates error (see <code>message</code>).</li>
+<li>
+<p><code>data</code> varies by analysis type:</p>
+</li>
+<li>
+<p><strong>MIN_AVG_MAX</strong> → <code>{ "min": 28.5, "avg": 31.2, "max": 33.8 }</code></p>
+</li>
+<li><strong>RXMER_HEAT_MAP</strong> → <code>{ "timestamps": [1697040000], "frequencies": [193000000, 194000000], "heatmap": [[30.1, 29.8]] }</code></li>
+<li><strong>OFDM_PROFILE_PERFORMANCE</strong> → <code>{ "193": { "rxmer": 31.5, "snr": 34.1 }, "194": { "rxmer": 30.9, "snr": 33.7 } }</code></li>
+</ul>
+<blockquote>
+<p>Use canonical schemas in <code>api/routes/advance/multi_rxmer/schemas.py</code> for exact field names and enums.</p>
+</blockquote>
+<h2 id="timing-polling">Timing &amp; Polling</h2>
+<h3 id="capture-timing">Capture Timing</h3>
+<ul>
+<li><code>measurement_duration</code> <em>(s)</em> → total run length.
+  Example: <code>60</code> means a one‑minute capture.</li>
+<li><code>sample_interval</code> <em>(s)</em> → period between samples.
+  Example: <code>10</code> over <code>60</code> seconds → <strong>6</strong> samples.</li>
+</ul>
+<h3 id="polling-strategy">Polling Strategy</h3>
+<ul>
+<li>Poll <strong>no more than once per</strong> <code>sample_interval</code>.</li>
+<li><code>time_remaining == 0</code> <strong>and</strong> <code>state == "completed"</code> → stop polling.</li>
+</ul>
+<h3 id="results-availability">Results Availability</h3>
+<ul>
+<li>When <code>state ∈ ["completed","stopped"]</code>, ZIP is immediately available.</li>
+<li>Files are produced at sampling time; the archive is just a bundle step.</li>
+</ul>
+<h3 id="stop-semantics">Stop Semantics</h3>
+<ol>
+<li>Current iteration finishes.</li>
+<li>Final PNM for that iteration is written.</li>
+<li><code>state → "stopped"</code> (remaining time may be &gt; 0 if mid‑interval).</li>
+</ol>
+<h2 id="compatibility-matrix">Compatibility Matrix</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Measure Mode</th>
+<th>Suited Analyses</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>0</code></td>
+<td><code>MIN_AVG_MAX</code>, <code>RXMER_HEAT_MAP</code>, <code>OFDM_PROFILE_PERFORMANCE</code></td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>1</code></td>
+<td><code>OFDM_PROFILE_PERFORMANCE</code>, <code>MIN_AVG_MAX</code>, <code>RXMER_HEAT_MAP</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Choose <code>mode=1</code> when you specifically want OFDM performance context; otherwise <code>mode=0</code> is recommended for continuous monitoring.</p>
+</blockquote>
+<h2 id="conventions">Conventions</h2>
+<ul>
+<li>Use generic addresses in examples:
+  <code>mac_address = "aa:bb:cc:dd:ee:ff"</code>, <code>ip_address = "192.168.0.100"</code>.</li>
+<li>Zip name format: <code>multiRxMer_&lt;mac&gt;_4aca137c1e9d4eb6.zip</code>.</li>
+<li>PNM file name format: <code>ds_ofdm_rxmer_per_subcar_&lt;mac&gt;_&lt;channel_id&gt;_&lt;epoch&gt;.bin</code>.</li>
+<li>Status codes: prefer 2xx on success; include concise error text in <code>message</code> for failures.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../../../..", "features": [], "search": "../../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>

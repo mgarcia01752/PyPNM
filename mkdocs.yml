@@ -1,0 +1,5 @@
+site_name: PyPNM Docs
+theme:
+  name: material
+nav:
+  - Master index: master-index.md
