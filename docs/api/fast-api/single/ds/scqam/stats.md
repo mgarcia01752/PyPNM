@@ -1,97 +1,101 @@
-# DOCSIS 3.0 Downstream SC-QAM Channel Stats API
+# DOCSIS 3.0 Downstream SC-QAM Channel Statistics
 
-This API provides diagnostic access to DOCSIS 3.0 downstream SC-QAM channel statistics. It includes essential RF metrics like signal power, RxMER, and codeword error counters. These statistics help identify impairments such as micro-reflections, low MER, or excessive uncorrectables that can degrade customer experience.
+Provides DOCSIS 3.0 Downstream SC-QAM Channel Configuration And Signal-Quality Metrics (Power, RxMER, Codeword Counters).
 
-Use this endpoint to assess downstream signal health and modulation performance on legacy DOCSIS 3.0 modems.
-
-## 📡 Endpoint
+## Endpoint
 
 **POST** `/docs/if30/ds/scqam/chan/stats`
 
-Retrieves DOCSIS 3.0 downstream SC-QAM channel configuration and signal quality statistics.
+## Request
 
-## 📅 Request Body (JSON)
+Use the SNMP-only format: [Common → Request](../../../common/request.md)  
+TFTP parameters are not required.
+
+## Response
+
+This endpoint returns the standard envelope described in [Common → Response](../../../common/response.md) (`mac_address`, `status`, `message`, `data`).
+
+### Abbreviated Example (Real Data, Masked MAC)
 
 ```json
 {
-  "cable_modem": {
-  "mac_address": "aa:bb:cc:dd:ee:ff", 
-  "ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
+  "mac_address": "aa:bb:cc:dd:ee:ff",
+  "status": 0,
+  "message": null,
+  "data": [
+    {
+      "index": 52,
+      "channel_id": 32,
+      "entry": {
+        "docsIfDownChannelId": 32,
+        "docsIfDownChannelFrequency": 639000000,
+        "docsIfDownChannelWidth": 6000000,
+        "docsIfDownChannelModulation": 4,
+        "docsIfDownChannelInterleave": 5,
+        "docsIfDownChannelPower": 1.1,
+        "docsIfSigQUnerroreds": 260152637,
+        "docsIfSigQCorrecteds": 351,
+        "docsIfSigQUncorrectables": 0,
+        "docsIfSigQMicroreflections": 3,
+        "docsIfSigQExtUnerroreds": 129109307889,
+        "docsIfSigQExtCorrecteds": 351,
+        "docsIfSigQExtUncorrectables": 0,
+        "docsIf3SignalQualityExtRxMER": 403
+      }
     },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
-    }
-  }
+    {
+      "index": 53,
+      "channel_id": 31,
+      "entry": {
+        "docsIfDownChannelId": 31,
+        "docsIfDownChannelFrequency": 633000000,
+        "docsIfDownChannelWidth": 6000000,
+        "docsIfDownChannelModulation": 4,
+        "docsIfDownChannelInterleave": 5,
+        "docsIfDownChannelPower": 0.8,
+        "docsIfSigQUnerroreds": 89334852,
+        "docsIfSigQCorrecteds": 460,
+        "docsIfSigQUncorrectables": 0,
+        "docsIfSigQMicroreflections": 3,
+        "docsIfSigQExtUnerroreds": 128938490104,
+        "docsIfSigQExtCorrecteds": 460,
+        "docsIfSigQExtUncorrectables": 0,
+        "docsIf3SignalQualityExtRxMER": 409
+      }
+    },
+    { "...": "other channels elided" }
+  ]
 }
 ```
 
-### 🔑 Request Fields
+## Channel Fields
 
-| Field       | Data Type | Description                    |
-|-------------|-----------|--------------------------------|
-| mac_address | string    | MAC address of the cable modem |
-| ip_address  | string    | IP address of the cable modem  |
-| snmp        | object    | SNMPv2c or SNMPv3 credentials  |
+| Field        | Type | Description                                                                 |
+| ------------ | ---- | --------------------------------------------------------------------------- |
+| `index`      | int  | **SNMP table index** (OID instance) for this channel’s row in the CM table. |
+| `channel_id` | int  | DOCSIS downstream SC-QAM logical channel ID.                                |
 
-## 📤 Response Body (Array of Objects)
+## Entry Fields
 
-Each object in the response represents one downstream SC-QAM channel.
+| Field                          | Type  | Units  | Description                                                  |
+| ------------------------------ | ----- | ------ | ------------------------------------------------------------ |
+| `docsIfDownChannelId`          | int   | —      | Channel ID (mirrors logical ID).                             |
+| `docsIfDownChannelFrequency`   | int   | Hz     | Center frequency.                                            |
+| `docsIfDownChannelWidth`       | int   | Hz     | Channel width.                                               |
+| `docsIfDownChannelModulation`  | int   | —      | QAM enum (e.g., `4` = QAM256).                               |
+| `docsIfDownChannelInterleave`  | int   | —      | Interleaver depth (implementation-specific).                 |
+| `docsIfDownChannelPower`       | float | dBmV   | Received RF power level.                                     |
+| `docsIfSigQUnerroreds`         | int   | cw     | Unerrored codewords (base counter).                          |
+| `docsIfSigQCorrecteds`         | int   | cw     | Corrected codewords (base counter).                          |
+| `docsIfSigQUncorrectables`     | int   | cw     | Uncorrectable codewords (base counter).                      |
+| `docsIfSigQMicroreflections`   | int   | —      | Micro-reflections indicator (implementation-specific scale). |
+| `docsIfSigQExtUnerroreds`      | int64 | cw     | Unerrored codewords (extended 64-bit), if supported.         |
+| `docsIfSigQExtCorrecteds`      | int64 | cw     | Corrected codewords (extended 64-bit), if supported.         |
+| `docsIfSigQExtUncorrectables`  | int64 | cw     | Uncorrectable codewords (extended 64-bit), if supported.     |
+| `docsIf3SignalQualityExtRxMER` | int   | 0.1 dB | RxMER in tenths of dB (e.g., `403` → 40.3 dB).               |
 
-```json
-[
-  {
-    "index": <SNMP_INDEX>,
-    "channel_id": <CHANNEL_ID>,
-    "entry": {
-      "docsIfDownChannelId": 1,
-      "docsIfDownChannelFrequency": 453000000,
-      "docsIfDownChannelWidth": 6000000,
-      "docsIfDownChannelModulation": 4,
-      "docsIfDownChannelInterleave": 5,
-      "docsIfDownChannelPower": -0.4,
-      "docsIfSigQUnerroreds": 3222055495,
-      "docsIfSigQCorrecteds": 48,
-      "docsIfSigQUncorrectables": 0,
-      "docsIfSigQMicroreflections": 3,
-      "docsIfSigQExtUnerroreds": 41876941255,
-      "docsIfSigQExtCorrecteds": 48,
-      "docsIfSigQExtUncorrectables": 0,
-      "docsIf3SignalQualityExtRxMER": 433
-    }
-  }
-]
-```
+## Notes
 
-### 📊 Key Response Fields
-
-| Field                                | Data Type | Description                                               |
-|-------------------------------------|-----------|-----------------------------------------------------------|
-| index                                | integer   | SNMP index of the downstream channel                      |
-| channel_id                           | integer   | Logical channel ID                                        |
-| entry.docsIfDownChannelFrequency     | integer   | Center frequency in Hz                                    |
-| entry.docsIfDownChannelWidth         | integer   | Channel width in Hz                                       |
-| entry.docsIfDownChannelModulation    | integer   | Modulation type (e.g., 4 = QAM256)                        |
-| entry.docsIfDownChannelPower         | float     | RF power in dBmV                                          |
-| entry.docsIfSigQUnerroreds           | integer   | Uncorrected codewords                                     |
-| entry.docsIfSigQCorrecteds           | integer   | Corrected codewords                                       |
-| entry.docsIfSigQUncorrectables       | integer   | Uncorrectable codewords                                   |
-| entry.docsIfSigQMicroreflections     | integer   | Detected micro-reflections (indicative of RF impairments) |
-| entry.docsIf3SignalQualityExtRxMER   | integer   | RxMER in tenths of dB (e.g., 433 = 43.3 dB)               |
-
-> ℹ️ Fields align with DOCSIS-IF3-MIB and provide key insight into downstream signal quality.
-
-## 📝 Notes
-
-- Values like `RxMER`, `Uncorrectables`, and `Microreflections` are critical for identifying RF issues.
-- `docsIfDownChannelModulation` should be interpreted via QAM type enum (e.g., 4 = QAM256).
-- Extended counters (`ExtUnerroreds`, etc.) offer 64-bit insight where supported.
-
-> 📂 For OID mappings and definitions, see `DOCS-IF-MIB` and `DOCS-IF3-MIB`
+* Interpret `docsIfDownChannelModulation` using the vendor’s QAM enum mapping (e.g., `4` = QAM256).
+* Prefer extended (64-bit) counters when available to avoid rollover on high-traffic channels.
+* Metrics such as RxMER, Uncorrectables, And Micro-Reflections Are Critical For Diagnosing RF Impairments.
