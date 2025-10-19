@@ -1,16 +1,23 @@
-# DOCSIS 3.0 Downstream SC‑QAM Channel Codeword Error Rate API
+# DOCSIS 3.0 Downstream SC-QAM Codeword Error Rate
 
-This endpoint computes per‑channel codeword error statistics for DOCSIS 3.0 downstream SC‑QAM channels. It returns uncorrectable error counts, normalized error rates, and codeword throughput, helping you detect impairment or service‑level issues on legacy cable modems.
+Computes per-channel codeword error statistics for DOCSIS 3.0 downstream SC-QAM channels: uncorrectables, normalized error rates, and codeword throughput.
 
 ## Endpoint
 
-```text
-POST /docs/if30/ds/scqam/chan/codewordErrorRate
-```
+**POST** `/docs/if30/ds/scqam/chan/codewordErrorRate`
 
-Computes codeword error statistics over a sampling interval.
+## Request
 
-## Request Body
+Use the SNMP-only format: [Common → Request](../../../common/request.md)  
+TFTP parameters are not required.
+
+### Additional request fields
+
+| Field                 | Type   | Description                                 |
+|-----------------------|--------|---------------------------------------------|
+| `sample_time_elapsed` | number | Sampling interval in seconds (default: `5`) |
+
+#### Example
 
 ```json
 {
@@ -18,77 +25,76 @@ Computes codeword error statistics over a sampling interval.
     "mac_address": "aa:bb:cc:dd:ee:ff",
     "ip_address": "192.168.0.100",
     "snmp": {
-      "snmpV2C": { "community": "private" },
-      "snmpV3": {
-        "username": "string",
-        "securityLevel": "noAuthNoPriv",
-        "authProtocol": "MD5",
-        "authPassword": "string",
-        "privProtocol": "DES",
-        "privPassword": "string"
-      }
+      "snmpV2C": { "community": "private" }
     }
   },
   "sample_time_elapsed": 5.0
 }
 ```
 
-### Request Fields
+## Response
 
-| Field                | Type    | Description                                             |
-| -------------------- | ------- | ------------------------------------------------------- |
-| `cable_modem`        | object  | Cable modem connection parameters                       |
-| `mac_address`        | string  | MAC address of the cable modem                          |
-| `ip_address`         | string  | IP address of the cable modem                           |
-| `snmp`               | object  | SNMP credentials (`snmpV2C` or `snmpV3`)                |
-| `sample_time_elapsed`| number  | Sampling interval in seconds (default: 5)               |
+This endpoint returns the standard envelope described in [Common → Response](../../../common/response.md) (`mac_address`, `status`, `message`, `data`).
 
-## Response Body
+### Abbreviated example
 
 ```json
 {
   "mac_address": "aa:bb:cc:dd:ee:ff",
   "status": 0,
   "message": "Successfully retrieved codeword error rate",
-  "results": [
+  "data": [
     {
       "index": 52,
       "channel_id": 32,
       "codeword_totals": {
-        "total_codewords": 1502550,
+        "total_codewords": 1290014,
         "total_errors": 0,
         "time_elapsed": 5,
-        "error_rate": 0.0,
-        "codewords_per_second": 300510.0,
-        "errors_per_second": 0.0
+        "error_rate": 0,
+        "codewords_per_second": 258002.8,
+        "errors_per_second": 0
       }
-    }
+    },
+    {
+      "index": 53,
+      "channel_id": 31,
+      "codeword_totals": {
+        "total_codewords": 1290014,
+        "total_errors": 0,
+        "time_elapsed": 5,
+        "error_rate": 0,
+        "codewords_per_second": 258002.8,
+        "errors_per_second": 0
+      }
+    },
+    { "...": "other channels elided" }
   ]
 }
 ```
 
-### Key Response Fields
+### Channel fields
 
-| Field                           | Type    | Description                                               |
-| ------------------------------- | ------- | --------------------------------------------------------- |
-| `mac_address`                   | string  | MAC address of the cable modem                            |
-| `status`                        | integer | 0 = success; non‑zero indicates an error                   |
-| `message`                       | string  | Human‑readable status message                             |
-| `results`                       | array   | List of per‑channel error rate entries                    |
-| `results[] .index`              | integer | SNMP index of the downstream channel                      |
-| `results[] .channel_id`         | integer | DOCSIS logical channel ID                                 |
-| `results[] .codeword_totals`    | object  | Nested counters and rate metrics                          |
-| `codeword_totals.total_codewords` | integer | Total codewords counted over the interval               |
-| `codeword_totals.total_errors`  | integer | Number of uncorrectable codeword errors                   |
-| `codeword_totals.time_elapsed`  | number  | Sampling interval used (seconds)                          |
-| `codeword_totals.error_rate`    | number  | Fraction of uncorrectable errors (errors/codewords)       |
-| `codeword_totals.codewords_per_second` | number | Normalized codewords per second (s⁻¹)                |
-| `codeword_totals.errors_per_second`    | number | Normalized errors per second (s⁻¹)                   |
+| Field        | Type | Description                                                                 |
+| ------------ | ---- | --------------------------------------------------------------------------- |
+| `index`      | int  | **SNMP table index** (OID instance) for this channel’s row in the CM table. |
+| `channel_id` | int  | DOCSIS downstream SC-QAM logical channel ID.                                |
+
+### Codeword total fields
+
+| Field                  | Type   | Description                                                  |
+| ---------------------- | ------ | ------------------------------------------------------------ |
+| `total_codewords`      | int    | Total codewords counted over the interval.                   |
+| `total_errors`         | int    | Uncorrectable codeword errors over the interval.             |
+| `time_elapsed`         | number | Sampling interval used (seconds).                            |
+| `error_rate`           | number | Fraction of uncorrectables (`total_errors/total_codewords`). |
+| `codewords_per_second` | number | Normalized codewords per second (s⁻¹).                       |
+| `errors_per_second`    | number | Normalized errors per second (s⁻¹).                          |
 
 > Rates use SI unit s⁻¹; multiply `error_rate` by 100 to get a percentage.
 
 ## Notes
 
-- Ensure SNMP counters support 64‑bit to avoid overflow on high‑traffic channels.
-- `sample_time_elapsed` defaults to **5 seconds** if omitted; adjust to match your SNMP polling interval.
-- This API automatically introspects all downstream SC‑QAM channels—no need to specify channel IDs.
+* Ensure SNMP counters are 64-bit to avoid overflow on high-traffic channels.
+* `sample_time_elapsed` defaults to **5 seconds** if omitted; align it with your polling cadence.
+* The modem is automatically scanned for all downstream SC-QAM channels—no channel list is required.

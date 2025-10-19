@@ -8,8 +8,8 @@ Endpoints that perform one-shot capture or query against a single device.
 
 | Page                                              | Description                     |
 |---------------------------------------------------|---------------------------------|
-| [OFDM Profile Stats](ds/ofdm/stats.md)            | Frequency, power, MER.          |
-| [SC-QAM CW error rate](ds/scqam/cw-error-rate.md) | Continuous-wave error rate.     |
+| [OFDM Profile Stats](ds/ofdm/profile-stats.md)    | Profile Codeword Statistics     |
+| [SC-QAM CW error rate](ds/scqam/cw-error-rate.md) | Codeword Error Rate             |
 | [SC-QAM stats](ds/scqam/stats.md)                 | Downstream SC-QAM stats.        |
 
 ### Upstream (US)
@@ -17,7 +17,7 @@ Endpoints that perform one-shot capture or query against a single device.
 | Page                                                        | Description                     |
 |-------------------------------------------------------------|---------------------------------|
 | [OFDMA stats](us/ofdma/stats.md)                            | OFDMA upstream channel stats.   |
-| [SC-QAM pre-equalization](us/scqam/chan/pre-equalization.md) | SC-QAM upstream pre-EQ.         |
+| [SC-QAM pre-equalization](us/scqam/chan/pre-equalization.md) | SC-QAM upstream pre-EQ.        |
 | [SC-QAM stats](us/scqam/chan/stats.md)                      | SC-QAM upstream stats.          |
 
 ### Frequency division duplex (FDD)
