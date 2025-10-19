@@ -1,5 +1,52 @@
 site_name: PyPNM Docs
+dev_addr: 127.0.0.1:8001
+
 theme:
   name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - content.code.copy
+
+markdown_extensions:
+  - attr_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+
 nav:
-  - Master index: master-index.md
+  - Home: index.md
+  - API:
+      - Overview: api/index.md
+      - FastAPI:
+          - Overview: api/fast-api/index.md
+          - Common:
+              - Requests: api/fast-api/common/request.md
+              - Responses: api/fast-api/common/response.md
+          - Single: api/fast-api/single/index.md
+          - Multi: api/fast-api/multi/index.md
+          - Status codes: api/fast-api/status/fast-api-status-codes.md
+      - Python: api/python/index.md
+  - Examples:
+      - Index: examples/index.md
+      - Endpoint fetcher: examples/endpoint-fetcher.md
+  - Tools:
+      - MIB compiler: tools/pypnm-mib-compiler.md
+      - Clean: tools/pypnm-clean.md
+  - Tests:
+      - Index: tests/index.md
