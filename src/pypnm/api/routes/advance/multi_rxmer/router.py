@@ -369,9 +369,7 @@ class MultiRxMerRouter(AbstractService):
                     mac_address =   mac_address,
                     status      =   ServiceStatusCode.INVALID_OUTPUT_TYPE,
                     message     =   f"Unsupported output type: {output_type}",
-                    data        =   {},
-                )
-
+                    data        =   {},)
 
 # For dynamic auto-registration
 router = MultiRxMerRouter().router

@@ -59,8 +59,6 @@ class PlotConfig:
     soft: Optional[ComplexArray] = None
     hard: Optional[ComplexArray] = None
 
-    # Theme (minimal addition)
-    # Set to "dark" (or True) for dark background plotting; "light"/False/None keeps default style.
     theme: Optional[ThemeType] = None
 
     def update(self, **kwargs) -> "PlotConfig":

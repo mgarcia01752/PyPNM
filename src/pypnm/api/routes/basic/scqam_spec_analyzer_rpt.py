@@ -316,9 +316,6 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
         models: List[SpectrumAnalyzerAnalysisModel] = cast(List[SpectrumAnalyzerAnalysisModel], self.get_analysis_model())
 
         for idx, _model in enumerate(models):
-            # Optional: debug dump
-            # LogFile().write(fname=f"{self.FNAME_TAG}.{Utils.time_stamp()}.json", data=amodel.model_dump_json())
-
             sig_analysis = _model.signal_analysis
             freq_hz: FloatSeries      = [int(f) for f in sig_analysis.frequencies]
             mag_dbmv: FloatSeries   = list(sig_analysis.magnitudes)

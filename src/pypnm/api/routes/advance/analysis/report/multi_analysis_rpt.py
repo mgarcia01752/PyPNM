@@ -7,14 +7,13 @@ import logging
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, List, Set, Union
+from typing import Dict, List, Set
 from pydantic import BaseModel
 
 from pypnm.api.routes.advance.common.capture_data_aggregator import (
     CaptureDataAggregator, TransactionCollection)
 from pypnm.api.routes.advance.common.transactionsCollection import TransactionCollectionModel
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisOutputModel
-from pypnm.api.routes.common.classes.analysis.model.schema import BaseAnalysisModel
 from pypnm.api.routes.docs.pnm.files.service import MacAddress
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor
@@ -56,11 +55,6 @@ class MultiAnalysisRpt(ABC):
         self.logger.info(f"MultiAnalysisRpt: MAC: {self._mac_addresses}, "
                          f"Model: {self._sys_descr_model.model_dump()}, "
                          f"GroupTime: {self._group_time}")        
-
-
-    def get_analysis_model(self) -> Union[BaseAnalysisModel, List[BaseAnalysisModel]]:
-        """Return the parsed analysis model(s) produced by the upstream pipeline."""
-        return self._analysis.get_model()
 
     def getMacAddresses(self) -> List[MacAddress]:    
         """Return the cable-modem MAC address associated with this report session."""

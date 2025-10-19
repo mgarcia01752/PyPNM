@@ -21,7 +21,7 @@ from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.shan.series import ShannonSeries
 from pypnm.lib.types import (ArrayLike, CaptureTime, ChannelId, FloatSeries, 
-                             FrequencySeriesHz, MacAddressStr, MagnitudeSeries, 
+                             FrequencySeriesHz, MacAddressStr, MagnitudeSeries, TimeStamp, 
                              TimestampSec)
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
 from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
@@ -278,7 +278,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 self.logger.warning("No RxMER captures for channel %s", ch_id)
                 continue
 
-            start, stop = capture_times[0], capture_times[-1]
+            start, stop = TimeStamp(capture_times[0]), TimeStamp(capture_times[-1])
             fec_summary = fec_sum_agg.get_summary_totals(ch_id, start, stop)
 
             profile_entries: List[ProfileEntryModel] = []

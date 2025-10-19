@@ -160,7 +160,6 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
             case _:
                 raise ValueError(f"Unsupported analysis type: {self._analysis_type}")
 
-        self._log_result(self._analysis_type.name, str(mac), data)
         return MultiChanEstimationResult(analysis_type=self._analysis_type.name, results=data)
 
     def to_model(self) -> MultiChanEstimationResult:
