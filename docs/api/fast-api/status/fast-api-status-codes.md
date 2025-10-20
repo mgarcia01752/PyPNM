@@ -1,4 +1,4 @@
-# ServiceStatusCode — selected reference
+# ServiceStatusCode
 
 Note: This is a subset of codes for quick reference. For the complete, authoritative list, see the source:
 [`src/pypnm/api/routes/common/service/status_codes.py`](https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/api/routes/common/service/status_codes.py)

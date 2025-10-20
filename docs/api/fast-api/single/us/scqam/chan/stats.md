@@ -1,109 +1,132 @@
-# DOCSIS 3.0 Upstream ATDMA Channel Stats API
+# DOCSIS 3.0 Upstream ATDMA Channel Statistics
 
-This endpoint provides detailed telemetry on DOCSIS 3.0 upstream SC-QAM (ATDMA) channels from cable modems. It includes modulation, frequency, bandwidth, timing offsets, transmit power, timeout counters, and equalizer data—critical for evaluating upstream performance and identifying plant impairments.
+Provides Access To DOCSIS 3.0 Upstream SC-QAM (ATDMA) Channel Statistics.
 
-
-## 📡 Endpoint
+## Endpoint
 
 **POST** `/docs/if30/us/scqam/chan/stats`
 
-Retrieves statistics for upstream SC-QAM (ATDMA) channels on a DOCSIS 3.0 cable modem.
+## Request
 
-## 📥 Request Body (JSON)
+Use the SNMP-only format: [Common → Request](../../../common/request.md)  
+TFTP parameters are not required.
+
+## Response
+
+This endpoint returns the standard envelope described in [Common → Response](../../../common/response.md) (`mac_address`, `status`, `message`, `data`).
+
+`data` is an **array** of upstream channels. Each item contains the SNMP table `index`, the upstream `channel_id`, and an `entry` with configuration, status, and (where available) raw pre-EQ data (`docsIf3CmStatusUsEqData`).
+
+### Abbreviated Example
 
 ```json
 {
-  "cable_modem": {
   "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
+  "status": 0,
+  "message": null,
+  "data": [
+    {
+      "index": 80,
+      "channel_id": 1,
+      "entry": {
+        "docsIfUpChannelId": 1,
+        "docsIfUpChannelFrequency": 14600000,
+        "docsIfUpChannelWidth": 6400000,
+        "docsIfUpChannelModulationProfile": 0,
+        "docsIfUpChannelSlotSize": 2,
+        "docsIfUpChannelTxTimingOffset": 6436,
+        "docsIfUpChannelRangingBackoffStart": 3,
+        "docsIfUpChannelRangingBackoffEnd": 8,
+        "docsIfUpChannelTxBackoffStart": 2,
+        "docsIfUpChannelTxBackoffEnd": 6,
+        "docsIfUpChannelType": 2,
+        "docsIfUpChannelCloneFrom": 0,
+        "docsIfUpChannelUpdate": false,
+        "docsIfUpChannelStatus": 1,
+        "docsIfUpChannelPreEqEnable": true,
+        "docsIf3CmStatusUsTxPower": 49.0,
+        "docsIf3CmStatusUsT3Timeouts": 0,
+        "docsIf3CmStatusUsT4Timeouts": 0,
+        "docsIf3CmStatusUsRangingAborteds": 0,
+        "docsIf3CmStatusUsModulationType": 2,
+        "docsIf3CmStatusUsEqData": "0x08011800ffff0003...00020001",
+        "docsIf3CmStatusUsT3Exceededs": 0,
+        "docsIf3CmStatusUsIsMuted": false,
+        "docsIf3CmStatusUsRangingStatus": 4
+      }
     },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
+    {
+      "index": 81,
+      "channel_id": 2,
+      "entry": {
+        "docsIfUpChannelId": 2,
+        "docsIfUpChannelFrequency": 21000000,
+        "docsIfUpChannelWidth": 6400000,
+        "docsIfUpChannelModulationProfile": 0,
+        "docsIfUpChannelSlotSize": 2,
+        "docsIfUpChannelTxTimingOffset": 6436,
+        "docsIfUpChannelRangingBackoffStart": 3,
+        "docsIfUpChannelRangingBackoffEnd": 8,
+        "docsIfUpChannelTxBackoffStart": 2,
+        "docsIfUpChannelTxBackoffEnd": 6,
+        "docsIfUpChannelType": 2,
+        "docsIfUpChannelCloneFrom": 0,
+        "docsIfUpChannelUpdate": false,
+        "docsIfUpChannelStatus": 1,
+        "docsIfUpChannelPreEqEnable": true,
+        "docsIf3CmStatusUsTxPower": 48.5,
+        "docsIf3CmStatusUsT3Timeouts": 0,
+        "docsIf3CmStatusUsT4Timeouts": 0,
+        "docsIf3CmStatusUsRangingAborteds": 0,
+        "docsIf3CmStatusUsModulationType": 2,
+        "docsIf3CmStatusUsEqData": "0x08011800ffff0001...0002",
+        "docsIf3CmStatusUsT3Exceededs": 0,
+        "docsIf3CmStatusUsIsMuted": false,
+        "docsIf3CmStatusUsRangingStatus": 4
+      }
     }
-  }
+  ]
 }
 ```
 
-### 🔑 Fields
+## Channel Fields
 
-| Field        | Type   | Description                    |
-|---|---|---|
-| mac\_address | string | MAC address of the cable modem |
-| ip\_address  | string | IP address of the cable modem  |
-| snmp         | object | SNMPv2c or SNMPv3 credentials  |
+| Field        | Type | Description                                                                 |
+| ------------ | ---- | --------------------------------------------------------------------------- |
+| `index`      | int  | **SNMP table index** (OID instance) for this channel’s row in the CM table. |
+| `channel_id` | int  | DOCSIS upstream SC-QAM (ATDMA) logical channel ID.                          |
 
-## 📤 Response Body (Array of Objects)
+## Entry Fields
 
-Each object in the response represents one upstream ATDMA channel.
+| Field                                | Type   | Units | Description                                             |
+| ------------------------------------ | ------ | ----- | ------------------------------------------------------- |
+| `docsIfUpChannelId`                  | int    | —     | Upstream channel ID (mirrors logical ID).               |
+| `docsIfUpChannelFrequency`           | int    | Hz    | Center frequency.                                       |
+| `docsIfUpChannelWidth`               | int    | Hz    | Channel width.                                          |
+| `docsIfUpChannelModulationProfile`   | int    | —     | Modulation profile index.                               |
+| `docsIfUpChannelSlotSize`            | int    | —     | Slot size (minislot units).                             |
+| `docsIfUpChannelTxTimingOffset`      | int    | —     | Transmit timing offset (implementation-specific units). |
+| `docsIfUpChannelRangingBackoffStart` | int    | —     | Initial ranging backoff window start.                   |
+| `docsIfUpChannelRangingBackoffEnd`   | int    | —     | Initial ranging backoff window end.                     |
+| `docsIfUpChannelTxBackoffStart`      | int    | —     | Data/backoff start window.                              |
+| `docsIfUpChannelTxBackoffEnd`        | int    | —     | Data/backoff end window.                                |
+| `docsIfUpChannelType`                | int    | —     | Channel type enum (e.g., `2` = ATDMA).                  |
+| `docsIfUpChannelCloneFrom`           | int    | —     | Clone source channel (if used).                         |
+| `docsIfUpChannelUpdate`              | bool   | —     | Indicates a pending/active update.                      |
+| `docsIfUpChannelStatus`              | int    | —     | Operational status enum.                                |
+| `docsIfUpChannelPreEqEnable`         | bool   | —     | Whether pre-equalization is enabled.                    |
+| `docsIf3CmStatusUsTxPower`           | float  | dBmV  | Upstream transmit power.                                |
+| `docsIf3CmStatusUsT3Timeouts`        | int    | —     | T3 timeouts counter.                                    |
+| `docsIf3CmStatusUsT4Timeouts`        | int    | —     | T4 timeouts counter.                                    |
+| `docsIf3CmStatusUsRangingAborteds`   | int    | —     | Aborted ranging attempts.                               |
+| `docsIf3CmStatusUsModulationType`    | int    | —     | Modulation type enum.                                   |
+| `docsIf3CmStatusUsEqData`            | string | hex   | Raw pre-EQ coefficient payload (hex string).            |
+| `docsIf3CmStatusUsT3Exceededs`       | int    | —     | Exceeded T3 attempts.                                   |
+| `docsIf3CmStatusUsIsMuted`           | bool   | —     | Whether the upstream transmitter is muted.              |
+| `docsIf3CmStatusUsRangingStatus`     | int    | —     | Ranging state enum.                                     |
 
-```json
-[
-  {
-    "index": <SNMP_INDEX>,
-    "channel_id": <CHANNEL_ID>,
-    "entry": {
-      "docsIfUpChannelId": 2,
-      "docsIfUpChannelFrequency": 21000000,
-      "docsIfUpChannelWidth": 6400000,
-      "docsIfUpChannelModulationProfile": 0,
-      "docsIfUpChannelSlotSize": 2,
-      "docsIfUpChannelTxTimingOffset": 8591,
-      "docsIfUpChannelRangingBackoffStart": 3,
-      "docsIfUpChannelRangingBackoffEnd": 8,
-      "docsIfUpChannelTxBackoffStart": 2,
-      "docsIfUpChannelTxBackoffEnd": 6,
-      "docsIfUpChannelType": 2,
-      "docsIfUpChannelCloneFrom": 0,
-      "docsIfUpChannelUpdate": false,
-      "docsIfUpChannelStatus": 1,
-      "docsIfUpChannelPreEqEnable": true,
-      "docsIf3CmStatusUsTxPower": 45.5,
-      "docsIf3CmStatusUsT3Timeouts": 1,
-      "docsIf3CmStatusUsT4Timeouts": 0,
-      "docsIf3CmStatusUsRangingAborteds": 0,
-      "docsIf3CmStatusUsModulationType": 2,
-      "docsIf3CmStatusUsEqData": "0x...",
-      "docsIf3CmStatusUsT3Exceededs": 0,
-      "docsIf3CmStatusUsIsMuted": false,
-      "docsIf3CmStatusUsRangingStatus": 4
-    }
-  },
-  { }
-]
-```
+## Notes
 
-### 📊 Key Response Fields
-
-| Field                                  | Type    | Description                             |
-|---|---|---|
-| index                                  | integer | SNMP index of the upstream channel      |
-| channel\_id                            | integer | Logical channel ID                      |
-| entry.docsIfUpChannelFrequency         | integer | Center frequency in Hz                  |
-| entry.docsIfUpChannelWidth             | integer | Channel bandwidth in Hz                 |
-| entry.docsIfUpChannelTxTimingOffset    | integer | Timing offset                           |
-| entry.docsIfUpChannelType              | integer | Channel type (e.g., ATDMA = 2)          |
-| entry.docsIf3CmStatusUsTxPower         | float   | Transmit power in dBmV                  |
-| entry.docsIf3CmStatusUsT3Timeouts      | integer | Number of T3 timeouts                   |
-| entry.docsIf3CmStatusUsT4Timeouts      | integer | Number of T4 timeouts                   |
-| entry.docsIf3CmStatusUsRangingAborteds | integer | Count of aborted ranging attempts       |
-| entry.docsIf3CmStatusUsEqData          | string  | Hex-encoded upstream equalizer tap data |
-| entry.docsIf3CmStatusUsIsMuted         | boolean | Whether the channel is currently muted  |
-| entry.docsIf3CmStatusUsRangingStatus   | integer | Current ranging status code             |
-
-> ℹ️ Other fields follow DOCSIS-IF3-MIB conventions.
-
-## 📝 Notes
-
-* The response is an array and may contain multiple upstream ATDMA channels.
-* The `docsIf3CmStatusUsEqData` field is a binary string and may be parsed for tap coefficient analysis.
-* This endpoint is used for troubleshooting upstream channel performance on DOCSIS 3.0 modems.
-
-> 📂 For OID definitions and structure, refer to: `DOCS-IF-MIB` and `DOCS-IF3-MIB`
+* `docsIf3CmStatusUsEqData` contains the raw equalizer payload; decode to taps (location, magnitude, phase) in analysis workflows.
+* Use the combination of `TxPower`, timeout counters, and ranging status to corroborate upstream health with pre-EQ shape.
+* Channels are discovered automatically; no channel list is required in the request.

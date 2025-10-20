@@ -1,78 +1,53 @@
 # DOCSIS 4.0 FDD Diplexer Configuration
 
-This API retrieves the currently configured diplexer band edge frequencies on a DOCSIS 4.0 cable modem. These values are advertised during registration and reflect the modem’s operating spectrum.
+Retrieves The Currently Configured Diplexer Band-Edge Frequencies On A DOCSIS 4.0 Cable Modem.
 
-## 📚 Background
+## Endpoint
 
-The following SNMP fields correspond to TLVs sent by the CM in the Registration Request:
+**POST** `/docs/fdd/system/diplexer/configuration`
 
-* **TLV 5.79** → Downstream Lower Band Edge (`docsFddCmFddSystemCfgStateDiplexerDsLowerBandEdgeCfg`)
-* **TLV 5.80** → Downstream Upper Band Edge (`docsFddCmFddSystemCfgStateDiplexerDsUpperBandEdgeCfg`)
-* **TLV 5.81** → Upstream Upper Band Edge (`docsFddCmFddSystemCfgStateDiplexerUsUpperBandEdgeCfg`)
+## Request
 
-These fields are read-only and reflect the CM's active configuration.
+Use the SNMP-only format: [Common → Request](../../../common/request.md)
+TFTP parameters are not required.
 
-## 📡 Endpoint
+## Response
 
-**POST** `/docs/fdd/system/diplexer/configurationr`
+This endpoint returns the standard envelope described in [Common → Response](../../../common/response.md) (`mac_address`, `status`, `message`, `data`).
 
-Retrieves the configured FDD diplexer band edges in MHz.
+`data` is an **object** with the SNMP `index` and an `entry` containing the configured band-edge frequencies (MHz).
 
-### 🧾 Request Body
+### Abbreviated Example (Masked MAC)
 
 ```json
 {
-  "cable_modem": {
-  "mac_address": "aa:bb:cc:dd:ee:ff", 
-  "ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
-    },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
+  "mac_address": "aa:bb:cc:dd:ee:ff",
+  "status": 0,
+  "message": null,
+  "data": {
+    "index": 0,
+    "entry": {
+      "docsFddCmFddSystemCfgStateDiplexerDsLowerBandEdgeCfg": 258,
+      "docsFddCmFddSystemCfgStateDiplexerDsUpperBandEdgeCfg": 1794,
+      "docsFddCmFddSystemCfgStateDiplexerUsUpperBandEdgeCfg": 204
     }
   }
 }
 ```
 
-### 🔑 Fields
+## Response Fields
 
-| Field         | Type   | Description                   |
-| ------------- | ------ | ----------------------------- |
-| `mac_address` | string | Target CM MAC address         |
-| `ip_address`  | string | Target CM IP address          |
-| `snmp`        | object | SNMPv2c or SNMPv3 credentials |
+| Field                                                             | Type       | Units | Description                                           |
+| ----------------------------------------------------------------- | ---------- | ----- | ----------------------------------------------------- |
+| `mac_address`                                                     | string     | —     | MAC address of the queried device.                    |
+| `status`                                                          | int        | —     | Operation status (`0` = success; non-zero = failure). |
+| `message`                                                         | string     | —     | Optional result message.                              |
+| `data.index`                                                      | int        | —     | SNMP table index for the configuration row.           |
+| `data.entry.docsFddCmFddSystemCfgStateDiplexerDsLowerBandEdgeCfg` | Unsigned32 | MHz   | Downstream **lower** band edge (TLV 5.79).            |
+| `data.entry.docsFddCmFddSystemCfgStateDiplexerDsUpperBandEdgeCfg` | Unsigned32 | MHz   | Downstream **upper** band edge (TLV 5.80).            |
+| `data.entry.docsFddCmFddSystemCfgStateDiplexerUsUpperBandEdgeCfg` | Unsigned32 | MHz   | Upstream **upper** band edge (TLV 5.81).              |
 
-## 📤 Response
+## Notes
 
-Returns the configured upstream and downstream band edge frequencies for the cable modem.
-
-```json
-{
-  "index": 0,
-  "entry": {
-    "docsFddCmFddSystemCfgStateDiplexerDsLowerBandEdgeCfg": 258,
-    "docsFddCmFddSystemCfgStateDiplexerDsUpperBandEdgeCfg": 1794,
-    "docsFddCmFddSystemCfgStateDiplexerUsUpperBandEdgeCfg": 204
-  }
-}
-```
-
-### 📊 Response Fields
-
-| Field Name                                             | Type       | Units | Description                              |
-| ------------------------------------------------------ | ---------- | ----- | ---------------------------------------- |
-| `docsFddCmFddSystemCfgStateDiplexerDsLowerBandEdgeCfg` | Unsigned32 | MHz   | Downstream starting frequency (TLV 5.79) |
-| `docsFddCmFddSystemCfgStateDiplexerDsUpperBandEdgeCfg` | Unsigned32 | MHz   | Downstream ending frequency (TLV 5.80)   |
-| `docsFddCmFddSystemCfgStateDiplexerUsUpperBandEdgeCfg` | Unsigned32 | MHz   | Upstream ending frequency (TLV 5.81)     |
-
-## 🔎 Notes
-
-* A value of `0` for any band edge indicates the CM is not configured for extended spectrum operation.
-* These settings are crucial for verifying CM compatibility with FDD spectrum splits.
+* A value of `0` for any band edge indicates the CM is **not** configured for extended-spectrum operation.
+* These settings reflect the CM’s active operating split and are read-only (advertised during registration).

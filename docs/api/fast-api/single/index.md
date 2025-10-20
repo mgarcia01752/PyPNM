@@ -6,61 +6,72 @@ Endpoints that perform one-shot capture or query against a single device.
 
 ### Downstream (DS)
 
-| Page                                              | Description                     |
-|---------------------------------------------------|---------------------------------|
-| [OFDM Profile Stats](ds/ofdm/profile-stats.md)    | Profile Codeword Statistics     |
-| [SC-QAM CW error rate](ds/scqam/cw-error-rate.md) | Codeword Error Rate             |
-| [SC-QAM stats](ds/scqam/stats.md)                 | Downstream SC-QAM stats.        |
+|  Reference                                        | Description                             |
+|---------------------------------------------------|-----------------------------------------|
+| [OFDM Channel Statistics](ds/ofdm//channel-stats.md)      | Physical Channel Statistics     |
+| [OFDM Profile Statistics](ds/ofdm/profile-stats.md)       | Profile Codeword Statistics     |
+| [SC-QAM Channel Statistics](ds/scqam/channel-stats.md)    | Physical Channel Statistics     |
+| [SC-QAM CW Error Rate](ds/scqam/cw-error-rate.md)         | Codeword Error Statistics       |
 
 ### Upstream (US)
 
-| Page                                                        | Description                     |
-|-------------------------------------------------------------|---------------------------------|
-| [OFDMA stats](us/ofdma/stats.md)                            | OFDMA upstream channel stats.   |
-| [SC-QAM pre-equalization](us/scqam/chan/pre-equalization.md) | SC-QAM upstream pre-EQ.        |
-| [SC-QAM stats](us/scqam/chan/stats.md)                      | SC-QAM upstream stats.          |
+|  Reference                                                  | Description                         |
+|-------------------------------------------------------------|-------------------------------------|
+| [OFDMA Channel Statistics](us/ofdma/stats.md)                 | Physical Channel Statistics       |
+| [SC-QAM Pre-Equalization](us/scqam/chan/pre-equalization.md)  | Physical Channel Pre-Equalization |
+| [SC-QAM Statistics](us/scqam/chan/stats.md)                   | Physical Channel Statistics       |
 
-### Frequency division duplex (FDD)
+### DOCSIS Frequency Division Duplex (FDD)
 
-| Page                                                                           | Description                     |
-|--------------------------------------------------------------------------------|---------------------------------|
-| [Diplexer band-edge capability](fdd/fdd-diplexer-band-edge-cap.md)             | Supported diplexer range.       |
-| [Diplexer configuration (system)](fdd/fdd-system-diplexer-configuration.md)    | System diplexer settings.       |
+|  Reference                                                                     | Description                    |
+|--------------------------------------------------------------------------------|--------------------------------|
+| [Diplexer band-edge capability](fdd/fdd-diplexer-band-edge-cap.md)             | Supported diplexer range       |
+| [Diplexer configuration (system)](fdd/fdd-system-diplexer-configuration.md)    | System diplexer settings       |
 
-### Cable modem functions
+### DOCSIS Full Duplex (FDX)
 
-| Page                                        | Description                     |
-|---------------------------------------------|---------------------------------|
-| [Diplexer configuration](diplexer-configuration.md)          | Device diplexer settings.       |
-| [DOCSIS base configuration](docsis-base-configuration.md)    | Base configuration view.        |
-| [Event log](event-log.md)                                    | Cable modem event log.          |
-| [Reset cable modem](reset-cm.md)                             | Remote reset.                   |
-| [System description](system-description.md)                  | `sysDescr` identity.            |
-| [System uptime](up-time.md)                                  | `sysUpTime` in seconds.         |
+|  Reference                                                                     | Description                  |
+|--------------------------------------------------------------------------------|------------------------------|
+| [Diplexer band-edge capability](fdd/fdd-diplexer-band-edge-cap.md)             | Supported diplexer range     |
+| [Diplexer configuration (system)](fdd/fdd-system-diplexer-configuration.md)    | System diplexer settings     |
+
+### Cable Modem Functions and Interfaces
+
+|  Reference                                                    | Description                       |
+|---------------------------------------------------------------|-----------------------------------|
+| [Diplexer Configuration](diplexer-configuration.md)           | Device diplexer settings          |
+| [DOCSIS Base Configuration](docsis-base-configuration.md)     | Base configuration view           |
+| [Event Log](event-log.md)                                     | Cable modem event log             |
+| [Reset Cable Modem](reset-cm.md)                              | Remote reset                      |
+| [System Description](system-description.md)                   | `sysDescr` identity               |
+| [System Uptime](up-time.md)                                   | `sysUpTime` in seconds            |
+| [Interface Statistics](pnm/interface/stats.md)                | Interface-level statistics        |
 
 ## Proactive Network Maintenance (PNM)
 
 ### Downstream (DS)
 
-| Page                                                      | Description                     |
-|-----------------------------------------------------------|---------------------------------|
-| [OFDM RxMER](ds/ofdm/rxmer.md)                            | Raw RxMER, summaries, plots.    |
-| [OFDM MER margin](ds/ofdm/mer-margin.md)                  | OFDM MER margin utilities.      |
-| [OFDM channel estimation](ds/ofdm/channel-estimation.md)  | Channel distortion/echo analysis. |
-| [OFDM constellation display](ds/ofdm/constellation-display.md) | Visual modulation symbols. |
-| [OFDM FEC summary](ds/ofdm/fec-summary.md)                | Forward error correction summary. |
-| [OFDM modulation profile](ds/ofdm/modulation-profile.md)  | Bit-loading and profile usage.  |
-| [Histogram](histogram.md)                                 | Downstream power-level histogram. |
-| [Spectrum analyzer](spectrum-analyzer.md)                 | Downstream sweep capture.       |
+|  Reference                                                        | Description                       |
+|-------------------------------------------------------------------|-----------------------------------|
+| [OFDM RxMER](ds/ofdm/rxmer.md)                                    | Raw RxMER, summaries, plots       |
+| [OFDM MER Margin](ds/ofdm/mer-margin.md)                          | OFDM MER margin utilities         |
+| [OFDM Channel-Estimation](ds/ofdm/channel-estimation.md)          | Channel distortion/echo analysis  |
+| [OFDM Constellation Display](ds/ofdm/constellation-display.md)    | Visual modulation symbols    |
+| [OFDM FEC Summary](ds/ofdm/fec-summary.md)                        | Forward error correction summary  |
+| [OFDM Modulation Profile](ds/ofdm/modulation-profile.md)          | Bit-loading and profile usage     |
+| [Histogram](histogram.md)                                         | Downstream power-level histogram  |
 
 ### Upstream (US)
 
-| Page                                               | Description                     |
-|----------------------------------------------------|---------------------------------|
-| [OFDMA pre-equalization](us/ofdma/pre-equalization.md) | Upstream tap coefficients. |
+|  Reference                                         | Description                      |
+|----------------------------------------------------|----------------------------------|
+| [OFDMA Pre-Equalization](us/ofdma/pre-equalization.md) | Upstream tap coefficients    |
 
-### Interface
+## Spectrum Analysis
 
-| Page                                   | Description                     |
-|----------------------------------------|---------------------------------|
-| [PNM interface stats](pnm/interface/stats.md) | PNM interface-level statistics. |
+|  Reference                                | Description                           |
+|-------------------------------------------|---------------------------------------|
+| [Spectrum Analyzer](spectrum-analyzer.md) | Spectrum Capture                      |
+| [DOCSIS 3.0 SC-QAM](spectrum-analyzer.md) | Downstream PerChannel SCQAM Capture   |
+| [DOCSIS 3.1 OFDM](spectrum-analyzer.md)   | Downstream PerChannel OFDM Capture    |
+

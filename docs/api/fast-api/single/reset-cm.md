@@ -1,56 +1,42 @@
 # DOCSIS Device Reset
 
-## 📡 Endpoint
+Initiates A Remote Reset (Reboot) Of A DOCSIS Cable Modem Via SNMP.
+
+## Endpoint
 
 **POST** `/docs/dev/reset`
 
-Initiates a remote reset (reboot) of the specified DOCSIS cable modem via SNMP.
+## Request
 
-## 📅 Request Body (JSON)
+Use the SNMP-only format: [Common → Request](../../../common/request.md)
+TFTP parameters are not required.
 
-```json
-{
-  "cable_modem": {
-  "mac_address": "aa:bb:cc:dd:ee:ff", 
-  "ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
-    },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
-    }
-  }
-}
-```
+## Response
 
-## 📤 JSON Response
+This endpoint returns the standard envelope described in [Common → Response](../../../common/response.md) (`mac_address`, `status`, `message`, `data`).
+
+### Abbreviated Example
 
 ```json
 {
-  "mac_address": "a1:b2:c3:d4:e5:f6",
+  "mac_address": "aa:bb:cc:dd:ee:ff",
   "status": 0,
-  "message": "Reset command sent to cable modem at 192.168.0.1 successfully.",
+  "message": "Reset command sent to cable modem at 192.168.0.100 successfully.",
   "data": null
 }
 ```
 
-## 📘 Response Field Details
+## Response Field Details
 
-| Field         | Type   | Description                                     |
-| ------------- | ------ | ----------------------------------------------- |
-| `mac_address` | string | MAC address of the targeted cable modem         |
-| `status`      | int    | 0 = success, non-zero indicates failure         |
-| `message`     | string | Success or error message with IP/MAC detail     |
-| `data`        | null   | Reserved for future use or extended diagnostics |
+| Field         | Type   | Description                                        |
+| ------------- | ------ | -------------------------------------------------- |
+| `mac_address` | string | MAC address of the targeted cable modem.           |
+| `status`      | int    | Operation status (`0` = success; non-zero = fail). |
+| `message`     | string | Success or error message with IP/MAC detail.       |
+| `data`        | null   | Reserved for future use or extended diagnostics.   |
 
-## 📃 Notes
+## Notes
 
-* Make sure the SNMP credentials are valid and the modem is reachable.
-* This operation reboots the modem and may temporarily disrupt service.
-* Use this for remote troubleshooting, recovery, or provisioning workflows.
+* Ensure SNMP credentials are valid and the modem is reachable.
+* This operation reboots the modem and will briefly disrupt service.
+* Useful for remote troubleshooting, recovery, or provisioning workflows.

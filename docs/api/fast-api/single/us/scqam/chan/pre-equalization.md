@@ -1,95 +1,91 @@
-# DOCSIS 3.0 Upstream ATDMA Pre-Equalization API
+# DOCSIS 3.0 Upstream ATDMA Pre-Equalization
 
-This endpoint provides access to DOCSIS 3.0 upstream pre-equalization tap data for SC-QAM (ATDMA) channels. The tap coefficients allow engineers to analyze cable plant conditions such as in-channel reflections, group delay, and pre-echo distortion. These insights are essential for proactive maintenance and plant alignment in legacy upstream environments.
+Provides Access To DOCSIS 3.0 Upstream SC-QAM (ATDMA) Pre-Equalization Tap Data For Plant Analysis (Reflections, Group Delay, Pre-Echo).
 
-## 📡 Endpoint
+## Endpoint
 
 **POST** `/docs/if30/us/scqam/chan/preEqualization`
 
-Retrieves pre-equalization coefficients and tap configuration for DOCSIS 3.0 upstream SC-QAM (ATDMA) channels.
+## Request
 
-## 📥 Request Body (JSON)
+Use the SNMP-only format: [Common → Request](../../../common/request.md)  
+TFTP parameters are not required.
+
+## Response
+
+This endpoint returns the standard envelope described in [Common → Response](../../../common/response.md) (`mac_address`, `status`, `message`, `data`).
+
+`data` is an **object** keyed by the **SNMP table index** of each upstream channel.  
+Each value contains decoded tap configuration and coefficient arrays.
+
+### Abbreviated Example
 
 ```json
 {
-  "cable_modem": {
   "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
+  "status": 0,
+  "message": null,
+  "data": {
+    "80": {
+      "main_tap_location": 8,
+      "forward_taps_per_symbol": 1,
+      "num_forward_taps": 24,
+      "num_reverse_taps": 0,
+      "forward_coefficients": [
+        { "real": 0, "imag": 4, "magnitude": 4.0, "magnitude_power_dB": 12.04 },
+        { "real": 2, "imag": -15425, "magnitude": 15425.0, "magnitude_power_dB": 83.76 },
+        { "real": -15426, "imag": 1, "magnitude": 15426.0, "magnitude_power_dB": 83.77 }
+        /* ... taps elided ... */
+      ],
+      "reverse_coefficients": []
     },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
+    "81": {
+      "main_tap_location": 8,
+      "forward_taps_per_symbol": 1,
+      "num_forward_taps": 24,
+      "num_reverse_taps": 0,
+      "forward_coefficients": [
+        { "real": -15425, "imag": -15425, "magnitude": 21814.24, "magnitude_power_dB": 86.77 },
+        { "real": 1, "imag": 3, "magnitude": 3.16, "magnitude_power_dB": 10.0 },
+        { "real": 1, "imag": -15425, "magnitude": 15425.0, "magnitude_power_dB": 83.76 }
+        /* ... taps elided ... */
+      ],
+      "reverse_coefficients": []
     }
+    /* ... other upstream channel indices elided ... */
   }
 }
 ```
 
-### 🔑 Fields
+## Container Keys
 
-| Field        | Type   | Description                    |
-| ------------ | ------ | ------------------------------ |
-| mac\_address | string | MAC address of the cable modem |
-| ip\_address  | string | IP address of the cable modem  |
-| snmp         | object | SNMPv2c or SNMPv3 credentials  |
+| Key (top-level under `data`) | Type   | Description                                                       |
+| ---------------------------- | ------ | ----------------------------------------------------------------- |
+| `"80"`, `"81"`, …            | string | **SNMP table index** for the upstream channel row (OID instance). |
 
-## 📤 Response Body (Per Channel)
+## Channel-Level Fields
 
-```json
-{
-  "<ChannelID>": {
-    "main_tap_location": 8,
-    "forward_taps_per_symbol": 1,
-    "num_forward_taps": 24,
-    "num_reverse_taps": 0,
-    "forward_coefficients": [
-      {
-        "real": 512,
-        "imag": -15427,
-        "magnitude": 15435.49,
-        "magnitude_power_dB": 83.77
-      },
-      {
-        "real": -15425,
-        "imag": 768,
-        "magnitude": 15444.11,
-        "magnitude_power_dB": 83.78
-      }
-      // ... additional taps
-    ],
-    "reverse_coefficients": []
-  }
-}
-```
+| Field                     | Type    | Description                                                 |
+| ------------------------- | ------- | ----------------------------------------------------------- |
+| `main_tap_location`       | integer | Location of the main tap (typically near the filter center) |
+| `forward_taps_per_symbol` | integer | Number of forward taps per symbol                           |
+| `num_forward_taps`        | integer | Total forward equalizer taps                                |
+| `num_reverse_taps`        | integer | Total reverse equalizer taps (often `0` for ATDMA)          |
+| `forward_coefficients`    | array   | Complex tap coefficients applied in forward direction       |
+| `reverse_coefficients`    | array   | Complex tap coefficients applied in reverse direction       |
 
-### 📊 Key Response Fields
+## Coefficient Object Fields
 
-| Field                      | Type    | Description                                       |
-| -------------------------- | ------- | ------------------------------------------------- |
-| main\_tap\_location        | integer | Location of the main tap (usually near center)    |
-| forward\_taps\_per\_symbol | integer | Forward taps per symbol                           |
-| num\_forward\_taps         | integer | Number of forward equalizer taps                  |
-| num\_reverse\_taps         | integer | Number of reverse equalizer taps                  |
-| forward\_coefficients      | array   | List of complex coefficients in forward direction |
-| reverse\_coefficients      | array   | List of complex coefficients in reverse direction |
-| ↳ real                     | integer | Real part of tap coefficient                      |
-| ↳ imag                     | integer | Imaginary part of tap coefficient                 |
-| ↳ magnitude                | float   | Magnitude of the complex tap                      |
-| ↳ magnitude\_power\_dB     | float   | Power of the tap in dB                            |
+| Field                | Type  | Units | Description                          |
+| -------------------- | ----- | ----- | ------------------------------------ |
+| `real`               | int   | —     | Real part of the complex coefficient |
+| `imag`               | int   | —     | Imaginary part of the coefficient    |
+| `magnitude`          | float | —     | Magnitude of the complex tap         |
+| `magnitude_power_dB` | float | dB    | Power of the tap in dB               |
 
-> ℹ️ Tap coefficient values are decoded from the upstream equalizer register and analyzed in-place.
+## Notes
 
-## 📝 Notes
-
-* Each top-level key in the response is a DOCSIS upstream channel ID.
-* Forward taps are used to correct pre-echo distortion before transmission.
-* Reverse taps are uncommon in ATDMA and may often be empty.
-* Useful for diagnostics related to echo path delay, cable reflections, and plant distortion.
-
-> 📂 For interpretation methods, see: `DOCS-IF3-MIB::docsIf3CmStatusUsEqData` and internal tap decoder specifications.
+* Each top-level key under `data` is the DOCSIS **SNMP index** for an upstream SC-QAM (ATDMA) channel.
+* Forward taps pre-compensate the channel (handling pre-echo/echo paths); reverse taps are uncommon in ATDMA.
+* Use tap shapes and main-tap offset to infer echo path delay and alignment health.
+* Tap coefficients are signed integers; convert to floating-point as needed for analysis.

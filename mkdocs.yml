@@ -38,9 +38,9 @@ nav:
           - Common:
               - Requests: api/fast-api/common/request.md
               - Responses: api/fast-api/common/response.md
-          - Single: api/fast-api/single/index.md
-          - Multi: api/fast-api/multi/index.md
-          - Status codes: api/fast-api/status/fast-api-status-codes.md
+          - Single Capture: api/fast-api/single/index.md
+          - Multi Capture: api/fast-api/multi/index.md
+          - Status Codes: api/fast-api/status/fast-api-status-codes.md
       - Python: api/python/index.md
   - Examples:
       - Index: examples/index.md

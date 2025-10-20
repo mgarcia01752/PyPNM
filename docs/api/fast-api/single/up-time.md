@@ -1,38 +1,25 @@
 # DOCSIS System Uptime
 
-## 📡 Endpoint
+Retrieves The Current System Uptime Of A DOCSIS Cable Modem Using SNMP.
+
+## Endpoint
 
 **POST** `/system/upTime`
 
-Retrieves the current system uptime of a DOCSIS cable modem using SNMP. Useful for identifying device reboots and system availability.
+## Request
 
-## 🗓️ Request Body (JSON)
+Use the SNMP-only format: [Common → Request](../../../common/request.md)
+TFTP parameters are not required.
 
-```json
-{
-  "mac_address": "a1:b2:c3:d4:e5:f6",
-  "ip_address": "192.168.0.1",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
-    },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
-    }
-  }
-}
-```
+## Response
 
-## 🛄 JSON Response
+This endpoint returns the standard envelope described in [Common → Response](../../../common/response.md) (`mac_address`, `status`, `message`, `results`).
+
+### Abbreviated Example (Masked MAC)
 
 ```json
 {
-  "mac_address": "a1:b2:c3:d4:e5:f6",
+  "mac_address": "aa:bb:cc:dd:ee:ff",
   "status": 0,
   "message": null,
   "results": {
@@ -41,16 +28,17 @@ Retrieves the current system uptime of a DOCSIS cable modem using SNMP. Useful f
 }
 ```
 
-## 📜 Response Field Details
+## Response Field Details
 
-| Field         | Type   | Description                                 |
-| ------------- | ------ | ------------------------------------------- |
-| `mac_address` | string | MAC address of the queried device           |
-| `status`      | int    | 0 = success; non-zero indicates failure     |
-| `uptime`      | string | Formatted uptime in `HH:MM:SS.microseconds` |
+| Field            | Type   | Description                                           |
+| ---------------- | ------ | ----------------------------------------------------- |
+| `mac_address`    | string | MAC address of the queried device.                    |
+| `status`         | int    | Operation status (`0` = success; non-zero = failure). |
+| `results`        | object | Envelope payload.                                     |
+| `results.uptime` | string | Formatted uptime (`HH:MM:SS.microseconds`).           |
 
-## 📒 Notes
+## Notes
 
-* SNMP OID used: `1.3.6.1.2.1.1.3.0` (system uptime in hundredths of a second)
-* Returned uptime is converted into human-readable format.
-* Uptime can be used to detect unexpected reboots or system resets.
+* SNMP OID used: `1.3.6.1.2.1.1.3.0` (system uptime in hundredths of a second).
+* The service converts the raw counter into a human-readable duration.
+* Use uptime trends to detect unexpected reboots or instability.

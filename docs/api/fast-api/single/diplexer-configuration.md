@@ -1,56 +1,28 @@
-# DOCSIS 3.1 System Diplexer API
+# DOCSIS 3.1 System Diplexer
 
-This API provides insight into the diplexer configuration of a DOCSIS 3.1 cable modem. Diplexers define the frequency split between upstream and downstream communication paths, and understanding these boundaries is essential for validating modem operation within network spectrum plans.
+Provides Insight Into The Diplexer Configuration Of A DOCSIS 3.1 Cable Modem (Upstream/Downstream Band Splits, Capabilities, And Configured Band Edges). Use This To Audit Band Plans And Validate Mid-Split/High-Split Compatibility.
 
-The endpoint returns both capability indicators (hardware support) and configured frequency band edges for upstream and downstream paths. This is particularly useful for network provisioning, troubleshooting misconfigured splits, and aligning cable modem profiles with CMTS expectations.
-
-Use this API to audit modem band plans and ensure compatibility with mid-split and high-split deployments.
-
-## 📡 Endpoint
+## Endpoint
 
 **POST** `/docs/if31/system/diplexer`
 
-This endpoint retrieves the DOCSIS 3.1 diplexer configuration and capability values from a cable modem.
+## Request
 
-## 📥 Request Body (JSON)
+Use the SNMP-only format: [Common → Request](../../../common/request.md)
+TFTP parameters are not required.
 
-```json
-{
-  "cable_modem": {
-  "mac_address": "aa:bb:cc:dd:ee:ff", 
-  "ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
-    },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
-    }
-  }
-}
-```
+## Response
 
-### 🔑 Request Fields
+This endpoint returns the standard envelope described in [Common → Response](../../../common/response.md) (`mac_address`, `status`, `message`, `data`).
 
-| Field        | Type   | Description                                 |
-| ------------ | ------ | ------------------------------------------- |
-| mac\_address | string | MAC address of the cable modem              |
-| ip\_address  | string | IP address of the cable modem               |
-| snmp         | object | SNMPv2c or SNMPv3 configuration credentials |
-
-## 📤 Response Body
+### Abbreviated Example
 
 ```json
 {
   "mac_address": "aa:bb:cc:dd:ee:ff",
   "status": 0,
   "message": null,
-  "results": {
+  "data": {
     "diplexer": {
       "diplexer_capability": 28,
       "cfg_band_edge": 204000000,
@@ -63,19 +35,19 @@ This endpoint retrieves the DOCSIS 3.1 diplexer configuration and capability val
 }
 ```
 
-### 📊 Response Fields
+## Diplexer Fields
 
-| Field                      | Type | Description                                  |
-| -------------------------- | ---- | -------------------------------------------- |
-| diplexer\_capability       | int  | Upstream/Downstream diplexer capability code |
-| cfg\_band\_edge            | int  | Configured upstream band edge frequency (Hz) |
-| ds\_lower\_capability      | int  | Downstream lower frequency capability code   |
-| cfg\_ds\_lower\_band\_edge | int  | Configured downstream lower band edge (Hz)   |
-| ds\_upper\_capability      | int  | Downstream upper frequency capability code   |
-| cfg\_ds\_upper\_band\_edge | int  | Configured downstream upper band edge (Hz)   |
+| Field                    | Type | Units | Description                                   |
+| ------------------------ | ---- | ----- | --------------------------------------------- |
+| `diplexer_capability`    | int  | —     | Upstream/Downstream diplexer capability code. |
+| `cfg_band_edge`          | int  | Hz    | Configured **upstream** band edge frequency.  |
+| `ds_lower_capability`    | int  | —     | Downstream lower frequency capability code.   |
+| `cfg_ds_lower_band_edge` | int  | Hz    | Configured **downstream** lower band edge.    |
+| `ds_upper_capability`    | int  | —     | Downstream upper frequency capability code.   |
+| `cfg_ds_upper_band_edge` | int  | Hz    | Configured **downstream** upper band edge.    |
 
-## 📝 Notes
+## Notes
 
-* This endpoint is used to extract modem hardware capabilities and software configuration for DOCSIS diplexers.
-* Frequencies are provided in Hertz (Hz).
-* Capability codes are device-specific and defined in CableLabs specifications.
+* Values are reported in Hertz (Hz).
+* Capability codes are device/implementation specific (per CableLabs/vendor definitions).
+* Compare configured edges with plant split (e.g., 85 MHz mid-split, 204 MHz high-split) to verify alignment.

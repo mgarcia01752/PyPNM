@@ -1,114 +1,81 @@
-# DOCSIS 4.0 FDD Diplexer Band Edge Capability
+# DOCSIS 4.0 FDD Diplexer Band-Edge Capability
 
-This API exposes a cable modem’s supported FDD diplexer band edge frequencies for downstream and upstream signal planning in DOCSIS 4.0 environments.
+Exposes A Cable Modem’s Supported FDD Diplexer Band Edges For Downstream And Upstream Planning In DOCSIS 4.0.
 
-## 📚 Background
-
-Modern DOCSIS 4.0 FDD (Frequency Division Duplex) cable modems advertise their spectrum capabilities during registration using TLVs. These include the supported upstream and downstream band edge frequencies, critical for determining compatibility with extended spectrum deployments.
-
-These capabilities are reflected in the following SNMP tables:
-
-- `docsFddDiplexerUsUpperBandEdgeCapabilityTable` → TLV 5.84
-- `docsFddDiplexerDsLowerBandEdgeCapabilityTable` → TLV 5.82
-- `docsFddDiplexerDsUpperBandEdgeCapabilityTable` → TLV 5.83
-
-Each table contains a list of supported frequencies in MHz for the corresponding band edge direction.
-
-## 📡 Endpoint
+## Endpoint
 
 **POST** `/docs/fdd/diplexer/bandEdgeCapability`
 
-Retrieves all supported upstream and downstream diplexer band edge configurations from the cable modem.
+## Request
 
-### 🧾 Request Body
+Use the SNMP-only format: [Common → Request](../../../common/request.md)
+TFTP parameters are not required.
+
+## Response
+
+This endpoint returns the standard envelope described in [Common → Response](../../../common/response.md) (`mac_address`, `status`, `message`, `data`).
+
+`data` is an **array** of capability sets. Each item contains a capability `index` and an `entry` with the upstream upper, downstream lower, and downstream upper diplexer band-edge frequencies (in MHz).
+
+### Abbreviated Example (Masked MAC)
 
 ```json
 {
-  "cable_modem": {
-  "mac_address": "aa:bb:cc:dd:ee:ff", 
-  "ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
+  "mac_address": "aa:bb:cc:dd:ee:ff",
+  "status": 0,
+  "message": null,
+  "data": [
+    {
+      "index": 1,
+      "entry": {
+        "docsFddDiplexerUsUpperBandEdgeCapability": 85,
+        "docsFddDiplexerDsLowerBandEdgeCapability": 108,
+        "docsFddDiplexerDsUpperBandEdgeCapability": 1794
+      }
     },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
+    {
+      "index": 2,
+      "entry": {
+        "docsFddDiplexerUsUpperBandEdgeCapability": 204,
+        "docsFddDiplexerDsLowerBandEdgeCapability": 258,
+        "docsFddDiplexerDsUpperBandEdgeCapability": 1794
+      }
+    },
+    {
+      "index": 3,
+      "entry": {
+        "docsFddDiplexerUsUpperBandEdgeCapability": 396,
+        "docsFddDiplexerDsLowerBandEdgeCapability": 468,
+        "docsFddDiplexerDsUpperBandEdgeCapability": 1794
+      }
     }
-  }
+  ]
 }
 ```
 
-### 🔑 Fields
+## Response Fields
 
-| Field         | Type   | Description                         |
-|---------------|--------|-------------------------------------|
-| `mac_address` | string | Target CM MAC address               |
-| `ip_address`  | string | Target CM IP address                |
-| `snmp`        | object | SNMPv2c or SNMPv3 credentials       |
+| Field                                                   | Type   | Units | Description                                           |
+| ------------------------------------------------------- | ------ | ----- | ----------------------------------------------------- |
+| `mac_address`                                           | string | —     | MAC address of the queried device.                    |
+| `status`                                                | int    | —     | Operation status (`0` = success; non-zero = failure). |
+| `message`                                               | string | —     | Optional result message.                              |
+| `data`                                                  | array  | —     | Array of diplexer capability sets.                    |
+| `data[].index`                                          | int    | —     | Capability set identifier.                            |
+| `data[].entry.docsFddDiplexerUsUpperBandEdgeCapability` | int    | MHz   | Supported upstream **upper** band-edge frequency.     |
+| `data[].entry.docsFddDiplexerDsLowerBandEdgeCapability` | int    | MHz   | Supported downstream **lower** band-edge frequency.   |
+| `data[].entry.docsFddDiplexerDsUpperBandEdgeCapability` | int    | MHz   | Supported downstream **upper** band-edge frequency.   |
 
-## 📤 Response
-
-Returns a list of supported band edge triplets (Upstream Upper, Downstream Lower, Downstream Upper) grouped by capability index.
-
-### ✅ Example Response
-
-```json
-[
-  {
-    "index": 1,
-    "entry": {
-      "docsFddDiplexerUsUpperBandEdgeCapability": 85,
-      "docsFddDiplexerDsLowerBandEdgeCapability": 108,
-      "docsFddDiplexerDsUpperBandEdgeCapability": 1794
-    }
-  },
-  {
-    "index": 2,
-    "entry": {
-      "docsFddDiplexerUsUpperBandEdgeCapability": 204,
-      "docsFddDiplexerDsLowerBandEdgeCapability": 258,
-      "docsFddDiplexerDsUpperBandEdgeCapability": 1794
-    }
-  },
-  {
-    "index": 3,
-    "entry": {
-      "docsFddDiplexerUsUpperBandEdgeCapability": 396,
-      "docsFddDiplexerDsLowerBandEdgeCapability": 468,
-      "docsFddDiplexerDsUpperBandEdgeCapability": 1794
-    }
-  }
-]
-```
-
-### 📊 Response Table
-
-| Field Name                                      | Type    | Description                                                         |
-|-------------------------------------------------|---------|---------------------------------------------------------------------|
-| `index`                                         | integer | Capability set identifier                                           |
-| `entry.docsFddDiplexerUsUpperBandEdgeCapability` | integer | Supported upstream upper band edge frequency in MHz                |
-| `entry.docsFddDiplexerDsLowerBandEdgeCapability` | integer | Supported downstream lower band edge frequency in MHz              |
-| `entry.docsFddDiplexerDsUpperBandEdgeCapability` | integer | Supported downstream upper band edge frequency in MHz              |
-
-### 🧾 Response Summary Table
+### Response Summary (Example)
 
 | Index | Upstream Upper (MHz) | Downstream Lower (MHz) | Downstream Upper (MHz) |
-|-------|----------------------|-------------------------|-------------------------|
-| 1     | 85                   | 108                     | 1794                   |
-| 2     | 204                  | 258                     | 1794                   |
-| 3     | 396                  | 468                     | 1794                   |
+| ----: | -------------------: | ---------------------: | ---------------------: |
+|     1 |                   85 |                    108 |                   1794 |
+|     2 |                  204 |                    258 |                   1794 |
+|     3 |                  396 |                    468 |                   1794 |
 
-Each row corresponds to a diplexer configuration set supported by the cable modem.
+## Notes
 
----
-
-## 🔎 Notes
-
-- Frequencies are in MHz and may include values not currently active, but supported by the CM.
-- A `0` value indicates the device does not support extended spectrum for that band.
-- This endpoint is useful when planning spectrum compatibility between modems and CMTS FDD profiles.
+* Frequencies are reported in **MHz** and reflect capability (not necessarily the currently configured split).
+* A value of `0` indicates the device does **not** advertise extended spectrum for that band edge.
+* Use this data to validate modem–CMTS spectrum compatibility when planning FDD profiles and extended splits.
