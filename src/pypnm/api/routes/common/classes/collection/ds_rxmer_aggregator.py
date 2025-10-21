@@ -71,7 +71,7 @@ class DsRxMerAggregator(MultiPnmCollection):
 
         for capture_time, dorm in captures:
             values = dorm.get_rxmer_values()
-            self.logger.info(f'Calculating MinAvgMaxChannel=({channel_id}) - CaptureTime=({capture_time}) - Getting RxMER ValueCount=({len(values)})')
+            self.logger.debug(f'Calculating MinAvgMaxChannel=({channel_id}) - CaptureTime=({capture_time}) - Getting RxMER ValueCount=({len(values)})')
             mags.append(values)
 
         return MinAvgMax(mags, precision=precision).to_model()

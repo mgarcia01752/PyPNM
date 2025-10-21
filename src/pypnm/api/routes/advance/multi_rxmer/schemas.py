@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, Field
 from pypnm.api.routes.advance.common.schema.common_capture_schema import MultiCaptureRequest
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
-    CommonAnalysisResponse, CommonAnalysisType, CommonMultiAnalysisRequest, CommonOutput, CommonResponse)
+    CommonAnalysisResponse, CommonAnalysisType, CommonOutput, CommonResponse)
 
 from enum import IntEnum
 

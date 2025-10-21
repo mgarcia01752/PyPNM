@@ -114,7 +114,7 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
         msg_rsp: MessageResponse = cps.process()
     
         return PnmMeasurementResponse(
-            mac_address=mac, status=msg_rsp.status, measurement=msg_rsp.payload)  # type: ignore
+            mac_address=mac, status=msg_rsp.status, measurement=msg_rsp.payload)
 
     async def get_analysis_logic(self, request: PnmAnalysisRequest) -> Union[PnmAnalysisResponse, FileResponse, SnmpResponse]:
         
@@ -127,7 +127,7 @@ Useful for quick health checks, threshold monitoring, and triggering further dia
         status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
         if status != ServiceStatusCode.SUCCESS:
             self.logger.error(msg)
-            return SnmpResponse(mac_address=str(mac), status=status, message=msg)  
+            return SnmpResponse(mac_address=mac, status=status, message=msg)  
 
         service: CmDsOfdmRxMerService = CmDsOfdmRxMerService(cm)
         msg_rsp: MessageResponse = await service.set_and_go()

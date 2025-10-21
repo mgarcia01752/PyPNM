@@ -300,6 +300,10 @@ class MultiRxMerRouter(AbstractService):
             if atype == MultiRxMerAnalysisType.MIN_AVG_MAX:    
                 engine = MultiRxMerSignalAnalysis(cda, atype)
                 multi_analysis:MultiRxMerAnalysisResult = engine.to_model()
+            
+            elif atype == MultiRxMerAnalysisType.RXMER_HEAT_MAP:
+                engine = MultiRxMerSignalAnalysis(cda, MultiRxMerAnalysisType.RXMER_HEAT_MAP)
+                multi_analysis = engine.to_model()
 
             elif atype == MultiRxMerAnalysisType.OFDM_PROFILE_PERFORMANCE_1:
                 '''
@@ -320,12 +324,8 @@ class MultiRxMerRouter(AbstractService):
                     * Provide total FEC Stats for each profile over the time of the capture.
                 '''
                 engine = MultiRxMerSignalAnalysis(cda, MultiRxMerAnalysisType.OFDM_PROFILE_PERFORMANCE_1)
-                multi_analysis = engine.to_model()                
-            
-            elif atype == MultiRxMerAnalysisType.RXMER_HEAT_MAP:
-                engine = MultiRxMerSignalAnalysis(cda, MultiRxMerAnalysisType.RXMER_HEAT_MAP)
-                multi_analysis = engine.to_model()
-            
+                multi_analysis = engine.to_model() 
+
             else:
                 msg = f'Invalid Analysis Type {atype}'
                 return MultiRxMerAnalysisResponse(

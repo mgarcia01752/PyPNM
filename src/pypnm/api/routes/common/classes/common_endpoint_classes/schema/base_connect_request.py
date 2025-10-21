@@ -5,30 +5,20 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 from ipaddress import ip_address
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_snmp import SNMPConfig
 from pypnm.config.system_config_settings import SystemConfigSettings as SCSC
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import InetAddressStr, MacAddressStr
 
 class CableModemOnlyConfig(BaseModel):
     """
     Encapsulates core cable modem fields without extra PNM metadata.
     """
-    mac_address: str = Field(
-        default=SCSC.default_mac_address,
-        description="MAC address of the cable modem"
-    )
-
-    ip_address: str = Field(
-        default=SCSC.default_ip_address,
-        description="IP address of the cable modem"
-    )
-
-    snmp: SNMPConfig = Field(
-        ...,  # Required
-        description="SNMP configuration block"
-    )
+    mac_address: MacAddressStr = Field(default=SCSC.default_mac_address,description="MAC address of the cable modem")
+    ip_address: InetAddressStr = Field(default=SCSC.default_ip_address, description="IP address of the cable modem")
+    snmp: SNMPConfig = Field(...,description="SNMP configuration block")
 
     @field_validator("mac_address", mode="before")
     def _normalize_mac(cls, v: str) -> str:
@@ -47,26 +37,5 @@ class CableModemOnlyConfig(BaseModel):
 class BaseDeviceConnectRequest(BaseModel):
     """
     Request model using nested cable_modem with only SNMP (no TFTP or extended PNM parameters).
-    
-    Example JSON:
-    {
-        "cable_modem": {
-            "mac_address": "aa:bb:cc:dd:ee:ff",
-            "ip_address": "192.168.0.100",
-            "snmp": {
-                "snmpV2C": {
-                    "community": "private"
-                },
-                "snmpV3": {
-                    "username": "string",
-                    "securityLevel": "noAuthNoPriv",
-                    "authProtocol": "MD5",
-                    "authPassword": "string",
-                    "privProtocol": "DES",
-                    "privPassword": "string"
-                }
-            }
-        }
-    }
     """
     cable_modem: CableModemOnlyConfig

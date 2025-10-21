@@ -45,15 +45,10 @@ class SnmpAnalysisRequest(CommonRequest):
     """
     Request model for triggering SNMP-based analysis with specific parameters.
     """
-    analysis: SnmpAnalysisSpec = Field(
-        ..., description="Specification of the analysis to be run on the target device."
-    )
+    analysis: SnmpAnalysisSpec = Field(..., description="Specification of the analysis to be run on the target device.")
 
 class SnmpAnalysisResponse(CommonResponse):
     """
     Response model for SNMP-based analysis operations.
     """
-    data: Optional[Union[bytes, str]] = Field(
-        default=None,
-        description="Structured or raw result of the SNMP analysis operation."
-    )
+    data: Optional[Union[bytes, str]] = Field(default=None, description="Structured or raw result of the SNMP analysis operation.")

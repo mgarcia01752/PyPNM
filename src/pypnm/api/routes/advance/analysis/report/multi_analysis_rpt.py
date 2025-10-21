@@ -78,8 +78,7 @@ class MultiAnalysisRpt(ABC):
             time         =   self._group_time,
             csv_files    =   self.csv_files,
             plot_files   =   self.plot_files,
-            archive_file =   self.archive_file,
-        )
+            archive_file =   self.archive_file,)
 
     def create_csv_fname(self, tags: List[str] = []) -> PathLike:
         '''

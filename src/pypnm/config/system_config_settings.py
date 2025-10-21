@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from pypnm.config.config_manager import ConfigManager
+from pypnm.lib.types import IPv4Str, IPv6Str, InetAddressStr, MacAddressStr
 
 class classproperty:
     """Descriptor for class-level properties that reload config on each access."""
@@ -20,29 +21,61 @@ class SystemConfigSettings:
 
     # FastAPI defaults
     @classproperty
-    def default_mac_address(cls) -> str:
+    def default_mac_address(cls) -> MacAddressStr:
         return cls._cfg.get("FastApiRequestDefault", "mac_address")
 
     @classproperty
-    def default_ip_address(cls) -> str:
+    def default_ip_address(cls) -> InetAddressStr:
         return cls._cfg.get("FastApiRequestDefault", "ip_address")
 
     # SNMP v2 settings
     @classproperty
-    def snmp_version(cls) -> str:
-        return cls._cfg.get("SNMP", "version")
+    def snmp_enable(cls) -> bool:
+        return cls._cfg.get("SNMP", "version", "2c", "enable")
 
     @classproperty
     def snmp_retries(cls) -> int:
-        return int(cls._cfg.get("SNMP", "retries"))
+        return int(cls._cfg.get("SNMP", "version", "2c", "retries"))
 
     @classproperty
     def snmp_read_community(cls) -> str:
-        return cls._cfg.get("SNMP", "read_community")
+        return cls._cfg.get("SNMP", "version", "2c", "read_community")
 
     @classproperty
     def snmp_write_community(cls) -> str:
-        return cls._cfg.get("SNMP", "write_community")
+        return cls._cfg.get("SNMP", "version", "2c", "write_community")
+
+    # SNMP v3 settings
+
+    @classproperty
+    def snmp_v3_enable(cls) -> bool:
+        return cls._cfg.get("SNMP", "version", "3", "enable")
+
+    @classproperty
+    def snmp_v3_username(cls) -> str:
+        return cls._cfg.get("SNMP", "version", "3", "username")
+    
+    @classproperty
+    def snmp_v3_auth_protocol(cls) -> str:
+        return cls._cfg.get("SNMP", "version", "3", "auth_protocol")
+    
+    @classproperty
+    def snmp_v3_auth_password(cls) -> str:
+        return cls._cfg.get("SNMP", "version", "3", "auth_password")
+    
+    @classproperty
+    def snmp_v3_priv_protocol(cls) -> str:
+        return cls._cfg.get("SNMP", "version", "3", "priv_protocol")
+    
+    @classproperty
+    def snmp_v3_priv_password(cls) -> str:
+        return cls._cfg.get("SNMP", "version", "3", "priv_password")
+    
+    # SNMP general settings
+    @classproperty
+    def snmp_timeout(cls) -> int:
+        return int(cls._cfg.get("SNMP", "timeout"))
+
 
     # Bulk data transfer settings
     @classproperty
@@ -50,11 +83,11 @@ class SystemConfigSettings:
         return cls._cfg.get("PnmBulkDataTransfer", "method")
 
     @classproperty
-    def bulk_tftp_ip_v4(cls) -> str:
+    def bulk_tftp_ip_v4(cls) -> IPv4Str:
         return cls._cfg.get("PnmBulkDataTransfer", "tftp", "ip_v4")
 
     @classproperty
-    def bulk_tftp_ip_v6(cls) -> str:
+    def bulk_tftp_ip_v6(cls) -> IPv6Str:
         return cls._cfg.get("PnmBulkDataTransfer", "tftp", "ip_v6")
 
     @classproperty

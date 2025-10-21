@@ -4,10 +4,25 @@
         "ip_address": "172.19.32.234"
     },   
     "SNMP": {
-        "version": "2",
-        "retries": "5",
-        "read_community": "private",
-        "write_community": "private"
+        "timeout": 5,
+        "version": {
+            "2c" : {
+                "enable" :true,
+                "retries": 5,
+                "read_community": "private",
+                "write_community": "private"                
+            }, 
+            "3" : {
+                "enable" : false,
+                "retries": 5,
+                "username": "user",
+                "securityLevel": "authPriv",
+                "authProtocol": "SHA",
+                "authPassword": "pass",
+                "privProtocol": "AES",
+                "privPassword": "privpass"
+            }
+        }
     },
     "PnmBulkDataTransfer": {
         "method": "tftp",
@@ -61,7 +76,7 @@
                 },
                 "scp": {
                     "host": "localhost",
-                    "port": "22",
+                    "port": 22,
                     "user": "test",
                     "password": "tftp",
                     "remote_dir": "/srv/tftp"

@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="docs/master-index.md">
+  <a href="docs/index.md">
     <picture>
       <source srcset="docs/images/logo/pypnm-dark-mode.png" media="(prefers-color-scheme: dark)" />
       <img src="docs/images/logo/pypnm-light-mode.png" alt="PyPNM Logo" width="200" />
@@ -9,38 +9,35 @@
 
 # PyPNM (pre-alpha) — DOCSIS 3.x/4.0 Proactive Network Maintenance Toolkit
 
-PyPNM is a modular, Python-based toolkit for parsing, analyzing, and visualizing DOCSIS 3.x/4.0 Proactive Network Maintenance (PNM) telemetry. It supports real-time and offline diagnostics via both a programmatic API and an interactive web interface.
+PyPNM is a modular, Python-based toolkit for collecting, parsing, and analyzing DOCSIS 3.x/4.0 Proactive Network Maintenance (PNM) telemetry. It supports real-time and offline workflows through a Python API and a FastAPI web service.
 
-## Key features
+## Key Features
 
-- Structured SNMP integration: poll DOCSIS modems for telemetry (RxMER, modulation profiles, spectrum, equalization).
-- Binary file decoding: retrieve and parse modem-generated TFTP or SNMP-triggered binary capture files.
-- FastAPI REST interface: JSON API for dashboards, automation, and analytics pipelines.
-- OFDM and upstream tools: channel estimation, FEC analysis, tap delay visualization, and more.
-- Built-in calculators: Shannon capacity, delta margin, signal statistics.
-- Extensible analysis framework: plug in new capture types and algorithms.
-- CLI utilities: command-line tools for scripting and automation workflows.
+* **Structured SNMP integration**: poll DOCSIS modems for telemetry (RxMER, modulation profiles, spectrum, equalization).
+* **Binary file decoding**: retrieve and parse modem-generated capture files delivered via TFTP or returned over SNMP.
+* **FastAPI REST interface**: JSON endpoints for dashboards, automation, and analytics pipelines.
+* **OFDM and upstream utilities**: channel estimation, FEC analysis, tap-delay visualization, and related calculators.
+* **Analysis helpers**: Shannon capacity, margin deltas, and signal statistics.
+* **Extensible framework**: plug in new capture types and algorithms.
+* **CLI tools**: scriptable utilities for batch tasks.
 
 ## Prerequisites
 
-### Operating systems
+### Operating Systems
 
-PyPNM runs on standard Linux environments.
+Linux distributions; validated on:
 
-Tested distributions:
-- Ubuntu 22.04 LTS
-- Ubuntu 24.04 LTS
+* Ubuntu 22.04 LTS
+* Ubuntu 24.04 LTS
 
-### Shell dependencies
-
-Install git if not already present:
+### Shell Dependencies
 
 ```bash
 sudo apt update
 sudo apt install -y git
-````
+```
 
-## Getting started
+## Getting Started
 
 ### 1) Clone the repository
 
@@ -51,20 +48,31 @@ cd PyPNM
 
 ### 2) Install system and Python dependencies
 
-The included `install.sh` detects Ubuntu 22.04 vs 24.04 (or falls back to your distro’s default Python), installs system packages, creates a virtual environment, and installs PyPNM in editable mode:
+The included script installs system packages, creates a virtual environment, and installs PyPNM in editable mode:
 
 ```bash
 ./install.sh
 ```
 
-### 3) Activate the Python virtual environment (if not already active)
+### 3) Activate the virtual environment (if not already active)
 
 ```bash
 python3 -m venv .env
 source .env/bin/activate
 ```
 
-### 4) Launch the PyPNM FastAPI service
+### 4) Configure PyPNM (quick setup)
+
+You’ll need:
+
+* Cable Modem (CM) MAC address and IP address
+* SNMPv2c write community string
+* TFTP server IP (IPv4/IPv6) reachable by the CM and PyPNM
+* A retrieval method for PNM files from the TFTP server
+
+See: [PyPNM System Configuration](docs/api/fast-api/pypnm/system/system_config.md)
+
+### 5) Launch the FastAPI service
 
 ```bash
 pypnm --help
@@ -76,45 +84,50 @@ Example (HTTPS on port 443):
 pypnm --host 0.0.0.0 --port 443 --ssl --cert ./certs/cert.pem --key ./certs/key.pem
 ```
 
-Default run:
+Default:
 
 ```bash
 pypnm
 ```
 
-### 5) Explore the API
+### 6) Explore the API
 
 * Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
 * ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 * Postman: [https://www.postman.com/downloads/](https://www.postman.com/downloads/)
 
-Tip: Use Postman for complex or large JSON payloads; Swagger UI can struggle with deeply nested schemas.
+Tip: Postman is often better for large or nested JSON payloads.
 
-## Full documentation
+## API Documentation
 
-* Master index: docs/master-index.md
-* Python API reference: docs/api/python/index.md
-* Example scripts: docs/examples/index.md
+* [Docs Index](./docs/index.md)
+* [FastAPI Reference](./docs/api/fast-api/index.md)
+* [Python API Reference](./docs/api/python/index.md)
 
-## CableLabs standards and specifications
+## Notes on SNMP
 
-DOCSIS 3.1 MIBs and PNM behavior:
+* SNMPv2c is supported in pre-alpha.
+* SNMPv3 client is stubbed and not yet implemented; enabling SNMPv3 in config will raise a clear `NotImplementedError`.
 
-* [https://www.cablelabs.com/specifications/search?category=DOCSIS&subcat=DOCSIS%203.1](https://www.cablelabs.com/specifications/search?category=DOCSIS&subcat=DOCSIS%203.1)
-* [https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
-* [https://mibs.cablelabs.com/MIBs/DOCSIS/](https://mibs.cablelabs.com/MIBs/DOCSIS/)
+## CableLabs Specifications and MIBs
 
-PNM architecture and guidelines:
+* DOCSIS 3.1: [https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
+* DOCSIS 4.0: [https://www.cablelabs.com/specifications/CM-SP-MULPIv4.0](https://www.cablelabs.com/specifications/CM-SP-MULPIv4.0)
+* CM-SP-CM-OSSIv3.1 (PNM section): [https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
+* CM-SP-CM-OSSIv4.0 (PNM section): [https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv4.0](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv4.0)
+* DOCSIS MIBs: [https://mibs.cablelabs.com/MIBs/DOCSIS/](https://mibs.cablelabs.com/MIBs/DOCSIS/)
 
-* [https://www.cablelabs.com/specifications/CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)
-* [https://www.cablelabs.com/specifications/CM-GL-PNM-HFC](https://www.cablelabs.com/specifications/CM-GL-PNM-HFC)
-* [https://www.cablelabs.com/specifications/CM-GL-PNM-3.1](https://www.cablelabs.com/specifications/CM-GL-PNM-3.1)
+PNM architecture and guidance:
+
+* CM-TR-PMA: [https://www.cablelabs.com/specifications/CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)
+* CM-GL-PNM-HFC: [https://www.cablelabs.com/specifications/CM-GL-PNM-HFC](https://www.cablelabs.com/specifications/CM-GL-PNM-HFC)
+* CM-GL-PNM-3.1: [https://www.cablelabs.com/specifications/CM-GL-PNM-3.1](https://www.cablelabs.com/specifications/CM-GL-PNM-3.1)
 
 ## License
 
-Released under the MIT License. See LICENSE.
+MIT License. See `LICENSE`.
 
 ## Maintainer
 
 Maurice Garcia
-Email: [mgarcia01752@outlook.com](mailto:mgarcia01752@outlook.com)
+[mgarcia01752@outlook.com](mailto:mgarcia01752@outlook.com)

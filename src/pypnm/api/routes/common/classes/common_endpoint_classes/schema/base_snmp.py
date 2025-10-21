@@ -21,10 +21,7 @@ class SNMPv2c(BaseModel):
     Attributes:
         community (str): Write community string. Must not be blank.
     """
-    community: str = Field(
-        default=SCSC.snmp_write_community,
-        description=f"Write community string (default: {SCSC.snmp_write_community})"
-    )
+    community: str = Field(default=SCSC.snmp_write_community, description=f"Write community string (default: {SCSC.snmp_write_community})")
 
     @field_validator("community")
     def community_not_blank(cls, v: str) -> str:
@@ -107,11 +104,10 @@ class SNMPConfig(BaseModel):
         )
         ```
     """
-    snmp_v2c: SNMPv2c = Field(..., description="SNMP v2c settings")
-    snmp_v3: SNMPv3 = Field(..., description="SNMP v3 settings")
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    snmp_v2c: SNMPv2c   = Field(..., description="SNMP v2c settings")
 
-    # Use camelCase in serialized JSON and allow population by field name
-    model_config = ConfigDict(
-        alias_generator=to_camel,
-        populate_by_name=True
-    )
+    if SCSC.snmp_v3_enable:
+        snmp_v3: SNMPv3     = Field(..., description="SNMP v3 settings")
+
+    

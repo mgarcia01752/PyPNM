@@ -1,12 +1,12 @@
-# Common request
+# Common Request
 
-Shared request body patterns used across PyPNM endpoints.
+Shared Request Body Patterns For PyPNM Endpoints.
 
-When using Swagger UI, many parameters are auto-filled from the system configuration. See [system configuration](../pypnm/system/index.md).
+When using Swagger UI, many parameters auto-fill from system settings. See [System Configuration](../../fast-api/pypnm/system/system_config.md).
 
-## PNM operations with file retrieval (TFTP)
+## PNM Operations With File Retrieval (TFTP)
 
-Use this form when the endpoint retrieves a file (for example, RxMER capture written to a TFTP server).
+Use this when the endpoint retrieves a file (for example, an RxMER capture written to a TFTP server).
 
 ```json
 {
@@ -17,28 +17,20 @@ Use this form when the endpoint retrieves a file (for example, RxMER capture wri
       "tftp": {
         "ipv4": "192.168.0.10",
         "ipv6": "2001:db8::10"
-      },
-      "snmp": {
-        "snmpV2C": {
-          "community": "private"
-        },
-        "snmpV3": {
-          "username": "user",
-          "securityLevel": "noAuthNoPriv",
-          "authProtocol": "MD5",
-          "authPassword": "pass",
-          "privProtocol": "DES",
-          "privPassword": "pass"
-        }
+      }
+    },
+    "snmp": {
+      "snmpV2C": {
+        "community": "private"
       }
     }
   }
 }
 ```
 
-## SNMP-only operations (no file retrieval)
+## SNMP-Only Operations (No File Retrieval)
 
-Use this form when the endpoint only performs SNMP calls.
+Use this when the endpoint performs SNMP calls only.
 
 ```json
 {
@@ -48,47 +40,39 @@ Use this form when the endpoint only performs SNMP calls.
     "snmp": {
       "snmpV2C": {
         "community": "private"
-      },
-      "snmpV3": {
-        "username": "user",
-        "securityLevel": "noAuthNoPriv",
-        "authProtocol": "MD5",
-        "authPassword": "pass",
-        "privProtocol": "DES",
-        "privPassword": "pass"
       }
     }
   }
 }
 ```
 
----
+## Field Summary
 
-## Field summary
-
-### Cable modem
+### Cable Modem
 
 | Field                     | Type   | Notes                                                                                                                                                    |
 | ------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `cable_modem.mac_address` | string | Accepts multiple formats; case-insensitive. Examples: `aa:bb:cc:dd:ee:ff`, `aa-bb-cc-dd-ee-ff`, `aabb.ccdd.eeff`, `aabbccddeeff`. Normalized internally. |
 | `cable_modem.ip_address`  | string | Target CM IPv4 or IPv6 address.                                                                                                                          |
 
-### TFTP (only for file-retrieval endpoints)
+### TFTP (Only For File-Retrieval Endpoints)
 
 | Field                      | Type   | Notes                    |
 | -------------------------- | ------ | ------------------------ |
 | `pnm_parameters.tftp.ipv4` | string | IPv4 of the TFTP server. |
 | `pnm_parameters.tftp.ipv6` | string | IPv6 of the TFTP server. |
 
-### SNMP (choose one: v2c or v3)
+### SNMP (Choose One: v2c Or v3)
 
 #### SNMPv2c
 
-| Field                    | Type   | Notes                   |
-| ------------------------ | ------ | ----------------------- |
-| `snmp.snmpV2C.community` | string | Community string (v2c). |
+| Field                    | Type   | Notes                     |
+| ------------------------ | ------ | ------------------------- |
+| `snmp.snmpV2C.community` | string | Read/write community key. |
 
 #### SNMPv3
+
+> SNMPv3 must be enabled in [System Configuration](../../fast-api/pypnm/system/system_config.md). (Not implemented yet.)
 
 | Field                       | Type   | Notes                                            |
 | --------------------------- | ------ | ------------------------------------------------ |
@@ -99,3 +83,8 @@ Use this form when the endpoint only performs SNMP calls.
 | `snmp.snmpV3.privProtocol`  | string | For example `DES`, `AES`.                        |
 | `snmp.snmpV3.privPassword`  | string | Required if using `*Priv`.                       |
 
+## Notes
+
+* For **analysis** endpoints, `pnm_parameters` is **top-level** (not nested under `cable_modem`). Example:
+  `{ "cable_modem": {...}, "pnm_parameters": {...}, "analysis": {...}, "output": {...} }`.
+* Choose **either** SNMPv2c **or** SNMPv3 fields—do not mix both in a single request.

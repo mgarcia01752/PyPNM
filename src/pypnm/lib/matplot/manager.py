@@ -183,7 +183,7 @@ class MatplotManager:
         fig.savefig(path, dpi=self.dpi, bbox_inches="tight", transparent=bool(cfg.transparent))
         plt.close(fig)
         self._update_png_file(path)
-        self.logger.info("Saved plot: %s", path)
+        self.logger.debug("Saved plot: %s", path)
         return path
 
     # ---- tolerant array helpers (less validation) ----

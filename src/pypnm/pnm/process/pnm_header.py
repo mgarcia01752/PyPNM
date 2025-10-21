@@ -216,7 +216,7 @@ class PnmHeader:
         - This method does nothing for standard PNM types that already include
           a capture_time in their binary header.
         """
-        self.logger.info("Attempting to override capture_time to %s", capture_time)
+        self.logger.debug("Attempting to override capture_time to %s", capture_time)
 
         if not self._file_type or self._file_type_num is None:
             self.logger.warning("Cannot override capture_time: incomplete header fields")

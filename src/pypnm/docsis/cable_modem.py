@@ -21,11 +21,7 @@ class CableModem(CmSnmpOperation):
 
     inet: Inet
 
-    def __init__(
-        self,
-        mac_address: MacAddress,
-        inet: Inet,
-        write_community: str = PnmConfigManager.get_write_community()):
+    def __init__(self, mac_address: MacAddress, inet: Inet, write_community: str = PnmConfigManager.get_write_community()):
         """
         Initialize the CableModem instance.
 

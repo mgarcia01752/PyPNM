@@ -95,6 +95,7 @@ OidNumTuple   = NewType("OidNumTuple", Tuple[int, ...])
 MacAddressStr = NewType("MacAddressStr", str)   # "aa:bb:cc:dd:ee:ff"
 IPv4Str       = NewType("IPv4Str", str)         # "192.168.0.1"
 IPv6Str       = NewType("IPv6Str", str)         # "2001:db8::1"
+InetAddressStr = NewType("InetAddressStr", str) 
 
 # File tokens
 FileStem      = NewType("FileStem", str)        # name without extension

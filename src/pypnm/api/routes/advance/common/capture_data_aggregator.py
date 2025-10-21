@@ -59,7 +59,7 @@ class CaptureDataAggregator:
             
             try:
                 bin:bytes = file_path.read_bytes()
-                self.logger.info(f'Reading capture - count={file_count},  txn={txn_id},  file={file_path.name}, size={len(bin)}')
+                self.logger.debug(f'Reading capture - count={file_count},  txn={txn_id},  file={file_path.name}, size={len(bin)}')
 
             except FileNotFoundError:
                 self.logger.error(f'Capture file not found: {file_path}')

@@ -210,7 +210,7 @@ class FecSummaryAggregator(MultiPnmCollection):
     def get_summary_totals(self, channel_id: ChannelId, start_time: TimeStamp, end_time: TimeStamp) -> FecSummaryTotalsModel:
         """Aggregate FEC summary counters per profile between two timestamps (inclusive)."""
 
-        self.logger.info(f"FEC Summary aggregation requested: ch={channel_id} range=({start_time} - {end_time})")
+        self.logger.debug(f"FEC Summary aggregation requested: ch={channel_id} range=({start_time} - {end_time})")
 
         channel_store = self._store_channel_timestamps.get(channel_id, {})
         if not channel_store:
@@ -225,7 +225,7 @@ class FecSummaryAggregator(MultiPnmCollection):
         ts_range.sort()
 
         if not ts_range:
-            self.logger.info(f"No timestamps found in requested range for ch={channel_id} (store_size={len(channel_store)}, range={start_time}-{end_time})")
+            self.logger.warning(f"No timestamps found in requested range for ch={channel_id} (store_size={len(channel_store)}, range={start_time}-{end_time})")
             return FecSummaryTotalsModel(
                 start       =   start_time,
                 end         =   end_time,
@@ -265,7 +265,7 @@ class FecSummaryAggregator(MultiPnmCollection):
             for pid, totals in profile_totals.items()
         ]
 
-        self.logger.info(f"FEC Summary aggregation complete: ch={channel_id} profiles={len(summary_list)} timestamps={len(ts_range)} range=({start_time}-{end_time})")
+        self.logger.debug(f"FEC Summary aggregation complete: ch={channel_id} profiles={len(summary_list)} timestamps={len(ts_range)} range=({start_time}-{end_time})")
 
         return FecSummaryTotalsModel(
             start       =   start_time,

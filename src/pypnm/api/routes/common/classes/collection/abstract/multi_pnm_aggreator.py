@@ -101,7 +101,7 @@ class MultiPnmCollection(ABC):
         if channel_id not in self._store:
             self._store[channel_id] = {}
 
-        self.logger.info(f'Adding {obj.__class__.__name__} for Channel={channel_id} at captureTime={capture_time}')
+        self.logger.debug(f'Adding {obj.__class__.__name__} for Channel={channel_id} at captureTime={capture_time}')
         self._store[channel_id][capture_time] = obj
 
         self.__update_mac(cast(MacAddressStr, m.mac_address))

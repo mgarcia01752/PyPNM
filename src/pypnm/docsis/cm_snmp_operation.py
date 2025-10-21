@@ -1,20 +1,16 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-# Standard library imports
+from __future__ import annotations
+
 import asyncio
 import logging
 import time
-from enum import Enum
+from enum import Enum, IntEnum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
-# Third-party imports
 from pysnmp.proto.rfc1902 import Gauge32, Integer32, OctetString
-
-# PyPNM DOCSIS data types
+from pypnm.config.pnm_config_manager import SystemConfigSettings
 from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
 from pypnm.docsis.data_type.DocsDevEventEntry import DocsDevEventEntry
 from pypnm.docsis.data_type.DocsFddCmFddCapabilities import DocsFddCmFddBandEdgeCapabilities
@@ -26,55 +22,42 @@ from pypnm.docsis.data_type.DocsIf31CmSystemCfgState import DocsIf31CmSystemCfgD
 from pypnm.docsis.data_type.DocsIf31CmUsOfdmaChanEntry import DocsIf31CmUsOfdmaChanEntry
 from pypnm.docsis.data_type.DocsIfDownstreamChannel import DocsIfDownstreamChannelEntry
 from pypnm.docsis.data_type.DocsIfDownstreamChannelCwErrorRate import (
-    DocsIfDownstreamChannelCwErrorRate,
-    DocsIfDownstreamCwErrorRateEntry,
-)
+    DocsIfDownstreamChannelCwErrorRate, DocsIfDownstreamCwErrorRateEntry,)
 from pypnm.docsis.data_type.DocsIfSignalQualityEntry import DocsIfSignalQuality
 from pypnm.docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChannelEntry
 from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst
 from pypnm.docsis.data_type.InterfaceStats import InterfaceStats
 from pypnm.docsis.data_type.OfdmProfiles import OfdmProfiles
-
-# PyPNM DOCSIS PNM-specific data types
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmMerMarEntry import DocsPnmCmDsOfdmMerMarEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOfdmChanEstCoefEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEntry
-
-# PyPNM system and bulk data
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.docsis.lib.pnm_bulk_data import DocsPnmBulkDataGroup, DocsPnmBulkFileEntry
-
-# PyPNM PNM data types
 from pypnm.pnm.data_type.DocsEqualizerData import DocsEqualizerData
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
-    DocsIf3CmSpectrumAnalysisCtrlCmd,
-    SpectrumRetrievalType,
-)
+    DocsIf3CmSpectrumAnalysisCtrlCmd, SpectrumRetrievalType,)
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
-
-# PyPNM libraries
 from pypnm.lib.format_string import Format
 from pypnm.lib.inet import Inet
 from pypnm.lib.inet_utils import InetUtils
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.utils import Utils
-
-# PyPNM SNMP
 from pypnm.snmp.compiled_oids import COMPILED_OIDS
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 from pypnm.snmp.modules import DocsPnmBulkUploadControl, DocsisIfType
+from pypnm.snmp.snmp_v3 import Snmp_v3
 
 class DocsPnmBulkFileUploadStatus(Enum):
     """Represents the upload status of a DOCSIS PNM bulk data file."""
-    OTHER = 1
-    AVAILABLE_FOR_UPLOAD = 2
-    UPLOAD_IN_PROGRESS = 3
-    UPLOAD_COMPLETED = 4
-    UPLOAD_PENDING = 5
-    UPLOAD_CANCELLED = 6
-    ERROR = 7
+    OTHER                   = 1
+    AVAILABLE_FOR_UPLOAD    = 2
+    UPLOAD_IN_PROGRESS      = 3
+    UPLOAD_COMPLETED        = 4
+    UPLOAD_PENDING          = 5
+    UPLOAD_CANCELLED        = 6
+    ERROR                   = 7
 
     def describe(self) -> str:
         """Returns a human-readable description of the enum value."""
@@ -161,6 +144,10 @@ class CmSnmpOperation:
         logger (logging.Logger): Logger instance for this class.
     """
 
+    class SnmpVersion(IntEnum):
+        _SNMPv2C = 0
+        _SNMPv3  = 1
+
     def __init__(self, inet: Inet, write_community: str, port: int = Snmp_v2c.SNMP_PORT):
         """
         Initialize a CmSnmpOperation instance.
@@ -180,8 +167,61 @@ class CmSnmpOperation:
         self._inet:Inet = inet
         self._community = write_community
         self._port = port
-        self._snmp = Snmp_v2c(host=inet, community=write_community)
-  
+        self._snmp = self.__load_snmp_version()
+
+    def __load_snmp_version(self) -> Union[Snmp_v2c, Snmp_v3]:
+        """
+        Select and instantiate the appropriate SNMP client.
+
+        Precedence:
+        1) If SNMPv3 is explicitly enabled and parameters are valid -> return Snmp_v3
+        2) Else if SNMPv2c is enabled -> return Snmp_v2c
+        3) Else -> error
+        """
+
+        if SystemConfigSettings.snmp_v3_enable:
+            '''
+            self.logger.debug("SNMPv3 enabled in configuration; validating parameters...")
+            try:
+                p = PnmConfigManager.get_snmp_v3_params()
+            except Exception as e:
+                self.logger.error(f"Failed to load SNMPv3 parameters: {e}. Falling back to SNMPv2c.")
+                p = None
+
+            # Minimal required fields for a usable v3 session
+            required = ("user", "auth_key", "priv_key", "auth_protocol", "priv_protocol")
+            if p and all(p.get(k) for k in required):
+                self.logger.debug("Using SNMPv3")
+                return Snmp_v3(
+                    host=self._inet,
+                    user=p["user"],
+                    auth_key=p["auth_key"],
+                    priv_key=p["priv_key"],
+                    auth_protocol=p["auth_protocol"],
+                    priv_protocol=p["priv_protocol"],
+                    port=self._port,
+                )
+            else:
+                self.logger.warning(
+                    "SNMPv3 is enabled but parameters are incomplete or invalid; "
+                    "falling back to SNMPv2c."
+                )
+            '''
+            # Keep the implementation stubbed for now.
+            # Force an explicit failure instead of silently falling back.
+            raise NotImplementedError(
+                "SNMPv3 is enabled in configuration, but the SNMPv3 client is not implemented yet. "
+                "Disable SNMPv3 to use SNMPv2c.")
+
+        if SystemConfigSettings.snmp_enable:
+            self.logger.debug("Using SNMPv2c")
+            return Snmp_v2c(host=self._inet, community=self._community, port=self._port)
+
+        # Neither protocol is usable
+        msg = "No SNMP protocol enabled or properly configured (v3 disabled/invalid and v2c disabled)."
+        self.logger.error(msg)
+        raise ValueError(msg)
+
     async def _get_value(self, oid_suffix: str, value_type: Union[type, str] = str) -> Optional[Union[str, bytes, int]]:
         """
         Retrieves a value from SNMP for the given OID suffix, processes the value based on the expected type,

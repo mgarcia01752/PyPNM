@@ -1,130 +1,203 @@
 # System Configuration Reference
 
-This document describes the structure and meaning of the `system.json` configuration file. It also includes stub links to the config file location and the `ConfigManager` implementation.
+Canonical Structure And Field Semantics For `system.json`.
 
-* **Config file**: [`config/system.json`](../../src/pypnm/settings/system.json)
-* **ConfigManager class**: [`ConfigManager`](../../src/pypnm/config/config_manager.py)
-* **PNM ConfigManager class**: [`PnmConfigManager`](../../src/pypnm/config/pnm_config_manager.py)
-
+* **Config File**: [`config/system.json`](../../src/pypnm/settings/system.json)
+* **ConfigManager Class**: [`ConfigManager`](../../src/pypnm/config/config_manager.py)
+* **PNM ConfigManager Class**: [`PnmConfigManager`](../../src/pypnm/config/pnm_config_manager.py)
 
 ## 1. FastApiRequestDefault
 
-Default parameters for REST requests to the FastAPI service.
+Default Parameters For REST Requests To The FastAPI Service.
 
 ```json
 "FastApiRequestDefault": {
-  "mac_address": "aabb.ccdd.eeff",
-  "ip_address": "192.168.100.1"
+  "mac_address": "aa:bb:cc:dd:ee:ff",
+  "ip_address": "192.168.0.100"
 }
 ```
 
-* **mac\_address**: The default MAC address used when instantiating SNMP/TFTP clients.
-* **ip\_address**: The default IPv4 address of the cable modem or target device.
+| Field       | Type   | Description                       |
+| ----------- | ------ | --------------------------------- |
+| mac_address | string | Default device MAC address.       |
+| ip_address  | string | Default device IP (IPv4 or IPv6). |
 
 ## 2. SNMP
 
-Settings for SNMP v2c telemetry polling.
+Global SNMP Settings, Including Version-Specific Options.
 
 ```json
 "SNMP": {
-  "version": "2",
-  "retries": "5",
-  "read_community": "public",
-  "write_community": "private"
-}
-```
-
-* **version**: SNMP protocol version (currently only v2c is supported).
-* **retries**: Number of retry attempts on timeout or failure.
-* **read\_community**: SNMP community string for GET operations.
-* **write\_community**: SNMP community string for SET operations.
-
-## 3. PnmBulkDataTransfer
-
-Configuration for bulk PNM file transfers (e.g., spectrum or symbol captures).
-
-```json
-"PnmBulkDataTransfer": {
-  "method": "tftp",
-  "tftp": {
-    "ip_v4": "192.168.200.1",
-    "ip_v6": "2001:10::153",
-    "remote_dir": ""
-  },
-  "http": {
-    "base_url": "http://files.example.com/",
-    "port": 80
-  },
-  "https": {
-    "base_url": "https://files.example.com/",
-    "port": 443
+  "timeout": 5,
+  "version": {
+    "2c": {
+      "enable": true,
+      "retries": 5,
+      "read_community": "private",
+      "write_community": "private"
+    },
+    "3": {
+      "enable": false,
+      "retries": 5,
+      "username": "user",
+      "securityLevel": "authPriv",
+      "authProtocol": "SHA",
+      "authPassword": "pass",
+      "privProtocol": "AES",
+      "privPassword": "privpass"
+    }
   }
 }
 ```
 
-* **method**: Transfer protocol (`tftp`, `http`, or `https`).
-* **tftp**: TFTP server endpoints for IPv4/IPv6 and directory.
-* **http/https**: Base URL and port for HTTP(S) downloads.
+**Top-Level**
 
-## 4. PnmFileRetrieval
+| Field   | Type   | Description                        |
+| ------- | ------ | ---------------------------------- |
+| timeout | number | Per-request timeout (seconds).     |
+| version | object | Container for v2c/v3 configuration |
 
-Detailed settings for retrieving PNM capture files using various protocols.
+**SNMP v2c**
+
+| Field           | Type    | Description                     |
+| --------------- | ------- | ------------------------------- |
+| enable          | boolean | Enable v2c operations.          |
+| retries         | number  | Retry count on timeout/failure. |
+| read_community  | string  | Community for GET/WALK.         |
+| write_community | string  | Community for SET.              |
+
+**SNMP v3** *(if enabled in your environment)*
+
+| Field         | Type    | Description                                  |
+| ------------- | ------- | -------------------------------------------- |
+| enable        | boolean | Enable v3 operations.                        |
+| retries       | number  | Retry count on timeout/failure.              |
+| username      | string  | Security name.                               |
+| securityLevel | string  | `noAuthNoPriv`, `authNoPriv`, or `authPriv`. |
+| authProtocol  | string  | For example `MD5`, `SHA`.                    |
+| authPassword  | string  | Required when `auth*` is used.               |
+| privProtocol  | string  | For example `DES`, `AES`.                    |
+| privPassword  | string  | Required when `*Priv` is used.               |
+
+## 3. PnmBulkDataTransfer
+
+Transport Parameters For CM-Generated Files (e.g., RxMER, FEC Summary) Sent To A Server.
 
 ```json
-"PnmFileRetrieval": {
-  "method": "local",
-  "save_dir": "data/pnm",
-  "transaction_db": "data/db/transactions.json",
-  "capture_group_db": "data/db/capture_group.json",
-  "operation_db": "data/db/operation_capture.json",
-  "retries": 5,
-  "local": { "src_dir": "/srv/tftp" },
-  "tftp": { "host": "localhost", "port": 69, "remote_dir": "" },
-  "ftp": { "host": "ftp.example.com", "port": 21, "user": "user", "password": "pass", "remote_dir": "/files" },
-  "scp": { "host": "scp.example.com", "port": "22", "user": "user", "password": "pass", "remote_dir": "/files" },
-  "sftp": { "host": "sftp.example.com", "port": 22, "user": "user", "password": "pass", "remote_dir": "/files" },
-  "http": { "base_url": "http://files.example.com/", "port": 80 },
+"PnmBulkDataTransfer": {
+  "method": "tftp",
+  "tftp": { "ip_v4": "192.168.0.10", "ip_v6": "2001:db8::10", "remote_dir": "" },
+  "http":  { "base_url": "http://files.example.com/",  "port": 80  },
   "https": { "base_url": "https://files.example.com/", "port": 443 }
 }
 ```
 
-* **method**: Primary retrieval mode (`local`, `tftp`, `ftp`, `scp`, `sftp`, `http`, or `https`).
-* **save\_dir**: Local directory to store fetched PNM files.
-* **transaction\_db**: JSON file tracking file-transfer transactions.
-* **capture\_group\_db**: JSON file grouping related captures.
-* **operation\_db**: JSON file logging individual capture operations.
-* **retries**: Number of attempts per file-transfer operation.
-* **\<protocol>**: Section for each protocol’s connection details.
+| Field   | Type   | Description                                                |
+| ------- | ------ | ---------------------------------------------------------- |
+| method  | string | Preferred bulk method: `tftp`, `http`, or `https`.         |
+| tftp.*  | object | TFTP targets for IPv4/IPv6 plus optional remote directory. |
+| http.*  | object | HTTP base URL and port for file delivery.                  |
+| https.* | object | HTTPS base URL and port for file delivery.                 |
+
+## 4. [PnmFileRetrieval](./file-transfer-methods.md)
+
+Local Storage Layout And Remote Retrieval Methods.
+
+```json
+"PnmFileRetrieval": {
+  "pnm_dir": ".data/pnm",
+  "csv_dir": ".data/csv",
+  "json_dir": ".data/json",
+  "xlsx_dir": ".data/xlsx",
+  "png_dir": ".data/png",
+  "archive_dir": ".data/archive",
+  "msg_rsp_dir": ".data/msg_rsp",
+  "transaction_db": ".data/db/transactions.json",
+  "capture_group_db": ".data/db/capture_group.json",
+  "session_group_db": ".data/db/session_group.json",
+  "operation_db": ".data/db/operation_capture.json",
+  "retries": 5,
+  "retrival_method": {
+    "method": "local",
+    "methods": {
+      "local": { "src_dir": "/srv/tftp" },
+      "tftp":  { "host": "localhost", "port": 69, "timeout": 5, "remote_dir": "" },
+      "ftp":   { "host": "localhost", "port": 21, "tls": false, "timeout": 5, "user": "test", "password": "tftp", "remote_dir": "/srv/tftp" },
+      "scp":   { "host": "localhost", "port": 22, "user": "test", "password": "tftp", "remote_dir": "/srv/tftp" },
+      "sftp":  { "host": "localhost", "port": 22, "user": "test", "password": "tftp", "remote_dir": "/srv/tftp" },
+      "http":  { "base_url": "http://STUB/",  "port": 80  },
+      "https": { "base_url": "https://STUB/", "port": 443 }
+    }
+  }
+}
+```
+
+**Directories And Databases**
+
+| Field            | Type   | Description                                  |
+| ---------------- | ------ | -------------------------------------------- |
+| pnm_dir          | string | Local storage for raw PNM binaries.          |
+| csv_dir          | string | Local storage for derived CSVs.              |
+| json_dir         | string | Local storage for derived JSON.              |
+| xlsx_dir         | string | Local storage for Excel reports.             |
+| png_dir          | string | Local storage for generated PNGs.            |
+| archive_dir      | string | Local storage for analysis ZIP archives.     |
+| msg_rsp_dir      | string | Local storage for message/response metadata. |
+| transaction_db   | string | JSON ledger of file transactions.            |
+| capture_group_db | string | JSON map of grouped transactions.            |
+| session_group_db | string | JSON map of session groups.                  |
+| operation_db     | string | JSON map of operation→capture group.         |
+
+**Retrieval Settings**
+
+| Field                                 | Type   | Description                                                                      |
+| ------------------------------------- | ------ | -------------------------------------------------------------------------------- |
+| retrival_method.method                | string | Active retrieval method: `local`, `tftp`, `ftp`, `scp`, `sftp`, `http`, `https`. |
+| retrival_method.methods.local.src_dir | string | Source directory to watch/copy from when using `local`.                          |
+| retrival_method.methods.tftp.*        | object | TFTP host/port/timeout and remote directory.                                     |
+| retrival_method.methods.ftp.*         | object | FTP connection, credentials, and remote directory.                               |
+| retrival_method.methods.scp.*         | object | SCP connection and remote directory.                                             |
+| retrival_method.methods.sftp.*        | object | SFTP connection and remote directory.                                            |
+| retrival_method.methods.http.*        | object | HTTP base URL and port.                                                          |
+| retrival_method.methods.https.*       | object | HTTPS base URL and port.                                                         |
+| retries                               | number | Max attempts per retrieval operation.                                            |
+
+> The key name `retrival_method` is preserved as implemented.
 
 ## 5. Logging
 
-Configuration for application logging.
+Application Logging Options.
 
 ```json
 "logging": {
   "log_level": "INFO",
   "log_dir": "logs",
-  "log_filename": "pnm_log_%Y%m%d_%H%M%S.log"
+  "log_filename": "pypnm.log"
 }
 ```
 
-* **log\_level**: Minimum level to record (`DEBUG`, `INFO`, `WARN`, `ERROR`).
-* **log\_dir**: Directory to write log files.
-* **log\_filename**: Timestamped filename pattern using `strftime` tokens.
-
+| Field        | Type   | Description                          |
+| ------------ | ------ | ------------------------------------ |
+| log_level    | string | `DEBUG`, `INFO`, `WARN`, or `ERROR`. |
+| log_dir      | string | Directory for log files.             |
+| log_filename | string | Log filename.                        |
 
 ## Loading Configuration
 
-The `ConfigManager` reads this JSON file and exposes values via:
+Typical Access Pattern Using The Manager Abstractions.
 
 ```python
-from config.system import SystemConfig
-from pypnm import ConfigManager
+from pypnm.config.config_manager import ConfigManager
+from pypnm.config.pnm_config_manager import PnmConfigManager
 
-# Load default config
+# Load defaults
 cfg = ConfigManager()
 
-# Access values
+# Read values
 mac = cfg.get("FastApiRequestDefault", "mac_address")
-ip = cfg.get("FastApiRequestDefault", "ip_address")
+ip  = cfg.get("FastApiRequestDefault", "ip_address")
+
+# PNM-specific helpers
+pnm_cfg = PnmConfigManager()
+tftp_v4 = pnm_cfg.get("PnmBulkDataTransfer", "tftp")["ip_v4"]
 ```
