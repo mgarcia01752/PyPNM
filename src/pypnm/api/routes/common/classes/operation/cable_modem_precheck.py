@@ -19,6 +19,7 @@ from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
 from pypnm.docsis.data_type.InterfaceStats import DocsisIfType
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import InetAddressStr, MacAddressStr
 
 PreCheckStatus = Tuple[ServiceStatusCode, str]
 
@@ -29,6 +30,7 @@ class CableModemServicePreCheck:
     This service supports:
     - ICMP ping reachability check
     - SNMP reachability check
+    - MAC address verification
     - Optional DOCSIS version compatibility validation
     - Optional validation that OFDM (DS) and/or OFDMA (US) channels exist
 
@@ -43,13 +45,14 @@ class CableModemServicePreCheck:
     def __init__(
         self,
         cable_modem: Optional[CableModem] = None,
-        mac_address: Optional[str] = None,
-        ip_address: Optional[str] = None,
+        mac_address: Optional[MacAddressStr] = None,
+        ip_address: Optional[InetAddressStr] = None,
         check_docsis_version: Optional[List[ClabsDocsisVersion]] = None,
         validate_ofdm_exist: bool = False,
         validate_ofdma_exist: bool = False,
         validate_scqam_exist: bool = False,
         validate_pnm_ready_status: bool = False,
+        ignore_mac_address_check:bool = False,
     ) -> None:
         """
         Initialize the pre-check service.
@@ -84,17 +87,19 @@ class CableModemServicePreCheck:
         else:
             self.check_docsis_version = []
             
-        self._validate_ofdma_exist       = validate_ofdma_exist
-        self._validate_ofdm_exist        = validate_ofdm_exist
-        self._validate_scqam_exist       = validate_scqam_exist
-        self._validate_pnm_ready_stat    = validate_pnm_ready_status
+        self._validate_ofdma_exist      = validate_ofdma_exist
+        self._validate_ofdm_exist       = validate_ofdm_exist
+        self._validate_scqam_exist      = validate_scqam_exist
+        self._validate_pnm_ready_stat   = validate_pnm_ready_status
+        self._ignore_mac_address_check  = ignore_mac_address_check
 
     async def run_precheck(self) -> Tuple[ServiceStatusCode, str]:
         """
         Run full pre-check routine:
           1. Ping modem
           2. Perform SNMP check
-          3. Validate DOCSIS version (optional)
+          3. Does Mac Match CableModem Mac
+          4. Validate DOCSIS version (optional)
 
         Returns:
             Tuple[ServiceStatusCode, str]: Status and message.
@@ -112,6 +117,20 @@ class CableModemServicePreCheck:
             msg = f"SNMP check failed: {status}"
             self.logger.error(msg)
             return status, msg
+
+        if not self._ignore_mac_address_check:
+            status = await self.isMacCorrect()
+            if status != ServiceStatusCode.SUCCESS:
+
+                try:
+                    mac = await self.getRealMacAddress()
+                except Exception as e:
+                    self.logger.error(f"Error retrieving real MAC address: {e}", exc_info=True)
+                    mac = "Unknown"
+                    
+                msg = f"Found: {mac} MAC address CableModem Mac check failed: {status}"
+                self.logger.error(msg)
+                return status, msg
 
         if self.check_docsis_version:
             status, msg = await self.validate_docsis_version()
@@ -175,6 +194,35 @@ class CableModemServicePreCheck:
         except Exception as e:
             self.logger.error(f"SNMP check exception: {e}", exc_info=True)
             return ServiceStatusCode.UNREACHABLE_SNMP
+
+    async def isMacCorrect(self) -> ServiceStatusCode:
+        """
+        Check if the cable modem's MAC address is correct.
+        """
+        try:
+            if await self.cm.isCableModemMacCorrect():
+                self.logger.debug("MAC address check passed")
+                return ServiceStatusCode.SUCCESS
+            self.logger.debug("MAC address check failed")
+            return ServiceStatusCode.CM_MAC_DOES_MATCH_MATCH
+        except Exception as e:
+            self.logger.error(f"MAC address check exception: {e}", exc_info=True)
+            return ServiceStatusCode.UNREACHABLE_SNMP   
+
+    async def getRealMacAddress(self) -> MacAddress:
+        """
+        Retrieve the real MAC address from the cable modem via SNMP.
+
+        Returns:
+            MacAddress: The MAC address retrieved from the cable modem.
+        """
+        try:
+            mac = await self.cm.getIfPhysAddress()
+            self.logger.debug(f"Retrieved MAC address: {mac}")
+            return mac
+        except Exception as e:
+            self.logger.error(f"Error retrieving MAC address: {e}", exc_info=True)
+            raise
 
     async def validate_docsis_version(self) -> Tuple[ServiceStatusCode, str]:
         """

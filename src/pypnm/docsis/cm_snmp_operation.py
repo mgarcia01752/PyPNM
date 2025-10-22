@@ -460,29 +460,59 @@ class CmSnmpOperation:
 
     async def getIfPhysAddress(self, if_type: DocsisIfType = DocsisIfType.docsCableMaclayer) -> MacAddress:
         """
-        Get the physical MAC address for the specified DOCSIS interface type.
-
+        Retrieve the physical (MAC) address of the specified interface type.
         Args:
-            if_type (DocsisIfType, optional): DOCSIS interface type to query. Defaults to docsCableMaclayer.
-
+            if_type (DocsisIfType): The DOCSIS interface type to query. Defaults to docsCableMaclayer.
         Returns:
-            MacAddress: The MAC address object representing the IfPhysAddress.
+            MacAddress: The MAC address of the interface.
+        Raises:
+            RuntimeError: If no interfaces are found or SNMP get fails.
+            ValueError: If the retrieved MAC address is invalid.
         """
+        self.logger.debug(f"Getting ifPhysAddress for ifType: {if_type.name}")
+
         if_indexes = await self.getIfTypeIndex(if_type)
         self.logger.debug(f"{if_type.name} -> {if_indexes}")
-
         if not if_indexes:
             raise RuntimeError(f"No interfaces found for {if_type.name}")
 
-        result = await self._snmp.get(f'{"ifPhysAddress"}.{if_indexes[0]}')
-        self.logger.debug(f"getIfPhysAddress() -> {result}")
+        idx = if_indexes[0]
+        resp = await self._snmp.get(f"ifPhysAddress.{idx}")
+        self.logger.info(f"getIfPhysAddress() -> {resp}")
+        if not resp:
+            raise RuntimeError(f"SNMP get failed for ifPhysAddress.{idx}")
 
-        # Extract and normalize MAC address value
-        mac_address_value = Snmp_v2c.snmp_get_result_value(result)[0]
-        if isinstance(mac_address_value, OctetString):
-            mac_address_value = bytes(mac_address_value)
+        # Prefer grabbing raw bytes directly from the varbind
+        try:
+            varbind = resp[0]
+            value = varbind[1]  # should be OctetString
+            if isinstance(value, OctetString):
+                mac_bytes = bytes(value)
+            elif isinstance(value, (bytes, bytearray)):
+                mac_bytes = bytes(value)
+            else:
+                # Fallback: use helper and try to coerce
+                raw = Snmp_v2c.snmp_get_result_value(resp)[0]
+                if isinstance(raw, (bytes, bytearray)):
+                    mac_bytes = bytes(raw)
+                elif isinstance(raw, str):
+                    s = raw.strip().lower()
+                    if s.startswith("0x"):
+                        s = s[2:]
+                    s = s.replace(":", "").replace("-", "").replace(" ", "")
+                    mac_bytes = bytes.fromhex(s)
+                else:
+                    raise ValueError(f"Unsupported ifPhysAddress type: {type(raw)}")
+        except Exception as e:
+            # Log and rethrow with context
+            self.logger.error(f"Failed to parse ifPhysAddress.{idx}: {e}")
+            raise
 
-        return MacAddress(mac_address_value)
+        if len(mac_bytes) != 6:
+            raise ValueError(f"Invalid MAC length {len(mac_bytes)} from ifPhysAddress.{idx}")
+
+        mac_hex = mac_bytes.hex()
+        return MacAddress(mac_hex)
 
     async def getDocsIfCmDsScQamChanChannelIdIndex(self) -> List[int]:
         """

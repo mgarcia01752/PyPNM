@@ -5,6 +5,7 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 from pypnm.lib.inet_utils import InetUtils
+from pypnm.lib.types import InetAddressStr
 
 class Inet:
     """
@@ -14,7 +15,7 @@ class Inet:
         _inet (str): The validated IP address.
     """
 
-    def __init__(self, inet: str):
+    def __init__(self, inet: InetAddressStr):
         """
         Initializes the Inet class with an IP address.
 

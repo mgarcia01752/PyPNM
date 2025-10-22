@@ -1,8 +1,7 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+from __future__ import annotations
 
 import logging
 from typing import Optional, Callable, Union, List
@@ -43,14 +42,14 @@ class DocsPnmCmDsOfdmRxMerEntry(BaseModel):
                 return None
 
         entry = DocsPnmCmDsOfdmRxMerFields(
-            docsPnmCmDsOfdmRxMerFileEnable=await fetch("docsPnmCmDsOfdmRxMerFileEnable", Snmp_v2c.truth_value),
-            docsPnmCmDsOfdmRxMerPercentile=await fetch("docsPnmCmDsOfdmRxMerPercentile", int),
-            docsPnmCmDsOfdmRxMerMean=await fetch("docsPnmCmDsOfdmRxMerMean", int),
-            docsPnmCmDsOfdmRxMerStdDev=await fetch("docsPnmCmDsOfdmRxMerStdDev", int),
-            docsPnmCmDsOfdmRxMerThrVal=await fetch("docsPnmCmDsOfdmRxMerThrVal", int),
-            docsPnmCmDsOfdmRxMerThrHighestFreq=await fetch("docsPnmCmDsOfdmRxMerThrHighestFreq", int),
-            docsPnmCmDsOfdmRxMerMeasStatus=await fetch("docsPnmCmDsOfdmRxMerMeasStatus", int),
-            docsPnmCmDsOfdmRxMerFileName=await fetch("docsPnmCmDsOfdmRxMerFileName", str)
+            docsPnmCmDsOfdmRxMerFileEnable      =   await fetch("docsPnmCmDsOfdmRxMerFileEnable", Snmp_v2c.truth_value),
+            docsPnmCmDsOfdmRxMerPercentile      =   await fetch("docsPnmCmDsOfdmRxMerPercentile", int),
+            docsPnmCmDsOfdmRxMerMean            =   await fetch("docsPnmCmDsOfdmRxMerMean", int),
+            docsPnmCmDsOfdmRxMerStdDev          =   await fetch("docsPnmCmDsOfdmRxMerStdDev", int),
+            docsPnmCmDsOfdmRxMerThrVal          =   await fetch("docsPnmCmDsOfdmRxMerThrVal", int),
+            docsPnmCmDsOfdmRxMerThrHighestFreq  =   await fetch("docsPnmCmDsOfdmRxMerThrHighestFreq", int),
+            docsPnmCmDsOfdmRxMerMeasStatus      =   await fetch("docsPnmCmDsOfdmRxMerMeasStatus", int),
+            docsPnmCmDsOfdmRxMerFileName        =   await fetch("docsPnmCmDsOfdmRxMerFileName", str)
         )
 
         return cls(index=index, channel_id=index, entry=entry) 

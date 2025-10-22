@@ -60,6 +60,17 @@ class MacAddress:
         else:
             raise TypeError(f"Unsupported type for mac_address: {type(mac_address).__name__}")
 
+    def is_equal(self, other: 'MacAddress') -> bool:
+        """
+        Check if this MAC address is equal to another MAC address.
+
+        Args:
+            other (MacAddress): Another MacAddress instance.
+        Returns:
+            bool: True if equal, False otherwise.
+        """
+        return self.__hash__() == other.__hash__()
+
     @staticmethod
     def null() -> MacAddressStr:
         return cast(MacAddressStr, "00:00:00:00:00:00")

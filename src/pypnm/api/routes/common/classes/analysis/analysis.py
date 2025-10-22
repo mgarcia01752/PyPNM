@@ -38,7 +38,9 @@ from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import WindowFunction
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
 from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoefModel
-from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, CmDsOfdmModulationProfileModel, ModulationOrderType, RangeModulationProfileSchemaModel, SkipModulationProfileSchemaModel
+from pypnm.pnm.process.CmDsOfdmModulationProfile import (
+    CmDsOfdmModulationProfile, CmDsOfdmModulationProfileModel, ModulationOrderType, 
+    RangeModulationProfileSchemaModel, SkipModulationProfileSchemaModel)
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
 
@@ -134,7 +136,7 @@ class Analysis:
         self._analysis_dict: List[Dict[str, Any]] = []
 
         # Persist the raw message when DEBUG is enabled
-        if self.logger.isEnabledFor(logging.DEBUG):
+        if self.logger.isEnabledFor(logging.INFO):
             self.save_message_response(self.msg_response)
 
         self._process()
@@ -274,23 +276,25 @@ class Analysis:
     def get_pnm_type(self) -> List[PnmFileType]: 
         return self._processed_pnm_type
 
-    def get_results(self, full_dict = True) -> Dict[str, Any]:
+    def get_results(self, full_dict: bool = True) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
         """
-        Get the accumulated analysis results (dict form).
+        Return accumulated analysis results.
 
-        Parameters
-        ----------
-        full_dict : bool, default True
-            Present for interface compatibility; this implementation always
-            returns a dict with a single ``"analysis"`` key mapping to the
-            internal list of dict results.
-
-        Returns
-        -------
-        dict
-            Structure of the form ``{"analysis": List[Dict[str, Any]]}``.
+        Behavior
+        --------
+        - full_dict=True  -> always: {"analysis": [dict, dict, ...]}
+        - full_dict=False -> if exactly one result: dict
+                            else: {"analysis": [dict, dict, ...]}
         """
-        return {"analysis": self._analysis_dict}
+        results: List[Dict[str, Any]] = self._analysis_dict
+
+        if full_dict:
+            return {"analysis": results}
+
+        if len(results) == 1 and isinstance(results[0], dict):
+            return results[0]
+
+        return {"analysis": results}
 
     def get_model(self) -> Union[BaseAnalysisModel, List[BaseAnalysisModel]]:
         """Get the accumulated analysis results (typed models).

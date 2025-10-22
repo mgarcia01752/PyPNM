@@ -1,8 +1,7 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+from __future__ import annotations
 
 import logging
 
@@ -207,7 +206,7 @@ class AnalysisReport(ABC):
         """
         return list(self._common_analysis_model.keys())
 
-    def build_report(self) -> Path:
+    def build_report(self, include_pnm_files:bool=False) -> Path:
         """
         Run the full report pipeline: `_process()` → CSV generation → plot rendering → ZIP.
 

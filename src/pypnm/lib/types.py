@@ -120,6 +120,11 @@ BitsPerSymbolSeries: TypeAlias = List[BitsPerSymbol]
 Microseconds = NewType("Microseconds", float)
 
 # ────────────────────────────────────────────────────────────────────────────────
+# HTTP return code type
+# ────────────────────────────────────────────────────────────────────────────────
+HttpRtnCode = NewType("HttpRtnCode", int)
+
+# ────────────────────────────────────────────────────────────────────────────────
 # Explicit public surface
 # ────────────────────────────────────────────────────────────────────────────────
 __all__ = [
@@ -145,4 +150,5 @@ __all__ = [
     "FrequencySeriesHz", "MerSeriesdB", "ShannonSeriesdB", "MagnitudeSeries",
     # modulation/profile & misc
     "ProfileId", "BitsPerSymbol", "BitsPerSymbolSeries", "Microseconds",
+    "HttpRtnCode"
 ]

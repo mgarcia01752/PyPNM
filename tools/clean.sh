@@ -19,6 +19,7 @@ Options:
   --build       Clean build/, dist/, *.egg-info
   --pnm         Clean data/pnm/ and data/db/
   --plot-data   Clean data/png/, .data/csv/ and data/archive/
+  --msg-rsp     Clean data/msg_rsp (Message Response)
   --output      Clean output/
   -h, --help    Show this help and exit
 
@@ -38,7 +39,7 @@ declare -a ACTIONS=()
 # -----------------------------------------------------------------------------
 while (( $# )); do
   case "$1" in
-    --all|--logs|--python|--build|--pnm|--output|--plot-data)
+    --all|--logs|--python|--build|--pnm|--output|--plot-data|--msg-rsp)
       ACTIONS+=("$1")
       shift
       ;;
@@ -127,9 +128,14 @@ clean_output() {
 
 clean_plot_data() {
   echo "📤 Cleaning plot data and archive files..."
-  safe_rm "$ROOT_DIR/png/"*
-  safe_rm "$ROOT_DIR/csv/"*
-  safe_rm "$ROOT_DIR/archive/"*
+  safe_rm "$ROOT_DIR/.data/png/"*
+  safe_rm "$ROOT_DIR/.data/csv/"*
+  safe_rm "$ROOT_DIR/.data/archive/"*
+}
+
+clean_msg_rsp() {
+  echo "📤 Cleaning message-response data..."
+  safe_rm "$ROOT_DIR/.data/msg_rsp/"*
 }
 
 # -----------------------------------------------------------------------------
@@ -148,6 +154,7 @@ for action in "${ACTIONS[@]}"; do
       clean_output
       clean_png
       clean_plot_data
+      clean_msg_rsp
       ;;
 
     --archive)
@@ -176,6 +183,10 @@ for action in "${ACTIONS[@]}"; do
       
     --plot-data)
       clean_plot_data
+      ;;
+
+    --msg-rsp)
+      clean_msg_rsp
       ;;
 
     --output)

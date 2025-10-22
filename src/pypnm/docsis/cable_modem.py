@@ -80,6 +80,12 @@ class CableModem(CmSnmpOperation):
 
         return True
 
+    async def isCableModemMacCorrect(self) -> bool:
+        "Checks to see if mac address is cable modem mac-address (docsCableMaclayer)"
+        mac = await self.getIfPhysAddress()
+        self.logger.info(f"CableModem MAC Address: {self.get_mac_address}, SNMP Retrieved MAC Address: {mac}")
+        return self.get_mac_address.is_equal(mac)
+
     def same_inet_version(self, other: Inet) -> bool:
         """
         Determines whether this modem's IP address and another Inet address are the same IP version.

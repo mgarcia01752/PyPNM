@@ -38,7 +38,7 @@ class FileProcessor:
         try:
             with open(self.filepath, "rb") as file:
                 data = file.read()
-                self.logger.info(f"Read {len(data)} bytes from {self.filepath}")
+                self.logger.debug(f"Read {len(data)} bytes from {self.filepath}")
                 return data
         except FileNotFoundError:
             self.logger.error(f"File not found: {self.filepath}")
@@ -85,15 +85,14 @@ class FileProcessor:
                     raise ValueError("Unsupported type for file write")
 
                 file.write(data_bytes)
-                self.logger.info(f"Wrote {len(data_bytes)} bytes to {self.filepath}")
+                self.logger.debug(f"Wrote {len(data_bytes)} bytes to {self.filepath}")
 
             # Optional archive step
             if archive_path:
                 self.archive_file(
                     archive_path=archive_path,
                     archive_format=archive_format,
-                    arcname=arcname,
-                )
+                    arcname=arcname,)
 
             return True
         except Exception as e:
@@ -155,7 +154,7 @@ class FileProcessor:
                         writer.writerow(headers)
                     writer.writerows(data)  # type: ignore
 
-            self.logger.info(f"Wrote {len(data)} rows to CSV at {target}")
+            self.logger.debug(f"Wrote {len(data)} rows to CSV at {target}")
 
             # Optional archive step
             if archive_path:
@@ -213,12 +212,11 @@ class FileProcessor:
             mode = "a" if archive_path.exists() else "w"
             with zipfile.ZipFile(archive_path, mode=mode, compression=zipfile.ZIP_DEFLATED) as zf:
                 zf.write(src, arcname=arcname)
-            self.logger.info(f"Added {src} as {arcname} to zip: {archive_path}")
+            self.logger.debug(f"Added {src} as {arcname} to zip: {archive_path}")
             return archive_path
 
         # Tar formats: make a fresh archive containing only this file
         # shutil.make_archive writes to base_name + proper extension
-        base = archive_path.with_suffix("")  # strip final suffix
         if overwrite and archive_path.exists():
             archive_path.unlink(missing_ok=True)
 
@@ -235,7 +233,7 @@ class FileProcessor:
             archive_path.parent.mkdir(parents=True, exist_ok=True)
             with tarfile.open(archive_path, mode) as tf:            # type: ignore
                 tf.add(src, arcname=arcname)
-            self.logger.info(f"Created {archive_format} with {src} as {arcname}: {archive_path}")
+            self.logger.debug(f"Created {archive_format} with {src} as {arcname}: {archive_path}")
             return archive_path
 
         raise ValueError(f"Unsupported archive_format: {archive_format}")

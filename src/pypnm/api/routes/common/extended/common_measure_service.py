@@ -13,7 +13,8 @@ from pathlib import Path
 import shutil
 from time import sleep
 import time
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
+from typing_extensions import deprecated
 
 from pydantic import BaseModel
 
@@ -119,7 +120,6 @@ class CommonMeasureService(CommonMessagingService):
 
     def setSpectrumCaptureParameters(self, capture_parameter:SpecAnCapturePara):
         self.capture_parameter = capture_parameter
-
 
     async def set_and_go(self, interface_parameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = None, 
                          max_wait_count: int = 5,) -> MessageResponse:
@@ -280,10 +280,60 @@ class CommonMeasureService(CommonMessagingService):
         """
         return await self.cm.is_snmp_reachable()
 
-    async def get_pnm_measurement_statistics(self,
-        pnm_test_type: DocsPnmCmCtlTest = None,
-        return_type: MeasureServiceReturnTypes = MeasureServiceReturnTypes.DICT
-        ) -> Union[List[BaseModel], Dict[str, List[Dict]]]:
+    async def getPnmMeasurementStatistics(self) -> List[Any]:
+        
+        entries:List[Any] = []
+
+        if self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: SPECTRUM_ANALYZER")
+
+        elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_SYMBOL_CAPTURE:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_SYMBOL_CAPTURE")
+
+        elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF:
+            self.logger.info(f"{self.log_prefix} - Running OFDM Channel Estimation Coefficient collection")
+            entries: List[DocsPnmCmOfdmChanEstCoefEntry] = await self.cm.getDocsPnmCmOfdmChanEstCoefEntry()
+            return entries
+
+        elif self.pnm_test_type == DocsPnmCmCtlTest.DS_CONSTELLATION_DISP:
+            self.logger.info(f"{self.log_prefix} - Running OFDM Constellation Display collection")
+            entries: List[DocsPnmCmDsConstDispMeasEntry] = await self.cm.getDocsPnmCmDsConstDispMeasEntry()
+            return entries
+
+        elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR:
+            self.logger.info(f"{self.log_prefix} - Running RXMER entry collection")
+            entries: List[DocsPnmCmDsOfdmRxMerEntry] = await self.cm.getDocsPnmCmDsOfdmRxMerEntry()
+            return entries
+
+        elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CODEWORD_ERROR_RATE:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_CODEWORD_ERROR_RATE")
+            
+        elif self.pnm_test_type == DocsPnmCmCtlTest.DS_HISTOGRAM:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_HISTOGRAM")
+
+        elif self.pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF:
+            self.logger.info(f"{self.log_prefix} - Running Upstream Pre-Equalization entry collection")
+            entries: List[DocsPnmCmUsPreEqEntry] = await self.cm.getDocsPnmCmUsPreEqEntry()
+            return entries
+
+        elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_MODULATION_PROFILE:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_MODULATION_PROFILE")
+
+        elif self.pnm_test_type == DocsPnmCmCtlTest.LATENCY_REPORT:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: LATENCY_REPORT")
+
+        elif self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: SPECTRUM_ANALYZER_SNMP_AMP_DATA")
+
+        else:
+            self.logger.warning(f"{self.log_prefix} - Unknown PNM test type: {self.pnm_test_type}")
+            
+        return entries
+
+
+    @deprecated("Use getPnmMeasurementStatistics()")
+    async def get_pnm_measurement_statistics(self, pnm_test_type: DocsPnmCmCtlTest = None, 
+                                             return_type: MeasureServiceReturnTypes = MeasureServiceReturnTypes.DICT) -> Union[List[BaseModel], Dict[str, List[Dict]]]:
         """
         Retrieve PNM measurement statistics for the specified test type.
 

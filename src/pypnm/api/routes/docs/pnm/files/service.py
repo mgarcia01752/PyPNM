@@ -1,8 +1,7 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+from __future__ import annotations
 
 import os
 import logging
@@ -24,14 +23,8 @@ from pypnm.pnm.process.pnm_header import PnmHeader
 from pypnm.pnm.process.pnm_type_header_mapper import PnmFileTypeMapper
 
 from .schemas import (
-    FileEntry,
-    FileQueryRequest,
-    PushFileRequest,
-    FileAnalysisRequest,
-    FileQueryResponse,
-    PushFileResponse,
-    AnalysisResponse
-)
+    FileEntry, FileQueryRequest, PushFileRequest, FileAnalysisRequest, 
+    FileQueryResponse, PushFileResponse, AnalysisResponse)
 
 class PnmFileService:
     """
