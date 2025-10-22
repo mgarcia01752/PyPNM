@@ -62,7 +62,7 @@ Bug-Tracker = "https://github.com/mgarcia01752/PyPNM/issues"
 
 [project.scripts]
 pypnm      = "pypnm.cli:main"
-# These require the 'docs' extra at runtime; keep if you’re OK with users installing extras:
+# These require the 'docs' extra at runtime; keep if you're OK with users installing extras:
 docs-serve = "mkdocs.__main__:serve"
 docs-build = "mkdocs.__main__:build"
 
