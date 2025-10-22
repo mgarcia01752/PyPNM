@@ -12,6 +12,7 @@ from pypnm.api.routes.docs.pnm.files.service import FileType
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_snmp import SNMPConfig
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.matplot.manager import ThemeType
 from pypnm.lib.types import IPv4Str, IPv6Str, InetAddressStr, MacAddressStr
 
 # Default settings
@@ -53,6 +54,12 @@ class CableModemPnmConfig(BaseModel):
 # Request & Response Models
 # -----------------------------
 
+class CommonMatPlotUiConfig(BaseModel):
+    theme:ThemeType = Field(description="")
+
+class CommonMatPlotConfigRequest(BaseModel):
+    ui:CommonMatPlotUiConfig
+
 class CommonFileRequest(BaseModel):
     cable_modem: CableModemPnmConfig
 
@@ -61,6 +68,11 @@ class CommonRequest(BaseModel):
 
 class CommonAnalysisType(BaseModel):
     type: int = Field(description="Analysis type to perform")
+
+class CommonSingleCaptureAnalysisType(BaseModel):
+    type: int                       = Field(description="Analysis type to perform")
+    output: CommonOutput            = Field(description="")
+    plot:CommonMatPlotConfigRequest = Field(description="")
 
 class CommonOutput(BaseModel):
     type: int = Field(default=FileType.JSON.value, description="Report output type: 0 = JSON, 1 = CSV file")
@@ -73,6 +85,10 @@ class CommonAnalysisRequest(BaseModel):
     cable_modem: CableModemPnmConfig
     analysis: CommonAnalysisType
     output: CommonOutput = Field(description="Output type: JSON or file")
+
+class CommonSingleCaptureAnalysisRequest(BaseModel):
+    cable_modem: CableModemPnmConfig
+    analysis: CommonSingleCaptureAnalysisType
 
 class CommonResponse(BaseModel):
     mac_address: MacAddressStr                                      = Field(default=default_mac, description="MAC address of the cable modem")

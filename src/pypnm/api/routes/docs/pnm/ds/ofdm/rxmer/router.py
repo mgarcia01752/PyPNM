@@ -12,7 +12,7 @@ from fastapi import APIRouter
 from pypnm.api.routes.basic.rxmer_analysis_rpt import RxMerAnalysisReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
-    PnmAnalysisRequest, PnmAnalysisResponse,)
+    PnmAnalysisResponse, PnmSingleCaptureRequest,)
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import (
     SnmpResponse,)
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
@@ -43,7 +43,7 @@ class RxMerRouter:
             f"{self.base_endpoint}/getCapture",
             summary="Get RxMER PNM Capture File",
             responses=FAST_API_RESPONSE,)
-        async def get_capture(request: PnmAnalysisRequest):
+        async def get_capture(request: PnmSingleCaptureRequest):
             """
             Capture Downstream OFDM RxMER Per-Subcarrier Values.
 
@@ -80,15 +80,16 @@ class RxMerRouter:
 
             analysis = Analysis(AnalysisType.BASIC, msg_rsp)
 
-            if request.output.type == FileType.JSON.value:
+            if request.analysis.output.type == FileType.JSON.value:
                 payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
-                payload.update(msg_rsp.payload_to_dict())
+                primative = msg_rsp.payload_to_dict('primative')
+                payload.update(primative)
                 return PnmAnalysisResponse(
                     mac_address =   mac,
                     status      =   ServiceStatusCode.SUCCESS,
                     data        =   payload,)
 
-            elif request.output.type == FileType.ARCHIVE.value:
+            elif request.analysis.output.type == FileType.ARCHIVE.value:
                 analysis_rpt = RxMerAnalysisReport(analysis)
                 rpt: Path = cast(Path, analysis_rpt.build_report())
                 return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)

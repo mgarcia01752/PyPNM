@@ -1,16 +1,24 @@
+# SPDX-License-Identifier: MIT
+
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name             = "pypnm"
-version          = "0.1.0"
-description      = "DOCSIS 3.1/4.0 Proactive Network Maintenance Toolkit"
-readme           = "README.md"
-requires-python  = ">=3.10"
-license          = { file = "LICENSE.md" }
-authors          = [
-  { name = "Maurice Garcia", email = "mgarcia01752@outlook.com" }
+name            = "pypnm"
+version         = "0.1.0"
+description     = "DOCSIS 3.1/4.0 Proactive Network Maintenance Toolkit"
+readme          = "README.md"
+requires-python = ">=3.10"
+license         = { file = "LICENSE.md" }
+authors = [{ name = "Maurice Garcia", email = "mgarcia01752@outlook.com" }]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Framework :: FastAPI",
+  "Topic :: System :: Networking",
+  "Typing :: Typed"
 ]
 
 dependencies = [
@@ -26,6 +34,8 @@ dependencies = [
   "paramiko==3.5.1",
   "tftpy==0.8.5",
   "matplotlib==3.10.5"
+  # If XLSX export is always required, uncomment next line:
+  # "openpyxl>=3.1.5"
 ]
 
 [project.optional-dependencies]
@@ -35,6 +45,15 @@ dev = [
   "black",
   "mypy",
 ]
+docs = [
+  "mkdocs>=1.6",
+  "mkdocs-material>=9.5",
+  "pymdown-extensions>=10.8",
+  # "mkdocstrings[python]>=0.26",  # optional
+]
+reports = [
+  "openpyxl>=3.1.5" # for XLSX export via pandas
+]
 
 [project.urls]
 Homepage    = "https://github.com/mgarcia01752/PyPNM"
@@ -42,7 +61,10 @@ Repository  = "https://github.com/mgarcia01752/PyPNM"
 Bug-Tracker = "https://github.com/mgarcia01752/PyPNM/issues"
 
 [project.scripts]
-pypnm = "pypnm.cli:main"
+pypnm      = "pypnm.cli:main"
+# These require the 'docs' extra at runtime; keep if you’re OK with users installing extras:
+docs-serve = "mkdocs.__main__:serve"
+docs-build = "mkdocs.__main__:build"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -52,4 +74,7 @@ where   = ["src"]
 include = ["pypnm*"]
 
 [tool.setuptools.package-data]
-"pypnm" = ["settings/*.json"]
+"pypnm" = [
+  "settings/*.json"
+  # add more runtime assets if needed, e.g. "docsis_mibs/*.txt", "templates/*.html"
+]

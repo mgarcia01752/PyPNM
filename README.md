@@ -84,13 +84,29 @@ Example (HTTPS on port 443):
 pypnm --host 0.0.0.0 --port 443 --ssl --cert ./certs/cert.pem --key ./certs/key.pem
 ```
 
-Default:
+Production (Local Host) Default:
+
+http://127.0.0.1:8000 
 
 ```bash
 pypnm
 ```
 
-### 6) Explore the API
+Development (Local Host) Default:
+
+--reload flag for auto-restart on code changes:
+
+```bash
+pypnm --reload
+```
+
+### 6) (Optional) Serve the documentation locally
+
+```bash
+mkdocs serve
+```
+
+### 7) Explore the API
 
 * Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
 * ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)

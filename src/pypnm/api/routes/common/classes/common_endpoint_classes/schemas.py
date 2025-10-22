@@ -6,7 +6,7 @@ from __future__ import annotations
 from typing import Any, Dict, Optional
 from pydantic import Field, field_validator
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
-    CommonAnalysisRequest, CommonRequest, CommonResponse)
+    CommonAnalysisRequest, CommonRequest, CommonResponse, CommonSingleCaptureAnalysisRequest)
 
 class PnmRequest(CommonRequest):
     """Request model used to trigger measurement-related operations on a cable modem."""
@@ -37,6 +37,9 @@ class PnmAnalysisResponse(CommonResponse):
     data: Dict[Any, Any] = Field(..., description="Structured data (e.g., series of x/y points or histogram bins) used to generate plots.")
     
 class PnmAnalysisRequest(CommonAnalysisRequest):
+    """Request model that contains data structured for plotting PNM metrics."""
+
+class PnmSingleCaptureRequest(CommonSingleCaptureAnalysisRequest):
     """Request model that contains data structured for plotting PNM metrics."""
 
 class PnmDataResponse(CommonResponse):
