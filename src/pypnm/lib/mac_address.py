@@ -7,13 +7,15 @@ from __future__ import annotations
 from enum import Enum, auto
 import logging
 import re
-from typing import Union, cast
+from typing import Union, cast, TYPE_CHECKING
 
 from pypnm.lib.types import MacAddressStr
 
+if TYPE_CHECKING:
+    from pysnmp.proto.rfc1902 import OctetString
+
 try:
     from pysnmp.proto.rfc1902 import OctetString
-    
 except ImportError:
     OctetString = None
 class MacAddressFormat(Enum):
@@ -23,7 +25,7 @@ class MacAddressFormat(Enum):
     HYPHEN = auto()    # e.g., '00-1a-2b-3c-4d-5e'
 
 class MacAddress:
-    def __init__(self, mac_address: Union[str, bytes, bytearray, 'OctetString']) -> None:
+    def __init__(self, mac_address: Union[str, bytes, bytearray, 'OctetString']) -> None: # type: ignore
         """
         Initialize a MacAddress object.
 
@@ -156,7 +158,7 @@ class MacAddress:
         return isinstance(other, MacAddress) and self._mac == other._mac
 
     @staticmethod
-    def is_valid(mac_address: Union[str, bytes, bytearray, 'OctetString']) -> bool:
+    def is_valid(mac_address: Union[str, bytes, bytearray, 'OctetString']) -> bool: # type: ignore
         """
         Static method to validate a MAC address.
 
