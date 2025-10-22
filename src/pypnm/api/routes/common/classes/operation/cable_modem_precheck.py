@@ -48,11 +48,11 @@ class CableModemServicePreCheck:
         mac_address: Optional[MacAddressStr] = None,
         ip_address: Optional[InetAddressStr] = None,
         check_docsis_version: Optional[List[ClabsDocsisVersion]] = None,
-        validate_ofdm_exist: bool = False,
-        validate_ofdma_exist: bool = False,
-        validate_scqam_exist: bool = False,
+        validate_ofdm_exist: bool       = False,
+        validate_ofdma_exist: bool      = False,
+        validate_scqam_exist: bool      = False,
         validate_pnm_ready_status: bool = False,
-        ignore_mac_address_check:bool = False,
+        ignore_mac_address_check: bool  = False,
     ) -> None:
         """
         Initialize the pre-check service.
@@ -127,7 +127,7 @@ class CableModemServicePreCheck:
                 except Exception as e:
                     self.logger.error(f"Error retrieving real MAC address: {e}", exc_info=True)
                     mac = "Unknown"
-                    
+
                 msg = f"Found: {mac} MAC address CableModem Mac check failed: {status}"
                 self.logger.error(msg)
                 return status, msg
