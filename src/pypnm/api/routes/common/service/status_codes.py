@@ -39,16 +39,16 @@ class ServiceStatusCode(IntEnum):
     MISSING_PNM_TEST_TYPE                   = 24
     CM_MAC_DOES_MATCH_MATCH                 = 25
     
-    SCP_PNM_FILE_FETCH_ERROR                = 30
-    TFTP_PNM_FILE_FETCH_ERROR               = 31
-    FTP_PNM_FILE_FETCH_ERROR                = 32
-    SFTP_PNM_FILE_FETCH_ERROR               = 33
-    HTTP_PNM_FILE_FETCH_ERROR               = 34
-    SHTTP_PNM_FILE_FETCH_ERROR              = 35
-    
-    INVALID_DOCSIS_VERSION                  = 40
-    NO_OFDMA_CHANNELS_EXIST                 = 41
-    NO_OFDM_CHANNELS_EXIST                  = 42
+    SCP_PNM_FILE_FETCH_ERROR                = 100
+    TFTP_PNM_FILE_FETCH_ERROR               = 101
+    FTP_PNM_FILE_FETCH_ERROR                = 102
+    SFTP_PNM_FILE_FETCH_ERROR               = 103
+    HTTP_PNM_FILE_FETCH_ERROR               = 104
+    SHTTP_PNM_FILE_FETCH_ERROR              = 105
+
+    INVALID_DOCSIS_VERSION                  = 110
+    NO_OFDMA_CHANNELS_EXIST                 = 111
+    NO_OFDM_CHANNELS_EXIST                  = 112
     
     TRANSACTION_RECORD_GET_FAILED           = 200
     UNSUPPORTED_TEST_TYPE                   = 201
