@@ -3,11 +3,17 @@
 
 from __future__ import annotations
 
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, NewType, Sequence, Tuple, Union, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
+
+# Enum String Type
+class _StrEnum(str, Enum):
+    """Py3.10-compatible StrEnum shim."""
+    pass
 
 # Basic strings
 String: TypeAlias       = str

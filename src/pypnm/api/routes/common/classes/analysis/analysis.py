@@ -408,7 +408,7 @@ class Analysis:
         freqs:FloatSeries = [base_freq + (i * subcarrier_spacing) for i in range(len(values))]
         magnitudes:FloatSeries = values
 
-        def classify(v: float) -> int:
+        def classify(v: int) -> int:
             if v == RXMER_EXCLUSION:
                 return int(RxMerCarrierType.EXCLUSION.value)
             elif v in (RXMER_CLIPPED_LOW, RXMER_CLIPPED_HIGH):

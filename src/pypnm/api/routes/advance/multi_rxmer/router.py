@@ -6,7 +6,7 @@ from __future__ import annotations
 import io
 import logging
 import os
-from typing import Union
+from typing import Union, cast
 import zipfile
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
@@ -31,6 +31,7 @@ from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import MacAddressStr
 
 class MultiRxMerRouter(AbstractService):
     """
@@ -149,25 +150,25 @@ class MultiRxMerRouter(AbstractService):
 
             """
             try:
-                service:MultiRxMerService = self.getService(operation_id)
+                service:MultiRxMerService = cast(MultiRxMerService, self.getService(operation_id))
                 
             except KeyError:
                 raise HTTPException(status_code=404, detail="Operation not found")
 
             status = service.status(operation_id)
 
-            self.logger.info(f'OpId: {operation_id} - Status: {status}')
+            self.logger.debug(f'OpId: {operation_id} - Status: {status}')
             
             return MultiRxMerStatusResponse(
-                mac_address=str(service.cm.get_mac_address),
-                status="success",
-                message=None,
-                operation=MultiRxMerResponseStatus(
-                    operation_id=operation_id,
-                    state=status["state"],
-                    collected=status["collected"],
-                    time_remaining=status["time_remaining"],
-                    message=None,
+                mac_address =   cast(MacAddressStr, service.cm.get_mac_address),
+                status      =   "success",
+                message     =   None,
+                operation   =   MultiRxMerResponseStatus(
+                                    operation_id    =   operation_id,
+                                    state           =   status["state"],
+                                    collected       =   status["collected"],
+                                    time_remaining  =   status["time_remaining"],
+                                    message         =   None,
                 ),
             )
 

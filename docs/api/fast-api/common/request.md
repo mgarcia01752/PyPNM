@@ -51,7 +51,7 @@ Use this when the endpoint performs SNMP calls only.
 ### Cable Modem
 
 | Field                     | Type   | Notes                                                                                                                                                    |
-| ------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ------------------------- | ------ |-------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `cable_modem.mac_address` | string | Accepts multiple formats; case-insensitive. Examples: `aa:bb:cc:dd:ee:ff`, `aa-bb-cc-dd-ee-ff`, `aabb.ccdd.eeff`, `aabbccddeeff`. Normalized internally. |
 | `cable_modem.ip_address`  | string | Target CM IPv4 or IPv6 address.                                                                                                                          |
 

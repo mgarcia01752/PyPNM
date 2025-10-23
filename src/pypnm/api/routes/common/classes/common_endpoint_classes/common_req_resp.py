@@ -7,6 +7,7 @@ from typing import Optional, Union
 from pydantic import BaseModel, Field, field_validator
 
 from pypnm.api.routes.advance.common.operation_state import OperationState
+from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import AnalysisType, OutputType
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.files.service import FileType
 from pypnm.config.system_config_settings import SystemConfigSettings
@@ -16,10 +17,10 @@ from pypnm.lib.matplot.manager import ThemeType
 from pypnm.lib.types import IPv4Str, IPv6Str, InetAddressStr, MacAddressStr
 
 # Default settings
-default_mac:MacAddressStr = SystemConfigSettings.default_mac_address
-default_ip:InetAddressStr = SystemConfigSettings.default_ip_address
-default_tftp_ipv4:IPv4Str   = SystemConfigSettings.bulk_tftp_ip_v4
-default_tftp_ipv6:IPv6Str   = SystemConfigSettings.bulk_tftp_ip_v6
+default_mac: MacAddressStr   = SystemConfigSettings.default_mac_address
+default_ip: InetAddressStr   = SystemConfigSettings.default_ip_address
+default_tftp_ipv4: IPv4Str   = SystemConfigSettings.bulk_tftp_ip_v4
+default_tftp_ipv6: IPv6Str   = SystemConfigSettings.bulk_tftp_ip_v6
 
 # -----------------------------
 # SNMP and TFTP Parameter Models
@@ -70,12 +71,12 @@ class CommonAnalysisType(BaseModel):
     type: int = Field(description="Analysis type to perform")
 
 class CommonSingleCaptureAnalysisType(BaseModel):
-    type: int                       = Field(description="Analysis type to perform")
+    type: AnalysisType              = Field(default=AnalysisType.BASIC, description="Analysis type to perform")
     output: CommonOutput            = Field(description="")
     plot:CommonMatPlotConfigRequest = Field(description="")
 
 class CommonOutput(BaseModel):
-    type: int = Field(default=FileType.JSON.value, description="Report output type: 0 = JSON, 1 = CSV file")
+    type: OutputType = Field(default=OutputType.JSON, description="")
 
 class CommonMultiAnalysisRequest(BaseModel):
     cable_modem: CableModemPnmConfig

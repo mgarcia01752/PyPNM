@@ -12,7 +12,7 @@ from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.qam.types import QamModulation
 from pypnm.lib.signal_processing.shan.series import ShannonSeriesModel
-from pypnm.lib.types import ComplexArray, FloatSeries, FloatSeries
+from pypnm.lib.types import ComplexArray, FloatSeries, FrequencyHz, FrequencySeriesHz, IntSeries
 from pypnm.pnm.lib.signal_statistics import SignalStatisticsModel
 
 class BaseAnalysisModel(BaseModel):
@@ -27,20 +27,20 @@ class GrpDelayStatsModel(BaseModel):
 
 
 class ComplexDataCarrierModel(BaseModel):
-    carrier_count             : int              = Field(..., description="Total number of active subcarriers included in the estimation.")
-    frequency_unit            : str              = Field(default="Hz", description="Unit of the frequency axis (default: Hertz).")
-    frequency                 : FloatSeries        = Field(..., description="List of subcarrier center frequencies.")
-    complex                   : ComplexArray     = Field(..., description="Raw complex channel estimation coefficients as [real, imag] pairs.")
-    complex_dimension         : int              = Field(..., description="Dimensionality of the complex array (should be 1 for per-carrier sequence).")
-    magnitudes                : FloatSeries      = Field(..., description="Per-subcarrier magnitude response in linear scale.")
+    carrier_count             : int                 = Field(..., description="Total number of active subcarriers included in the estimation.")
+    frequency_unit            : str                 = Field(default="Hz", description="Unit of the frequency axis (default: Hertz).")
+    frequency                 : FrequencySeriesHz   = Field(..., description="List of subcarrier center frequencies.")
+    complex                   : ComplexArray        = Field(..., description="Raw complex channel estimation coefficients as [real, imag] pairs.")
+    complex_dimension         : int                 = Field(..., description="Dimensionality of the complex array (should be 1 for per-carrier sequence).")
+    magnitudes                : FloatSeries         = Field(..., description="Per-subcarrier magnitude response in linear scale.")
     group_delay               : GrpDelayStatsModel  = Field(..., description="Group delay analysis results for the channel estimate.")
-    occupied_channel_bandwidth: int              = Field(..., description="Occupied channel bandwidth in Hertz.")
+    occupied_channel_bandwidth: int                 = Field(..., description="Occupied channel bandwidth in Hertz.")
 
 
 class ComplexDataAnalysisModel(BaseAnalysisModel):
     subcarrier_spacing           : int                        = Field(..., description="Subcarrier frequency spacing in Hertz.")
     first_active_subcarrier_index: int                        = Field(..., description="Index of the first active OFDM subcarrier (0-based).")
-    subcarrier_zero_frequency    : int                        = Field(..., description="Absolute frequency of subcarrier k=0 in Hertz.")
+    subcarrier_zero_frequency    : FrequencyHz                = Field(..., description="Absolute frequency of subcarrier k=0 in Hertz.")
     carrier_values               : ComplexDataCarrierModel    = Field(..., description="Detailed per-subcarrier results.")
     signal_statistics            : SignalStatisticsModel      = Field(..., description="Computed time-domain statistics of the channel estimate signal.")
 
@@ -67,7 +67,7 @@ class DsHistogramAnalysisModel(BaseAnalysisModel):
     metadata may be carried in `device_details` and `pnm_header` without strict schema.
     """
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
-    symmetry: int             = Field(..., description="Histogram symmetry flag as reported by the device (implementation- or vendor-defined).")
+    symmetry: int               = Field(..., description="Histogram symmetry flag as reported by the device (implementation- or vendor-defined).")
     dwell_count: FloatSeries    = Field(..., description="Measurement dwell/accumulation count used when collecting the histogram.")
     hit_counts: FloatSeries     = Field(..., description="Per-bin hit counts; index i corresponds to bin i. Length equals number of bins.")
 
@@ -100,22 +100,23 @@ class OfdmFecSummaryAnalysisModel(BaseAnalysisModel):
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
     profiles: List[OfdmFecSummaryProfileModel] = Field(default_factory=list, description="All per-profile FEC summaries for the channel.")
 
+
 class RxMerCarrierValuesModel(BaseModel):
-    carrier_status_map:Dict[str,Any]    = Field(..., description="")
-    magnitude_unit: str                 = Field(default="dB", description="")
-    frequency_unit: str                 = Field(default="Hz", description="")    
-    carrier_count: int                  = Field(..., description="")
-    magnitude: FloatSeries              = Field(..., description="")
-    frequency: FloatSeries                = Field(..., description="")
-    carrier_status:FloatSeries            = Field(..., description="")
+    carrier_status_map: Dict[str, Any]  = Field(..., description="Mapping of carrier states to numeric codes (e.g., exclusion=0, clipped=1, normal=2).")
+    magnitude_unit: str                 = Field("dB", description="Unit for RxMER magnitudes.")
+    frequency_unit: str                 = Field("Hz", description="Unit for subcarrier frequencies.")
+    carrier_count: int                  = Field(..., description="Number of subcarriers represented.")
+    magnitude: FloatSeries              = Field(..., description="RxMER magnitudes for all subcarriers.")
+    frequency: FloatSeries              = Field(..., description="Frequencies for all subcarriers.")
+    carrier_status: IntSeries           = Field(..., description="Status codes for all subcarriers.")
 
 class DsRxMerAnalysisModel(BaseAnalysisModel):
-    subcarrier_spacing:int                      = Field(..., description="")
-    first_active_subcarrier_index:int           = Field(..., description="")
-    subcarrier_zero_frequency:int               = Field(..., description="")           
-    carrier_values: RxMerCarrierValuesModel     = Field(..., description="")
-    regression: RegressionModel                 = Field(..., description="")
-    modulation_statistics:ShannonSeriesModel    = Field(..., description="")
+    subcarrier_spacing: int                     = Field(..., description="Subcarrier spacing in Hz.")
+    first_active_subcarrier_index: int          = Field(..., description="First active subcarrier within the channel.")
+    subcarrier_zero_frequency: int              = Field(..., description="Zero-subcarrier (DC) frequency in Hz.")
+    carrier_values: RxMerCarrierValuesModel     = Field(..., description="Per-subcarrier frequency, magnitude, and status values.")
+    regression: RegressionModel                 = Field(..., description="Trend components derived from RxMER vs. frequency.")
+    modulation_statistics: ShannonSeriesModel   = Field(..., description="Shannon-derived SNR, bits/symbol, modulation estimates, and summary counts.")
 
 class OfdmaUsPreEqCarrierModel(ComplexDataCarrierModel):
     """"""

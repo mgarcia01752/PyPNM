@@ -11,6 +11,7 @@ from fastapi import APIRouter
 
 from pypnm.api.routes.basic.rxmer_analysis_rpt import RxMerAnalysisReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
+from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
     PnmAnalysisResponse, PnmSingleCaptureRequest,)
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import (
@@ -24,6 +25,7 @@ from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.ds.ofdm.rxmer.service import CmDsOfdmRxMerService
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.docsis.cable_modem import CableModem
+from pypnm.lib.dict_utils import NestedDictCleaner
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -47,10 +49,8 @@ class RxMerRouter:
             """
             Capture Downstream OFDM RxMER Per-Subcarrier Values.
 
-            Returns either:
-              * JSON (PnmAnalysisResponse) when request.output.type == JSON
-              * File download (archive) when request.output.type == ARCHIVE
-              * SnmpResponse on precheck/measurement failure
+            [API Guide]()
+
             """
             mac: MacAddressStr = request.cable_modem.mac_address
             ip: InetAddressStr = request.cable_modem.ip_address
@@ -80,16 +80,21 @@ class RxMerRouter:
 
             analysis = Analysis(AnalysisType.BASIC, msg_rsp)
 
-            if request.analysis.output.type == FileType.JSON.value:
+            if request.analysis.output.type == OutputType.JSON:
                 payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
+                
+                # Clean up payload by removing unneeded or redundant sections
+                NestedDictCleaner.pop_keys_recursive(payload, ["pnm_header", "modulations", "snr_db_values"])
                 primative = msg_rsp.payload_to_dict('primative')
+                NestedDictCleaner.pop_keys_recursive(primative, ["device_details", "modulation_statistics"])
                 payload.update(primative)
+
                 return PnmAnalysisResponse(
                     mac_address =   mac,
                     status      =   ServiceStatusCode.SUCCESS,
                     data        =   payload,)
 
-            elif request.analysis.output.type == FileType.ARCHIVE.value:
+            elif request.analysis.output.type == OutputType.ARCHIVE:
                 analysis_rpt = RxMerAnalysisReport(analysis)
                 rpt: Path = cast(Path, analysis_rpt.build_report())
                 return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)
