@@ -34,14 +34,16 @@ class PlotConfig:
         ``dark_background`` style. Use ``None``/``"light"``/``False`` for the default style.
 
     X-axis tick formatting (no data rescaling):
-        - x_tick_mode="eng": auto k/M/G prefixes using EngFormatter (unit label stays generic).
-        - x_tick_mode="mhz": force showing ticks as MHz regardless of input units.
-            Provide ``x_mhz_from`` to tell the formatter the input unit:
-                "hz" -> divide by 1e6; "khz" -> 1e3; "mhz" -> 1; "ghz" -> 1e-3.
-        - x_tick_mode="none": leave ticks as-is (default).
+        - x_tick_mode="none": default numeric ticks (we disable sci-offset).
+        - x_tick_mode="eng":  EngFormatter with SI prefixes on ticks (unit shown per tick).
+        - x_tick_mode="unit": Force ticks to a specific unit (Hz/kHz/MHz/GHz); ticks are numbers only.
+          Use:
+            x_unit_from: input unit of x data ("hz"|"khz"|"mhz"|"ghz")
+            x_unit_out:  target display unit ("hz"|"khz"|"mhz"|"ghz")
+            x_tick_decimals: optional decimal places for tick labels
 
-        In both cases we disable scientific offsets (the "×1e6" in the corner).
-        If you don't pass ``xlabel``, we'll build it from ``xlabel_base`` when needed.
+        In "unit" mode, the axis label is built dynamically as "<xlabel_base> (<Unit>)"
+        unless you explicitly provide `xlabel`.
     """
 
     # Data (optional convenience)
@@ -75,12 +77,11 @@ class PlotConfig:
     theme: Optional[ThemeType] = None
 
     # X tick formatting (no data rescale)
-    # in PlotConfig
-    x_tick_mode: Optional[Literal["none", "eng", "mhz"]] = "none"
-    x_mhz_from: Optional[Literal["hz", "khz", "mhz", "ghz"]] = "hz"
-    x_tick_decimals: Optional[int] = None   # ← NEW: control decimals when forcing MHz
-
-    xlabel_base: Optional[str] = None  # used to auto-build label when needed
+    x_tick_mode: Optional[Literal["none", "eng", "unit"]] = "none"
+    x_unit_from: Optional[Literal["hz", "khz", "mhz", "ghz"]] = "hz"
+    x_unit_out:  Optional[Literal["hz", "khz", "mhz", "ghz"]] = "mhz"
+    x_tick_decimals: Optional[int] = None
+    xlabel_base: Optional[str] = None  # base text to build "<base> (<Unit>)"
 
     def update(self, **kwargs) -> "PlotConfig":
         return replace(self, **kwargs)
@@ -158,7 +159,9 @@ class MatplotManager:
             hard        = pick(user_cfg.hard        if user_cfg else None, base.hard,        method_defaults.hard),
             theme       = pick(user_cfg.theme       if user_cfg else None, base.theme,       method_defaults.theme),
             x_tick_mode = pick(user_cfg.x_tick_mode if user_cfg else None, base.x_tick_mode, method_defaults.x_tick_mode),
-            x_mhz_from  = pick(user_cfg.x_mhz_from  if user_cfg else None, base.x_mhz_from,  method_defaults.x_mhz_from),
+            x_unit_from = pick(user_cfg.x_unit_from if user_cfg else None, base.x_unit_from, method_defaults.x_unit_from),
+            x_unit_out  = pick(user_cfg.x_unit_out  if user_cfg else None, base.x_unit_out,  method_defaults.x_unit_out),
+            x_tick_decimals = pick(user_cfg.x_tick_decimals if user_cfg else None, base.x_tick_decimals, method_defaults.x_tick_decimals),
             xlabel_base = pick(user_cfg.xlabel_base if user_cfg else None, base.xlabel_base, method_defaults.xlabel_base),
         )
 
@@ -169,58 +172,62 @@ class MatplotManager:
         return nullcontext()
 
     def _apply_x_ticks(self, ax, cfg: PlotConfig):
+        """Apply display-only x tick formatting (no data rescaling)."""
         mode = (cfg.x_tick_mode or "none").lower()
-        if mode == "none":
-            # Also turn off scientific offset if user leaves default formatting
-            try:
-                ax.ticklabel_format(axis="x", style="plain", useOffset=False)
-                # belt-and-suspenders for older MPL
-                sf = ScalarFormatter(useOffset=False)
-                sf.set_scientific(False)
-                ax.xaxis.set_major_formatter(sf)
-            except Exception:
-                pass
-            return
 
-        # Always kill scientific offset/scinotation before installing our formatter
+        # Always kill sci-notation/offset first
         try:
             ax.ticklabel_format(axis="x", style="plain", useOffset=False)
             sf = ScalarFormatter(useOffset=False)
             sf.set_scientific(False)
             ax.xaxis.set_major_formatter(sf)
+            ax.get_xaxis().get_offset_text().set_visible(False)
         except Exception:
             pass
 
+        if mode == "none":
+            return
+
         if mode == "eng":
-            ax.xaxis.set_major_formatter(EngFormatter(unit="Hz"))
+            ax.xaxis.set_major_formatter(EngFormatter(unit="Hz"))  # auto k/M/G
             if not cfg.xlabel:
                 ax.set_xlabel(cfg.xlabel_base or "Frequency")
             return
 
-        if mode == "mhz":
-            # map input units -> divisor to display MHz; data is NOT rescaled
-            unit = (cfg.x_mhz_from or "hz").lower()
-            scale_from = {"hz": 1e6, "khz": 1e3, "mhz": 1.0, "ghz": 1e-3}.get(unit, 1e6)
+        if mode == "unit":
+            # Generic unit forcing (Hz/kHz/MHz/GHz)
+            unit_info = {
+                "hz":  (1.0,  "Hz"),
+                "khz": (1e3,  "kHz"),
+                "mhz": (1e6,  "MHz"),
+                "ghz": (1e9,  "GHz"),
+            }
+            u_in  = (cfg.x_unit_from or "hz").lower()
+            u_out = (cfg.x_unit_out  or "mhz").lower()
+            fin,  lab_in  = unit_info.get(u_in,  unit_info["hz"])
+            fout, lab_out = unit_info.get(u_out, unit_info["mhz"])
 
-            # formatter WITHOUT unit text on ticks
+            mult = fin / fout  # convert input numbers → display unit (label only)
+
             if cfg.x_tick_decimals is None:
-                def _fmt(v):  # trim trailing zeros
-                    s = f"{v/scale_from:.6f}".rstrip("0").rstrip(".")
+                def _fmt(v, m=mult):
+                    s = f"{v*m:.6f}".rstrip("0").rstrip(".")
                     return s if s else "0"
             else:
                 d = max(0, int(cfg.x_tick_decimals))
-                def _fmt(v, d=d):
-                    return f"{v/scale_from:.{d}f}"
+                def _fmt(v, m=mult, d=d):
+                    return f"{v*m:.{d}f}"
 
             ax.xaxis.set_major_formatter(FuncFormatter(lambda v, pos: _fmt(v)))
-            # hide any offset text just in case
             try:
                 ax.get_xaxis().get_offset_text().set_visible(False)
             except Exception:
                 pass
 
+            # Dynamic axis label if not explicitly provided
             if not cfg.xlabel:
-                ax.set_xlabel(f"{cfg.xlabel_base or 'Frequency'} (MHz)")
+                base = cfg.xlabel_base or "Frequency"
+                ax.set_xlabel(f"{base} ({lab_out})")
             return
 
     def _finish(self, fig, ax, path: Path, cfg: PlotConfig) -> Path:
@@ -456,7 +463,8 @@ class MatplotManager:
                     else:
                         x_lo, x_hi = -1.0, 1.0
                     if all_y.size:
-                        y_min, y_max = float(np.min(all_y))
+                        # FIX: compute both min and max (previous bug)
+                        y_min, y_max = float(np.min(all_y)), float(np.max(all_y))
                         y_pad = 0.05 * (y_max - y_min if y_max > y_min else 1.0)
                         y_lo, y_hi = y_min - y_pad, y_max + y_pad
                     else:
@@ -477,7 +485,7 @@ class MatplotManager:
             except Exception:
                 pass
 
-            # no special x tick formatting here (I/Q), but harmless to apply
+            # No special x tick formatting here (I/Q), but harmless to apply
             self._apply_x_ticks(ax, cfg)
             return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
@@ -584,9 +592,9 @@ class MatplotManager:
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
         with self._theme_context(cfg):
             fig, ax = self._new_fig()
-            ax.step(x, y, where=where)
-            self._apply_x_ticks(ax, cfg)
-            return self._finish(fig, ax, self._resolve_path(filename), cfg)
+        ax.step(x, y, where=where)
+        self._apply_x_ticks(ax, cfg)
+        return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
     def plot_stem(
         self,
