@@ -13,7 +13,7 @@ Refer to [Common → Request](../../../common/request.md).
 
 Here’s a slightly expanded, tidy version with clearer wording and a couple of helpful notes:
 
-### Delta table
+### Delta Table
 
 | JSON path                | Type   | Allowed values / format | Default   | Description                                                                                                                                                                  |
 | ------------------------ | ------ | ----------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -63,7 +63,7 @@ Here’s a slightly expanded, tidy version with clearer wording and a couple of 
 
 Standard envelope with payload under `data`.
 
-When output.type = "json"
+### When `output.type = "json"`
 
 ```json
     "output": {
@@ -71,7 +71,7 @@ When output.type = "json"
     },
 ```
 
-### Abbreviated Example
+#### Abbreviated Example
 
 ```json
 {
@@ -83,11 +83,11 @@ When output.type = "json"
             {
                 "device_details": {
                     "system_description": {
-                        "HW_REV": "1A",
-                        "VENDOR": "Hitron Technologies",
-                        "BOOTR": "2022.01-MXL-v-4.0.362.F",
-                        "SW_REV": "8.5.0.0.1b2",
-                        "MODEL": "CODA60V"
+                      "HW_REV": "1.0",
+                      "VENDOR": "LANCity",
+                      "BOOTR": "NONE",
+                      "SW_REV": "1.0.0",
+                      "MODEL": "LCPET-3"
                     }
                 },
                 "mac_address": "60:6c:63:e4:36:84",
@@ -176,8 +176,34 @@ When output.type = "json"
 }
 ```
 
-### Field Tables
+### When `output.type = "archive"`
 
+```json
+    "output": {
+      "type": "archive"
+    },
+```
+
+The response is a downloadable ZIP file containing:
+
+* CSV export of RxMER per subcarrier.
+* Matplotlib PNG plots of RxMER vs. Subcarrier Index.
+
+| DARK                                                                                  | Light                                                                       | Description                                |
+| ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------ |
+| [RxMER (Ch 193)](./images/rxmer/dark_1761343516_193_rxmer.png)                        | [RxMER (Ch 193)](./images/rxmer/light_193_rxmer.png)                        | RxMER vs. Subcarrier Index — Channel 193   |
+| [Modulation Counts (Ch 193)](./images/rxmer/dark_1761343516_193_modulation_count.png) | [Modulation Counts (Ch 193)](./images/rxmer/light_193_modulation_count.png) | Modulation Counts — Channel 193            |
+| [RxMER (Ch 194)](./images/rxmer/dark_1761343516_194_rxmer.png)                        | [RxMER (Ch 194)](./images/rxmer/light_194_rxmer.png)                        | RxMER vs. Subcarrier Index — Channel 194   |
+| [Modulation Counts (Ch 194)](./images/rxmer/dark_194_modulation_count.png)            | [Modulation Counts (Ch 194)](./images/rxmer/light_194_modulation_count.png) | Modulation Counts — Channel 194            |
+| [RxMER (Ch 195)](./images/rxmer/dark_195_rxmer.png)                                   | [RxMER (Ch 195)](./images/rxmer/light_195_rxmer.png)                        | RxMER vs. Subcarrier Index — Channel 195   |
+| [Modulation Counts (Ch 195)](./images/rxmer/dark_195_modulation_count.png)            | [Modulation Counts (Ch 195)](./images/rxmer/light_195_modulation_count.png) | Modulation Counts — Channel 195            |
+| [RxMER (Ch 196)](./images/rxmer/dark_196_rxmer.png)                                   | [RxMER (Ch 196)](./images/rxmer/light_196_rxmer.png)                        | RxMER vs. Subcarrier Index — Channel 196   |
+| [Modulation Counts (Ch 196)](./images/rxmer/dark_196_modulation_count.png)            | [Modulation Counts (Ch 196)](./images/rxmer/light_196_modulation_count.png) | Modulation Counts — Channel 196            |
+| [RxMER (Ch 197)](./images/rxmer/dark_197_rxmer.png)                                   | [RxMER (Ch 197)](./images/rxmer/light_197_rxmer.png)                        | RxMER vs. Subcarrier Index — Channel 197   |
+| [Modulation Counts (Ch 197)](./images/rxmer/dark_1761343516_197_modulation_count.png) | [Modulation Counts (Ch 197)](./images/rxmer/light_197_modulation_count.png) | Modulation Counts — Channel 197            |
+| [Signal Aggregate](./images/rxmer/dark_1761343516_signal_aggregate.png)               | [Signal Aggregate](./images/rxmer/light_signal_aggregate.png)               | Aggregate Signal Statistics (All Channels) |
+
+### Field Tables
 
 **Payload: `measurement.data[]`**
 
