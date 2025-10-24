@@ -223,7 +223,6 @@ class MatplotManager:
                 ax.set_xlabel(f"{cfg.xlabel_base or 'Frequency'} (MHz)")
             return
 
-
     def _finish(self, fig, ax, path: Path, cfg: PlotConfig) -> Path:
         if cfg.title:  ax.set_title(cfg.title)
         if cfg.xlabel: ax.set_xlabel(cfg.xlabel)
