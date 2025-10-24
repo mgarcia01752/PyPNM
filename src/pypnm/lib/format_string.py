@@ -5,8 +5,21 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import string
+from typing import Iterable, Optional, Any
 
 class Format:
+
+    @staticmethod
+    def join_paren(values: Optional[Iterable[Any]], sep: str = ", ", empty: str = "—") -> str:
+        """
+        Join items into a comma-separated string wrapped in parentheses.
+        Uses only built-ins (str(), join) and strict typing.
+        """
+        if not values:
+            return f"({empty})"
+        items = (str(v) for v in values)
+        return f"({sep.join(items)})"
+    
     @staticmethod
     def hex_string(hex_string: str, delimiter: str = ':', grouping: int = 2) -> str:
         """

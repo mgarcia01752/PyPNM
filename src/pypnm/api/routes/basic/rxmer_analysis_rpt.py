@@ -16,10 +16,11 @@ from pypnm.api.routes.basic.common.signal_capture_agg import SignalCaptureAggreg
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.api.routes.common.classes.analysis.model.schema import DsRxMerAnalysisModel
 from pypnm.lib.csv.manager import CSVManager
+from pypnm.lib.format_string import Format
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig, ThemeType
 from pypnm.lib.numeric_scaler import NumericScaler
 from pypnm.lib.signal_processing.shan.series import Shannon
-from pypnm.lib.types import ArrayLike, FloatSeries
+from pypnm.lib.types import ArrayLike, FloatSeries, IntSeries
 
 class RxMerParametersAnalysisRpt(BaseModel):
     """
@@ -122,12 +123,12 @@ class RxMerAnalysisReport(AnalysisReport):
             any_models = True
             model       = cast(RxMerAnalysisRptModel, common_model)
             channel_id  = model.channel_id
-            x_hz        = model.raw_x
-            y_db        = model.raw_y
-            rl          = model.parameters.regression_line
+            freq        = cast(ArrayLike, model.raw_x)
+            db          = cast(ArrayLike, model.raw_y)
+            rl          = cast(ArrayLike, model.parameters.regression_line)
             mc          = model.parameters.modulation_count 
 
-            x_khz, _ = NumericScaler().to_prefix(values=x_hz, target="k")
+            freq_khz, _ = NumericScaler().to_prefix(values=freq, target="k")
             chan_id_list.append(channel_id)
 
             title_prefix = f'RxMER OFDM Channel: ({channel_id})'
@@ -138,16 +139,19 @@ class RxMerAnalysisReport(AnalysisReport):
             try:
 
                 cfg = PlotConfig(
-                    title = f"{title_prefix}",
-                    x = x_khz,
-                    y_multi = [y_db, rl],
-                    y_multi_label = ["RxMER", "Regression Line"],
-                    x_tick_mode = "unit",
-                    x_unit_from = "khz",
-                    x_unit_out  = "mhz",
-                    x_tick_decimals = 0,
-                    xlabel_base = "Frequency",
-                    grid=True, legend=True, transparent=False, theme="dark",
+                    title           =   f"{title_prefix}",
+                    x               =   cast(ArrayLike, freq_khz),
+                    y_multi         =   [db, rl],
+                    y_multi_label   =   ["RxMER", "Regression Line"],
+                    x_tick_mode     =   "unit",
+                    x_unit_from     =   "khz",
+                    x_unit_out      =   "mhz",
+                    x_tick_decimals =   0,
+                    xlabel_base     =   "Frequency",
+                    grid            =   True, 
+                    legend          =   True, 
+                    transparent     =   False, 
+                    theme           =   "dark",
                 )
 
                 multi = self.create_png_fname(tags=[str(channel_id), 'rxmer'])
@@ -168,10 +172,16 @@ class RxMerAnalysisReport(AnalysisReport):
                 bpsym, order_count = self.__modulation_order_count_to_series(mc)
                 
                 cfg = PlotConfig(
-                    title=f"{title_prefix} - Modulation Order Count",
-                    x=bpsym, xlabel="Bits Per Symbol (bps)",
-                    y=order_count, ylabel="Order Count",
-                    grid=True, legend=True, transparent=False, theme="dark")
+                        title       =   f"{title_prefix} - Modulation Order Count",
+                        x           =   cast(ArrayLike, bpsym), 
+                        xlabel      =   "Bits Per Symbol (bps)",
+                        y           =   cast(ArrayLike, order_count), 
+                        ylabel      =   "Order Count",
+                        grid        =   True, 
+                        legend      =   False, 
+                        transparent =   False, 
+                        theme       =   "dark"
+                    )
 
                 mod_count_fname = self.create_png_fname(tags=[str(channel_id), 'modulation_count'])
                 self.logger.debug("Creating MatPlot: %s for channel: %s", mod_count_fname, channel_id)
@@ -188,18 +198,33 @@ class RxMerAnalysisReport(AnalysisReport):
             Signal Capture Aggregation - All OFDM DS Channels
             '''
             try:
-                x, y = self._sig_cap_agg.get_series()
+                freq, db = self._sig_cap_agg.get_series()
+
                 cfg = PlotConfig(
-                    title=f"{title_prefix}",
-                    x=x, xlabel="Frequency(Hz)",
-                    y=y, ylabel="MER(dB)",
-                    grid=True, legend=True, transparent=False, theme="dark")
+                    title         = f"RxMER OFDM Channel(s): {Format.join_paren(chan_id_list)}",
+                    x             = cast(ArrayLike, freq),
+                    y             = cast(ArrayLike, db),
+                    xlabel        = None,
+                    xlabel_base   = "Frequency",
+                    x_tick_mode   = "unit",
+                    x_unit_from   = "hz",
+                    x_unit_out    = "mhz",
+                    x_tick_decimals = 0,
+                    ylabel        = "dB",
+                    grid          = True,
+                    legend        = True,
+                    transparent   = False,
+                    theme         = "dark",
+                )
 
                 signal_aggregate_fname = self.create_png_fname(tags=['signal_aggregate'])
                 self.logger.debug(f"Creating MatPlot: {signal_aggregate_fname} for aggregated RxMER capture")
 
                 mgr = MatplotManager(default_cfg=cfg)
-                mgr.plot_line(filename=signal_aggregate_fname)
+                mgr.plot_line(
+                    filename    =   signal_aggregate_fname,
+                    label       =   "Aggrageted RxMER"
+                )
 
                 out.append(mgr)
 
@@ -269,7 +294,7 @@ class RxMerAnalysisReport(AnalysisReport):
         # Finalize signal capture aggregation
         self._sig_cap_agg.reconstruct()
 
-    def __modulation_order_count_to_series(self, mod_count: Mapping[str, int]) -> Tuple[FloatSeries, FloatSeries]:
+    def __modulation_order_count_to_series(self, mod_count: Mapping[str, int]) -> Tuple[IntSeries, IntSeries]:
         """
         Convert {"qam_<M>": count} → (bits_per_symbol_series, count_series),
         sorted by ascending QAM order M. Skips malformed entries with warnings.
@@ -324,8 +349,8 @@ class RxMerAnalysisReport(AnalysisReport):
         # stable, deterministic series
         items.sort(key=lambda t: t[0])  # sort by QAM order M
 
-        order_bits: FloatSeries = [bps for _, bps, _ in items]
-        order_counts: FloatSeries = [c for _, _, c in items]
+        order_bits: IntSeries = [bps for _, bps, _ in items]
+        order_counts: IntSeries = [c for _, _, c in items]
         
         self.logger.debug(f"Modulation order series: {order_bits}")
         self.logger.debug(f"Modulation order series: {order_counts}")
