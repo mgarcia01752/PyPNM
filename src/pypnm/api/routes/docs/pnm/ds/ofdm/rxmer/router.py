@@ -9,7 +9,7 @@ from typing import Any, Dict, cast
 
 from fastapi import APIRouter
 
-from pypnm.api.routes.basic.rxmer_analysis_rpt import RxMerAnalysisReport
+from pypnm.api.routes.basic.rxmer_analysis_rpt import AnalysisRptMatplotConfig, RxMerAnalysisReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
 from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
@@ -95,7 +95,9 @@ class RxMerRouter:
                     data        =   payload,)
 
             elif request.analysis.output.type == OutputType.ARCHIVE:
-                analysis_rpt = RxMerAnalysisReport(analysis)
+                theme = request.analysis.plot.ui.theme
+                plot_config = AnalysisRptMatplotConfig(theme = theme)
+                analysis_rpt = RxMerAnalysisReport(analysis, plot_config)
                 rpt: Path = cast(Path, analysis_rpt.build_report())
                 return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)
 

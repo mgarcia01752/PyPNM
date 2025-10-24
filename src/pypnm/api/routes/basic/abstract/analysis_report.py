@@ -18,7 +18,7 @@ from pypnm.docsis.cm_snmp_operation import SystemDescriptor
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.csv.manager import CSVManager
-from pypnm.lib.matplot.manager import MatplotManager
+from pypnm.lib.matplot.manager import MatplotManager, ThemeType
 from pypnm.lib.types import PathArray, PathLike
 from pypnm.lib.utils import Utils
 
@@ -40,7 +40,16 @@ class AnalysisOutputModel(BaseModel):
     csv_files: PathArray    = Field(..., description="List of CSV file(s)")
     plot_files: PathArray   = Field(..., description="List of PNG Matplot file(s)")
     archive_file: PathLike  = Field(..., description="File name of archive file containging analysis files")
-    
+
+
+class AnalysisRptMatplotConfig(BaseModel):
+    """
+    Configuration parameters for Matplotlib figures in an AnalysisReport.
+
+    Extend this model in subclasses to add specific plot configuration options.
+    """
+    theme: ThemeType = Field(default="dark", description="")
+
 class AnalysisReport(ABC):
     '''
     Abstract base class for converting an `Analysis` into persisted artifacts
@@ -51,14 +60,18 @@ class AnalysisReport(ABC):
         - Construct with an `Analysis` instance.
         - Call `build_report()` to emit files, then `to_model()` for response data.
     '''
-    def __init__(self, analysis: Analysis):
+    def __init__(self, analysis: Analysis, armc: AnalysisRptMatplotConfig = AnalysisRptMatplotConfig()):
         """Set up logging, store the `Analysis`, and initialize runtime context."""
         self.logger = logging.getLogger("AnalysisReport")
         self._analysis = analysis
+        self._armc = armc
         self.__init()
         
         self.csv_files: List[PathLike]  = []
         self.plot_files: List[PathLike] = []
+
+    def getAnalysisRptMatplotConfig(self) -> AnalysisRptMatplotConfig:
+        return self._armc
 
     def get_analysis_data(self) -> AnalysisData:
         """Return the raw per-item analysis data extracted from the `Analysis` results."""

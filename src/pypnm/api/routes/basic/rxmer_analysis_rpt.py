@@ -10,7 +10,7 @@ import re
 from typing import Dict, List, Mapping, Tuple, cast
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport
+from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport, AnalysisRptMatplotConfig
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.basic.common.signal_capture_agg import SignalCaptureAggregator
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
@@ -43,8 +43,10 @@ class RxMerAnalysisRptModel(CommonAnalysis):
 class RxMerAnalysisReport(AnalysisReport):
     """Concrete report builder for RxMER measurements."""
 
-    def __init__(self, analysis: Analysis, **kwargs):
-        super().__init__(analysis)
+    def __init__(self, analysis: Analysis, 
+                 analysis_matplot_config:AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(), 
+                 **kwargs):
+        super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("RxMerAnalysisReport")
         self._results: Dict[int, RxMerAnalysisRptModel] = {}
         self._sig_cap_agg: SignalCaptureAggregator = SignalCaptureAggregator()
@@ -151,7 +153,7 @@ class RxMerAnalysisReport(AnalysisReport):
                     grid            =   True, 
                     legend          =   True, 
                     transparent     =   False, 
-                    theme           =   "dark",
+                    theme           =   self.getAnalysisRptMatplotConfig().theme,
                 )
 
                 multi = self.create_png_fname(tags=[str(channel_id), 'rxmer'])
@@ -180,7 +182,7 @@ class RxMerAnalysisReport(AnalysisReport):
                         grid        =   True, 
                         legend      =   False, 
                         transparent =   False, 
-                        theme       =   "dark"
+                        theme       =   self.getAnalysisRptMatplotConfig().theme,
                     )
 
                 mod_count_fname = self.create_png_fname(tags=[str(channel_id), 'modulation_count'])
@@ -214,7 +216,7 @@ class RxMerAnalysisReport(AnalysisReport):
                     grid          = True,
                     legend        = True,
                     transparent   = False,
-                    theme         = "dark",
+                    theme         = self.getAnalysisRptMatplotConfig().theme,
                 )
 
                 signal_aggregate_fname = self.create_png_fname(tags=['signal_aggregate'])
