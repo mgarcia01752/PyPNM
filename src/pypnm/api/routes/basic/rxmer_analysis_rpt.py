@@ -138,9 +138,14 @@ class RxMerAnalysisReport(AnalysisReport):
             try:
 
                 cfg = PlotConfig(
-                    title=f'{title_prefix}',
-                    x=x_khz, xlabel="Frequency",  x_tick_mode="mhz", x_mhz_from="mhz", x_tick_decimals=0,
-                    y_multi=[y_db, rl], y_multi_label=["RxMER", "Regression Line"],
+                    title           =   f'{title_prefix}',
+                    x               =   x_khz, 
+                    xlabel          =   "Frequency",  
+                    x_tick_mode     =   "mhz", 
+                    x_mhz_from      =   "khz", 
+                    x_tick_decimals =   0,
+                    y_multi         =   [y_db, rl], 
+                    y_multi_label   =   ["RxMER", "Regression Line"],
                     grid=True, legend=True, transparent=False, theme="dark")
 
                 multi = self.create_png_fname(tags=[str(channel_id), 'rxmer'])
