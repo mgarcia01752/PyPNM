@@ -206,7 +206,7 @@ class AnalysisReport(ABC):
         """
         return list(self._common_analysis_model.keys())
 
-    def build_report(self, include_pnm_files:bool=False) -> Path:
+    def build_report(self) -> Path:
         """
         Run the full report pipeline: `_process()` → CSV generation → plot rendering → ZIP.
 
@@ -271,7 +271,7 @@ class AnalysisReport(ABC):
         pass
 
     @abstractmethod
-    def create_csv(self, **kwargs) -> List[CSVManager]:
+    def create_csv(self) -> List[CSVManager]:
         """
         Build one or more `CSVManager` instances ready to `write()`.
 
@@ -282,7 +282,7 @@ class AnalysisReport(ABC):
         pass
 
     @abstractmethod
-    def create_matplot(self, **kwargs) -> List[MatplotManager]:
+    def create_matplot(self) -> List[MatplotManager]:
         """
         Build one or more `MatplotManager` instances to render PNG figures.
 

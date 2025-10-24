@@ -16,7 +16,7 @@ from pypnm.api.routes.basic.common.signal_capture_agg import SignalCaptureAggreg
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.api.routes.common.classes.analysis.model.schema import DsRxMerAnalysisModel
 from pypnm.lib.csv.manager import CSVManager
-from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
+from pypnm.lib.matplot.manager import MatplotManager, PlotConfig, ThemeType
 from pypnm.lib.numeric_scaler import NumericScaler
 from pypnm.lib.signal_processing.shan.series import Shannon
 from pypnm.lib.types import ArrayLike, FloatSeries
@@ -42,13 +42,13 @@ class RxMerAnalysisRptModel(CommonAnalysis):
 class RxMerAnalysisReport(AnalysisReport):
     """Concrete report builder for RxMER measurements."""
 
-    def __init__(self, analysis: Analysis):
+    def __init__(self, analysis: Analysis, **kwargs):
         super().__init__(analysis)
         self.logger = logging.getLogger("RxMerAnalysisReport")
         self._results: Dict[int, RxMerAnalysisRptModel] = {}
         self._sig_cap_agg: SignalCaptureAggregator = SignalCaptureAggregator()
 
-    def create_csv(self, **kwargs) -> List[CSVManager]:
+    def create_csv(self) -> List[CSVManager]:
         """
         Stream validated models into CSVs. Assumes `_process()` already enforced
         """
@@ -110,7 +110,7 @@ class RxMerAnalysisReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self, **kwargs) -> List[MatplotManager]:
+    def create_matplot(self) -> List[MatplotManager]:
         """
         Generate per-channel line and multi-line plots from validated models.
         """
@@ -139,7 +139,7 @@ class RxMerAnalysisReport(AnalysisReport):
 
                 cfg = PlotConfig(
                     title=f'{title_prefix}',
-                    x=x_khz,xlabel="Frequency (kHz)",
+                    x=x_khz, xlabel="Frequency",  x_tick_mode="mhz", x_mhz_from="mhz", x_tick_decimals=0,
                     y_multi=[y_db, rl], y_multi_label=["RxMER", "Regression Line"],
                     grid=True, legend=True, transparent=False, theme="dark")
 

@@ -103,8 +103,8 @@ class OfdmFecSummaryAnalysisModel(BaseAnalysisModel):
 
 class RxMerCarrierValuesModel(BaseModel):
     carrier_status_map: Dict[str, Any]  = Field(..., description="Mapping of carrier states to numeric codes (e.g., exclusion=0, clipped=1, normal=2).")
-    magnitude_unit: str                 = Field("dB", description="Unit for RxMER magnitudes.")
-    frequency_unit: str                 = Field("Hz", description="Unit for subcarrier frequencies.")
+    magnitude_unit: str                 = Field(default="dB", description="Unit for RxMER magnitudes.")
+    frequency_unit: str                 = Field(default="Hz", description="Unit for subcarrier frequencies.")
     carrier_count: int                  = Field(..., description="Number of subcarriers represented.")
     magnitude: FloatSeries              = Field(..., description="RxMER magnitudes for all subcarriers.")
     frequency: FloatSeries              = Field(..., description="Frequencies for all subcarriers.")

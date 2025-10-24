@@ -443,8 +443,7 @@ class Analysis:
             carrier_count       = len(freqs),
             magnitude           = magnitudes,
             frequency           = freqs,
-            carrier_status      = carrier_status
-        )
+            carrier_status      = carrier_status)
 
         out = DsRxMerAnalysisModel(
             device_details                  = device_details,
