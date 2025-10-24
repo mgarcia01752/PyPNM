@@ -17,7 +17,7 @@ from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.api.routes.common.classes.analysis.model.schema import DsRxMerAnalysisModel
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.format_string import Format
-from pypnm.lib.matplot.manager import MatplotManager, PlotConfig, ThemeType
+from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.numeric_scaler import NumericScaler
 from pypnm.lib.signal_processing.shan.series import Shannon
 from pypnm.lib.types import ArrayLike, FloatSeries, IntSeries
