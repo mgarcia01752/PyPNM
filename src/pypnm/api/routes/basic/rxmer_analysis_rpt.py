@@ -150,6 +150,7 @@ class RxMerAnalysisReport(AnalysisReport):
                     x_unit_out      =   "mhz",
                     x_tick_decimals =   0,
                     xlabel_base     =   "Frequency",
+                    ylabel          =   "dB",
                     grid            =   True, 
                     legend          =   True, 
                     transparent     =   False, 

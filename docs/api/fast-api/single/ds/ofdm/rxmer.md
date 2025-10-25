@@ -212,7 +212,7 @@ The response is a downloadable ZIP file containing:
 | status                        | string       | Result for this capture (e.g., `SUCCESS`).        |
 | pnm_header.*                  | object       | PNM file header (type, version, capture time).    |
 | channel_id                    | int          | OFDM downstream channel ID.                       |
-| mac_address                   | string       | Masked MAC for the capture.                       |
+| mac_address                   | string       | MacAddress of the device.                         |
 | zero_frequency                | int (Hz)     | Channel zero frequency.                           |
 | first_active_subcarrier_index | int          | Index of first active subcarrier.                 |
 | subcarrier_spacing            | int (Hz)     | Subcarrier spacing.                               |
