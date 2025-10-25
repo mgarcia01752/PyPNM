@@ -44,6 +44,8 @@ dev = [
   "pytest-asyncio>=0.23.0",
   "black>=24.0.0",
   "mypy>=1.10.0",
+  "pydantic>=2.11.0",
+  "pydantic-settings>=2.6.0"
 ]
 docs = [
   "mkdocs>=1.6",
@@ -74,25 +76,34 @@ include = ["pypnm*"]
 [tool.setuptools.package-data]
 "pypnm" = [
   "settings/*.json",
+  "py.typed",
 ]
 
 [tool.pytest.ini_options]
 minversion   = "8.0"
 pythonpath   = ["src"]
 testpaths    = ["tests"]
-addopts      = "-ra -q --strict-markers --tb=short"
+# Default: concise output, strict markers, short tracebacks, and skip real-gear ITs unless asked for
+addopts      = "-ra -q --strict-markers --tb=short -m 'not cm_it'"
 
 # Let pytest-asyncio auto-manage the event loop.
 asyncio_mode = "auto"
 
+# Live logs in test output for easier debugging
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(levelname)s %(name)s:%(lineno)d | %(message)s"
+log_cli_date_format = "%H:%M:%S"
+
 markers = [
   "asyncio: mark test as asyncio-based (requires pytest-asyncio)",
-  "cm_it: cable modem integration tests (enable with PNM_CM_IT=1)",
+  "cm_it: cable modem integration tests (enable with -m cm_it)",
   "slow: slow tests",
   "net: network-required tests",
   "pnm: PNM file parsing tests",
 ]
 
+# Silence noisy deprecations from pysmi/pysnmp that we can’t fix immediately
 filterwarnings = [
   "ignore:getReadersFromUrls is deprecated:DeprecationWarning:pysnmp",
   "ignore:smiV1Relaxed is deprecated:DeprecationWarning:pysnmp",
@@ -109,3 +120,22 @@ source = ["pypnm"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
+
+# ---- Optional tooling (nice to have) ----
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.mypy]
+python_version = "3.10"
+plugins = ["pydantic.mypy"]
+warn_return_any = true
+warn_unused_ignores = true
+no_implicit_optional = true
+strict_optional = true
+disallow_untyped_defs = true
+pretty = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+warn_required_dynamic_aliases = true
