@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import List,Tuple, Union
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.lib.types import ArrayLike, ChannelId
+from pypnm.lib.types import ChannelId
 
 class CommonAnalysis(BaseModel):
     """
