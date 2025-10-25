@@ -208,6 +208,7 @@ Failed: 'pnm' not found in `markers` configuration option
 ## Reference: Our PyTest Config (excerpt)
 
 From `pyproject.toml`:
+
 ```toml
 [tool.pytest.ini_options]
 minversion = "8.0"
