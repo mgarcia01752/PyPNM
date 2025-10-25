@@ -130,7 +130,6 @@ class RxMerAnalysisReport(AnalysisReport):
             rl          = cast(ArrayLike, model.parameters.regression_line)
             mc          = model.parameters.modulation_count 
 
-            freq_khz, _ = NumericScaler().to_prefix(values=freq, target="k")
             chan_id_list.append(channel_id)
 
             title_prefix = f'RxMER OFDM Channel: ({channel_id})'
@@ -142,11 +141,11 @@ class RxMerAnalysisReport(AnalysisReport):
 
                 cfg = PlotConfig(
                     title           =   f"{title_prefix}",
-                    x               =   cast(ArrayLike, freq_khz),
+                    x               =   cast(ArrayLike, freq),
                     y_multi         =   [db, rl],
                     y_multi_label   =   ["RxMER", "Regression Line"],
                     x_tick_mode     =   "unit",
-                    x_unit_from     =   "khz",
+                    x_unit_from     =   "hz",
                     x_unit_out      =   "mhz",
                     x_tick_decimals =   0,
                     xlabel_base     =   "Frequency",
