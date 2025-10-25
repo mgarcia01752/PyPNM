@@ -225,7 +225,7 @@ class RxMerAnalysisReport(AnalysisReport):
                 mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_line(
                     filename    =   signal_aggregate_fname,
-                    label       =   "Aggrageted RxMER"
+                    label       =   "Aggregated RxMER"
                 )
 
                 out.append(mgr)
@@ -247,8 +247,6 @@ class RxMerAnalysisReport(AnalysisReport):
             try:
 
                 channel_id      = data.channel_id
-                cv              = data.carrier_values
-                ms              = data.modulation_statistics
                 x_raw           = data.carrier_values.frequency
                 y_raw           = data.carrier_values.magnitude
                 snr_db_limit    = data.modulation_statistics.snr_db_min
@@ -276,7 +274,8 @@ class RxMerAnalysisReport(AnalysisReport):
 
                 model = RxMerAnalysisRptModel(
                     channel_id  =   data.channel_id,
-                    raw_x=x,        raw_y=y,
+                    raw_x       =   x,        
+                    raw_y       =   y,
                     parameters  =   RxMerParametersAnalysisRpt(
                                         shannon_limit_db    =   sh, 
                                         regression_line     =   data.regression.slope,
@@ -326,7 +325,6 @@ class RxMerAnalysisReport(AnalysisReport):
                 self.logger.warning("Skipping unsupported modulation key: %r", key)
                 continue
 
-            # validate count
             try:
                 c_int = int(cnt)
             except Exception:
@@ -347,8 +345,7 @@ class RxMerAnalysisReport(AnalysisReport):
 
         if not items:
             return [], []
-
-        # stable, deterministic series
+        
         items.sort(key=lambda t: t[0])  # sort by QAM order M
 
         order_bits: IntSeries = [bps for _, bps, _ in items]

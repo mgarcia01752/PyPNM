@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import List,Tuple, Union
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.lib.types import ArrayLike
+from pypnm.lib.types import ArrayLike, ChannelId
 
 class CommonAnalysis(BaseModel):
     """
@@ -29,7 +29,7 @@ class CommonAnalysis(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
-    channel_id: int                         = Field(..., description="Channel ID")
+    channel_id: ChannelId                   = Field(..., description="Channel ID")
     raw_x: List[Union[int , float]]         = Field(default=[], description="Typically Frequency or index")
     raw_y: List[Union[int , float]]         = Field(default=[], description="Typically Magnitude (dB/sec)")
     raw_complex: List[Tuple[float, float]]  = Field(default=[], description="Optional complex series aligned to raw_x/raw_y")

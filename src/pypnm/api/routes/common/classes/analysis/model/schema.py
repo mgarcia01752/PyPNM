@@ -10,16 +10,17 @@ from pydantic import BaseModel, Field, ConfigDict
 
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.constants import INVALID_CHANNEL_ID
-from pypnm.lib.qam.types import QamModulation
+from pypnm.lib.qam.types import CodeWordArray, QamModulation
 from pypnm.lib.signal_processing.shan.series import ShannonSeriesModel
-from pypnm.lib.types import ComplexArray, FloatSeries, FrequencyHz, FrequencySeriesHz, IntSeries
+from pypnm.lib.types import (ChannelId, ComplexArray, FloatSeries, 
+    FrequencyHz, FrequencySeriesHz, IntSeries, MacAddressStr, ProfileId, TimestampSec)
 from pypnm.pnm.lib.signal_statistics import SignalStatisticsModel
 
 class BaseAnalysisModel(BaseModel):
     device_details: Mapping[str, Any]   = Field(default_factory=dict, description="Device Details SysDescr")
     pnm_header: Mapping[str, Any]       = Field(default_factory=dict, description="PNM metadata header as a free-form mapping.")
-    mac_address: str                    = Field(default=MacAddress.null(), description="CPE MAC address (string).")
-    channel_id: int                     = Field(default=INVALID_CHANNEL_ID, description="Upstream/downstream channel identifier.")
+    mac_address: MacAddressStr          = Field(default=MacAddress.null(), description="CPE MAC address (string).")
+    channel_id: ChannelId               = Field(default=INVALID_CHANNEL_ID, description="Upstream/downstream channel identifier.")
 
 class GrpDelayStatsModel(BaseModel):
     group_delay_unit : str         = Field(..., description="Unit of group delay values (e.g., microseconds).")
@@ -77,16 +78,16 @@ class FecSummaryCodeWordModel(BaseModel):
     Each list is aligned by index: ``timestamp[i]`` corresponds to
     ``total_codewords[i]``, ``corrected[i]``, and ``uncorrected[i]``.
     """
-    model_config                = ConfigDict(populate_by_name=True, extra="ignore")
-    timestamps: List[int]       = Field(default_factory=list, description="Epoch timestamps (seconds) per codeword sample.")
-    total_codewords: List[int]  = Field(default_factory=list, description="Total codewords observed per timestamp.")
-    corrected: List[int]        = Field(default_factory=list, description="Corrected codewords per timestamp.")
-    uncorrected: List[int]      = Field(default_factory=list, description="Uncorrectable codewords per timestamp.")
+    model_config                    = ConfigDict(populate_by_name=True, extra="ignore")
+    timestamps: List[TimestampSec]  = Field(default_factory=list, description="Epoch timestamps (seconds) per codeword sample.")
+    total_codewords: CodeWordArray  = Field(default_factory=list, description="Total codewords observed per timestamp.")
+    corrected: CodeWordArray        = Field(default_factory=list, description="Corrected codewords per timestamp.")
+    uncorrected: CodeWordArray      = Field(default_factory=list, description="Uncorrectable codewords per timestamp.")
 
 class OfdmFecSummaryProfileModel(BaseModel):
     """Per-profile summary bundle: metadata + vectorized codeword series."""
     model_config                        = ConfigDict(populate_by_name=True, extra="ignore")
-    profile: int                        = Field(..., description="OFDM profile identifier (e.g., 0..15).")
+    profile: ProfileId                  = Field(..., description="OFDM profile identifier (e.g., 0..15).")
     number_of_sets: int                 = Field(..., description="Number of codeword entry sets reported for this profile.")
     codewords: FecSummaryCodeWordModel  = Field(..., description="Vectorized codeword time-series for the profile.")
 
