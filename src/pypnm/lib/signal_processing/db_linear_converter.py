@@ -3,11 +3,8 @@
 
 from __future__ import annotations
 
-from typing import List
 import numpy as np
-
 from pypnm.lib.types import FloatSeries
-
 
 class DbLinearConverter:
     """

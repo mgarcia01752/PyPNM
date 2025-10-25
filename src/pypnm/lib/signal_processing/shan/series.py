@@ -3,11 +3,11 @@
 
 from __future__ import annotations
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, cast
 
 from pydantic import BaseModel, Field
 
-from pypnm.lib.types import BitsPerSymbolSeries, FloatSequence, SNRdB, StringArray
+from pypnm.lib.types import BitsPerSymbol, BitsPerSymbolSeries, FloatSequence, SNRdB, StringArray
 from .shannon import Shannon
 
 class ShannonSeriesModel(BaseModel):
@@ -52,9 +52,9 @@ class ShannonSeries:
         self._instances: List[Shannon] = [Shannon(db) for db in self.snr_db_values]
 
         # Extract bits and modulations
-        self.bits_list: List[int]       = [inst.bits for inst in self._instances]
-        self.modulations: List[str]     = [inst.get_modulation() for inst in self._instances]
-        self.snr_db_limit: List[SNRdB]  = self.limit()
+        self.bits_list: List[BitsPerSymbol] = cast(List[BitsPerSymbol], [inst.bits for inst in self._instances])
+        self.modulations: List[str]         = [inst.get_modulation() for inst in self._instances]
+        self.snr_db_limit: List[SNRdB]      = self.limit()
 
         self._model:ShannonSeriesModel = self.__build_model()
 

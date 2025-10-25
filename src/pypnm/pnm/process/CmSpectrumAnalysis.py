@@ -8,7 +8,7 @@ from typing import List, Dict
 
 from pydantic import BaseModel, Field, ConfigDict
 from pydantic.functional_serializers import field_serializer
-from pypnm.lib.types import FloatSeries
+from pypnm.lib.types import ChannelId, FloatSeries, FrequencyHz, MacAddressStr
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader, PnmHeaderParameters
 
@@ -22,11 +22,11 @@ class CmSpectrumAnalyzerModel(BaseModel):
     """
     model_config                                    = ConfigDict(extra="ignore", populate_by_name=True, ser_json_bytes="base64")
     pnm_header:PnmHeaderParameters                  = Field(..., description="")
-    channel_id: int                                 = Field(..., description="Downstream/upstream channel identifier.")
-    mac_address: str                                = Field(..., description="Device MAC address (string).")
-    first_segment_center_frequency: int             = Field(..., description="Center frequency of the first segment in Hz.")
-    last_segment_center_frequency: int              = Field(..., description="Center frequency of the last segment in Hz.")
-    segment_frequency_span: int                     = Field(..., description="Per-segment frequency span in Hz.")
+    channel_id: ChannelId                           = Field(..., description="Downstream/upstream channel identifier.")
+    mac_address: MacAddressStr                      = Field(..., description="Device MAC address (string).")
+    first_segment_center_frequency: FrequencyHz     = Field(..., description="Center frequency of the first segment in Hz.")
+    last_segment_center_frequency: FrequencyHz      = Field(..., description="Center frequency of the last segment in Hz.")
+    segment_frequency_span: FrequencyHz             = Field(..., description="Per-segment frequency span in Hz.")
     num_bins_per_segment: int                       = Field(..., ge=1, description="Number of FFT bins per segment.")
     equivalent_noise_bandwidth: float               = Field(..., gt=0, description="Equivalent noise bandwidth (Hz).")
     window_function: int                            = Field(..., description="Window function identifier used during analysis (e.g., Hann, Hamming).")
@@ -56,11 +56,11 @@ class CmSpectrumAnalysis(PnmHeader):
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
 
-        self._channel_id: int
-        self._mac_address: str
-        self._first_segment_center_frequency: int
-        self._last_segment_center_frequency: int
-        self._segment_frequency_span: int
+        self._channel_id: ChannelId
+        self._mac_address: MacAddressStr
+        self._first_segment_center_frequency: FrequencyHz
+        self._last_segment_center_frequency: FrequencyHz
+        self._segment_frequency_span: FrequencyHz
         self._num_bins_per_segment: int
         self._equivalent_noise_bandwidth: int
         self._window_function: int

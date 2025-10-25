@@ -7,12 +7,14 @@ from __future__ import annotations
 from typing import List, Optional
 from collections import deque
 
+from pypnm.lib.types import FloatSeries
+
 class MovingAverage:
     """
     Class for calculating a moving average of a list of numerical values.
     """
 
-    def __init__(self, data: List[float] = None, exclude_value: float = None):
+    def __init__(self, data: FloatSeries = None, exclude_value: float = None):
         """
         Initialize the MovingAverage object.
 
@@ -42,7 +44,7 @@ class MovingAverage:
         """
         return len(self.entries)
 
-    def _calculate_window_average(self, window_data: List[float]) -> Optional[float]:
+    def _calculate_window_average(self, window_data: FloatSeries) -> Optional[float]:
         """
         Calculate the average of a window.
 

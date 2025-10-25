@@ -10,8 +10,6 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
 from pypnm.lib.types import Number, ArrayLikeF64, ComplexArray
-# Note: ComplexArray = List[Tuple[float, float]]  # (real, imag) pairs
-
 
 class GroupDelayResult(BaseModel):
     """
@@ -100,13 +98,13 @@ class GroupDelay:
         self,
         H: ComplexArray,
         *,
-        freq_hz: Optional[ArrayLikeF64] = None,
-        df_hz: Optional[Number] = None,
-        f0_hz: float = 0.0,
+        freq_hz: Optional[ArrayLikeF64]     = None,
+        df_hz: Optional[Number]             = None,
+        f0_hz: float                        = 0.0,
         active_mask: Optional[ArrayLikeF64] = None,
-        unwrap: bool = True,
-        edge_order: int = 2,
-        smooth_win: Optional[int] = None,
+        unwrap: bool                        = True,
+        edge_order: int                     = 2,
+        smooth_win: Optional[int]           = None,
     ) -> None:
         """
         Initialize a GroupDelay computation.
@@ -196,14 +194,13 @@ class GroupDelay:
             raise ValueError("df_hz must be finite and non-zero.")
         return cls(
             Hhat,
-            df_hz=df_hz,
-            f0_hz=f0_hz,
-            freq_hz=None,
-            active_mask=active_mask,
-            unwrap=unwrap,
-            edge_order=edge_order,
-            smooth_win=smooth_win,
-        )
+            df_hz       =   df_hz,
+            f0_hz       =   f0_hz,
+            freq_hz     =   None,
+            active_mask =   active_mask,
+            unwrap      =   unwrap,
+            edge_order  =   edge_order,
+            smooth_win  =   smooth_win,)
 
     def to_result(self) -> GroupDelayResult:
         """
@@ -223,18 +220,17 @@ class GroupDelay:
         mean_us = float(np.nanmean(gd_us[mask])) if mask.any() else float("nan")
 
         return GroupDelayResult(
-            freq_hz=f.tolist(),
-            group_delay_s=gd_s.tolist(),
-            group_delay_us=gd_us.tolist(),
-            valid_mask=mask.tolist(),
-            mean_group_delay_us=mean_us,
+            freq_hz             =   f.tolist(),
+            group_delay_s       =   gd_s.tolist(),
+            group_delay_us      =   gd_us.tolist(),
+            valid_mask          =   mask.tolist(),
+            mean_group_delay_us =   mean_us,
             params=dict(
-                df_hz=(None if self._df_hz is None else float(self._df_hz)),
-                f0_hz=(None if self._freq_hz is not None else float(self._f0_hz)),
-                unwrap=self._unwrap,
-                edge_order=self._edge_order,
-                smooth_win=self._smooth_win,
-            ),
+                df_hz       =   (None if self._df_hz is None else float(self._df_hz)),
+                f0_hz       =   (None if self._freq_hz is not None else float(self._f0_hz)),
+                unwrap      =   self._unwrap,
+                edge_order  =   self._edge_order,
+                smooth_win  =   self._smooth_win,),
         )
 
     def to_tuple(self) -> Tuple[np.ndarray, np.ndarray]:

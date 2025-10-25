@@ -5,17 +5,17 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import math
-from typing import List
+from pypnm.lib.types import FloatSeries
 
 class ChannelPower:
 
     @staticmethod
-    def calculate_channel_power(dB_values: List[float]) -> float:
+    def calculate_channel_power(dB_values: FloatSeries) -> float:
         """
         Calculate the total channel power.
 
         Args:
-            dB_values (List[float]): List of dB values.
+            dB_values (FloatSeries): Series of dB values.
 
         Returns:
             float: Total channel power in dB.

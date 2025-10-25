@@ -5,12 +5,12 @@ from __future__ import annotations
 
 import logging
 from struct import calcsize, unpack
-from typing import Optional, List, Tuple, Dict, Any, cast
+from typing import Tuple, Dict, Any, cast
 
 from pydantic import ConfigDict, Field
 
 from pypnm.lib.constants import KHZ
-from pypnm.lib.types import ComplexArray, ComplexSeries
+from pypnm.lib.types import ChannelId, ComplexArray, ComplexSeries, FrequencyHz, MacAddressStr
 from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder
 from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
@@ -19,12 +19,10 @@ from pypnm.pnm.process.pnm_header import PnmHeader
 
 class CmUsOfdmaPreEqModel(PnmBaseModel):
     model_config                   = ConfigDict(extra="ignore")
-
-    cmts_mac_address: str          = Field(..., description="CMTS MAC address associated with this measurement.")
-    value_length: int              = Field(..., ge=0, description="Number of complex coefficient pairs (non-negative).")
-    value_unit: str                = Field(default="[Real, Imaginary]", description="Unit representation of complex values.")
-    values: ComplexArray           = Field(..., min_length=1, description="Pre-equalization coefficients as [real, imaginary] pairs.")
-
+    cmts_mac_address: MacAddressStr = Field(..., description="CMTS MAC address associated with this measurement.")
+    value_length: int               = Field(..., ge=0, description="Number of complex coefficient pairs (non-negative).")
+    value_unit: str                 = Field(default="[Real, Imaginary]", description="Unit representation of complex values.")
+    values: ComplexArray            = Field(..., min_length=1, description="Pre-equalization coefficients as [real, imaginary] pairs.")
 
 class CmUsOfdmaPreEq(PnmHeader):
     """
@@ -43,10 +41,10 @@ class CmUsOfdmaPreEq(PnmHeader):
 
         self._sm_n_format                    = sm_n_format
 
-        self._channel_id                     : int
-        self._mac_address                    : str
-        self._cmts_mac_address               : str
-        self._subcarrier_zero_frequency      : int
+        self._channel_id                     : ChannelId
+        self._mac_address                    : MacAddressStr
+        self._cmts_mac_address               : MacAddressStr
+        self._subcarrier_zero_frequency      : FrequencyHz
         self._first_active_subcarrier_index  : int
         self._subcarrier_spacing_khz         : int
         self._pre_eq_data_length             : int
@@ -112,7 +110,7 @@ class CmUsOfdmaPreEq(PnmHeader):
         # Build BaseModel (convert spacing to Hz; PnmBaseModel expects Hz)
         self._model                        = CmUsOfdmaPreEqModel(
             pnm_header                     = self.getPnmHeaderParameterModel(),
-            channel_id                     = int(self._channel_id),
+            channel_id                     = self._channel_id,
             mac_address                    = self._mac_address,
             subcarrier_zero_frequency      = int(self._subcarrier_zero_frequency),
             first_active_subcarrier_index  = int(self._first_active_subcarrier_index),
@@ -135,7 +133,7 @@ class CmUsOfdmaPreEq(PnmHeader):
         if not self._pre_eq_coefficient_data:
             return []
 
-        self._decoded_coefficients         = FixedPointDecoder.decode_complex_data(
+        self._decoded_coefficients = FixedPointDecoder.decode_complex_data(
             self._pre_eq_coefficient_data,
             self._sm_n_format,
         )

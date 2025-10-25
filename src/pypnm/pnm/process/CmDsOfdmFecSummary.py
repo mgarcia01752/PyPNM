@@ -11,7 +11,7 @@ from struct import Struct, iter_unpack
 from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
 from pypnm.lib.constants import INVALID_CHANNEL_ID
-from pypnm.lib.qam.types import CodeWord, CodeWordArray
+from pypnm.lib.qam.types import CodeWordArray
 from pypnm.lib.types import CaptureTime, ChannelId, FloatSeries, MacAddressStr, TimeStamp
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader, PnmHeaderParameters
@@ -36,7 +36,7 @@ class OfdmFecSumCodeWordEntryModel(BaseModel):
     - All lists must be the same length (aligned time buckets).
     - `timestamp` values are Unix epoch seconds for each aggregation window.
     """
-    timestamp: List[TimeStamp]  = Field(..., description="Unix timestamps (seconds) for each aggregation interval")
+    timestamp: List[TimeStamp]      = Field(..., description="Unix timestamps (seconds) for each aggregation interval")
     total_codewords: CodeWordArray  = Field(..., description="Total codewords observed in each interval")
     corrected: CodeWordArray        = Field(..., description="FEC-corrected codewords per interval")
     uncorrectable: CodeWordArray    = Field(..., description="Uncorrectable codewords per interval")

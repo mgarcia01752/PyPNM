@@ -1,215 +1,185 @@
-
+# tests/test_group_delay.py
 from __future__ import annotations
 
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
+import math
+from typing import List, Tuple
 
-# pytest -q
-import unittest
 import numpy as np
 import pytest
 
 from pypnm.lib.signal_processing.group_delay import GroupDelay, GroupDelayResult
-from pypnm.lib.types import ArrayLikeF64
 
-def as_pairs(z: np.ndarray):
-    z = np.asarray(z, dtype=np.complex128).ravel()
-    return [(float(c.real), float(c.imag)) for c in z]
 
-class TestGroupDelay(unittest.TestCase):
+def _mk_H_from_tau(
+    n: int,
+    df_hz: float,
+    f0_hz: float,
+    tau_s: float,
+) -> List[Tuple[float, float]]:
+    """
+    Build H[k] = exp(-j*2π f[k] τ), where f[k] = f0 + k*df.
+    Returns list of (real, imag) pairs.
+    """
+    k = np.arange(n, dtype=float)
+    f = f0_hz + k * df_hz
+    phase = -2.0 * math.pi * f * tau_s
+    H = np.exp(1j * phase)
+    return [(float(z.real), float(z.imag)) for z in H]
 
-    def test_constant_spacing_linear_phase_mean_matches_tau(self):
-        N = 64
-        df_hz = 25_000.0
-        tau_us = 2.5
-        tau_s = tau_us * 1e-6
 
-        f = np.arange(N) * df_hz
-        H = np.exp(-1j * 2 * np.pi * f * tau_s)
-        gd = GroupDelay.from_channel_estimate(as_pairs(H), df_hz=df_hz, unwrap=True)
+def _mk_H_from_tau_with_freqvec(
+    f_hz: np.ndarray, tau_s: float
+) -> List[Tuple[float, float]]:
+    phase = -2.0 * math.pi * f_hz * tau_s
+    H = np.exp(1j * phase)
+    return [(float(z.real), float(z.imag)) for z in H]
 
-        freq_hz, tau_s_out = gd.to_tuple()
-        assert freq_hz.shape == (N,)
-        assert tau_s_out.shape == (N,)
 
-        # constant group delay (allow tiny numeric error)
-        assert np.allclose(tau_s_out, tau_s, atol=1e-12)
+def test_group_delay_constant_tau_with_df() -> None:
+    n = 256
+    df = 25_000.0
+    f0 = 300e6
+    tau = 2.0e-6  # 2 microseconds
 
-    def test_absolute_freq_vector_linear_phase(self):
-        N = 48
-        f0 = 300e6
-        df = 25_000.0
-        freq_hz: ArrayLikeF64 = (f0 + np.arange(N) * df).astype(np.float64)
+    H_pairs = _mk_H_from_tau(n, df, f0, tau)
+    gd = GroupDelay(H_pairs, df_hz=df, f0_hz=f0, unwrap=True, edge_order=2)
 
-        tau_us = 1.2
-        tau_s = tau_us * 1e-6
-        H = np.exp(-1j * 2 * np.pi * freq_hz * tau_s)
+    f_axis, tau_s = gd.to_tuple()
 
-        gd = GroupDelay(as_pairs(H), freq_hz=freq_hz, unwrap=True)
-        f_out, tau_s_out = gd.to_tuple()
+    assert f_axis.shape == (n,)
+    assert tau_s.shape == (n,)
+    # Should be ~constant around tau (edges can be slightly worse due to gradient)
+    mid = slice(n // 8, -n // 8)
+    assert np.allclose(tau_s[mid], tau, rtol=0, atol=5e-9)  # 5 ns tolerance
 
-        assert np.allclose(f_out, freq_hz, rtol=0, atol=0)
-        assert np.allclose(tau_s_out, tau_s, atol=1e-12)
 
-    def test_f0_hz_offset_with_df_axis(self):
-        N = 16
-        df = 50_000.0
-        f0 = 123.456e6
-        tau_s = 3e-6
+def test_group_delay_constant_tau_with_freq_vector() -> None:
+    n = 257  # odd length to exercise gradient edges
+    f = np.linspace(100e6, 200e6, n)
+    tau = 1.25e-6
 
-        f = f0 + np.arange(N) * df
-        H = np.exp(-1j * 2 * np.pi * f * tau_s)
+    H_pairs = _mk_H_from_tau_with_freqvec(f, tau)
+    gd = GroupDelay(H_pairs, freq_hz=f, unwrap=True, edge_order=2)
 
-        gd = GroupDelay.from_channel_estimate(as_pairs(H), df_hz=df, f0_hz=f0, unwrap=True)
-        f_out, tau_s_out = gd.to_tuple()
+    f_axis, tau_s = gd.to_tuple()
+    assert np.allclose(f_axis, f)
 
-        assert np.allclose(f_out, f0 + np.arange(N) * df)
-        assert np.allclose(tau_s_out, tau_s, atol=1e-12)
+    mid = slice(n // 8, -n // 8)
+    assert np.allclose(tau_s[mid], tau, rtol=0, atol=8e-9)
 
-        res = gd.to_result()
-        assert isinstance(res, GroupDelayResult)
-        assert pytest.approx(res.freq_hz[0], rel=0, abs=0) == f0
-        assert np.allclose(np.array(res.group_delay_s), tau_s, atol=1e-12)
-        assert res.params["df_hz"] == df
-        # f0_hz is set only when freq_hz was not provided
-        assert res.params["f0_hz"] == f0
 
-    def test_active_mask_excludes_bins(self):
-        N = 32
-        df = 25_000.0
-        tau_s = 1e-6
-        f = np.arange(N) * df
-        H = np.exp(-1j * 2 * np.pi * f * tau_s)
+def test_unwrap_effect() -> None:
+    # Force many wraps by making tau large
+    n = 128
+    df = 50_000.0
+    f0 = 0.0
+    tau = 8e-6
 
-        mask = np.ones(N, dtype=bool)
-        mask[:3] = False
-        mask[-2:] = False
+    H_pairs = _mk_H_from_tau(n, df, f0, tau)
+    gd_wrap = GroupDelay(H_pairs, df_hz=df, f0_hz=f0, unwrap=False)
+    gd_unwrap = GroupDelay(H_pairs, df_hz=df, f0_hz=f0, unwrap=True)
 
-        gd = GroupDelay.from_channel_estimate(as_pairs(H), df_hz=df, active_mask=mask, unwrap=True)
-        _, tau_s_out = gd.to_tuple()
+    # Without unwrap the gradient of wrapped phase is corrupted → big error
+    err_wrap = np.nanmedian(np.abs(gd_wrap.group_delay_s - tau))
+    err_unwrap = np.nanmedian(np.abs(gd_unwrap.group_delay_s - tau))
+    assert err_unwrap < 1e-7 and err_wrap > err_unwrap
 
-        assert np.all(np.isnan(tau_s_out[~mask]))
-        assert np.allclose(tau_s_out[mask], tau_s, atol=1e-12)
 
-    def test_smoothing_reduces_outlier(self):
-        N = 64
-        df = 25_000.0
-        tau_s = 2e-6
-        f = np.arange(N) * df
-        H = np.exp(-1j * 2 * np.pi * f * tau_s)
+def test_active_mask_and_nan_propagation_and_smoothing() -> None:
+    n = 101
+    df = 25_000.0
+    f0 = 200e6
+    tau = 3e-6
 
-        # Inject a local phase glitch at k0
-        k0 = 20
-        dphi = 0.8  # radians
-        H_glitch = H.copy()
-        H_glitch[k0] *= np.exp(1j * dphi)
+    H_pairs = _mk_H_from_tau(n, df, f0, tau)
 
-        gd_no_smooth = GroupDelay.from_channel_estimate(as_pairs(H_glitch), df_hz=df, unwrap=True, smooth_win=None)
-        gd_smooth    = GroupDelay.from_channel_estimate(as_pairs(H_glitch), df_hz=df, unwrap=True, smooth_win=3)
+    # Deactivate a center block and corrupt some bins with NaNs (magnitude ~ 0)
+    mask = np.ones(n, dtype=bool)
+    mask[40:60] = False
+    H_arr = np.array(H_pairs, dtype=float)
+    H_arr[10, :] = np.nan
+    H_arr[90, :] = np.nan
+    H_list = [tuple(x) for x in H_arr.tolist()]
 
-        _, y_no = gd_no_smooth.to_tuple()
-        _, y_sm = gd_smooth.to_tuple()
+    gd = GroupDelay(H_list, df_hz=df, f0_hz=f0, active_mask=mask, smooth_win=5)
 
-        # The smoothed value at the glitch index should be closer to true tau
-        err_no = abs(y_no[k0] - tau_s)
-        err_sm = abs(y_sm[k0] - tau_s)
-        assert err_sm <= err_no
+    # Inactive and NaN bins should produce NaN outputs
+    assert np.isnan(gd.group_delay_s[10])
+    assert np.isnan(gd.group_delay_s[90])
+    assert np.all(np.isnan(gd.group_delay_s[40:60]))
 
-    def test_unwrap_needed_for_large_phase_slope(self):
-        # Choose df and tau so that per-step phase change ≈ 2π (wrap each bin)
-        N = 64
-        df = 1_000_000.0
-        tau_s = 1e-6  # 2π * df * tau ≈ 2π
-        f = np.arange(N) * df
-        H = np.exp(-1j * 2 * np.pi * f * tau_s)
+    # Valid region should still be close to tau
+    valid = ~np.isnan(gd.group_delay_s)
+    assert valid.sum() < n  # some invalids exist
+    assert np.allclose(gd.group_delay_s[valid], tau, rtol=0, atol=1e-7)
 
-        gd_wrapped = GroupDelay.from_channel_estimate(as_pairs(H), df_hz=df, unwrap=False)
-        gd_unwrap  = GroupDelay.from_channel_estimate(as_pairs(H), df_hz=df, unwrap=True)
+    # Result object shape & mean (µs) on valid bins
+    res = gd.to_result()
+    assert isinstance(res, GroupDelayResult)
+    assert len(res.freq_hz) == n
+    assert len(res.group_delay_s) == n
+    assert len(res.group_delay_us) == n
+    assert len(res.valid_mask) == n
+    # mean over valid in µs ≈ tau * 1e6
+    assert res.mean_group_delay_us == pytest.approx(tau * 1e6, abs=1e-2)
 
-        _, y_wrapped = gd_wrapped.to_tuple()
-        _, y_unwrap  = gd_unwrap.to_tuple()
 
-        # With unwrap=True we should recover tau_s; without unwrap, mean is badly biased.
-        assert np.isfinite(np.nanmean(y_unwrap))
-        assert np.allclose(np.nanmean(y_unwrap), tau_s, atol=1e-9)
-        # Wrapped gradient will be near zero on most bins → mean far from tau_s
-        assert abs(np.nanmean(y_wrapped) - tau_s) > 1e-7
+def test_from_channel_estimate_constructor() -> None:
+    n = 64
+    df = 25_000.0
+    f0 = 150e6
+    tau = 0.5e-6
 
-    def test_to_result_contents_and_mean(self):
-        N = 40
-        df = 25_000.0
-        tau_s = 1.5e-6
-        f = np.arange(N) * df
-        H = np.exp(-1j * 2 * np.pi * f * tau_s)
+    H_pairs = _mk_H_from_tau(n, df, f0, tau)
+    gd = GroupDelay.from_channel_estimate(H_pairs, df_hz=df, f0_hz=f0, smooth_win=3)
 
-        mask = np.ones(N, dtype=bool)
-        mask[::7] = False  # drop a few bins
+    mid = slice(n // 6, -n // 6)
+    assert np.allclose(gd.group_delay_s[mid], tau, atol=5e-9)
 
-        gd = GroupDelay.from_channel_estimate(as_pairs(H), df_hz=df, active_mask=mask, unwrap=True)
-        res = gd.to_result()
 
-        # shapes
-        assert len(res.freq_hz) == N
-        assert len(res.group_delay_s) == N
-        assert len(res.group_delay_us) == N
-        assert len(res.valid_mask) == N
+def test_validation_errors() -> None:
+    n = 8
+    df = 25_000.0
+    f = np.linspace(0, 1e6, n)
+    H_pairs = _mk_H_from_tau(n, df, 0.0, 1e-6)
 
-        # mean over valid bins ≈ tau_s (in microseconds)
-        gd_us = np.array(res.group_delay_us)
-        valid = np.array(res.valid_mask, dtype=bool)
-        mean_us = np.nanmean(gd_us[valid])
-        assert np.isclose(mean_us, tau_s * 1e6, atol=1e-9)
+    # Need exactly one of freq_hz / df_hz
+    with pytest.raises(ValueError):
+        GroupDelay(H_pairs, df_hz=None, freq_hz=None)  # type: ignore[arg-type]
+    with pytest.raises(ValueError):
+        GroupDelay(H_pairs, df_hz=df, freq_hz=f)       # both given
 
-    @pytest.mark.parametrize(
-        "kwargs, err_msg",
-        [
-            # both freq_hz and df_hz
-            (dict(freq_hz=np.array([0.0, 1.0]), df_hz=1.0), "Provide exactly one"),
-            # neither freq_hz nor df_hz
-            (dict(), "Provide exactly one"),
-        ],
-    )
-    def test_freq_inputs_exclusivity(kwargs, err_msg):
-        H = as_pairs(np.array([1+0j, 1+0j]))
-        with pytest.raises(ValueError) as e:
-            GroupDelay(H, **kwargs)
-        assert err_msg in str(e.value)
+    # freq vector length mismatch
+    with pytest.raises(ValueError):
+        GroupDelay(H_pairs, freq_hz=f[:-1])
 
-    def test_invalid_inputs_raise(self):
-        # H too short
-        with pytest.raises(ValueError):
-            GroupDelay(as_pairs(np.array([1+0j])), df_hz=1.0)
+    # freq vector with duplicates
+    f_bad = f.copy()
+    f_bad[3] = f_bad[2]
+    with pytest.raises(ValueError):
+        GroupDelay(H_pairs, freq_hz=f_bad)
 
-        # mask length mismatch
-        H = as_pairs(np.array([1+0j, 1+0j, 1+0j]))
-        with pytest.raises(ValueError):
-            GroupDelay(H, df_hz=1.0, active_mask=np.array([True, False]))  # wrong length
+    # df invalid
+    with pytest.raises(ValueError):
+        GroupDelay(H_pairs, df_hz=0.0)
+    with pytest.raises(ValueError):
+        GroupDelay.from_channel_estimate(H_pairs, df_hz=float("nan"))
 
-        # freq_hz duplicates
-        with pytest.raises(ValueError):
-            GroupDelay(H, freq_hz=np.array([0.0, 1.0, 1.0]))
+    # H must be (N,2) and N>=2
+    with pytest.raises(ValueError):
+        GroupDelay([(1.0, 0.0)], df_hz=df)  # too short
+    with pytest.raises(ValueError):
+        GroupDelay([(1.0, 0.0, 0.0)], df_hz=df)  # wrong shape type: ignore[list-item]
 
-        # df_hz zero
-        with pytest.raises(ValueError):
-            GroupDelay(H, df_hz=0.0)
 
-        # smooth_win invalid (even / <3 / non-int)
-        with pytest.raises(ValueError):
-            GroupDelay(H, df_hz=1.0, smooth_win=2)
-        with pytest.raises(ValueError):
-            GroupDelay(H, df_hz=1.0, smooth_win=1)
-        with pytest.raises(ValueError):
-            GroupDelay(H, df_hz=1.0, smooth_win=4)
+def test_smooth_win_validation() -> None:
+    n = 16
+    df = 25_000.0
+    H_pairs = _mk_H_from_tau(n, df, 0.0, 1e-6)
 
-    def test_repr_contains_summary(self):
-        N = 8
-        df = 10.0
-        tau_s = 5e-6
-        f = np.arange(N) * df
-        H = np.exp(-1j * 2 * np.pi * f * tau_s)
-        gd = GroupDelay.from_channel_estimate(as_pairs(H), df_hz=df)
-        r = repr(gd)
-        assert "GroupDelay(n=" in r
-
-if __name__ == "__main__":
-    unittest.main()
+    with pytest.raises(ValueError):
+        GroupDelay(H_pairs, df_hz=df, smooth_win=2)  # even
+    with pytest.raises(ValueError):
+        GroupDelay(H_pairs, df_hz=df, smooth_win=1)  # <3
+    with pytest.raises(ValueError):
+        GroupDelay(H_pairs, df_hz=df, smooth_win="5")

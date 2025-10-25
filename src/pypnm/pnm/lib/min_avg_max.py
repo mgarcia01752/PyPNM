@@ -66,8 +66,7 @@ class MinAvgMax:
 
         if arr.ndim != 2 or arr.shape[0] == 0 or arr.shape[1] == 0:
             raise ValueError(
-                "`amplitude` must be a 2D array (M×N) with consistent subcarrier count"
-            )
+                "`amplitude` must be a 2D array (M×N) with consistent subcarrier count")
 
         self.precision: PrecisionInt = precision
 

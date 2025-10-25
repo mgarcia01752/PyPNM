@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import logging
 from pypnm.config.pnm_config_manager import PnmConfigManager
-from pypnm.lib.inet import Inet
+from pypnm.lib.inet import Inet, InetAddressStr
 from pypnm.lib.mac_address import MacAddress
 from pypnm.docsis.cm_snmp_operation import CmSnmpOperation
 from pypnm.lib.ping import Ping
@@ -45,7 +45,7 @@ class CableModem(CmSnmpOperation):
         return self._mac_address
 
     @property
-    def get_inet_address(self) -> str:
+    def get_inet_address(self) -> InetAddressStr:
         """
         Returns the IP address of the cable modem as a string.
 
@@ -73,9 +73,7 @@ class CableModem(CmSnmpOperation):
         system_description = await self.getSysDescr()
 
         if not system_description:
-            self.logger.debug(
-                f"{self.__repr__()}- SNMP access failed"
-            )
+            self.logger.debug(f"{self.__repr__()}- SNMP access failed")
             return False
 
         return True

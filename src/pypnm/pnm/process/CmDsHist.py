@@ -4,7 +4,6 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-import json
 import logging
 from struct import calcsize, unpack
 
@@ -21,9 +20,9 @@ class CmDsHistModel(BaseModel):
     mac_address:str                 = Field(default=MacAddress.null(), description="Device MAC address")
     symmetry: int                   = Field(..., description="Histogram symmetry indicator (device-specific meaning).")
     dwell_count_values_length: int  = Field(..., description="Number of dwell count entries reported.")
-    dwell_count_values: FloatSeries   = Field(..., description="Dwell count values per bin.")
+    dwell_count_values: FloatSeries = Field(..., description="Dwell count values per bin.")
     hit_count_values_length: int    = Field(..., description="Number of hit count entries reported.")
-    hit_count_values: FloatSeries     = Field(..., description="Hit count values per bin.")
+    hit_count_values: FloatSeries   = Field(..., description="Hit count values per bin.")
 
 
 class CmDsHist(PnmHeader):
@@ -93,11 +92,12 @@ class CmDsHist(PnmHeader):
             pnm_header                  =   self.getPnmHeaderParameterModel(),
             mac_address                 =   self._mac_address,
             symmetry                    =   self._symmetry,
-            dwell_count_values_length   =   self._hit_count_values_length,
+            dwell_count_values_length   =   self._dwell_count_values_length,
             dwell_count_values          =   self._dwell_count_values,
             hit_count_values_length     =   self._hit_count_values_length,
             hit_count_values            =   self._hit_count_values,
         )
+
     
     def to_model(self) -> CmDsHistModel:
         return self._model

@@ -5,7 +5,7 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 from typing import MutableMapping, Set, TypeVar
-from typing import Any, Iterable, MutableMapping
+from typing import Any, Iterable
 
 T = TypeVar("T")
 

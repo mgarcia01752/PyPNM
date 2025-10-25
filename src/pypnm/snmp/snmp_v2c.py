@@ -14,6 +14,7 @@ from pysnmp.hlapi.v3arch.asyncio import (
     ObjectType,ObjectIdentity, get_cmd,set_cmd, walk_cmd)
 
 from pysnmp.proto.rfc1902 import (OctetString)
+from pypnm.config.pnm_config_manager import SystemConfigSettings
 from pypnm.lib.inet import Inet
 from pypnm.lib.inet_utils import InetUtils
 from pypnm.snmp.compiled_oids import COMPILED_OIDS
@@ -49,7 +50,11 @@ class Snmp_v2c:
 
     SNMP_PORT = 161
 
-    def __init__(self, host: Inet, community: str = "private", port: int = SNMP_PORT):
+    def __init__(self, host: Inet, 
+                 community: str = SystemConfigSettings.snmp_write_community, 
+                 port: int = SNMP_PORT,
+                 timeout: int = SystemConfigSettings.snmp_timeout,
+                 retries: int = SystemConfigSettings.snmp_retries):
         """
         Initializes the SNMPv2c client.
 
@@ -58,10 +63,12 @@ class Snmp_v2c:
             community (str): Community string for SNMP access.
             port (int): SNMP port (default 161).
         """
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self._host = host.inet
-        self._port = port
+        self.logger     = logging.getLogger(self.__class__.__name__)
+        self._host      = host.inet
+        self._port      = port
         self._community = community
+        self._timeout   = timeout
+        self._retries   = retries
         self._snmp_engine = SnmpEngine()
 
     async def get(self, oid: Union[str, Tuple[str, str, int]]):
@@ -78,20 +85,16 @@ class Snmp_v2c:
             RuntimeError: On SNMP errors.
         """
         self.logger.debug(f'Input OID: {oid}')
-        
-        oid = Snmp_v2c.resolve_oid(oid)
-                
-        identity = self._to_object_identity(oid)
-
-        obj = ObjectType(identity)
+        obj = ObjectType(self._to_object_identity(Snmp_v2c.resolve_oid(oid)))
 
         errorIndication, errorStatus, errorIndex, varBinds = await get_cmd(
             self._snmp_engine,
-            CommunityData(self._community),
-            await UdpTransportTarget.create((self._host, self._port)),
-            ContextData(),
-            obj,
-        )
+            CommunityData(self._community, mpModel=1),
+            await UdpTransportTarget.create((self._host, self._port),
+                                            timeout=self._timeout, 
+                                            retries=self._retries),
+                                            ContextData(),
+                                            obj,)
         try:
             self._raise_on_snmp_error(errorIndication, errorStatus, errorIndex)
         except Exception as e:
@@ -110,16 +113,16 @@ class Snmp_v2c:
             Optional[List[ObjectType]]: List of walked SNMP ObjectTypes, or None if no results.
         """
         self.logger.debug(f"Starting SNMP WALK with OID: {oid}")
-
         oid = Snmp_v2c.resolve_oid(oid)
-        
         self.logger.debug(f"Converted: {oid}")
      
         identity = self._to_object_identity(oid)
         obj = ObjectType(identity)
         results: List[ObjectType] = []
 
-        transport = await UdpTransportTarget.create((self._host, self._port))
+        transport = await UdpTransportTarget.create((self._host, self._port),
+                                                    timeout=self._timeout, 
+                                                    retries=self._retries)
 
         objects = walk_cmd(
             self._snmp_engine,
@@ -182,7 +185,8 @@ class Snmp_v2c:
 
         oid = Snmp_v2c.resolve_oid(oid)
         
-        transport = await UdpTransportTarget.create((self._host, self._port))
+        transport = await UdpTransportTarget.create((self._host, self._port),
+                                                    timeout=self._timeout, retries=self._retries)
 
         try:
             snmp_value = value_type(value)

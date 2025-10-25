@@ -309,26 +309,21 @@ class ComplexArrayOps:
         """
         Pointwise complex reciprocal.
 
-        Useful for equalization: y[k] = 1 / (x[k] + j*0) with an optional epsilon to
-        avoid division by zero near deep nulls.
-
-        Parameters
-        ----------
-        eps : float, default 0.0
-            Optional small positive value added to the magnitude squared in the
-            denominator via x / (|x|^2 + eps) trick. If 0.0, uses true reciprocal.
-
-        Returns
-        -------
-        ComplexArrayOps
-            New instance y where y[k] ≈ conj(x[k]) / (|x[k]|^2 + eps).
+        If eps > 0, use exact 1/z for bins with power > eps, and a guarded form
+        conj(z)/( |z|^2 + eps ) only for near-zero bins. Runtime warnings for
+        divide/invalid are suppressed (results are unchanged).
         """
         z = self._z
-        if eps == 0.0:
-            y = 1.0 / z
+        if eps <= 0.0:
+            with np.errstate(divide="ignore", invalid="ignore"):
+                y = 1.0 / z
         else:
-            p = (z.real * z.real + z.imag * z.imag) + float(eps)
-            y = np.conjugate(z) / p
+            p = z.real * z.real + z.imag * z.imag
+            y = np.empty_like(z)
+            mask = p > float(eps)
+            with np.errstate(divide="ignore", invalid="ignore"):
+                y[mask] = 1.0 / z[mask]
+            y[~mask] = np.conjugate(z[~mask]) / (p[~mask] + float(eps))
         obj = object.__new__(ComplexArrayOps)
         obj._z = y
         return obj

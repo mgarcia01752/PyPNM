@@ -43,8 +43,8 @@ class IfftEchoDetectorDatasetInfo(BaseModel):
     """
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    subcarriers: int = Field(..., description="Number of frequency bins (N)")
-    snapshots: int = Field(..., description="Number of snapshots (M)")
+    subcarriers: int    = Field(..., description="Number of frequency bins (N)")
+    snapshots: int      = Field(..., description="Number of snapshots (M)")
 
     @field_validator("subcarriers", "snapshots")
     @classmethod
@@ -67,26 +67,26 @@ class IfftEchoReflectionModel(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
     # Peak indices (bins)
-    direct_index: int = Field(..., description="Index of the direct-path peak in |h|")
-    echo_index: int = Field(..., description="Index of the first echo peak in |h|")
+    direct_index: int   = Field(..., description="Index of the direct-path peak in |h|")
+    echo_index: int     = Field(..., description="Index of the first echo peak in |h|")
 
     # Times (seconds)
-    time_direct_s: float = Field(..., description="Time at direct-path peak (s)")
-    time_echo_s: float = Field(..., description="Time at echo peak (s)")
-    reflection_delay_s: float = Field(..., description="Echo delay relative to direct path (s)")
+    time_direct_s: float        = Field(..., description="Time at direct-path peak (s)")
+    time_echo_s: float          = Field(..., description="Time at echo peak (s)")
+    reflection_delay_s: float   = Field(..., description="Echo delay relative to direct path (s)")
 
     # Distance (meters, two-way path converted to one-way distance)
     reflection_distance_m: float = Field(..., description="Estimated echo distance (m, one-way)")
 
     # Amplitudes
-    amp_direct: float = Field(..., description="|h| at direct peak")
-    amp_echo: float = Field(..., description="|h| at echo peak")
-    amp_ratio: float = Field(..., description="amp_echo / amp_direct")
+    amp_direct: float   = Field(..., description="|h| at direct peak")
+    amp_echo: float     = Field(..., description="|h| at echo peak")
+    amp_ratio: float    = Field(..., description="amp_echo / amp_direct")
 
     # Parameters used
-    threshold_frac: float = Field(..., description="Fraction of main-peak magnitude used as threshold")
-    guard_bins: int = Field(..., description="Guard bins skipped after main peak")
-    max_delay_s: Optional[float] = Field(default=None, description="Optional max delay window for echo search (s)")
+    threshold_frac: float           = Field(..., description="Fraction of main-peak magnitude used as threshold")
+    guard_bins: int                 = Field(..., description="Guard bins skipped after main peak")
+    max_delay_s: Optional[float]    = Field(default=None, description="Optional max delay window for echo search (s)")
 
 
 class IfftEchoTimeResponseModel(BaseModel):
@@ -105,8 +105,8 @@ class IfftEchoTimeResponseModel(BaseModel):
     """
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    n_fft: int = Field(..., description="IFFT length actually used")
-    time_axis_s: FloatSeries = Field(..., description="Time axis (seconds), length n_fft")
+    n_fft: int                  = Field(..., description="IFFT length actually used")
+    time_axis_s: FloatSeries    = Field(..., description="Time axis (seconds), length n_fft")
     time_response: ComplexArray = Field(..., description="Complex impulse response as (re, im) pairs, length n_fft")
 
     @field_validator("time_axis_s", "time_response")
@@ -116,7 +116,6 @@ class IfftEchoTimeResponseModel(BaseModel):
         if n_fft is not None and len(v) != n_fft:
             raise ValueError(f"Length mismatch: expected {n_fft}, got {len(v)}")
         return v
-
 
 class IfftEchoDetectorModel(BaseModel):
     """Canonical serialized payload for IFFT echo analysis (first-echo variant).
@@ -134,11 +133,11 @@ class IfftEchoDetectorModel(BaseModel):
     # complex encoding declaration (serialized with alias "complex")
     complex_unit: Literal["[Real, Imaginary]"] = Field(COMPLEX_LITERAL, alias="complex", description="Complex encoding tag")
 
-    H_snap: List[ComplexArray] = Field(..., description="M×N snapshots of frequency response as (re, im) pairs")
-    H_avg: ComplexArray = Field(..., description="N-length coherent average as (re, im) pairs")
+    H_snap: List[ComplexArray]  = Field(..., description="M×N snapshots of frequency response as (re, im) pairs")
+    H_avg: ComplexArray         = Field(..., description="N-length coherent average as (re, im) pairs")
 
-    reflection: IfftEchoReflectionModel = Field(..., description="Detected direct path and first echo metrics")
-    time_response: Optional[IfftEchoTimeResponseModel] = Field(default=None, description="IFFT impulse response and time axis")
+    reflection: IfftEchoReflectionModel                 = Field(..., description="Detected direct path and first echo metrics")
+    time_response: Optional[IfftEchoTimeResponseModel]  = Field(default=None, description="IFFT impulse response and time axis")
 
     # Validators to ensure shapes & pairs
     @staticmethod
@@ -194,11 +193,11 @@ class IfftEchoPathModel(BaseModel):
     """
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    bin_index: int = Field(..., description="Sample index into |h(t)|")
-    time_s: float = Field(..., description="Time at this peak (s)")
-    amplitude: float = Field(..., description="|h| amplitude at this peak")
-    distance_m: float = Field(..., description="Estimated one-way distance (m)")
-    distance_ft: float = Field(..., description="Estimated one-way distance (ft)")
+    bin_index: int      = Field(..., description="Sample index into |h(t)|")
+    time_s: float       = Field(..., description="Time at this peak (s)")
+    amplitude: float    = Field(..., description="|h| amplitude at this peak")
+    distance_m: float   = Field(..., description="Estimated one-way distance (m)")
+    distance_ft: float  = Field(..., description="Estimated one-way distance (ft)")
 
 
 class IfftMultiEchoDetectionModel(BaseModel):
@@ -214,25 +213,25 @@ class IfftMultiEchoDetectionModel(BaseModel):
     channel_id: ChannelId = Field(..., description="OFDM downstream channel ID")
 
     # Analysis context
-    dataset_info: IfftEchoDetectorDatasetInfo = Field(..., description="Dataset shape metadata (N, M)")
-    sample_rate_hz: float = Field(..., description="Sampling rate (Hz)")
-    complex_unit: Literal["[Real, Imaginary]"] = Field(COMPLEX_LITERAL, alias="complex")
+    dataset_info: IfftEchoDetectorDatasetInfo   = Field(..., description="Dataset shape metadata (N, M)")
+    sample_rate_hz: float                       = Field(..., description="Sampling rate (Hz)")
+    complex_unit: Literal["[Real, Imaginary]"]  = Field(COMPLEX_LITERAL, alias="complex")
 
     # Cable / propagation
-    cable_type: CableType = Field(..., description="Cable type used to pick velocity factor")
-    velocity_factor: float = Field(..., description="Velocity factor actually used (fraction of c0)")
-    prop_speed_mps: float = Field(..., description="Propagation speed used (m/s)")
+    cable_type: CableType   = Field(..., description="Cable type used to pick velocity factor")
+    velocity_factor: float  = Field(..., description="Velocity factor actually used (fraction of c0)")
+    prop_speed_mps: float   = Field(..., description="Propagation speed used (m/s)")
 
     # Detected paths
-    direct_path: IfftEchoPathModel = Field(..., description="Strongest (direct) path")
+    direct_path: IfftEchoPathModel  = Field(..., description="Strongest (direct) path")
     echoes: List[IfftEchoPathModel] = Field(..., description="Detected echo peaks (sorted by amplitude)")
 
     # Parameters used
-    threshold_frac: float = Field(..., description="Threshold as fraction of |h| at direct path")
-    guard_bins: int = Field(..., description="Guard region after direct path (bins)")
-    min_separation_s: float = Field(..., description="Min separation between echoes (seconds)")
-    max_delay_s: Optional[float] = Field(default=None, description="Optional max search window after direct (s)")
-    max_peaks: int = Field(..., description="Maximum number of echoes to return (not counting direct)")
+    threshold_frac: float           = Field(..., description="Threshold as fraction of |h| at direct path")
+    guard_bins: int                 = Field(..., description="Guard region after direct path (bins)")
+    min_separation_s: float         = Field(..., description="Min separation between echoes (seconds)")
+    max_delay_s: Optional[float]    = Field(default=None, description="Optional max search window after direct (s)")
+    max_peaks: int                  = Field(..., description="Maximum number of echoes to return (not counting direct)")
 
     # Optional time response block (handy for clients that want to draw)
     time_response: Optional[IfftEchoTimeResponseModel] = Field(default=None)
@@ -433,18 +432,18 @@ class IfftEchoDetector:
         ratio = float(amp_e / amp0) if amp0 > 0 else 0.0
 
         return IfftEchoReflectionModel(
-            direct_index=i0,
-            echo_index=ie,
-            time_direct_s=t0,
-            time_echo_s=te,
-            reflection_delay_s=delay,
-            reflection_distance_m=dist,
-            amp_direct=amp0,
-            amp_echo=amp_e,
-            amp_ratio=ratio,
-            threshold_frac=float(threshold_frac),
-            guard_bins=int(guard_bins),
-            max_delay_s=float(max_delay_s) if max_delay_s is not None else None,
+            direct_index            =   i0,
+            echo_index              =   ie,
+            time_direct_s           =   t0,
+            time_echo_s             =   te,
+            reflection_delay_s      =   delay,
+            reflection_distance_m   =   dist,
+            amp_direct              =   amp0,
+            amp_echo                =   amp_e,
+            amp_ratio               =   ratio,
+            threshold_frac          =   float(threshold_frac),
+            guard_bins              =   int(guard_bins),
+            max_delay_s             =   float(max_delay_s) if max_delay_s is not None else None,
         )
 
     def detect_multiple_reflections(
@@ -537,12 +536,11 @@ class IfftEchoDetector:
         # direct path (reference at 0 distance)
         t0 = float(t[i0])
         direct = IfftEchoPathModel(
-            bin_index=i0,
-            time_s=t0,
-            amplitude=amp0,
-            distance_m=0.0,
-            distance_ft=0.0,
-        )
+            bin_index   =   i0,
+            time_s      =   t0,
+            amplitude   =   amp0,
+            distance_m  =   0.0,
+            distance_ft =   0.0,)
 
         # echoes
         echoes: List[IfftEchoPathModel] = []
@@ -553,12 +551,11 @@ class IfftEchoDetector:
             dist_ft = dist_m * FEET_PER_METER
             echoes.append(
                 IfftEchoPathModel(
-                    bin_index=int(ie),
-                    time_s=te,
-                    amplitude=float(mag[ie]),
-                    distance_m=float(dist_m),
-                    distance_ft=float(dist_ft),
-                )
+                    bin_index   =   int(ie),
+                    time_s      =   te,
+                    amplitude   =   float(mag[ie]),
+                    distance_m  =   float(dist_m),
+                    distance_ft =   float(dist_ft),)
             )
 
         # optional time-response block
@@ -572,22 +569,21 @@ class IfftEchoDetector:
 
         # NOTE: channel_id is not known to the detector; the caller should stamp it
         return IfftMultiEchoDetectionModel(
-            channel_id=ChannelId(-1),  # placeholder; orchestrator must update
-            dataset_info=IfftEchoDetectorDatasetInfo(subcarriers=self.N, snapshots=self.M),
-            sample_rate_hz=float(self.sample_rate),
-            complex=COMPLEX_LITERAL,  # alias
-            cable_type=cable_type,
-            velocity_factor=vf,
-            prop_speed_mps=prop_speed,
-            direct_path=direct,
-            echoes=echoes,
-            threshold_frac=float(threshold_frac),
-            guard_bins=int(guard_bins),
-            min_separation_s=float(min_separation_s),
-            max_delay_s=float(max_delay_s) if max_delay_s is not None else None,
-            max_peaks=int(max_peaks),
-            time_response=tr_block,
-        )
+            channel_id      =   ChannelId(-1),  # placeholder; orchestrator must update
+            dataset_info    =   IfftEchoDetectorDatasetInfo(subcarriers=self.N, snapshots=self.M),
+            sample_rate_hz  =   float(self.sample_rate),
+            complex         =   COMPLEX_LITERAL,  # alias
+            cable_type      =   cable_type,
+            velocity_factor =   vf,
+            prop_speed_mps  =   prop_speed,
+            direct_path     =   direct,
+            echoes          =   echoes,
+            threshold_frac  =   float(threshold_frac),
+            guard_bins      =   int(guard_bins),
+            min_separation_s    =   float(min_separation_s),
+            max_delay_s     =   float(max_delay_s) if max_delay_s is not None else None,
+            max_peaks       =   int(max_peaks),
+            time_response   =   tr_block,)
 
     def compute_freq_response(self, time_data: Sequence[complex]) -> NDArray[np.complex128]:
         """Compute H(f) = FFT{x(t)} for a time-domain sequence x(t)."""
@@ -617,29 +613,26 @@ class IfftEchoDetector:
         H_avg_pairs: ComplexArray = self._vec_to_pairs(self.H_avg)
 
         reflection = self.detect_reflection(
-            threshold_frac=threshold_frac,
-            guard_bins=guard_bins,
-            max_delay_s=max_delay_s,
-        )
+            threshold_frac  =   threshold_frac,
+            guard_bins      =   guard_bins,
+            max_delay_s     =   max_delay_s,)
 
         tr_block: Optional[IfftEchoTimeResponseModel] = None
         if include_time_response and self._time_axis is not None and self._time_response is not None and self._n_fft is not None:
             tr_block = IfftEchoTimeResponseModel(
-                n_fft=int(self._n_fft),
-                time_axis_s=[float(x) for x in self._time_axis.tolist()],
-                time_response=self._vec_to_pairs(self._time_response),
-            )
+                n_fft           =   int(self._n_fft),
+                time_axis_s     =   [float(x) for x in self._time_axis.tolist()],
+                time_response   =   self._vec_to_pairs(self._time_response),)
 
         return IfftEchoDetectorModel(
-            dataset_info=dataset,
-            sample_rate_hz=float(self.sample_rate),
-            prop_speed_mps=float(self.prop_speed),
-            complex=COMPLEX_LITERAL,
-            H_snap=H_snap_pairs,
-            H_avg=H_avg_pairs,
-            reflection=reflection,
-            time_response=tr_block,
-        )
+            dataset_info    =   dataset,
+            sample_rate_hz  =   float(self.sample_rate),
+            prop_speed_mps  =   float(self.prop_speed),
+            complex         =   COMPLEX_LITERAL,
+            H_snap          =   H_snap_pairs,
+            H_avg           =   H_avg_pairs,
+            reflection      =   reflection,
+            time_response   =   tr_block,)
 
     # Back-compat shim
     def to_dict(self) -> dict:

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
 
 import numpy as np
 from typing import List, Tuple, Optional, Literal, cast
@@ -15,32 +14,34 @@ from pypnm.lib.qam.types import (
 
 
 class QamLutManager:
-    """
-    Manage QAM LUT access for hard-decision points, codeword mapping,
-    and soft-decision scaling.
-
-    Assumptions
-    -----------
-    - self.qam_lut[qam_mod.name] is a dict with at least:
-        {
-          "hard": HardDecisionArray,            # list of (I,Q)
-          "code_words": { int: (I,Q), ... }     # codeword -> (I,Q)
-          "scale_factor": float                 # normalization constant
-        }
-    """
+    """Accessor/utility for QAM constellation LUTs (hard points, codewords, scaling)."""
 
     def __init__(self) -> None:
+        """Initialize the manager with the global QAM LUT."""
         self.qam_lut: LutDict = QAM_SYMBOL_CODEWORD_LUT
 
-    # -------------------------------------------------------------------------
-    # Core Accessors
-    # -------------------------------------------------------------------------
+    def _lut_key(self, qam_mod: QamModulation) -> str:
+        """Return the LUT key string for a modulation enum.
+
+        Args:
+            qam_mod: Modulation order enum.
+
+        Returns:
+            String key used in the LUT (e.g., "QAM_256").
+        """
+        return str(qam_mod.name)
+
     def get_hard_decisions(self, qam_mod: QamModulation) -> HardDecisionArray:
+        """Return the hard-decision constellation points for a modulation.
+
+        Args:
+            qam_mod: Modulation order enum.
+
+        Returns:
+            List of (I, Q) tuples.
         """
-        Return the constellation hard-decision points for the given modulation.
-        """
-        hd: HardDecisionArray = self.qam_lut[qam_mod.name.__str__()].get("hard", [])
-        return hd
+        key = self._lut_key(qam_mod)
+        return self.qam_lut[key].get("hard", [])
 
     def get_codeword_symbol(
         self,
@@ -49,12 +50,25 @@ class QamLutManager:
         *,
         bit_order: Literal["msb", "lsb"] = "msb",
     ) -> SymbolArray:
-        """
-        Map a packed integer `code_word` to one or more constellation symbols.
+        """Map a packed integer codeword to one or more constellation symbols.
 
-        Supports MSB-first or LSB-first bit unpacking.
+        For multi-symbol payloads, bits are split into chunks of size
+        bits-per-symbol in MSB-first or LSB-first order.
+
+        Args:
+            qam_mod: Modulation order enum.
+            code_word: Packed bits representing one or more symbols.
+            bit_order: "msb" for most-significant chunk first, "lsb" for least-significant.
+
+        Returns:
+            List of (I, Q) tuples (one per symbol).
+
+        Raises:
+            ValueError: Missing or malformed LUT.
+            KeyError: A sliced codeword is not present in the LUT.
         """
-        entry = self.qam_lut.get(qam_mod.name)
+        key = self._lut_key(qam_mod)
+        entry = self.qam_lut.get(key)
         if not entry or "code_words" not in entry:
             raise ValueError(f"Missing 'code_words' LUT for {qam_mod.name}")
 
@@ -72,12 +86,13 @@ class QamLutManager:
         symbols: SymbolArray = []
 
         if bit_order == "msb":
-            pad = (bits_per_symbol - (total_bits % bits_per_symbol)) % bits_per_symbol
-            value = code_word << pad
-            total_bits += pad
+            s = bin(code_word)[2:]
+            total_bits_padded = n_syms * bits_per_symbol
+            if len(s) < total_bits_padded:
+                s = "0" * (total_bits_padded - len(s)) + s
             for i in range(n_syms):
-                shift = total_bits - (i + 1) * bits_per_symbol
-                cw = (value >> shift) & mask
+                chunk = s[i * bits_per_symbol : (i + 1) * bits_per_symbol]
+                cw = int(chunk, 2)
                 symbols.append(self._lookup_symbol(lut, cw))
         else:
             value = code_word
@@ -88,42 +103,61 @@ class QamLutManager:
         return symbols
 
     def get_scale_factor(self, qam_mod: QamModulation) -> QamScale:
+        """Return the LUT-defined normalization scale factor.
+
+        Args:
+            qam_mod: Modulation order enum.
+
+        Returns:
+            Scale factor as float-like.
         """
-        Retrieve the modulation-specific scale factor used for normalization.
-        """
-        entry = self.qam_lut.get(qam_mod.name)
+        key = self._lut_key(qam_mod)
+        entry = self.qam_lut.get(key)
         return cast(QamScale, entry["scale_factor"])
 
     def scale_soft_decisions(
         self, qam_mod: QamModulation, soft: SoftDecisionArray
     ) -> SoftDecisionArray:
-        """
-        Scale soft-decision IQ points by the modulation-specific normalization factor.
+        """Scale soft-decision points by the modulation-specific factor.
+
+        Args:
+            qam_mod: Modulation order enum.
+            soft: Sequence of (I, Q) pairs.
+
+        Returns:
+            Normalized (I, Q) pairs.
+
+        Raises:
+            ValueError: Soft array is not shape (N, 2).
         """
         if not soft:
             return []
-
         scale = float(self.get_scale_factor(qam_mod))
         a = np.asarray(soft, dtype=np.float64)
         if a.ndim != 2 or a.shape[1] != 2:
-            raise ValueError(
-                f"soft must be a sequence of (I, Q) pairs; got shape {a.shape}"
-            )
+            raise ValueError(f"soft must be a sequence of (I, Q) pairs; got shape {a.shape}")
         a = a * scale
         return [(float(re), float(im)) for re, im in a]
 
-    # -------------------------------------------------------------------------
-    # NEW METHOD 1: Reverse lookup (symbol → codeword)
-    # -------------------------------------------------------------------------
     def get_symbol_codeword(
         self, qam_mod: QamModulation, symbol: Tuple[float, float]
     ) -> Optional[CodeWord]:
-        """
-        Reverse-map a constellation symbol `(I, Q)` to its corresponding codeword.
+        """Reverse map a constellation point to its codeword.
 
-        Performs exact match first, then nearest-neighbor search if necessary.
+        Tries exact match, then nearest neighbor with a small tolerance.
+
+        Args:
+            qam_mod: Modulation order enum.
+            symbol: (I, Q) point.
+
+        Returns:
+            Codeword if found, else None.
+
+        Raises:
+            ValueError: Missing or malformed LUT.
         """
-        entry = self.qam_lut.get(qam_mod.name)
+        key = self._lut_key(qam_mod)
+        entry = self.qam_lut.get(key)
         if not entry or "code_words" not in entry:
             raise ValueError(f"No LUT 'code_words' found for {qam_mod.name}")
 
@@ -136,7 +170,6 @@ class QamLutManager:
             if i_in == i_ref and q_in == q_ref:
                 return codeword
 
-        # Fallback: nearest neighbor in Euclidean space
         ref_points = np.array(list(lut.values()), dtype=np.float64)
         code_keys = np.array(list(lut.keys()), dtype=np.int32)
         deltas = ref_points - np.array([i_in, q_in])
@@ -144,36 +177,47 @@ class QamLutManager:
         nearest_idx = int(np.argmin(dist_sq))
         min_dist = float(np.sqrt(dist_sq[nearest_idx]))
 
-        tol = np.mean(np.diff(np.unique(ref_points.flatten()))) * 0.05
+        flat = np.unique(ref_points.flatten())
+        if flat.size >= 2:
+            spacing = np.mean(np.diff(flat))
+            tol = spacing * 0.05
+        else:
+            tol = 0.0
+
         if min_dist <= tol:
             return int(code_keys[nearest_idx])
         return None
 
-    # -------------------------------------------------------------------------
-    # NEW METHOD 2: Auto-detect modulation order
-    # -------------------------------------------------------------------------
     def infer_modulation_order(
         self, samples: SymbolArray, threshold: float = 0.15
     ) -> QamModulation:
-        """
-        Infer the most probable QAM modulation order from constellation samples.
+        """Heuristically infer the QAM order from constellation samples.
 
-        Uses cluster counting and spacing analysis to approximate known orders.
+        Normalizes radius, snaps to a coarse grid, counts clusters, and chooses
+        the known order with closest point count. Returns UNKNOWN on mismatch.
+
+        Args:
+            samples: Constellation samples [(I, Q), ...].
+            threshold: Grid step after normalization.
+
+        Returns:
+            Estimated QamModulation value (or UNKNOWN).
         """
         if not samples:
             return QamModulation.UNKNOWN
 
         pts = np.asarray(samples, dtype=np.float64)
         if pts.ndim != 2 or pts.shape[1] != 2:
-            raise ValueError(f"Invalid sample shape {pts.shape}; expected Nx2 array")
-
-        norm = np.mean(np.sqrt(np.sum(pts**2, axis=1)))
-        if norm <= 0:
             return QamModulation.UNKNOWN
-        pts /= norm
+
+        norms = np.sqrt(np.sum(pts**2, axis=1))
+        m = float(np.mean(norms)) if norms.size else 0.0
+        if not np.isfinite(m) or m <= 0.0:
+            return QamModulation.UNKNOWN
+        pts = pts / m
 
         grid = np.round(pts / threshold) * threshold
-        unique_clusters = len(np.unique(grid, axis=0))
+        unique_clusters = int(len(np.unique(grid, axis=0)))
 
         mapping = {
             2:      QamModulation.QAM_2,
@@ -194,25 +238,30 @@ class QamLutManager:
             65536:  QamModulation.QAM_65536,
         }
 
+        closest_order, est_mod = min(
+            mapping.items(), key=lambda kv: abs(unique_clusters - kv[0])
+        )
 
-        best_match = min(mapping.items(), key=lambda kv: abs(unique_clusters - kv[0]))
-        est_mod = best_match[1]
-        expected_points = best_match[0]
-        diff_ratio = abs(unique_clusters - expected_points) / expected_points
-
+        diff_ratio = abs(unique_clusters - closest_order) / float(closest_order)
         if diff_ratio > 0.25:
             return QamModulation.UNKNOWN
         return est_mod
 
-    # -------------------------------------------------------------------------
-    # Helpers
-    # -------------------------------------------------------------------------
     @staticmethod
     def _infer_bits_per_symbol(keys_sorted: List[int]) -> int:
-        """
-        Infer bits-per-symbol from LUT keys.
+        """Infer bits-per-symbol from LUT codeword keys.
 
-        Prefers dense keyspaces [0 .. 2^k - 1].
+        Prefers dense key spaces [0 .. 2**k - 1]; otherwise uses the bit length
+        of the largest key.
+
+        Args:
+            keys_sorted: Sorted list of codeword integers.
+
+        Returns:
+            Bits per symbol.
+
+        Raises:
+            ValueError: Empty key list.
         """
         if not keys_sorted:
             raise ValueError("Cannot infer bits/symbol from empty key set")
@@ -227,8 +276,17 @@ class QamLutManager:
 
     @staticmethod
     def _lookup_symbol(lut: dict, cw: int):
-        """
-        Safe LUT lookup with a clear error if a codeword isn't present.
+        """Return (I, Q) for a codeword or raise a clear KeyError.
+
+        Args:
+            lut: Mapping codeword -> (I, Q).
+            cw: Codeword to resolve.
+
+        Returns:
+            (I, Q) tuple.
+
+        Raises:
+            KeyError: Codeword not in LUT.
         """
         try:
             return lut[cw]

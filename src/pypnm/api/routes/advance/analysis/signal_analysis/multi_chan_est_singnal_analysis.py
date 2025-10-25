@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.ifft import (
     IfftEchoDetector,
-    IfftMultiEchoDetectionModel,  # NEW
+    IfftMultiEchoDetectionModel,
 )
 from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.phase_slope import (
     PhaseSlopeEchoDetector,

@@ -6,9 +6,9 @@ from __future__ import annotations
 from typing import Tuple, List, Dict, Final, Optional
 import numpy as np
 
-from pypnm.lib.types import ArrayLike, NDArrayF64
+from pypnm.lib.types import ArrayLike, FloatSeries, NDArrayF64
 
-__all__: Final = ["LinearRegression1D"]  # explicit public surface
+__all__: Final = ["LinearRegression1D"]
 
 class LinearRegression1D:
     """
@@ -116,7 +116,7 @@ class LinearRegression1D:
     # Public API
     # --------------------------
 
-    def to_list(self) -> List[float]:
+    def to_list(self) -> FloatSeries:
         """Return `[slope, intercept, r2]` for compact consumption."""
         return [self.slope, self.intercept, self.r2]
 

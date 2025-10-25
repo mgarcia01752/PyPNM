@@ -9,7 +9,7 @@ from typing import ClassVar, Dict, List, Union, cast
 
 import numpy as np
 
-from pypnm.lib.types import SNRdB, SNRln
+from pypnm.lib.types import FloatSeries, SNRdB, SNRln
 from pypnm.pnm.process.CmDsOfdmModulationProfile import ModulationOrderType
 
 BitsPerSymbol       = int
@@ -130,7 +130,7 @@ class Shannon:
         return cast(SNRdB, 10 * math.log10(snr_linear))
     
     @staticmethod
-    def snr_to_limit(snr: Union[float, List[float], np.ndarray]) -> List[BitsPerSymbol]:
+    def snr_to_limit(snr: Union[float, FloatSeries, np.ndarray]) -> List[BitsPerSymbol]:
         """
         Calculate the Shannon capacity limit (bits/s/Hz) for given SNR value(s),
         rounding down to the nearest whole bit (since fractional bits aren't realizable).

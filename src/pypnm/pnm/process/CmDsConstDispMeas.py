@@ -7,7 +7,6 @@ from __future__ import annotations
 import logging
 from struct import unpack, calcsize
 from typing import Optional, Dict
-import json
 
 from pydantic import Field
 
