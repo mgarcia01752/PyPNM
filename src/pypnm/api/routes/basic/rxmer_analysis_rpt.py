@@ -18,9 +18,8 @@ from pypnm.api.routes.common.classes.analysis.model.schema import DsRxMerAnalysi
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.format_string import Format
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
-from pypnm.lib.numeric_scaler import NumericScaler
 from pypnm.lib.signal_processing.shan.series import Shannon
-from pypnm.lib.types import ArrayLike, FloatSeries, IntSeries
+from pypnm.lib.types import ArrayLike, FloatSeries, FrequencySeriesHz, IntSeries
 
 class RxMerParametersAnalysisRpt(BaseModel):
     """
@@ -63,10 +62,10 @@ class RxMerAnalysisReport(AnalysisReport):
             model = cast(RxMerAnalysisRptModel, common_model)
             chan = model.channel_id
 
-            x:FloatSeries   = model.raw_x
-            y:FloatSeries   = model.raw_y
-            sh:FloatSeries  = model.parameters.shannon_limit_db
-            rl:FloatSeries  = model.parameters.regression_line
+            x:FrequencySeriesHz   = cast(FrequencySeriesHz, model.raw_x)
+            y:FloatSeries           = model.raw_y
+            sh:FloatSeries          = model.parameters.shannon_limit_db
+            rl:FloatSeries          = model.parameters.regression_line
 
             """
             Single Channel Capture
