@@ -1,19 +1,21 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from typing import List, Tuple, Union
+from __future__ import annotations
+
+from typing import List, NewType, Tuple, Union
 import logging
 
 from pypnm.lib.types import ComplexArray, ComplexSeries
 
 logger = logging.getLogger(__name__)
 
+IntegerBits     = NewType("IntegerBits", int)
+FractionalBits  = NewType("FractionalBits", int)
+
 class FixedPointDecoder:
     @staticmethod
-    def decode_fixed_point(value: int, q_format: Tuple[int, int], signed: bool = True) -> float:
+    def decode_fixed_point(value: int, q_format: Tuple[IntegerBits, FractionalBits], signed: bool = True) -> float:
         """
         Converts a fixed-point integer value to a floating-point number using the specified Q-format.
 
@@ -38,7 +40,7 @@ class FixedPointDecoder:
         return value / (2 ** frac_bits)
 
     @staticmethod
-    def decode_complex_data(data: bytes, q_format: Tuple[int, int], signed: bool = True, output_type: Union[ComplexSeries, ComplexArray] = ComplexSeries ) -> ComplexSeries:
+    def decode_complex_data(data: bytes, q_format: Tuple[IntegerBits, FractionalBits], signed: bool = True,) -> ComplexSeries:
         """
         Decodes a binary byte stream containing fixed-point complex numbers into a list of Python complex numbers.
 

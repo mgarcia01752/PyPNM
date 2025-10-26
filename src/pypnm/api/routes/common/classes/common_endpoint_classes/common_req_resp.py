@@ -9,7 +9,6 @@ from pydantic import BaseModel, Field, field_validator
 from pypnm.api.routes.advance.common.operation_state import OperationState
 from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import AnalysisType, OutputType
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.api.routes.docs.pnm.files.service import FileType
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_snmp import SNMPConfig
 from pypnm.lib.mac_address import MacAddress

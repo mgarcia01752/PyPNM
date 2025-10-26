@@ -135,12 +135,12 @@ class GroupDelay:
         """
         self._H = self._as_complex_array(H, name="H")  # convert once; canonical complex128 vector
         n = self._H.size
-        self._freq_hz, self._df_hz = self._resolve_freq_inputs(freq_hz, df_hz, n)
-        self._f0_hz = float(f0_hz)
-        self._active_mask = self._resolve_mask(active_mask, n)
-        self._unwrap = bool(unwrap)
-        self._edge_order = 2 if edge_order not in (1, 2) else edge_order
-        self._smooth_win = self._validate_smooth_win(smooth_win)
+        self._freq_hz, self._df_hz  = self._resolve_freq_inputs(freq_hz, df_hz, n)
+        self._f0_hz                 = float(f0_hz)
+        self._active_mask           = self._resolve_mask(active_mask, n)
+        self._unwrap                = bool(unwrap)
+        self._edge_order            = 2 if edge_order not in (1, 2) else edge_order
+        self._smooth_win            = self._validate_smooth_win(smooth_win)
 
         # Outputs
         self.phase_rad: np.ndarray

@@ -1,8 +1,7 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+from __future__ import annotations
 
 from enum import Enum, auto
 import logging
@@ -18,11 +17,12 @@ try:
     from pysnmp.proto.rfc1902 import OctetString
 except ImportError:
     OctetString = None
+
 class MacAddressFormat(Enum):
-    FLAT = auto()      # e.g., '001a2b3c4d5e'
-    CISCO = auto()     # e.g., '001a.2b3c.4d5e'
-    COLON = auto()     # e.g., '00:1a:2b:3c:4d:5e'
-    HYPHEN = auto()    # e.g., '00-1a-2b-3c-4d-5e'
+    FLAT    = auto()    # e.g., '001a2b3c4d5e'
+    CISCO   = auto()    # e.g., '001a.2b3c.4d5e'
+    COLON   = auto()    # e.g., '00:1a:2b:3c:4d:5e'
+    HYPHEN  = auto()    # e.g., '00-1a-2b-3c-4d-5e'
 
 class MacAddress:
     def __init__(self, mac_address: Union[str, bytes, bytearray, 'OctetString']) -> None: # type: ignore
@@ -60,7 +60,7 @@ class MacAddress:
 
             self._mac = mac_address.lower()
         else:
-            raise TypeError(f"Unsupported type for mac_address: {type(mac_address).__name__}")
+            raise TypeError(f"Unsupported type for mac_address: {type(mac_address).__name__} -> value: {mac_address}")
 
     def is_equal(self, other: 'MacAddress') -> bool:
         """
@@ -122,7 +122,7 @@ class MacAddress:
             return hex_str
 
         elif fmt == MacAddressFormat.COLON:
-            return cast(MacAddressStr, ':'.join(hex_str[i:i+2] for i in range(0, 12, 2)))
+            return  cast(MacAddressStr, ':'.join(hex_str[i:i+2] for i in range(0, 12, 2)))
         
         elif fmt == MacAddressFormat.HYPHEN:
             return cast(MacAddressStr, '-'.join(hex_str[i:i+2] for i in range(0, 12, 2)))

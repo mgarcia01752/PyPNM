@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, cast
+from typing import Any, Dict, List, cast
 
 from fastapi import APIRouter
 
@@ -25,7 +25,8 @@ from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.ds.ofdm.rxmer.service import CmDsOfdmRxMerService
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.lib.dict_utils import NestedDictCleaner
+from pypnm.docsis.cm_snmp_operation import DocsPnmCmDsOfdmRxMerEntry
+from pypnm.lib.dict_utils import DictUtils
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -70,10 +71,13 @@ class RxMerRouter:
 
             service: CmDsOfdmRxMerService = CmDsOfdmRxMerService(cm, (tftpv4,tftpv6))
             msg_rsp: MessageResponse = await service.set_and_go()
-
+            
             if msg_rsp.status != ServiceStatusCode.SUCCESS:
                 err = "Unable to complete RxMER measurement."
                 return SnmpResponse(mac_address=mac, message=err, status=msg_rsp.status)
+
+            measurement_stats:List[DocsPnmCmDsOfdmRxMerEntry] = \
+                cast(List[DocsPnmCmDsOfdmRxMerEntry], await service.getPnmMeasurementStatistics())
 
             cps = CommonProcessService(msg_rsp)
             msg_rsp = cps.process()
@@ -84,10 +88,11 @@ class RxMerRouter:
                 payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
                 
                 # Clean up payload by removing unneeded or redundant sections
-                NestedDictCleaner.pop_keys_recursive(payload, ["pnm_header", "modulations", "snr_db_values"])
+                DictUtils.pop_keys_recursive(payload, ["pnm_header", "modulations", "snr_db_values"])
                 primative = msg_rsp.payload_to_dict('primative')
-                NestedDictCleaner.pop_keys_recursive(primative, ["device_details", "modulation_statistics"])
+                DictUtils.pop_keys_recursive(primative, ["device_details", "modulation_statistics"])
                 payload.update(primative)
+                payload.update(DictUtils.models_to_nested_dict(measurement_stats, 'measurement_stats',))
 
                 return PnmAnalysisResponse(
                     mac_address =   mac,

@@ -9,14 +9,14 @@ from typing import Any, Dict
 
 from pydantic.fields import Field
 
-from pypnm.lib.constants import KHZ
-from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_SUB_CARRIER_ZERO_FREQ, KHZ
+from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.signal_processing.shan.series import ShannonSeries
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
 from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
-from pypnm.lib.types import FloatSeries, FrequencySeriesHz, MacAddressStr
+from pypnm.lib.types import ChannelId, FloatSeries, FrequencyHz, FrequencySeriesHz, MacAddressStr
 
 class CmDsOfdmRxMerModel(PnmBaseModel):
     data_length: int                        = Field(..., ge=0, description="Number of RxMER points (subcarriers)")
@@ -37,12 +37,12 @@ class CmDsOfdmRxMer(PnmHeader):
         self.logger = logging.getLogger(self.__class__.__name__)
         self._rxmer_model:CmDsOfdmRxMerModel
 
-        self._channel_id: int                     = 0
-        self._mac_address: MacAddressStr          = MacAddress.null()
-        self._subcarrier_zero_frequency: int      = 0
-        self._first_active_subcarrier_index: int  = 0
-        self._subcarrier_spacing: int             = 0
-        self._rxmer_data_length: int              = 0
+        self._channel_id: ChannelId                     = INVALID_CHANNEL_ID
+        self._mac_address: MacAddressStr                = MacAddress.null()
+        self._subcarrier_zero_frequency: FrequencyHz    = INVALID_SUB_CARRIER_ZERO_FREQ
+        self._first_active_subcarrier_index: int        = 0
+        self._subcarrier_spacing: int                   = 0
+        self._rxmer_data_length: int                    = 0
         self._rxmer_data: bytes
         self._rx_mer_float_data: FloatSeries      = []
 
@@ -68,7 +68,7 @@ class CmDsOfdmRxMer(PnmHeader):
             unpacked_data = struct.unpack(rxmer_data_format, self.pnm_data[:head_len])
 
             self._channel_id                     = unpacked_data[0]
-            self._mac_address                    = ':'.join(f'{b:02x}' for b in unpacked_data[1])
+            self._mac_address                    = MacAddress(unpacked_data[1]).to_mac_format(MacAddressFormat.COLON)
             self._subcarrier_zero_frequency      = unpacked_data[2]
             self._first_active_subcarrier_index  = unpacked_data[3]
             self._subcarrier_spacing             = unpacked_data[4] * KHZ

@@ -11,9 +11,8 @@ import math
 import os
 from pathlib import Path
 import shutil
-from time import sleep
 import time
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, TypeAlias, Union, cast
 from typing_extensions import deprecated
 
 from pydantic import BaseModel
@@ -29,7 +28,8 @@ from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import (
-    DocsPnmBulkFileUploadStatus, DocsPnmCmCtlStatus, FecSummaryType, MeasStatusType)
+    DocsPnmBulkFileUploadStatus, DocsPnmCmCtlStatus, FecSummaryType)
+from pypnm.docsis.data_type.enums import MeasStatusType
 from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
@@ -50,6 +50,12 @@ class MeasureServiceReturnTypes(Enum):
     BASE_MODEL = auto()
     DICT = auto()
 
+MeasurementEntry: TypeAlias = Union[
+    DocsPnmCmOfdmChanEstCoefEntry,
+    DocsPnmCmDsConstDispMeasEntry,
+    DocsPnmCmDsOfdmRxMerEntry,
+    DocsPnmCmUsPreEqEntry,
+]
 class CommonMeasureService(CommonMessagingService):
     """
     Base service class for executing common Proactive Network Maintenance (PNM) measurement tests.
@@ -82,6 +88,7 @@ class CommonMeasureService(CommonMessagingService):
                  **extra_options):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.propagate = True
         
         self.pnm_filename:List[str]
         
@@ -279,10 +286,30 @@ class CommonMeasureService(CommonMessagingService):
             bool: True if the modem responds to SNMP queries, False otherwise.
         """
         return await self.cm.is_snmp_reachable()
+    
+    async def getPnmMeasurementStatistics(self) -> List[MeasurementEntry]:
+        """
+        Retrieve PNM measurement entries for the currently configured `pnm_test_type`.
 
-    async def getPnmMeasurementStatistics(self) -> List[Any]:
-        
-        entries:List[Any] = []
+        Returns
+        -------
+        List[MeasurementEntry]
+            A (possibly empty) list of model instances corresponding to the active
+            test type:
+            - DS_OFDM_CHAN_EST_COEF       → List[DocsPnmCmOfdmChanEstCoefEntry]
+            - DS_CONSTELLATION_DISP       → List[DocsPnmCmDsConstDispMeasEntry]
+            - DS_OFDM_RXMER_PER_SUBCAR    → List[DocsPnmCmDsOfdmRxMerEntry]
+            - US_PRE_EQUALIZER_COEF       → List[DocsPnmCmUsPreEqEntry]
+            For other (stub/unsupported) test types, an empty list is returned.
+
+        Notes
+        -----
+        - This method performs no aggregation; it returns the raw per-entry models
+        fetched from the cable modem for the selected measurement type.
+        - For strict typing, concrete lists are cast to `List[MeasurementEntry]`
+        at return points (because `List` is invariant in the type system).
+        """
+        entries: List[MeasurementEntry] = []
 
         if self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
             self.logger.warning(f"{self.log_prefix} - Stub handler: SPECTRUM_ANALYZER")
@@ -292,29 +319,29 @@ class CommonMeasureService(CommonMessagingService):
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF:
             self.logger.info(f"{self.log_prefix} - Running OFDM Channel Estimation Coefficient collection")
-            entries: List[DocsPnmCmOfdmChanEstCoefEntry] = await self.cm.getDocsPnmCmOfdmChanEstCoefEntry()
-            return entries
+            concrete = await self.cm.getDocsPnmCmOfdmChanEstCoefEntry()
+            return cast(List[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_CONSTELLATION_DISP:
             self.logger.info(f"{self.log_prefix} - Running OFDM Constellation Display collection")
-            entries: List[DocsPnmCmDsConstDispMeasEntry] = await self.cm.getDocsPnmCmDsConstDispMeasEntry()
-            return entries
+            concrete = await self.cm.getDocsPnmCmDsConstDispMeasEntry()
+            return cast(List[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR:
             self.logger.info(f"{self.log_prefix} - Running RXMER entry collection")
-            entries: List[DocsPnmCmDsOfdmRxMerEntry] = await self.cm.getDocsPnmCmDsOfdmRxMerEntry()
-            return entries
+            concrete = await self.cm.getDocsPnmCmDsOfdmRxMerEntry()
+            return cast(List[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CODEWORD_ERROR_RATE:
             self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_CODEWORD_ERROR_RATE")
-            
+
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_HISTOGRAM:
             self.logger.warning(f"{self.log_prefix} - Stub handler: DS_HISTOGRAM")
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF:
             self.logger.info(f"{self.log_prefix} - Running Upstream Pre-Equalization entry collection")
-            entries: List[DocsPnmCmUsPreEqEntry] = await self.cm.getDocsPnmCmUsPreEqEntry()
-            return entries
+            concrete = await self.cm.getDocsPnmCmUsPreEqEntry()
+            return cast(List[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_MODULATION_PROFILE:
             self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_MODULATION_PROFILE")
@@ -327,9 +354,8 @@ class CommonMeasureService(CommonMessagingService):
 
         else:
             self.logger.warning(f"{self.log_prefix} - Unknown PNM test type: {self.pnm_test_type}")
-            
-        return entries
 
+        return entries
 
     @deprecated("Use getPnmMeasurementStatistics()")
     async def get_pnm_measurement_statistics(self, pnm_test_type: DocsPnmCmCtlTest = None, 
@@ -429,7 +455,7 @@ class CommonMeasureService(CommonMessagingService):
     # Private Methods #
     ###################
     
-    def _get_and_move_pnm_file(self, pnm_file_name: str) -> bool:
+    async def _get_and_move_pnm_file(self, pnm_file_name: str) -> bool:
         """
         Retrieves and moves the specified PNM file based on the configured retrieval method.
 
@@ -452,7 +478,7 @@ class CommonMeasureService(CommonMessagingService):
 
         try:
             if method == "local":
-                return self._handle_local_fetch(pnm_file_name)
+                return await self._handle_local_fetch(pnm_file_name)
             elif method == "tftp":
                 return self._handle_tftp_fetch(pnm_file_name)
             elif method == "ftp":
@@ -586,7 +612,7 @@ class CommonMeasureService(CommonMessagingService):
                 self.logger.info(f"{self.log_prefix} - PNM status: {str(status_pnmfiles).upper()} - count: {count}")
                 if status_pnmfiles == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
                     count += 1
-                    sleep(1)
+                    await asyncio.sleep(1)
                     continue                
                 
                 if status_pnmfiles == DocsPnmCmCtlStatus.READY:
@@ -608,7 +634,7 @@ class CommonMeasureService(CommonMessagingService):
                 self.logger.info(f"{self.log_prefix} - MeasureStatus: {meas_status.name}")
                 if meas_status == MeasStatusType.SAMPLE_READY:
                     break
-                sleep(1)
+                await asyncio.sleep(1)
                 wait_count += 1
                 
             else:
@@ -625,7 +651,7 @@ class CommonMeasureService(CommonMessagingService):
                     return status
                 
                 # Get and copy PNM file to local data directory
-                if not self._get_and_move_pnm_file(pnm_fname):
+                if not await self._get_and_move_pnm_file(pnm_fname):
                     self.logger.error(f"{self.log_prefix} - Uanble to copy PNM file to local {self.save_dir} dir")
                     return ServiceStatusCode.COPY_PNM_FILE_TO_LOCAL_SAVE_DIR_FAILED
                 
@@ -812,7 +838,7 @@ class CommonMeasureService(CommonMessagingService):
             
             await asyncio.sleep(1)
            
-    def _handle_local_fetch(self, pnm_file_name: str) -> bool:
+    async def _handle_local_fetch(self, pnm_file_name: str) -> bool:
         """
         Handles copying a specified PNM file from a local source directory to a configured save directory.
 
@@ -842,7 +868,7 @@ class CommonMeasureService(CommonMessagingService):
             return False
 
         while True:
-            sleep(1)
+            await asyncio.sleep(1)
             file_found = False
             for filename in os.listdir(src_dir):
                 if filename == pnm_file_name:

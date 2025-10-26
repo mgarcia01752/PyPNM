@@ -1,5 +1,5 @@
 # Python API
 
-# [SNMP](../python/snmp/index.md)
+# [SNMP](snmp/index.md)
 
-# [PNM](../python/pnm/index.md)
+# [PNM](pnm/index.md)

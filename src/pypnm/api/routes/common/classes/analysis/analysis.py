@@ -33,7 +33,7 @@ from pypnm.lib.signal_processing.averager import MovingAverage
 from pypnm.lib.signal_processing.complex_array_ops import ComplexArrayOps
 from pypnm.lib.signal_processing.group_delay import GroupDelay
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
-from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, FrequencySeriesHz
+from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, FrequencyHz, FrequencySeriesHz
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import WindowFunction
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
@@ -492,10 +492,10 @@ class Analysis:
         ValueError
             If required parameters are missing/negative, or ``values`` is empty.
         """
-        subcarrier_spacing: int             = measurement.get("subcarrier_spacing",            INVALID_START_VAULE)
-        first_active_subcarrier_index: int  = measurement.get("first_active_subcarrier_index", INVALID_START_VAULE)
-        subcarrier_zero_frequency: int      = measurement.get("subcarrier_zero_frequency",     INVALID_START_VAULE)
-        occupied_channel_bandwidth: int     = measurement.get("occupied_channel_bandwidth",    INVALID_START_VAULE)
+        subcarrier_spacing: int                         = measurement.get("subcarrier_spacing",            INVALID_START_VAULE)
+        first_active_subcarrier_index: int              = measurement.get("first_active_subcarrier_index", INVALID_START_VAULE)
+        subcarrier_zero_frequency: FrequencySeriesHz    = measurement.get("subcarrier_zero_frequency",     INVALID_START_VAULE)
+        occupied_channel_bandwidth: int                 = measurement.get("occupied_channel_bandwidth",    INVALID_START_VAULE)
 
         if (first_active_subcarrier_index < 0) or (subcarrier_zero_frequency < 0) or (subcarrier_spacing <= 0):
             raise ValueError(
@@ -507,11 +507,13 @@ class Analysis:
         if not values:
             raise ValueError("No complex channel estimation values provided in measurement.")
 
-        start_freq: int     = (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency
-        freqs: List[int]    = [start_freq + (i * subcarrier_spacing) for i in range(len(values))]
+        start_freq: FrequencyHz     = (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency
+        freqs: FrequencySeriesHz    = [start_freq + (i * subcarrier_spacing) for i in range(len(values))]
 
         # Group delay calculation
-        gd          = GroupDelay.from_channel_estimate(Hhat=values, df_hz=subcarrier_spacing, f0_hz=start_freq)
+        gd          = GroupDelay.from_channel_estimate(Hhat     =   values, 
+                                                       df_hz    =   subcarrier_spacing, 
+                                                       f0_hz    =   start_freq)
         gd_results  = gd.to_result()
 
         # Per-subcarrier magnitudes (power in dB from complex coefficients)

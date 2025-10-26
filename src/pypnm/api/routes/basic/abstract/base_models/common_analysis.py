@@ -4,10 +4,10 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from typing import List,Tuple, Union
+from typing import Union
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.lib.types import ChannelId
+from pypnm.lib.types import ChannelId, ComplexArray, FloatSeries, IntSeries
 
 class CommonAnalysis(BaseModel):
     """
@@ -29,7 +29,7 @@ class CommonAnalysis(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
-    channel_id: ChannelId                   = Field(..., description="Channel ID")
-    raw_x: List[Union[int , float]]         = Field(default=[], description="Typically Frequency or index")
-    raw_y: List[Union[int , float]]         = Field(default=[], description="Typically Magnitude (dB/sec)")
-    raw_complex: List[Tuple[float, float]]  = Field(default=[], description="Optional complex series aligned to raw_x/raw_y")
+    channel_id: ChannelId                 = Field(..., description="Channel ID")
+    raw_x: Union[FloatSeries, IntSeries]  = Field(default=[], description="Typically Frequency or index")
+    raw_y: Union[FloatSeries, IntSeries]  = Field(default=[], description="Typically Magnitude (dB/sec)")
+    raw_complex: ComplexArray             = Field(default=[], description="Optional complex series aligned to raw_x/raw_y")

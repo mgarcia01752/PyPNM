@@ -28,6 +28,7 @@ from pypnm.docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChan
 from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst
 from pypnm.docsis.data_type.InterfaceStats import InterfaceStats
 from pypnm.docsis.data_type.OfdmProfiles import OfdmProfiles
+from pypnm.docsis.data_type.enums import MeasStatusType
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmMerMarEntry import DocsPnmCmDsOfdmMerMarEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
@@ -77,22 +78,6 @@ class DocsPnmBulkFileUploadStatus(Enum):
 
     def __str__(self):
         return super().__str__()
-
-class MeasStatusType(Enum):
-    """
-    Enumeration of measurement status types as defined in DOCSIS 3.1 CM-OSSI.
-    """
-    OTHER = 1                     # Any state not described below
-    INACTIVE = 2                  # Test not started or in progress
-    BUSY = 3                      # Test is in progress
-    SAMPLE_READY = 4              # Test completed, data ready
-    ERROR = 5                     # Error occurred, data may be invalid
-    RESOURCE_UNAVAILABLE = 6      # Test could not start due to lack of resources
-    SAMPLE_TRUNCATED = 7          # Requested data exceeds supported file size
-    INTERFACE_MODIFICATION = 8    # Interface numbering changed due to DBC or primary backup switch
-   
-    def __str__(self) -> str:
-        return self.name.lower()    
 
 class DocsPnmCmCtlStatus(Enum):
     """
@@ -1364,26 +1349,37 @@ class CmSnmpOperation:
 
     async def getDocsPnmCmDsOfdmRxMerEntry(self) -> List[DocsPnmCmDsOfdmRxMerEntry]:
         """
-        Retrieves RxMER data entries for all downstream OFDM channels.
-        
-        Returns:
-            List[DocsPnmCmDsOfdmRxMerEntry]: A list of RxMER entry models.
-        """
-        entries: List[DocsPnmCmDsOfdmRxMerEntry] = []
+        Retrieve RxMER (per-subcarrier) entries for all downstream OFDM channels.
 
+        Returns
+        -------
+        List[DocsPnmCmDsOfdmRxMerEntry]
+            A list of Pydantic models with values already coerced to floats
+            where appropriate (e.g., dB fields scaled by 1/100).
+        """
+        self.logger.info('Entering into -> getDocsPnmCmDsOfdmRxMerEntry()')
+        entries: List[DocsPnmCmDsOfdmRxMerEntry] = []
         try:
             indices = await self.getDocsIf31CmDsOfdmChannelIdIndex()
 
             if not indices:
                 self.logger.warning("No DocsIf31CmDsOfdmChanChannelIdIndex indices found.")
                 return entries
-            self.logger.debug(f'Index: {indices}')
-            entries = await DocsPnmCmDsOfdmRxMerEntry.get(snmp=self._snmp, indices=indices)
+
+            # De-dupe and sort for predictable iteration (optional but nice for logs)
+            unique_indices = sorted(set(int(i) for i in indices))
+            self.logger.info(f"RxMER fetch: indices={unique_indices}")
+
+            entries = await DocsPnmCmDsOfdmRxMerEntry.get(snmp=self._snmp, indices=unique_indices)
+
+            # Helpful summary log—count only; detailed per-field logs happen in the entry fetcher
+            self.logger.info("RxMER fetch complete: %d entries", len(entries))
+            return entries
 
         except Exception as e:
-            self.logger.exception("Failed to retrieve DocsPnmCmDsOfdmRxMerEntry entries")
-
-        return entries
+            # Keep the exception in logs for debugging (stacktrace included)
+            self.logger.exception("Failed to retrieve DocsPnmCmDsOfdmRxMerEntry entries: %s", e)
+            return entries
 
     async def getDocsPnmCmOfdmChanEstCoefEntry(self) -> List[DocsPnmCmOfdmChanEstCoefEntry]:
         """

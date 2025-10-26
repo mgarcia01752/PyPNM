@@ -46,9 +46,9 @@ TwoDFloatSeries: TypeAlias  = List[FloatSeries]         # e.g., heatmaps M×K
 FloatSequence: TypeAlias    = Sequence[float]
 
 # Complex number encodings (JSON-safe)
-Complex                  = Tuple[float, float]          # (re, im)
-ComplexArray: TypeAlias  = List[Complex]               # K × (re, im)
-ComplexSeries: TypeAlias = List[complex]               # Python complex list (internal use)
+Complex                  = Tuple[float, float]  # (re, im)
+ComplexArray: TypeAlias  = List[Complex]        # K × (re, im)
+ComplexSeries: TypeAlias = List[complex]        # Python complex list (internal use)
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Modulation profile identifiers
@@ -80,39 +80,39 @@ TimestampMs   = NewType("TimestampMs", int)
 SampleIndex   = NewType("SampleIndex", int)
 
 # RF / PHY units (keep as scalars with units)
-FrequencyHz   = NewType("FrequencyHz", float)   # fractional spacing allowed
+FrequencyHz   = NewType("FrequencyHz", int)
 BandwidthHz   = NewType("BandwidthHz", int)
 
 PowerdBmV     = NewType("PowerdBmV", float)
-PowerdB       = NewType("PowerdB", float)       # generic dB (e.g., MER/SNR)
+PowerdB       = NewType("PowerdB", float)
 MERdB         = NewType("MERdB", float)
 SNRdB         = NewType("SNRdB", float)
 SNRln         = NewType("SNRln", float)
 
 # DOCSIS identifiers
-ChannelId     = NewType("ChannelId", int)       # downstream/upstream logical channel id
+ChannelId     = NewType("ChannelId", int)
 SubcarrierId  = NewType("SubcarrierId", int)
 
 # SNMP identifiers
-OidStr        = NewType("OidStr", str)          # symbolic or dotted-decimal
+OidStr        = NewType("OidStr", str)              # symbolic or dotted-decimal
 OidNumTuple   = NewType("OidNumTuple", Tuple[int, ...])
 
 # Network addressing (store as plain strings; validate elsewhere)
-MacAddressStr = NewType("MacAddressStr", str)   # "aa:bb:cc:dd:ee:ff"
-IPv4Str       = NewType("IPv4Str", str)         # "192.168.0.1"
-IPv6Str       = NewType("IPv6Str", str)         # "2001:db8::1"
-InetAddressStr = NewType("InetAddressStr", str) 
+MacAddressStr   = NewType("MacAddressStr", str)     # aa:bb:cc:dd:ee:ff
+IPv4Str         = NewType("IPv4Str", str)           # 192.168.0.1
+IPv6Str         = NewType("IPv6Str", str)           # 2001:db8::1
+InetAddressStr  = NewType("InetAddressStr", str)    # 192.168.0.1 | 2001:db8::1
 
 # File tokens
-FileStem      = NewType("FileStem", str)        # name without extension
-FileExt       = NewType("FileExt", str)         # ".csv", ".png", …
+FileStem      = NewType("FileStem", str)            # name without extension
+FileExt       = NewType("FileExt", str)             # ".csv", ".png", …
 FileName      = NewType("FileName", str)
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Analysis-specific tuples / series
 # ────────────────────────────────────────────────────────────────────────────────
-RegressionCoeffs = Tuple[float, float]          # (slope, intercept)
-RegressionStats  = Tuple[float, float, float]   # (slope, intercept, r2)
+RegressionCoeffs = Tuple[float, float]              # (slope, intercept)
+RegressionStats  = Tuple[float, float, float]       # (slope, intercept, r2)
 
 # RxMER / spectrum containers
 FrequencySeriesHz: TypeAlias = List[int]

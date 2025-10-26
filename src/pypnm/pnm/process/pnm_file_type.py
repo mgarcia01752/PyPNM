@@ -31,7 +31,7 @@ class PnmFileType(Enum):
     OFDM_MODULATION_PROFILE                         = "PNN10"
     LATENCY_REPORT                                  = "LLD01"
 
-    def __init__(self, pnm_cann: str) -> None:
+    def __init__(self, pnm_cann: str):
         """
         Initialize the enum member with its PNM CANN code.
 
