@@ -15,6 +15,10 @@ class _StrEnum(str, Enum):
     """Py3.10-compatible StrEnum shim."""
     pass
 
+class FloatEnum(float, Enum):
+    """Float-like Enum base: members behave like floats."""
+    pass
+
 # Basic strings
 String: TypeAlias       = str
 StringArray: TypeAlias  = List[String]

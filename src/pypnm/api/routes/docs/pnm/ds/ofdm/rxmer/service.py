@@ -46,3 +46,4 @@ class CmDsOfdmRxMerService(CommonMeasureService):
             cable_modem,tftp_servers,
             tftp_path,cable_modem.getWriteCommunity())
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.propagate = True

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, cast
+from typing import Any, Dict, List, cast
 
 from fastapi import APIRouter
 
@@ -26,6 +26,7 @@ from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.ds.ofdm.chan_est_coeff.service import CmDsOfdmChanEstCoefService
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOfdmChanEstCoefEntry
 from pypnm.lib.dict_utils import DictUtils
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet
@@ -76,11 +77,14 @@ class ChannelEstimationCoefficientRouter:
                 err = "Unable to complete Channel Estimation Coefficients measurement."
                 return SnmpResponse(mac_address=mac, message=err, status=msg_rsp.status)
 
+            measurement_stats:List[DocsPnmCmOfdmChanEstCoefEntry] = \
+                cast(List[DocsPnmCmOfdmChanEstCoefEntry], await service.getPnmMeasurementStatistics())
+
             cps = CommonProcessService(msg_rsp)
             msg_rsp = cps.process()
 
-            analysis = Analysis(AnalysisType.BASIC, msg_rsp)
-
+            analysis =  Analysis(AnalysisType.BASIC, msg_rsp)
+        
             if request.analysis.output.type == OutputType.JSON:
                 payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
                 
@@ -89,6 +93,7 @@ class ChannelEstimationCoefficientRouter:
                 primative = msg_rsp.payload_to_dict('primative')
                 DictUtils.pop_keys_recursive(primative, ["device_details"])
                 payload.update(primative)
+                payload.update(DictUtils.models_to_nested_dict(measurement_stats, 'measurement_stats',))
 
                 return PnmAnalysisResponse(
                     mac_address =   mac,

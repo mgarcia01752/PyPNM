@@ -265,7 +265,8 @@ class MatplotManager:
         return np.asarray(a, dtype=float).ravel()
 
     def _coerce_xy(self, x: Optional[ArrayLike], y: Optional[ArrayLike]) -> Tuple[np.ndarray, np.ndarray]:
-        xa = self._to_1d(x); ya = self._to_1d(y)
+        xa = self._to_1d(x if x is not None else None)
+        ya = self._to_1d(y if y is not None else None)
         if ya.size == 0 and xa.size > 0:
             ya = np.zeros_like(xa, dtype=float)
             self.logger.warning("Y missing; using zeros (len=%d).", ya.size)

@@ -5,9 +5,12 @@
 
 from __future__ import annotations
 
+from curses import echo
 from typing import Any, Dict, List, Mapping, Optional, Literal
 from pydantic import BaseModel, Field, ConfigDict
 
+from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.echo_detector import EchoDetectorReport
+from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.type import EchoDetectorType
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.qam.types import CodeWordArray, QamModulation
@@ -26,7 +29,10 @@ class GrpDelayStatsModel(BaseModel):
     group_delay_unit : str         = Field(..., description="Unit of group delay values (e.g., microseconds).")
     magnitude        : FloatSeries = Field(..., description="Per-subcarrier group delay values in specified units.")
 
-
+class EchoDatasetModel(BaseModel):
+    type: EchoDetectorType      = Field(..., description="Type of echo dataset.")
+    report: EchoDetectorReport  = Field(..., description=".")
+  
 class ComplexDataCarrierModel(BaseModel):
     carrier_count             : int                 = Field(..., description="Total number of active subcarriers included in the estimation.")
     frequency_unit            : str                 = Field(default="Hz", description="Unit of the frequency axis (default: Hertz).")
@@ -39,11 +45,12 @@ class ComplexDataCarrierModel(BaseModel):
 
 
 class ComplexDataAnalysisModel(BaseAnalysisModel):
-    subcarrier_spacing           : int                        = Field(..., description="Subcarrier frequency spacing in Hertz.")
-    first_active_subcarrier_index: int                        = Field(..., description="Index of the first active OFDM subcarrier (0-based).")
-    subcarrier_zero_frequency    : FrequencyHz                = Field(..., description="Absolute frequency of subcarrier k=0 in Hertz.")
-    carrier_values               : ComplexDataCarrierModel    = Field(..., description="Detailed per-subcarrier results.")
-    signal_statistics            : SignalStatisticsModel      = Field(..., description="Computed time-domain statistics of the channel estimate signal.")
+    subcarrier_spacing: int                     = Field(..., description="Subcarrier frequency spacing in Hertz.")
+    first_active_subcarrier_index: int          = Field(..., description="Index of the first active OFDM subcarrier (0-based).")
+    subcarrier_zero_frequency: FrequencyHz      = Field(..., description="Absolute frequency of subcarrier k=0 in Hertz.")
+    carrier_values: ComplexDataCarrierModel     = Field(..., description="Detailed per-subcarrier results.")
+    signal_statistics: SignalStatisticsModel    = Field(..., description="Computed time-domain statistics of the channel estimate signal.")
+    echo: EchoDatasetModel                       = Field(..., description="Computed time-domain statistics of the channel estimate signal.")
 
 
 class RegressionModel(BaseModel):

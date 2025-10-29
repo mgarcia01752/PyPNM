@@ -21,7 +21,6 @@ from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
 from pypnm.lib.signal_processing.magnitude_metrics import compute_magnitude_summary
 from pypnm.lib.types import ArrayLike, ChannelId, ComplexArray, FloatSeries, FrequencyHz, PathLike
 
-
 class ChanEstimationParametersRptModel(BaseModel):
     """
     Parameters that augment channel estimation analysis output.
@@ -31,13 +30,11 @@ class ChanEstimationParametersRptModel(BaseModel):
     regression_line: FloatSeries    = Field(..., description="Regression fitted values per subcarrier")
     group_delay: FloatSeries        = Field(..., description="Group Delay")
 
-
 class ChanEstimationAnalysisRptModel(CommonAnalysis):
     """
     Analysis view over channel estimation data (extends CommonAnalysis).
     """
     parameters: ChanEstimationParametersRptModel = Field(..., description="Channel estimation analysis parameters and limits.")
-
 
 class ChanEstimationReport(AnalysisReport):
     """Concrete report builder for channel estimation measurements."""
@@ -165,8 +162,7 @@ class ChanEstimationReport(AnalysisReport):
                     grid            = True,
                     legend          = True,
                     transparent     = False,
-                    theme           = self.getAnalysisRptMatplotConfig().theme,
-                )
+                    theme           = self.getAnalysisRptMatplotConfig().theme,)
 
                 multi = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, 'db'])
                 self.logger.info("Creating MatPlot: %s for channel: %s", multi, channel_id)
@@ -260,7 +256,7 @@ class ChanEstimationReport(AnalysisReport):
                     y               = gd_us,
                     ylabel          = "uS",
                     grid            = True,
-                    legend          = True,
+                    legend          = False,
                     transparent     = False,
                     theme           = self.getAnalysisRptMatplotConfig().theme,
                 )
@@ -293,7 +289,7 @@ class ChanEstimationReport(AnalysisReport):
                 channel_id: ChannelId = data.channel_id
 
                 # Carrier values block
-                cv: ChanEstCarrierModel = data.carrier_values
+                cv: ChanEstCarrierModel  = cast(ChanEstCarrierModel, data.carrier_values)
                 x_raw: FloatSeries       = list(cv.frequency)
                 y_raw: FloatSeries       = list(cv.magnitudes)
                 cplex: ComplexArray      = list(cv.complex)
@@ -314,16 +310,17 @@ class ChanEstimationReport(AnalysisReport):
                 y_hat: FloatSeries = cast(FloatSeries, LinearRegression1D(cast(ArrayLike, y)).fitted_values())
 
                 params = ChanEstimationParametersRptModel(
-                    regression_line=y_hat,
-                    group_delay=group_delay,
+                    regression_line     =   y_hat,
+                    group_delay         =   group_delay,
                 )
 
                 model = ChanEstimationAnalysisRptModel(
-                    channel_id  =   channel_id,
-                    raw_x       =   x,
-                    raw_y       =   y,
-                    raw_complex =   cplex,
-                    parameters  =   params,)
+                    channel_id         =   channel_id,
+                    raw_x              =   x,
+                    raw_y              =   y,
+                    raw_complex        =   cplex,
+                    parameters         =   params,
+                )
 
                 # Register model for downstream CSV/plot generation
                 self.register_common_analysis_model(channel_id, model)

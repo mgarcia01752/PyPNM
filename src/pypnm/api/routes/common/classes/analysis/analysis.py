@@ -9,12 +9,14 @@ import numpy as np
 from enum import Enum
 from typing import List, Dict, Any, Mapping, Sequence, Union, cast
 
+from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.echo_detector import EchoDetector, EchoDetectorReport
+from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.type import EchoDetectorType
 from pypnm.api.routes.common.classes.analysis.model.chan_est_schema import ChanEstCarrierModel, DsChannelEstAnalysisModel
 from pypnm.api.routes.common.classes.analysis.model.mod_profile_schema import (
     CarrierItemModel, CarrierValuesListModel, CarrierValuesModel, CarrierValuesSplitModel, 
     DsModulationProfileAnalysisModel, ProfileAnalysisEntryModel)
 from pypnm.api.routes.common.classes.analysis.model.schema import (
-    BaseAnalysisModel, ConstellationDisplayAnalysisModel, DsHistogramAnalysisModel, DsRxMerAnalysisModel, 
+    BaseAnalysisModel, ConstellationDisplayAnalysisModel, DsHistogramAnalysisModel, DsRxMerAnalysisModel, EchoDatasetModel, 
     FecSummaryCodeWordModel, GrpDelayStatsModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel, 
     OfdmaUsPreEqCarrierModel, RegressionModel, RxMerCarrierValuesModel, UsOfdmaUsPreEqAnalysisModel)
 from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema import (
@@ -23,7 +25,7 @@ from pypnm.api.routes.common.extended.common_messaging_service import MessageRes
 from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpecAnCapturePara
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor, Utils
-from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_PROFILE_ID, INVALID_SCHEMA_TYPE, INVALID_START_VAULE
+from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_PROFILE_ID, INVALID_SCHEMA_TYPE, INVALID_START_VALUE, CableType
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.log_files import LogFile
 from pypnm.lib.mac_address import MacAddress
@@ -33,7 +35,7 @@ from pypnm.lib.signal_processing.averager import MovingAverage
 from pypnm.lib.signal_processing.complex_array_ops import ComplexArrayOps
 from pypnm.lib.signal_processing.group_delay import GroupDelay
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
-from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries, FrequencyHz, FrequencySeriesHz
+from pypnm.lib.types import ArrayLike, ChannelId, ComplexArray, FloatSeries, FrequencyHz, FrequencySeriesHz, MacAddressStr
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import WindowFunction
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
@@ -77,66 +79,52 @@ class AnalysisType(Enum):
         detected PNM file type. Additional per-type metrics may be included
         (e.g., group delay, Shannon limits, histogram counts).
     """
-    BASIC = 0
+    BASIC               = 0
 
 class Analysis:
     """Core analysis runner.
 
     This orchestrator normalizes the payload's ``data`` into a list of
-    measurement dictionaries and dispatches to the appropriate basic
-    analysis routine based on the inferred PNM file type.
+    measurement dictionaries and dispatches to the appropriate analysis
+    routine based on the inferred PNM file type. For echo detection, the
+    provided ``cable_type`` controls the velocity factor used to convert
+    echo time delays to physical distances.
 
     Parameters
     ----------
     analysis_type : AnalysisType
-        Analysis mode (currently ``AnalysisType.BASIC``).
+        Selected analysis mode (e.g., ``AnalysisType.BASIC``).
     msg_response : MessageResponse
-        Wrapped transport of the measurement payload; expected to expose
+        Wrapped transport of the measurement payload; must expose
         ``payload_to_dict()`` with a top-level ``"data"`` entry.
+    cable_type : CableType, default CableType.RG6
+        Cable type used by echo-detection analysis to determine the
+        propagation velocity factor for distance calculations.
 
-    Attributes
-    ----------
-    logger : logging.Logger
-        Component logger named after the class.
-    analysis_type : AnalysisType
-        Selected analysis mode.
-    msg_response : MessageResponse
-        Original message/measurement container.
-    measurement_data : list of dict
-        Normalized list of measurement dicts derived from the payload.
-    _result_model : list of BaseAnalysisModel
-        Collected typed results (when a Pydantic model is produced).
-    _analysis_dict : list of dict
-        Collected plain-dict results for serialization.
-
-    Notes
-    -----
-    If the logger is configured at ``DEBUG`` level, the raw message response
-    is persisted to disk via :meth:`save_message_response`.
     """
 
-    def __init__(self, analysis_type: AnalysisType, msg_response: MessageResponse) -> None:
+    def __init__(self, analysis_type: AnalysisType, 
+                 msg_response: MessageResponse, 
+                 cable_type: CableType = CableType.RG6) -> None:
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
-        self.analysis_type: "AnalysisType" = analysis_type
-        self.msg_response: "MessageResponse" = msg_response
-
-        payload: Dict[str, Any] = msg_response.payload_to_dict() or {}
-        raw_data = payload.get("data", [])
+        self.analysis_type: "AnalysisType"      = analysis_type
+        self.msg_response: "MessageResponse"    = msg_response
+        self._cable_type: CableType             = cable_type
+        payload: Dict[str, Any]                 = msg_response.payload_to_dict() or {}
+        _raw_data                               = payload.get("data", [])
         self._result_model:List[BaseAnalysisModel] = []
         self._processed_pnm_type:List[PnmFileType] = []
 
-        # Normalize measurement_data to List[Dict[str, Any]]
-        if isinstance(raw_data, Mapping):
-            self.measurement_data: List[Dict[str, Any]] = [dict(raw_data)]
-        elif isinstance(raw_data, Sequence) and not isinstance(raw_data, (str, bytes, bytearray)):
-            self.measurement_data = [dict(m) for m in raw_data]  # type: ignore[arg-type]
+        if isinstance(_raw_data, Mapping):
+            self.measurement_data: List[Dict[str, Any]] = [dict(_raw_data)]
+        elif isinstance(_raw_data, Sequence) and not isinstance(_raw_data, (str, bytes, bytearray)):
+            self.measurement_data = [dict(m) for m in _raw_data]
         else:
             self.measurement_data = []
 
         self._analysis_dict: List[Dict[str, Any]] = []
 
-        # Persist the raw message when DEBUG is enabled
-        if self.logger.isEnabledFor(logging.INFO):
+        if self.logger.isEnabledFor(logging.DEBUG):
             self.save_message_response(self.msg_response)
 
         self._process()
@@ -206,7 +194,7 @@ class Analysis:
             model = self.basic_analysis_ds_chan_est(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
-            self.__add_pnmType(PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT)   
+            self.__add_pnmType(PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT)
 
         elif pnm_file_type == PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY.value:
             self.logger.debug("Processing: DOWNSTREAM_CONSTELLATION_DISPLAY")
@@ -217,7 +205,7 @@ class Analysis:
 
         elif pnm_file_type == PnmFileType.RECEIVE_MODULATION_ERROR_RATIO.value:
             self.logger.info("Processing: RECEIVE_MODULATION_ERROR_RATIO")
-            model = self.basic_analysis_rxmer(measurement)
+            model:DsRxMerAnalysisModel = self.basic_analysis_rxmer(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
             self.__add_pnmType(PnmFileType.RECEIVE_MODULATION_ERROR_RATIO)             
@@ -461,7 +449,7 @@ class Analysis:
         return out
 
     @classmethod
-    def basic_analysis_ds_chan_est(cls, measurement: Dict[str, Any]) -> DsChannelEstAnalysisModel:
+    def basic_analysis_ds_chan_est(cls, measurement: Dict[str, Any], cable_type: CableType = CableType.RG6) -> DsChannelEstAnalysisModel:
         """
         Perform downstream channel estimation analysis.
 
@@ -492,10 +480,11 @@ class Analysis:
         ValueError
             If required parameters are missing/negative, or ``values`` is empty.
         """
-        subcarrier_spacing: int                         = measurement.get("subcarrier_spacing",            INVALID_START_VAULE)
-        first_active_subcarrier_index: int              = measurement.get("first_active_subcarrier_index", INVALID_START_VAULE)
-        subcarrier_zero_frequency: FrequencySeriesHz    = measurement.get("subcarrier_zero_frequency",     INVALID_START_VAULE)
-        occupied_channel_bandwidth: int                 = measurement.get("occupied_channel_bandwidth",    INVALID_START_VAULE)
+        channel_id: ChannelId                   = measurement.get("channel_id",                    INVALID_CHANNEL_ID)
+        subcarrier_spacing: int                 = measurement.get("subcarrier_spacing",            INVALID_START_VALUE)
+        first_active_subcarrier_index: int      = measurement.get("first_active_subcarrier_index", INVALID_START_VALUE)
+        subcarrier_zero_frequency: FrequencyHz  = measurement.get("subcarrier_zero_frequency",     INVALID_START_VALUE)
+        occupied_channel_bandwidth: int         = measurement.get("occupied_channel_bandwidth",    INVALID_START_VALUE)
 
         if (first_active_subcarrier_index < 0) or (subcarrier_zero_frequency < 0) or (subcarrier_spacing <= 0):
             raise ValueError(
@@ -507,14 +496,15 @@ class Analysis:
         if not values:
             raise ValueError("No complex channel estimation values provided in measurement.")
 
-        start_freq: FrequencyHz     = (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency
+        start_freq: FrequencyHz \
+            = cast(FrequencyHz, (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency)
         freqs: FrequencySeriesHz    = [start_freq + (i * subcarrier_spacing) for i in range(len(values))]
 
         # Group delay calculation
-        gd          = GroupDelay.from_channel_estimate(Hhat     =   values, 
-                                                       df_hz    =   subcarrier_spacing, 
-                                                       f0_hz    =   start_freq)
-        gd_results  = gd.to_result()
+        gd = GroupDelay.from_channel_estimate(Hhat  = values,
+                                              df_hz = subcarrier_spacing,
+                                              f0_hz = start_freq)
+        gd_results = gd.to_result()
 
         # Per-subcarrier magnitudes (power in dB from complex coefficients)
         cao = ComplexArrayOps(values)
@@ -532,28 +522,57 @@ class Analysis:
             magnitude                   = ComplexArrayOps.to_list(gd_results.group_delay_us),
         )
 
+        # IFFT Echo Detection
+        # Choose IFFT length (zero-padding) for finer time interpolation
+        N = len(values)
+        n_fft = 1 << (N - 1).bit_length()
+        if n_fft < 1024:
+            n_fft = 1024
+
+        det = EchoDetector(
+            freq_data               =   values,
+            subcarrier_spacing_hz   =   subcarrier_spacing,
+            n_fft                   =   n_fft,
+            cable_type              =   cable_type.name,
+        )
+
+        report: EchoDetectorReport = det.multi_echo(
+            channel_id              =   channel_id,
+            threshold_frac          =   0.2,
+            guard_bins              =   2,
+            min_separation_s        =   0.0,
+            max_delay_s             =   None,
+            max_peaks               =   5,
+            include_time_response   =   False,
+        )
+
+        echo_rpt = EchoDatasetModel(
+            type    = EchoDetectorType.IFFT,
+            report  = report
+        )        
+
         carrier_values: ChanEstCarrierModel = ChanEstCarrierModel(
             carrier_count               = len(freqs),
             frequency_unit              = "Hz",
             frequency                   = freqs,
             complex                     = values,
             complex_dimension           = int(complex_arr.ndim),
-            magnitudes                  = magnitudes_db,   # NOTE: produced from power_db(); units elsewhere may denote dB
+            magnitudes                  = magnitudes_db,
             group_delay                 = group_delay_stats,
             occupied_channel_bandwidth  = occupied_channel_bandwidth,
         )
 
         result_model: DsChannelEstAnalysisModel = DsChannelEstAnalysisModel(
-            device_details              = measurement.get("device_details", {}),
-            pnm_header                  = measurement.get("pnm_header", {}),
-            mac_address                 = measurement.get("mac_address", ""),
-            channel_id                  = int(measurement.get("channel_id", INVALID_START_VAULE)),
-            subcarrier_spacing          = subcarrier_spacing,
-            first_active_subcarrier_index = first_active_subcarrier_index,
-            subcarrier_zero_frequency   = subcarrier_zero_frequency,
-            carrier_values              = carrier_values,
-            signal_statistics           = signal_stats_model,
-        )
+            device_details                  = measurement.get("device_details", {}),
+            pnm_header                      = measurement.get("pnm_header", {}),
+            mac_address                     = measurement.get("mac_address", ""),
+            channel_id                      = cast(ChannelId, int(measurement.get("channel_id", INVALID_START_VALUE))),
+            subcarrier_spacing              = subcarrier_spacing,
+            first_active_subcarrier_index   = first_active_subcarrier_index,
+            subcarrier_zero_frequency       = subcarrier_zero_frequency,
+            carrier_values                  = carrier_values,
+            signal_statistics               = signal_stats_model,
+            echo                            = echo_rpt)
 
         return result_model
 
@@ -610,9 +629,9 @@ class Analysis:
         ValueError
             If spacing/indices/frequencies are invalid.
         """
-        spacing: int       = int(measurement.get("subcarrier_spacing", INVALID_START_VAULE))
-        active_index: int  = int(measurement.get("first_active_subcarrier_index", INVALID_START_VAULE))
-        zero_freq: int     = int(measurement.get("subcarrier_zero_frequency", INVALID_START_VAULE))
+        spacing: int       = int(measurement.get("subcarrier_spacing", INVALID_START_VALUE))
+        active_index: int  = int(measurement.get("first_active_subcarrier_index", INVALID_START_VALUE))
+        zero_freq: int     = int(measurement.get("subcarrier_zero_frequency", INVALID_START_VALUE))
 
         if active_index < 0 or zero_freq < 0 or spacing <= 0:
             raise ValueError(
@@ -1081,7 +1100,8 @@ class Analysis:
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 
     @classmethod
-    def basic_analysis_ds_modulation_profile_from_model(cls, model: CmDsOfdmModulationProfileModel, split_carriers: bool = True) -> DsModulationProfileAnalysisModel:
+    def basic_analysis_ds_modulation_profile_from_model(cls, model: CmDsOfdmModulationProfileModel, 
+                                                        split_carriers: bool = True) -> DsModulationProfileAnalysisModel:
         """
         Analyze a Downstream OFDM Modulation Profile using a parsed model
         from :class:`CmDsOfdmModulationProfile`.
@@ -1092,8 +1112,7 @@ class Analysis:
 
         if active_index < 0 or zero_freq < 0 or spacing <= 0:
             raise ValueError(
-                f"Invalid parameters: spacing={spacing}, active_index={active_index}, zero_freq={zero_freq}"
-            )
+                f"Invalid parameters: spacing={spacing}, active_index={active_index}, zero_freq={zero_freq}")
 
         start_freq = zero_freq + spacing * active_index
 
@@ -1180,7 +1199,7 @@ class Analysis:
             )
 
         return result
-
+    
     @classmethod
     def basic_analysis_ds_chan_est_from_model(cls, model: CmDsOfdmChanEstimateCoefModel) -> DsChannelEstAnalysisModel:
         """
@@ -1201,11 +1220,10 @@ class Analysis:
         ValueError
             If required parameters are invalid or values are empty.
         """
-        # --- required params ---
-        subcarrier_spacing: int            = int(getattr(model, "subcarrier_spacing", INVALID_START_VAULE))
-        first_active_subcarrier_index: int = int(getattr(model, "first_active_subcarrier_index", INVALID_START_VAULE))
-        subcarrier_zero_frequency: int     = int(getattr(model, "subcarrier_zero_frequency", INVALID_START_VAULE))
-        occupied_channel_bandwidth: int    = int(getattr(model, "occupied_channel_bandwidth", 0))
+        subcarrier_spacing: int                 = int(getattr(model, "subcarrier_spacing", INVALID_START_VALUE))
+        first_active_subcarrier_index: int      = int(getattr(model, "first_active_subcarrier_index", INVALID_START_VALUE))
+        subcarrier_zero_frequency: FrequencyHz  = cast(FrequencyHz, int(getattr(model, "subcarrier_zero_frequency", INVALID_START_VALUE)))
+        occupied_channel_bandwidth: int         = int(getattr(model, "occupied_channel_bandwidth", 0))
 
         if (first_active_subcarrier_index < 0) or (subcarrier_zero_frequency < 0) or (subcarrier_spacing <= 0):
             raise ValueError(
@@ -1218,12 +1236,10 @@ class Analysis:
         if not values:
             raise ValueError("No complex channel estimation values provided in model.")
 
-        # --- frequency axis ---
         start_freq: int  = (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency
         freqs: List[int] = [start_freq + (i * subcarrier_spacing) for i in range(len(values))]
 
-        # --- group delay from complex H(f) ---
-        gd         = GroupDelay.from_channel_estimate(Hhat=values, df_hz=subcarrier_spacing, f0_hz=start_freq)
+        gd = GroupDelay.from_channel_estimate(Hhat=values, df_hz=subcarrier_spacing, f0_hz=start_freq)
         gd_results = gd.to_result()
 
         # --- magnitudes (power in dB from complex coefficients) ---
@@ -1238,33 +1254,93 @@ class Analysis:
 
         # --- nested models ---
         group_delay_stats: GrpDelayStatsModel = GrpDelayStatsModel(
-            group_delay_unit="microsecond",
-            magnitude=ComplexArrayOps.to_list(gd_results.group_delay_us),
+            group_delay_unit    =   "microsecond",
+            magnitude           =   ComplexArrayOps.to_list(gd_results.group_delay_us),
         )
 
         carrier_values: ChanEstCarrierModel = ChanEstCarrierModel(
-            carrier_count=len(freqs),
-            frequency_unit="Hz",
-            frequency=freqs,
-            complex=values,
-            complex_dimension=complex_ndim,
-            magnitudes=magnitudes_db,                 # power dB series
-            group_delay=group_delay_stats,
-            occupied_channel_bandwidth=occupied_channel_bandwidth,
-        )
+            carrier_count               =   len(freqs),
+            frequency_unit              =   "Hz",
+            frequency                   =   freqs,
+            complex                     =   values,
+            complex_dimension           =   complex_ndim,
+            magnitudes                  =   magnitudes_db,
+            group_delay                 =   group_delay_stats,
+            occupied_channel_bandwidth  =   occupied_channel_bandwidth,)
 
         # --- assemble top-level result ---
         result_model: DsChannelEstAnalysisModel = DsChannelEstAnalysisModel(
-            device_details=getattr(model, "device_details", {}),  # model may not carry device details
-            pnm_header=model.pnm_header.model_dump() if hasattr(model.pnm_header, "model_dump") else {},
-            mac_address=str(getattr(model, "mac_address", "")),
-            channel_id=int(getattr(model, "channel_id", INVALID_START_VAULE)),
-            subcarrier_spacing=subcarrier_spacing,
-            first_active_subcarrier_index=first_active_subcarrier_index,
-            subcarrier_zero_frequency=subcarrier_zero_frequency,
-            carrier_values=carrier_values,
-            signal_statistics=signal_stats_model,
-        )
+            device_details                  =   getattr(model, "device_details", {}),  # model may not carry device details
+            pnm_header                      =   model.pnm_header.model_dump() if hasattr(model.pnm_header, "model_dump") else {},
+            mac_address                     =   cast(MacAddressStr, getattr(model, "mac_address", "")),
+            channel_id                      =   cast(ChannelId, int(getattr(model, "channel_id", INVALID_START_VALUE))),
+            subcarrier_spacing              =   subcarrier_spacing,
+            first_active_subcarrier_index   =   first_active_subcarrier_index,
+            subcarrier_zero_frequency       =   subcarrier_zero_frequency,
+            carrier_values                  =   carrier_values,
+            signal_statistics               =   signal_stats_model,)
 
         return result_model
 
+    @classmethod
+    def basic_analysis_echo_detection_ifft(cls, model: CmDsOfdmChanEstimateCoefModel, cable_type: CableType = CableType.RG6,) -> EchoDetectorReport:
+        """
+        Run FFT/IFFT-based echo detection from a single Channel-Estimation snapshot.
+
+        Parameters
+        ----------
+        model : CmDsOfdmChanEstimateCoefModel
+            Source of the complex frequency response (H(f)) and subcarrier spacing.
+            `model.values` may be complex numbers or (re, im) pairs.
+        cable_type : CableType, default RG6
+            Cable type used to determine velocity factor for distance conversion.
+
+        Returns
+        -------
+        EchoDetectorReport
+            Multi-echo report including direct-path, list of echoes (each with
+            `distance_m` and `distance_ft`), dataset context, and optional
+            time-response block suitable for plotting.
+
+        Notes
+        -----
+        - Uses a zero-padded IFFT length of the next power-of-two ≥ N (min 1024).
+        - Propagates `channel_id` if present; defaults to -1.
+        """
+        values = cast(
+            Sequence[Union[complex, Sequence[float]]],
+            getattr(model, "values", []),
+        )
+        if not values:
+            raise ValueError("Echo detection requires non-empty channel-estimation values.")
+
+        df_hz = float(getattr(model, "subcarrier_spacing", 0))
+        if df_hz <= 0.0:
+            raise ValueError("Invalid subcarrier spacing for echo detection.")
+
+        channel_id = cast(ChannelId, getattr(model, "channel_id", INVALID_CHANNEL_ID))
+
+        # Choose IFFT length (zero-padding) for finer time interpolation
+        N = len(values)
+        n_fft = 1 << (N - 1).bit_length()
+        if n_fft < 1024:
+            n_fft = 1024
+
+        det = EchoDetector(
+            freq_data               =   values,
+            subcarrier_spacing_hz   =   df_hz,
+            n_fft                   =   n_fft,
+            cable_type              =   cable_type.name,
+        )
+
+        report: EchoDetectorReport = det.multi_echo(
+            channel_id              =   channel_id,
+            threshold_frac          =   0.2,
+            guard_bins              =   2,
+            min_separation_s        =   0.0,
+            max_delay_s             =   None,
+            max_peaks               =   5,
+            include_time_response   =   True,
+        )
+
+        return report

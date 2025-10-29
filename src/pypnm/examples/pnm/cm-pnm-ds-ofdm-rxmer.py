@@ -13,7 +13,6 @@ import logging
 from typing import List
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus
-from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -57,7 +56,7 @@ async def main():
         
         while (True):
             if await cm.getDocsPnmCmCtlStatus() == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
-                logging.warning(f'Tesing in progress...')
+                logging.warning('Testing in progress...')
                 continue
             break
     

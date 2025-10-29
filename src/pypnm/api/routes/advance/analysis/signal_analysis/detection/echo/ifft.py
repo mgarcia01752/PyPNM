@@ -10,7 +10,7 @@ from numpy.typing import NDArray
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 # Reuse central constants & aliases
-from pypnm.lib.constants import FEET_PER_METER, SPEED_OF_LIGHT, CableType
+from pypnm.lib.constants import FEET_PER_METER, SPEED_OF_LIGHT, CableTypes
 from pypnm.lib.types import FloatSeries, ComplexArray, ChannelId
 
 
@@ -21,7 +21,7 @@ C0: Final[float] = SPEED_OF_LIGHT
 COMPLEX_LITERAL: Final[Literal["[Real, Imaginary]"]] = "[Real, Imaginary]"
 
 # Typical velocity factors (fraction of c0); overridable
-_CABLE_VF: Dict[CableType, float] = {
+_CABLE_VF: Dict[CableTypes, float] = {
     "RG6": 0.87,
     "RG59": 0.82,
     "RG11": 0.87,
@@ -52,7 +52,6 @@ class IfftEchoDetectorDatasetInfo(BaseModel):
         if v < 1:
             raise ValueError("Values must be >= 1.")
         return v
-
 
 class IfftEchoReflectionModel(BaseModel):
     """Direct-path and first-echo metrics derived from |h(t)|.
@@ -87,7 +86,6 @@ class IfftEchoReflectionModel(BaseModel):
     threshold_frac: float           = Field(..., description="Fraction of main-peak magnitude used as threshold")
     guard_bins: int                 = Field(..., description="Guard bins skipped after main peak")
     max_delay_s: Optional[float]    = Field(default=None, description="Optional max delay window for echo search (s)")
-
 
 class IfftEchoTimeResponseModel(BaseModel):
     """Time-domain impulse response via IFFT with optional zero-padding.
@@ -184,7 +182,6 @@ class IfftEchoDetectorModel(BaseModel):
                 raise ValueError(f"H_snap M={len(out)} must match dataset_info.snapshots={di.snapshots}.")
         return out
 
-
 class IfftEchoPathModel(BaseModel):
     """One echo/direct path sample in time with distance estimates.
 
@@ -198,7 +195,6 @@ class IfftEchoPathModel(BaseModel):
     amplitude: float    = Field(..., description="|h| amplitude at this peak")
     distance_m: float   = Field(..., description="Estimated one-way distance (m)")
     distance_ft: float  = Field(..., description="Estimated one-way distance (ft)")
-
 
 class IfftMultiEchoDetectionModel(BaseModel):
     """Multi-echo report relative to the modem input.
@@ -218,7 +214,7 @@ class IfftMultiEchoDetectionModel(BaseModel):
     complex_unit: Literal["[Real, Imaginary]"]  = Field(COMPLEX_LITERAL, alias="complex")
 
     # Cable / propagation
-    cable_type: CableType   = Field(..., description="Cable type used to pick velocity factor")
+    cable_type: CableTypes   = Field(..., description="Cable type used to pick velocity factor")
     velocity_factor: float  = Field(..., description="Velocity factor actually used (fraction of c0)")
     prop_speed_mps: float   = Field(..., description="Propagation speed used (m/s)")
 
@@ -249,7 +245,6 @@ def _local_maxima_indices(mag: NDArray[np.float64]) -> List[int]:
         if mag[i] >= mag[i - 1] and mag[i] > mag[i + 1]:
             idxs.append(i)
     return idxs
-
 
 # ──────────────────────────────────────────────────────────────
 # IFFT Echo Detector (implementation)
@@ -315,13 +310,13 @@ class IfftEchoDetector:
             raise ValueError("freq_data must be 1D/2D complex, or real/imag (N,2) / (M,N,2).")
 
         # Store
-        self.H_snap: NDArray[np.complex128] = H_snap              # (M, N)
-        self.H_avg: NDArray[np.complex128] = H_snap.mean(axis=0)  # (N,)
-        self.freq_data: NDArray[np.complex128] = self.H_avg
+        self.H_snap: NDArray[np.complex128]     = H_snap              # (M, N)
+        self.H_avg: NDArray[np.complex128]      = H_snap.mean(axis=0)  # (N,)
+        self.freq_data: NDArray[np.complex128]  = self.H_avg
 
         # Sampling / propagation
         self.sample_rate: float = float(sample_rate)
-        self.prop_speed: float = float(C0 * prop_speed_frac)
+        self.prop_speed: float  = float(C0 * prop_speed_frac)
 
         # Sizes
         self.M: int = int(self.H_snap.shape[0])
@@ -449,15 +444,15 @@ class IfftEchoDetector:
     def detect_multiple_reflections(
         self,
         *,
-        cable_type: CableType = "RG6",
-        velocity_factor: Optional[float] = None,
-        threshold_frac: float = 0.2,
-        guard_bins: int = 1,
-        min_separation_s: float = 0.0,
-        max_delay_s: Optional[float] = None,
-        max_peaks: int = 5,
-        n_fft: Optional[int] = None,
-        include_time_response: bool = True,
+        cable_type: CableTypes = "RG6",
+        velocity_factor: Optional[float]    = None,
+        threshold_frac: float               = 0.2,
+        guard_bins: int                     = 1,
+        min_separation_s: float             = 0.0,
+        max_delay_s: Optional[float]        = None,
+        max_peaks: int                      = 5,
+        n_fft: Optional[int]                = None,
+        include_time_response: bool         = True,
     ) -> IfftMultiEchoDetectionModel:
         """Detect multiple echoes using local maxima in |h(t)| above threshold.
 
@@ -634,7 +629,3 @@ class IfftEchoDetector:
             reflection      =   reflection,
             time_response   =   tr_block,)
 
-    # Back-compat shim
-    def to_dict(self) -> dict:
-        """Deprecated: use to_model().model_dump(by_alias=True)."""
-        return self.to_model().model_dump(by_alias=True)

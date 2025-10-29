@@ -3,12 +3,23 @@
 
 from __future__ import annotations
 
-from typing import Tuple, List, Dict, Final, Optional
+from typing import Tuple, Dict, Final, Optional
 import numpy as np
+from pydantic import BaseModel, Field
 
 from pypnm.lib.types import ArrayLike, FloatSeries, NDArrayF64
 
-__all__: Final = ["LinearRegression1D"]
+__all__: Final = ["LinearRegression1D", "LinearRegression1DResult"]
+
+
+class LinearRegression1DResult(BaseModel):
+    """Typed result payload for a 1D linear regression fit."""
+    slope: float        = Field(..., description="Fitted slope m in y = m*x + b")
+    intercept: float    = Field(..., description="Fitted intercept b in y = m*x + b")
+    r2: float           = Field(..., description="Coefficient of determination on training data")
+    rmse: float         = Field(..., description="Root Mean Squared Error on training data")
+    n: int              = Field(..., description="Number of samples used after filtering")
+
 
 class LinearRegression1D:
     """
@@ -21,33 +32,7 @@ class LinearRegression1D:
     - Clear errors for length mismatch, insufficient points, or near-zero x-variance.
     - Provides slope, intercept, R², RMSE, residuals, fitted values, and predictions.
     - Convenience accessors for the regression line (full series or just endpoints).
-    - Namespace-safe: only `LinearRegression1D` is exported via `__all__`.
-
-    Parameters
-    ----------
-    y_values : ArrayLike
-        Sequence/array of y-values.
-    x_values : ArrayLike | None, optional
-        Sequence/array of x-values. If None, uses range(len(y_values)).
-    dtype : type, optional
-        Numpy dtype for coercion (default: np.float64).
-
-    Attributes
-    ----------
-    x : NDArrayF64
-        Cleaned, finite x-values used for fit.
-    y : NDArrayF64
-        Cleaned, finite y-values used for fit.
-    n : int
-        Number of samples used.
-    slope : float
-        Fitted slope (m).
-    intercept : float
-        Fitted intercept (b).
-    r2 : float
-        Coefficient of determination on training data.
-    rmse : float
-        Root Mean Squared Error on training data.
+    - Exposes a typed result model via `to_model()`; `to_dict()` returns `model_dump()`.
     """
 
     __slots__ = ("x", "y", "n", "slope", "intercept", "r2", "rmse")
@@ -59,6 +44,23 @@ class LinearRegression1D:
         *,
         dtype: type = np.float64,
     ) -> None:
+        """
+        Initialize and fit a least-squares line to (x, y).
+
+        Parameters
+        ----------
+        y_values : ArrayLike
+            Sequence/array of y-values.
+        x_values : ArrayLike | None, optional
+            Sequence/array of x-values. If None, uses range(len(y_values)).
+        dtype : type, optional
+            Numpy dtype for coercion (default: np.float64).
+
+        Raises
+        ------
+        ValueError
+            If shapes mismatch, insufficient finite points, or x-variance is ~0.
+        """
         y_arr: NDArrayF64 = np.asarray(y_values, dtype=dtype)
         x_arr: NDArrayF64 = (
             np.arange(y_arr.size, dtype=dtype)
@@ -69,7 +71,6 @@ class LinearRegression1D:
         if x_arr.shape != y_arr.shape:
             raise ValueError("x and y must have the same length and shape.")
 
-        # Keep only finite pairs
         mask: NDArrayF64 = np.isfinite(x_arr) & np.isfinite(y_arr)  # type: ignore[assignment]
         x_clean = x_arr[mask]
         y_clean = y_arr[mask]
@@ -77,17 +78,14 @@ class LinearRegression1D:
         if x_clean.size < 2:
             raise ValueError("At least two finite (x, y) points are required.")
 
-        # Guard against singular design matrix
         x_var = np.var(x_clean)
         if not np.isfinite(x_var) or x_var <= np.finfo(dtype).eps:
             raise ValueError("x has zero or near-zero variance; cannot fit a line.")
 
-        # Least squares fit: A @ theta ≈ y, with A = [x, 1]
-        A: NDArrayF64 = np.vstack([x_clean, np.ones_like(x_clean)]).T  # (n,2)
-        theta, *_ = np.linalg.lstsq(A, y_clean, rcond=None)            # [slope, intercept]
+        A: NDArrayF64 = np.vstack([x_clean, np.ones_like(x_clean)]).T
+        theta, *_ = np.linalg.lstsq(A, y_clean, rcond=None)
         slope, intercept = float(theta[0]), float(theta[1])
 
-        # Metrics
         y_hat = slope * x_clean + intercept
         residuals = y_clean - y_hat
         ss_res = float(np.sum(residuals**2))
@@ -95,7 +93,6 @@ class LinearRegression1D:
         ss_tot = float(np.sum((y_clean - y_mean) ** 2))
         eps = float(np.finfo(dtype).eps)
 
-        # Robust R² with constant-y handling
         if ss_tot <= eps:
             r2 = 1.0 if ss_res <= eps else 0.0
         else:
@@ -103,7 +100,6 @@ class LinearRegression1D:
 
         rmse = float(np.sqrt(ss_res / x_clean.size))
 
-        # Store
         self.x = x_clean.astype(np.float64, copy=False)
         self.y = y_clean.astype(np.float64, copy=False)
         self.n = int(x_clean.size)
@@ -116,19 +112,18 @@ class LinearRegression1D:
     # Public API
     # --------------------------
 
+    def to_model(self) -> LinearRegression1DResult:
+        """Return a typed result model."""
+        return LinearRegression1DResult(
+            slope=self.slope, intercept=self.intercept, r2=self.r2, rmse=self.rmse, n=self.n)
+
+    def to_dict(self) -> Dict[str, float]:
+        """Return a dictionary representation via `to_model().model_dump()`."""
+        return self.to_model().model_dump()
+
     def to_list(self) -> FloatSeries:
         """Return `[slope, intercept, r2]` for compact consumption."""
         return [self.slope, self.intercept, self.r2]
-
-    def to_dict(self) -> Dict[str, float]:
-        """Return a detailed mapping of results and metrics."""
-        return {
-            "slope": self.slope,
-            "intercept": self.intercept,
-            "r2": self.r2,
-            "rmse": self.rmse,
-            "n": float(self.n),
-        }
 
     def predict(self, x_new: ArrayLike) -> NDArrayF64:
         """Predict y for new x values as float64 ndarray."""
@@ -156,10 +151,6 @@ class LinearRegression1D:
         y_axis_only : bool
             If True, return only ŷ over training x.
             If False, return (x, ŷ) as a tuple.
-
-        Returns
-        -------
-        NDArrayF64 | (NDArrayF64, NDArrayF64)
         """
         y_hat = self.fitted_values()
         return y_hat if y_axis_only else (self.x, y_hat)

@@ -1,176 +1,71 @@
-# PNM Operations – Downstream OFDM Channel Estimation
+# PNM Operations – Downstream OFDM Channel Estimation Coefficients
 
-This API provides critical visibility into the downstream physical layer of DOCSIS 3.1 OFDM channels by retrieving and analyzing channel estimation coefficients. These complex values—captured per subcarrier—represent the modem's internal estimation of the channel response, allowing operators to assess signal fidelity, detect multipath, and quantify in-channel distortion.
+Deep visibility into the downstream physical layer of DOCSIS 3.1+ OFDM channels via **per-subcarrier complex channel-estimation coefficients** and derived characteristics (magnitude, group delay, echoes). This page follows the same structure and conventions as the RxMER doc.
 
-The `/getMeasurement` endpoint returns raw complex coefficients (real/imaginary pairs), while the `/getAnalysis` endpoint derives key physical characteristics including:
+## Overview
 
-* **Magnitude response** (signal attenuation across frequency)
-* **Group delay** (timing variation due to multipath)
-* **Per-subcarrier complex response**
-* **Echo detection** (early/late reflection signatures using phase slope or time-domain analysis)
+[`CmDsOfdmChanEstimateCoef`](https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/pnm/process/CmDsOfdmChanEstimateCoef.py) parses the binary payload into complex coefficients (2 bytes real + 2 bytes imag per subcarrier), normalizes frequency metadata, and exposes a typed model for downstream analysis and export.
 
-Echo detection is particularly important in identifying micro-reflections and impedance mismatches in the coaxial plant, which often lead to burst errors, degraded MER, and overall link instability.
+## Endpoint
 
-Engineers can use this data for detailed spectral diagnostics, plant maintenance planning, and troubleshooting elusive performance issues. The structured output also includes summary signal statistics and supports export to JSON or Excel for visualization and offline analysis.
+`POST /docs/pnm/ds/ofdm/channelEstCoeff/getCapture`
 
-## 📚 Table of Contents
+## Request
 
-* [Get Measurement](#get-measurement)
-* [Get Analysis](#get-analysis)
-* [Get Measurement Statistics](#get-measurement-statistics)
-* [Analysis and Output Types](#analysis-and-output-types)
-* [Measurement Status Codes](#measurement-status-codes)
+Refer to [Common → Request](../../../common/request.md).  
+**Deltas (Analysis-only additions):** optional `analysis`, `analysis.output`, and `analysis.plot.ui` controls (same pattern as RxMER).
 
-## Measurement Status Codes
+### Delta Table
 
-| Code | Meaning                    | Context                                                            |
-| ---- | -------------------------- | ------------------------------------------------------------------ |
-| 0    | SUCCESS                    | Measurement completed and results are valid                        |
-| 1    | CAPTURE FILE MISSING       | SNMP points to a missing or unavailable binary data file           |
-| 2    | PARTIAL DATA               | Measurement file present, but content is truncated or incomplete   |
-| 3    | INVALID FORMAT             | Measurement file is unreadable or has invalid structure            |
-| 4    | UNSUPPORTED MODEM RESPONSE | Modem responded with unexpected or unhandled data layout           |
-| 5    | TIMEOUT                    | SNMP timeout or capture request did not complete within time limit |
-| 6    | NOT IMPLEMENTED            | Capture or parsing functionality not supported on current platform |
+| JSON path                  | Type     | Allowed values / format   | Default   | Description                                                                                   |
+|---------------------------|----------|---------------------------|-----------|-----------------------------------------------------------------------------------------------|
+| `analysis.type`           | string   | `"basic"`                 | `"basic"` | Selects the analysis mode used during capture processing.                                     |
+| `analysis.output.type`    | string   | `"json"`, `"archive"`     | `"json"`  | Output format. `"json"` returns inline under `data`; `"archive"` returns a ZIP (CSV + plots). |
+| `analysis.plot.ui.theme`  | string   | `"light"`, `"dark"`       | `"dark"`  | Plot theme hint (colors, grid, ticks). Does not affect raw metrics/CSV.                       |
 
-## Get Measurement
+**Notes**
 
-### 🚱 Endpoint
+- When `analysis.output.type = "archive"`, the HTTP response body is the file (no `data` JSON payload).
+- The `primative` section is the normalized raw payload with added metadata.
+- The `measurement_stats` section summarizes one-shot SNMP statistics collected at capture time.
 
-**POST** `/docs/pnm/ds/ofdm/channelEstCoeff/getMeasurement`
-
-Retrieves complex channel estimation coefficients from a DOCSIS 3.1 cable modem for a downstream OFDM channel. These values are used to assess multipath and in-channel distortion.
-
-### 📒 Request Body (JSON)
+### Example Request
 
 ```json
 {
   "cable_modem": {
-  "mac_address": "aa:bb:cc:dd:ee:ff", 
-  "ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
-    },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
-    }
+    "mac_address": "aa:bb:cc:dd:ee:ff",
+    "ip_address": "192.168.0.100",
+    "snmp": { "snmpV2C": { "community": "private" } }
+  },
+  "analysis": {
+    "type": "basic",
+    "output": { "type": "json" },
+    "plot": { "ui": { "theme": "dark" } }
   }
 }
 ```
 
-### 📤 JSON Response
+## Response
+
+Standard envelope with payload under `data`.
+
+### When `output.type = "json"`
+
+```json
+"output": { "type": "json" }
+```
+
+#### Abbreviated Example — Analysis + Primitive + Measurement Stats
 
 ```json
 {
   "mac_address": "aa:bb:cc:dd:ee:ff",
   "status": 0,
   "message": null,
-  "measurement": {
-    "data": [
-      {
-        "status": "SUCCESS",
-        "pnm_header": {
-          "file_type": "PNN",
-          "file_type_version": 2,
-          "major_version": 1,
-          "minor_version": 0,
-          "capture_time": 1751835648
-        },
-        "channel_id": 197,
-        "mac_address": "aa:bb:cc:dd:ee:ff",
-        "zero_frequency": 1217600000,
-        "first_active_subcarrier_index": 148,
-        "subcarrier_spacing": 50000,
-        "coefficient_data_length": 15200,
-        "number_of_coefficients": 3800,
-        "occupied_channel_bandwidth": 190000000,
-        "value_units": "[Real(I),Imaginary(Q)]",
-        "values": [[...]]
-      }
-    ]
-  }
-}
-```
-
-### 📘️ Response Field Breakdown
-
-| Field                           | Type     | Description                                                      |
-| ------------------------------- | -------- | ---------------------------------------------------------------- |
-| `pnm_header`                    | object   | Metadata from the capture file                                   |
-| `channel_id`                    | int      | Downstream OFDM channel ID                                       |
-| `mac_address`                   | string   | MAC address of the modem                                         |
-| `zero_frequency`                | int (Hz) | Subcarrier index 0 reference frequency                           |
-| `first_active_subcarrier_index` | int      | First usable subcarrier index                                    |
-| `subcarrier_spacing`            | int (Hz) | Frequency spacing between subcarriers (typically 50 kHz)         |
-| `coefficient_data_length`       | int      | Raw data size in bytes                                           |
-| `number_of_coefficients`        | int      | Number of complex coefficients                                   |
-| `occupied_channel_bandwidth`    | int (Hz) | Width of the active OFDM channel                                 |
-| `value_units`                   | string   | Format of the data, e.g. `[Real, Imaginary]`                     |
-| `values`                        | list     | List of complex coefficients (length = number\_of\_coefficients) |
-
-## Get Analysis
-
-### 🚱 Endpoint
-
-**POST** `/docs/pnm/ds/ofdm/channelEstCoeff/getAnalysis`
-
-Performs structured analysis of the channel estimation coefficients, including magnitude, group delay, and complex tap data per subcarrier. Includes signal quality statistics such as skewness, variance, and power.
-
-️ Due to response size, use tools like Postman or cURL instead of Swagger UI.
-
-### 📒 Request Body (JSON)
-
-```json
-{
-  "cable_modem": {
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
-    },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
-    }
-  },
-  "analysis": {
-    "type": 0
-  },
-  "output": {
-    "type": 0
-  }
-}
-```
-
-### 📤 JSON Response
-
-```json
-{
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "status": 0,
   "data": {
     "analysis": [
       {
-        "pnm_header": {
-          "file_type": "PNN",
-          "file_type_version": 2,
-          "major_version": 1,
-          "minor_version": 0,
-          "capture_time": 1751835918
-        },
-        "mac_address": "aa:bb:cc:dd:ee:ff",
-        "channel_id": 197,
         "frequency_unit": "Hz",
         "magnitude_unit": "dB",
         "group_delay_unit": "microsecond",
@@ -186,67 +81,72 @@ Performs structured analysis of the channel estimation coefficients, including m
         },
         "signal_statistics_target": "magnitude",
         "signal_statistics": {
-          "mean": 8.72,
-          "median": 10.03,
-          "std": 4.64,
-          "variance": 21.49,
-          "power": 97.55,
-          "peak_to_peak": 41.23,
-          "mean_abs_deviation": 3.40,
-          "skewness": -1.86,
-          "kurtosis": 8.07,
-          "crest_factor": 2.66,
-          "zero_crossing_rate": 0.113,
-          "zero_crossings": 430
+          "mean": 8.72, "median": 10.03, "std": 4.64, "variance": 21.49, "power": 97.55,
+          "peak_to_peak": 41.23, "mean_abs_deviation": 3.40, "skewness": -1.86,
+          "kurtosis": 8.07, "crest_factor": 2.66, "zero_crossing_rate": 0.113, "zero_crossings": 430
+        },
+        "echo": {
+            "type": 0,
+            "report": {
+                "channel_id": 197,
+                "dataset": {
+                    "subcarriers": 3800,
+                    "snapshots": 1,
+                    "subcarrier_spacing_hz": 50000.0,
+                    "sample_rate_hz": 190000000.0
+                },
+                "cable_type": "RG6",
+                "velocity_factor": 0.87,
+                "prop_speed_mps": 260819438.46,
+                "direct_path": {
+                    "bin_index": 1669,
+                    "time_s": 9.46842105263158e-06,
+                    "amplitude": 0.16922362601561589,
+                    "distance_m": 0.0,
+                    "distance_ft": 0.0
+                },
+                "echoes": [
+                    { "bin_index": 2800, "time_s": 1.588421052631579e-05, "amplitude": 0.14946724502489767, "distance_m": 836.6813, "distance_ft": 2745.0174 },
+                    { "bin_index": 2523, "time_s": 1.431578947368421e-05, "amplitude": 0.13743558197116454, "distance_m": 632.1440, "distance_ft": 2073.9631 },
+                    { "bin_index": 3637, "time_s": 2.0631578947368422e-05, "amplitude": 0.1355237604633048, "distance_m": 1455.7843, "distance_ft": 4776.1952 },
+                    { "bin_index": 3601, "time_s": 2.043157894736842e-05, "amplitude": 0.1354512671455663, "distance_m": 1429.7023, "distance_ft": 4690.6245 },
+                    { "bin_index": 1995, "time_s": 1.131578947368421e-05, "amplitude": 0.13187935631740205, "distance_m": 240.9148, "distance_ft": 790.4029 }
+                ],
+                "threshold_frac": 0.2,
+                "guard_bins": 2,
+                "min_separation_s": 0.0,
+                "max_delay_s": null,
+                "max_peaks": 5,
+                "time_response": null
+            }
         }
       }
-    ]
-  }
-}
-```
-
-## Get Measurement Statistics
-
-### 🚱 Endpoint
-
-**POST** `/docs/pnm/ds/ofdm/channelEstCoeff/getMeasurementStatistics`
-
-Returns high-level measurement statistics for downstream OFDM Channel Estimation Coefficients.
-
-### 📒 Request Body (JSON)
-
-```json
-{
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "172.19.24.23",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
-    },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
-    }
-  }
-}
-```
-
-### 📤 JSON Response
-
-```json
-{
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "status": 0,
-  "message": "Measurement Statistics for OFDM Channel Estimation Coefficients",
-  "results": {
-    "DS_OFDM_CHAN_EST_COEF": [
+    ],
+    "primative": [
       {
-        "index": <SNMP_INDEX>,
-        "channel_id": <CHANNEL_ID>,
+        "status": "SUCCESS",
+        "pnm_header": {
+          "file_type": "PNN",
+          "file_type_version": 2,
+          "major_version": 1,
+          "minor_version": 0,
+          "capture_time": 1751835648
+        },
+        "channel_id": 197,
+        "mac_address": "aa:bb:cc:dd:ee:ff",
+        "subcarrier_zero_frequency": 1217600000,
+        "first_active_subcarrier_index": 148,
+        "subcarrier_spacing": 50000,
+        "data_length": 15200,
+        "occupied_channel_bandwidth": 190000000,
+        "value_units": "[Real(I),Imaginary(Q)]",
+        "values": [[...]]
+      }
+    ],
+    "measurement_stats": [
+      {
+        "index": 48,
+        "channel_id": 197,
         "entry": {
           "docsPnmCmOfdmChEstCoefTrigEnable": false,
           "docsPnmCmOfdmChEstCoefAmpRipplePkToPk": 1484,
@@ -255,7 +155,7 @@ Returns high-level measurement statistics for downstream OFDM Channel Estimation
           "docsPnmCmOfdmChEstCoefGrpDelayRipplePkToPk": 112741,
           "docsPnmCmOfdmChEstCoefGrpDelayRippleRms": 3164,
           "docsPnmCmOfdmChEstCoefMeasStatus": 4,
-          "docsPnmCmOfdmChEstCoefFileName": "ds-chan-est_48_1752333441.bin",
+          "docsPnmCmOfdmChEstCoefFileName": "ds_ofdm_chan_est_coef_aabbccddeeff_193_1761517070.bin",
           "docsPnmCmOfdmChEstCoefAmpMean": 4468,
           "docsPnmCmOfdmChEstCoefGrpDelaySlope": 5,
           "docsPnmCmOfdmChEstCoefGrpDelayMean": 1558514
@@ -266,18 +166,116 @@ Returns high-level measurement statistics for downstream OFDM Channel Estimation
 }
 ```
 
-## Analysis and Output Types
+### When `output.type = "archive"`
 
-### `analysis.type`
+```json
+"output": { "type": "archive" }
+```
 
-| Value | Type  | Description                                         |
-| ----- | ----- | --------------------------------------------------- |
-| `0`   | BASIC | Magnitude, group delay, complex taps per subcarrier |
+The response is a downloadable ZIP file containing:
 
-### `output.type`
+- CSV exports per subcarrier: `complex.csv`, `magnitude.csv`, `group_delay.csv`.
+- PNG plots: `magnitude.png`, `group_delay.png`, `complex_phase.png` (optional).
 
-| Value | Format | Description                                                                  |
-| ----- | ------ | ---------------------------------------------------------------------------- |
-| `0`   | JSON   | Structured JSON for dashboards and offline processing                        |
-| `1`   | CSV    | Not supported                                                                |
-| `2`   | XLSX   | Excel-compatible output for visualization or detailed statistical breakdowns |
+| DARK                          | Light                         | Description                       |
+|------------------------------|-------------------------------|-----------------------------------|
+| `magnitude_dark.png`         | `magnitude_light.png`         | Magnitude vs. Subcarrier Index    |
+| `group_delay_dark.png`       | `group_delay_light.png`       | Group Delay vs. Subcarrier Index  |
+| `complex_phase_dark.png`     | `complex_phase_light.png`     | Complex Phase vs. Subcarrier Index|
+
+### Echo Detection
+
+When `analysis` includes echo processing, the response may include an `echo` object with a summarized report. The fields below
+describe the structure and interpretation.
+
+**Echo Report Schema** (`data.analysis[].echo.report`)
+
+| Field                               | Type          | Description                                                                                     |
+|-------------------------------------|---------------|-------------------------------------------------------------------------------------------------|
+| channel_id                          | int           | Channel ID used for the analysis.                                                               |
+| dataset.subcarriers                 | int           | Number of active subcarriers used to compute the time-domain response.                          |
+| dataset.snapshots                   | int           | Count of snapshots/averages across captures (1 for single-capture).                             |
+| dataset.subcarrier_spacing_hz       | number        | Subcarrier spacing in Hz (e.g., 50,000).                                                        |
+| dataset.sample_rate_hz              | number        | Effective sample rate in Hz (≈ subcarriers × spacing).                                          |
+| cable_type                          | string        | Plant cable type assumption (affects velocity factor).                                          |
+| velocity_factor                     | number        | Fraction of the speed of light used for distance conversion (e.g., 0.87 for RG6).              |
+| prop_speed_mps                      | number        | Propagation speed in meters per second derived from `velocity_factor`.                          |
+| direct_path.bin_index               | int           | FFT bin of the dominant/direct path peak.                                                       |
+| direct_path.time_s                  | number        | Time of direct path peak in seconds.                                                            |
+| direct_path.amplitude               | number        | Magnitude of the direct path peak (normalized units).                                           |
+| direct_path.distance_m              | number        | Reference distance in meters (0 for direct path).                                               |
+| direct_path.distance_ft             | number        | Reference distance in feet (0 for direct path).                                                 |
+| echoes[]                            | array<object> | Detected echo peaks sorted by amplitude or delay (implementation-defined).                      |
+| echoes[].bin_index                  | int           | FFT bin index of the echo peak.                                                                 |
+| echoes[].time_s                     | number        | Echo peak time in seconds.                                                                      |
+| echoes[].amplitude                  | number        | Echo peak magnitude (normalized units).                                                         |
+| echoes[].distance_m                 | number        | One-way distance estimate in meters.                                                            |
+| echoes[].distance_ft                | number        | One-way distance estimate in feet.                                                              |
+| threshold_frac                      | number        | Detection threshold as a fraction of the direct-path amplitude (0–1).                           |
+| guard_bins                          | int           | Number of bins ignored around each detected peak to avoid double-counting.                      |
+| min_separation_s                    | number        | Minimum separation between peaks in seconds.                                                     |
+| max_delay_s                         | number/null   | Optional maximum delay search window in seconds.                                                |
+| max_peaks                           | int           | Maximum number of echoes to report.                                                             |
+| time_response                       | array|null    | Optional time-domain response samples (implementation-dependent; may be null for brevity).      |
+
+**Notes**
+
+- Distance is computed from time via `distance = time_s × prop_speed_mps`. Values are one-way estimates.
+- The `direct_path` is used as the reference for thresholding and distance zero; echoes are relative to this peak.
+- Choice of `velocity_factor` should match plant assumptions (e.g., RG6≈0.87, hardline may differ).
+
+## Field Tables
+
+**Payload: `data.analysis[]`**
+
+| Field                                     | Type            | Description                                 |
+|-------------------------------------------|-----------------|---------------------------------------------|
+| frequency_unit                            | string          | Unit for frequency arrays (Hz).             |
+| magnitude_unit                            | string          | Unit for magnitude (dB).                    |
+| group_delay_unit                          | string          | Unit for group delay (microsecond).         |
+| complex_unit                              | string          | Label for complex pairs.                    |
+| carrier_values.occupied_channel_bandwidth | int (Hz)        | Active bandwidth.                           |
+| carrier_values.carrier_count              | int             | Subcarrier count.                           |
+| carrier_values.frequency                  | array(int)      | Frequency per subcarrier (Hz).              |
+| carrier_values.magnitude                  | array(float)    | Magnitude per subcarrier (dB).              |
+| carrier_values.group_delay                | array(float)    | Group delay per subcarrier (µs).            |
+| carrier_values.complex                    | array(array)    | Complex pairs `[real, imag]`.               |
+| signal_statistics_target                  | string          | Which array stats were computed on.         |
+| signal_statistics.*                       | object          | Aggregate stats (mean, std, variance, …).   |
+
+**Payload: `data.primative[]`**
+
+| Field                        | Type        | Description                                           |
+|-----------------------------|-------------|-------------------------------------------------------|
+| status                      | string      | Result for this capture (e.g., `SUCCESS`).            |
+| pnm_header.*                | object      | PNM file header (type, version, capture time).        |
+| channel_id                  | int         | Downstream OFDM channel ID.                           |
+| mac_address                 | string      | MAC address of the modem.                             |
+| subcarrier_zero_frequency   | int (Hz)    | Subcarrier 0 frequency.                               |
+| first_active_subcarrier_index| int        | First active subcarrier index.                        |
+| subcarrier_spacing          | int (Hz)    | Subcarrier spacing.                                   |
+| data_length                 | int (bytes) | Coefficient payload length (multiple of 4).           |
+| occupied_channel_bandwidth  | int (Hz)    | Active bandwidth.                                     |
+| value_units                 | string      | Complex pair label, e.g., `"[Real(I),Imaginary(Q)]"`. |
+| values                      | array(array)| Complex pairs per subcarrier.                         |
+
+**Payload: `data.measurement_stats[]`**
+
+SNMP snapshot for each channel at capture time.
+
+| Field                                                | Type     | Description                                  |
+|------------------------------------------------------|----------|----------------------------------------------|
+| index                                                | int      | SNMP table row index (per device).           |
+| channel_id                                           | int      | OFDM downstream channel ID.                  |
+| entry.docsPnmCmOfdmChEstCoefTrigEnable              | boolean  | Whether CM trigger was enabled.              |
+| entry.docsPnmCmOfdmChEstCoefAmpRipplePkToPk         | int      | Pk‑to‑Pk amplitude ripple (vendor units).    |
+| entry.docsPnmCmOfdmChEstCoefAmpRippleRms            | int      | RMS amplitude ripple (vendor units).         |
+| entry.docsPnmCmOfdmChEstCoefAmpSlope                | int      | Amplitude slope (vendor units).              |
+| entry.docsPnmCmOfdmChEstCoefGrpDelayRipplePkToPk    | int      | Group delay ripple Pk‑to‑Pk (vendor units).  |
+| entry.docsPnmCmOfdmChEstCoefGrpDelayRippleRms       | int      | Group delay ripple RMS (vendor units).       |
+| entry.docsPnmCmOfdmChEstCoefMeasStatus              | int      | Measurement status code.                     |
+| entry.docsPnmCmOfdmChEstCoefFileName                | string   | Device‑side filename of the sample.          |
+| entry.docsPnmCmOfdmChEstCoefAmpMean                 | int      | Amplitude mean (vendor units).               |
+| entry.docsPnmCmOfdmChEstCoefGrpDelaySlope           | int      | Group delay slope (vendor units).            |
+| entry.docsPnmCmOfdmChEstCoefGrpDelayMean            | int      | Group delay mean (vendor units).             |
+

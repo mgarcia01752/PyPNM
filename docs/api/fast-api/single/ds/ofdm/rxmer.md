@@ -247,4 +247,3 @@ Summarized SNMP snapshot for each channel at capture time.
 | entry.docsPnmCmDsOfdmRxMerStdDev         | number   | Standard deviation (dB).                                 |
 | entry.docsPnmCmDsOfdmRxMerThrVal         | number   | Threshold value dependent on vendor implementation.      |
 | entry.docsPnmCmDsOfdmRxMerThrHighestFreq | int (Hz) | Highest frequency associated with threshold metric.      |
-

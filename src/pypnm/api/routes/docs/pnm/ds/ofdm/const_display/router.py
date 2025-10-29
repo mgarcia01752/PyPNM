@@ -13,7 +13,7 @@ from fastapi import APIRouter, HTTPException
 from pypnm.api.routes.basic.abstract.analysis_report import Analysis
 from pypnm.api.routes.basic.constellation_display_analysis_rpt import ConstellationDisplayReport
 from pypnm.api.routes.common.classes.analysis.analysis import AnalysisType
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmAnalysisResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisResponse
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
