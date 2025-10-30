@@ -51,7 +51,7 @@ class ChannelEstimationCoefficientRouter:
             """
             Capture Downstream OFDM Channel Estimation Coefficients.
 
-            [API Guide]()
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/ds/ofdm/channel-estimation.md)
 
             """
             mac: MacAddressStr = request.cable_modem.mac_address
