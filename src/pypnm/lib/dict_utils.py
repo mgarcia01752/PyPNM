@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 # pypnm/lib/dict_utils.py
 from __future__ import annotations
 

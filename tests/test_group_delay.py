@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 # tests/test_group_delay.py
 from __future__ import annotations
 

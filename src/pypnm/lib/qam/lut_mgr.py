@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 
 import numpy as np
 from typing import List, Tuple, Optional, Literal, cast
