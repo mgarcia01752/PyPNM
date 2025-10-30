@@ -50,7 +50,7 @@ class RxMerRouter:
             """
             Capture Downstream OFDM RxMER Per-Subcarrier Values.
 
-            [API Guide]()
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/ds/ofdm/rxmer.md)
 
             """
             mac: MacAddressStr = request.cable_modem.mac_address
