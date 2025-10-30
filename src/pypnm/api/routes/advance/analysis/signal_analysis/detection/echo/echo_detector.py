@@ -113,7 +113,7 @@ class EchoDetector:
         *,
         subcarrier_spacing_hz: float,
         n_fft: Optional[int]    = None,
-        cable_type: CableTypes  = "RG6",
+        cable_type: CableTypes  = CableType.RG6.name,
         channel_id: ChannelId   = ChannelId(-1),
     ):
         """
