@@ -100,7 +100,7 @@ pypnm --reload
 
 ### 6) (Optional) Serve the documentation
 
-Default: `http://127.0.0.1:8001`
+HTTP (default: `http://127.0.0.1:8001`
 
 ```bash
 mkdocs serve
@@ -109,8 +109,9 @@ mkdocs serve
 ### 7) Explore the API
 
 * Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
+* MkDocs docs: [http://localhost:8001](http://localhost:8001)
 * ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
-* Postman: [https://www.postman.com/downloads/](https://www.postman.com/downloads/)
+* Install Postman: [https://www.postman.com/downloads/](https://www.postman.com/downloads/)
 
 *Tip:* Postman is often better for large or deeply nested JSON payloads.
 
