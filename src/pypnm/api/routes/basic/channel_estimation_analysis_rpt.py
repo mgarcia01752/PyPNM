@@ -68,6 +68,7 @@ class ChanEstimationReport(AnalysisReport):
             ca: ComplexArray        = model.raw_complex
             rl: FloatSeries         = model.parameters.regression_line
             db: FloatSeries         = DbLinearConverter.complex_to_db(ca)
+            gd: FloatSeries         = model.parameters.group_delay
 
             # Single Channel Capture
             try:
@@ -76,12 +77,12 @@ class ChanEstimationReport(AnalysisReport):
                 csv_mgr.set_path_fname(csv_fname)
 
                 csv_mgr.set_header([
-                    "ChannelID", "Frequency(Hz)", "Magnitude(Linear)", "Magnitude(dB)",
-                    "Regression(Linear)", "Real", "Imaginary"
-                ])
-                for rx, ry, reg, cdb, rl_v, cmp in zip(freq, magnitude, rl, db, rl, ca):
+                    "ChannelID", "Frequency(Hz)", 
+                    "Magnitude(Linear)", "Magnitude(dB)", "Regression(Linear)", "Group Delay", "Real", "Imaginary"])
+
+                for rx, ry, reg, cdb, rl_v, gd_v, cmp in zip(freq, magnitude, rl, db, rl, gd, ca):
                     real, img = cmp
-                    csv_mgr.insert_row([chan, rx, ry, cdb, reg, real, img])
+                    csv_mgr.insert_row([chan, rx, ry, cdb, reg, gd_v, real, img])
 
                 self.logger.info("CSV created for channel %s: %s (rows=%d)", chan, csv_fname, len(freq))
                 csv_mgr_list.append(csv_mgr)
