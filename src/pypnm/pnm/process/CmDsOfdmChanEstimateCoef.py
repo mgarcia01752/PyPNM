@@ -52,7 +52,7 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
     def __init__(
         self,
         binary_data: bytes,
-        sm_n_format: Tuple[IntegerBits, FractionalBits] = (IntegerBits(2), FractionalBits(13)),
+        q_format: Tuple[IntegerBits, FractionalBits] = (IntegerBits(2), FractionalBits(13)),
         round_precision: Optional[int] = 6,
     ):
         """
@@ -67,7 +67,7 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
         """
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
-        self._sm_n_format: Tuple[IntegerBits, FractionalBits] = sm_n_format
+        self._q_format: Tuple[IntegerBits, FractionalBits] = q_format
         self._round_precision: Optional[int] = round_precision
 
         self._channel_id: ChannelId                  = INVALID_CHANNEL_ID
@@ -115,7 +115,7 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
             raise ValueError("Coefficient data segment is truncated or incomplete.")
 
         complex_bytes = self.pnm_data[coef_start:coef_end]
-        self._coefficient_data = FixedPointDecoder.decode_complex_data(complex_bytes, self._sm_n_format)
+        self._coefficient_data = FixedPointDecoder.decode_complex_data(complex_bytes, self._q_format)
 
         self._mac_address = MacAddress(mac_raw).to_mac_format(MacAddressFormat.COLON)
         self._subcarrier_spacing = int(spacing_khz) * KHZ

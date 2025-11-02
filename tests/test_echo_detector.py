@@ -1,132 +1,162 @@
+# test_echo_detector.py
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
-
-# tests/test_echo_detector.py
 from __future__ import annotations
+
+from typing import List
+
 import numpy as np
 import pytest
 
+# Import your detector from its project path
 from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.echo_detector import (
-    EchoDetector, EchoDetectorReport, EchoReflection,)
-from pypnm.lib.constants import CABLE_VF, SPEED_OF_LIGHT
+    EchoDetector,)
 from pypnm.lib.types import ChannelId
 
-def _build_freq_from_time_impulses(n: int, direct_bin: int, echo_bin: int, amp_direct: float = 1.0, amp_echo: float = 0.5) -> np.ndarray:
-    """Helper: create H(f) by FFT of an impulse-y h(t) with two peaks."""
-    h = np.zeros(n, dtype=np.complex128)
-    h[direct_bin] = amp_direct + 0j
-    h[echo_bin] = amp_echo + 0j
-    return np.fft.fft(h, n=n)
+# Fixed PHY/Test parameters
+DF_HZ = 50_000.0               # subcarrier spacing (Hz)
+NFFT = 4096                    # IFFT length
+FS = NFFT * DF_HZ              # sample rate (Hz) = 204.8 MHz
+VF = 0.87                      # RG6 default
+C0 = 299_792_458.0             # m/s
+V = C0 * VF                    # propagation speed in the cable
+FEET_PER_METER = 3.280839895013123
 
 
-@pytest.mark.parametrize("df", [25_000.0, 50_000.0])
-def test_first_echo_basic(df: float) -> None:
+def _bins_for_distance_ft(distance_ft: float, fs: float = FS, v: float = V) -> int:
     """
-    Build a synthetic time response with a direct peak and a later echo,
-    transform to frequency domain, and verify first_echo() finds the right bins,
-    times, and distance.
+    Convert a one-way distance (ft) to the echo bin index after the direct path
+    using round-trip time t = 2d / v and bin = t * fs.
     """
-    N = 1024
-    i0 = 100
-    ie = 220
-    H = _build_freq_from_time_impulses(N, i0, ie, amp_direct=1.0, amp_echo=0.4)
-
-    det = EchoDetector(H, subcarrier_spacing_hz=df, n_fft=N, cable_type="RG6")
-    ref: EchoReflection = det.first_echo(threshold_frac=0.2, guard_bins=2, max_delay_s=None)
-
-    fs = N * df
-    delay_expected = (ie - i0) / fs
-    v = SPEED_OF_LIGHT * CABLE_VF["RG6"]
-    dist_expected = (v * delay_expected) / 2.0
-
-    assert ref.direct_index == i0
-    assert ref.echo_index == ie
-    assert ref.time_echo_s - ref.time_direct_s == pytest.approx(delay_expected, rel=0, abs=1e-12)
-    assert ref.reflection_delay_s == pytest.approx(delay_expected, rel=0, abs=1e-12)
-    assert ref.reflection_distance_m == pytest.approx(dist_expected, rel=1e-12)
-    assert ref.amp_echo < ref.amp_direct
-    assert 0.0 < ref.amp_ratio < 1.0
+    d_m = distance_ft / FEET_PER_METER
+    t = (2.0 * d_m) / v
+    return int(round(t * fs))
 
 
-def test_multi_echo_pairs_and_padding() -> None:
+def _make_freq_response_from_impulses(pulses: List[tuple[int, float]], nfft: int = NFFT) -> np.ndarray:
     """
-    Verify multi_echo() with (N,2) real/imag input and zero-padding returns
-    a well-formed report including the optional time_response block.
+    Build H(f) by FFT of h[n] with time-domain impulses:
+    pulses = [(bin_index, amplitude), ...]
     """
-    N = 512
-    i0, i1, i2 = 50, 120, 300
-    H = _build_freq_from_time_impulses(N, i0, i1, amp_direct=1.0, amp_echo=0.6)
-    # encode as (re, im) pairs shape (N, 2)
-    H_pairs = np.stack((np.real(H), np.imag(H)), axis=1)
+    h = np.zeros(nfft, dtype=np.complex128)
+    for idx, amp in pulses:
+        h[idx % nfft] += complex(float(amp), 0.0)
+    H = np.fft.fft(h, n=nfft)
+    return H.astype(np.complex128)
 
-    det = EchoDetector(H_pairs, subcarrier_spacing_hz=50_000.0, n_fft=2048, cable_type="RG11")
-    rep: EchoDetectorReport = det.multi_echo(
-        threshold_frac=0.2,
-        guard_bins=1,
-        min_separation_s=0.0,
-        max_delay_s=None,
-        max_peaks=3,
-        include_time_response=True,
-        channel_id=ChannelId(42),
+
+def test_direct_plus_known_echo_bin_and_distance():
+    """
+    Create a direct path at bin 0 and a single echo at ~20 ft.
+    Validate that the detector finds the echo near the expected bin and that
+    echo distances increase (monotonic) relative to the direct path.
+    """
+    distance_ft = 20.0
+    echo_bin = _bins_for_distance_ft(distance_ft)
+    # A modest echo amplitude (linear)
+    echo_amp = 0.25
+
+    H = _make_freq_response_from_impulses([(0, 1.0), (echo_bin, echo_amp)], nfft=NFFT)
+    det = EchoDetector(
+        freq_data=H,
+        subcarrier_spacing_hz=DF_HZ,
+        n_fft=NFFT,
+        cable_type="RG6",
+        channel_id=ChannelId(197),
     )
 
-    assert rep.channel_id == ChannelId(42)
-    assert rep.dataset.subcarriers == N
-    assert rep.dataset.sample_rate_hz == pytest.approx(N * 50_000.0, rel=0, abs=0.0)
-    assert rep.velocity_factor == pytest.approx(CABLE_VF["RG11"], rel=0, abs=0.0)
-    assert rep.direct_path.bin_index == i0
-    # At least one echo detected (the designed i1). Zero-padding shouldn't change peak indices.
-    assert len(rep.echoes) >= 1
-    assert rep.echoes[0].bin_index == i1
-    # Time response block present and length matches n_fft
-    assert rep.time_response is not None
-    assert rep.time_response.n_fft == 2048
-    assert len(rep.time_response.time_axis_s) == 2048
-    assert len(rep.time_response.time_response) == 2048
-
-
-def test_multi_echo_snapshots_min_separation() -> None:
-    """
-    Feed multiple snapshots with small noise; enforce minimum separation so that
-    close peaks are not both selected.
-    """
-    N = 1024
-    df = 25_000.0
-    i0 = 80
-    close_echo = 86       # very close to main lobe (should be suppressed by guard or min separation)
-    far_echo = 280
-
-    H_base = _build_freq_from_time_impulses(N, i0, far_echo, amp_direct=1.0, amp_echo=0.5)
-    # Add a *tiny* close echo into the time-domain then FFT, by modifying h then re-FFT:
-    h = np.fft.ifft(H_base)
-    h[close_echo] += 0.3
-    H_with_close = np.fft.fft(h)
-
-    # Create M snapshots with light complex noise in frequency domain
-    rng = np.random.default_rng(123)
-    M = 4
-    noise = (rng.normal(scale=1e-6, size=(M, N)) + 1j * rng.normal(scale=1e-6, size=(M, N))).astype(np.complex128)
-    H_snap = np.broadcast_to(H_with_close, (M, N)).copy()
-    H_snap += noise
-
-    det = EchoDetector(H_snap, subcarrier_spacing_hz=df, cable_type="RG59")
-    # Guard out a few bins past the direct path, and set a minimum separation bigger than (close_echo - i0)
     rep = det.multi_echo(
-        threshold_frac=0.2,
-        guard_bins=3,
-        min_separation_s=10 / (N * df),  # 10 bins worth of time spacing
-        max_delay_s=None,
-        max_peaks=5,
+        threshold_mode="fractional",
+        threshold_frac=0.05,            # 5% of direct amplitude
+        guard_bins=0,                   # allow immediate search; detector also has 10-ft guard by default
+        min_separation_s=8.0 / det.fs,  # ~8 bins
+        max_delay_s=3.5e-6,
+        max_peaks=3,
         include_time_response=False,
-        channel_id=ChannelId(7),
+        direct_at_zero=True,
+        window="hann",
+        normalize_power=True,
+        edge_guard_bins=8,
+        # keep default min_detect_distance_ft=10.0
     )
 
-    # Direct path is correct
-    assert rep.direct_path.bin_index == i0
-    # The "close_echo" should be filtered; the far echo should remain
-    echo_bins = [e.bin_index for e in rep.echoes]
-    assert far_echo in echo_bins
-    assert close_echo not in echo_bins
-    # Distances must be non-negative and roughly increasing with time
-    distances = [e.distance_m for e in rep.echoes]
-    assert all(d >= 0 for d in distances)
+    # Must have at least one echo
+    assert len(rep.echoes) >= 1, "Expected at least one echo to be detected."
+
+    first = rep.echoes[0]
+    # Bin check: within ±1 bin of expected
+    assert first.bin_index == pytest.approx(echo_bin, abs=1), (
+        f"First echo bin {first.bin_index} not close to expected {echo_bin}"
+    )
+
+    # Time/Distance sanity: > 0
+    assert first.time_s > 0.0
+    assert first.distance_m > 0.0
+    # Distance close to 20 ft (±1 ft tolerance)
+    assert first.distance_ft == pytest.approx(distance_ft, abs=1.0)
+
+    # If more echoes somehow cross threshold, ensure distances are non-decreasing
+    dists = [e.distance_m for e in rep.echoes]
+    assert dists == sorted(dists), "Echo distances should be non-decreasing."
+
+
+def test_snapshot_average_with_guard_and_min_separation():
+    """
+    Two-snapshot average case:
+      - A strong artifact at 2 bins (inside the 10-ft guard → should be ignored)
+      - A valid echo beyond the guard (e.g., ~15 ft) that should be detected
+    Also enforces min-separation (~8 bins).
+    """
+    # Near artifact within ~10 ft guard
+    near_ft = 5.0
+    near_bin = _bins_for_distance_ft(near_ft)
+
+    # Valid echo beyond guard
+    valid_ft = 15.0
+    valid_bin = _bins_for_distance_ft(valid_ft)
+
+    # Build two snapshots with slight amplitude variation
+    H1 = _make_freq_response_from_impulses([(0, 1.0), (near_bin, 0.5), (valid_bin, 0.25)], nfft=NFFT)
+    H2 = _make_freq_response_from_impulses([(0, 1.0), (near_bin, 0.45), (valid_bin, 0.3)], nfft=NFFT)
+    H_snapshots = np.vstack([H1, H2])  # shape (2, NFFT), complex
+
+    det = EchoDetector(
+        freq_data=H_snapshots,          # (M, N) complex → averaged internally
+        subcarrier_spacing_hz=DF_HZ,
+        n_fft=NFFT,
+        cable_type="RG6",
+        channel_id=194,
+    )
+
+    rep = det.multi_echo(
+        threshold_mode="fractional",
+        threshold_frac=0.05,
+        guard_bins=0,                    # leave explicit guard at 0; detector uses 10-ft min distance guard
+        min_separation_s=8.0 / det.fs,   # ~8 bins
+        max_delay_s=3.5e-6,
+        max_peaks=3,
+        include_time_response=False,
+        direct_at_zero=True,
+        window="hann",
+        normalize_power=True,
+        edge_guard_bins=8,
+        # keep default min_detect_distance_ft=10.0
+    )
+
+    # We expect the near artifact to be rejected by min_detect_distance_ft (~5 bins)
+    # and the valid echo beyond ~10 ft to be included.
+    bins = [e.bin_index for e in rep.echoes]
+
+    # Valid echo must be present (±1 bin)
+    assert any(abs(b - valid_bin) <= 1 for b in bins), (
+        f"Valid echo near bin {valid_bin} not detected; got bins {bins}"
+    )
+
+    # Near artifact must be absent
+    assert all(abs(b - near_bin) > 1 for b in bins), (
+        f"Near artifact within guard (bin {near_bin}) should have been rejected; got bins {bins}"
+    )
+
+    # Min separation: all selected bins spaced by ≥ ~8 bins
+    bins_sorted = sorted(bins)
+    for i in range(1, len(bins_sorted)):
+        assert (bins_sorted[i] - bins_sorted[i - 1]) >= 8 - 1, "Echo picks violate min separation constraint"

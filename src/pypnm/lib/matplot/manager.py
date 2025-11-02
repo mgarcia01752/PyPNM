@@ -384,10 +384,10 @@ class MatplotManager:
 
     def plot_scatter(
         self,
-        x: Optional[ArrayLike],
-        y: Optional[ArrayLike],
         filename: Union[str, Path],
         *,
+        x: Optional[ArrayLike] = None,
+        y: Optional[ArrayLike] = None,
         c: Optional[ArrayLike] = None,
         s: Optional[ArrayLike] = None,
         add_colorbar: bool = True,
