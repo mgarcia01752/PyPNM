@@ -8,17 +8,15 @@ from typing import Any, Dict, List, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport
+from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport, AnalysisRptMatplotConfig
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.basic.common.signal_capture_agg import SignalCaptureAggregator
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.lib.constants import INVALID_CHANNEL_ID, NULL_ARRAY_NUMBER
+from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
-from pypnm.lib.numeric_scaler import NumericScaler
 from pypnm.lib.qam.types import QamModulation
-from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
-from pypnm.lib.types import ArrayLike, ComplexArray, FloatSeries
+from pypnm.lib.types import ChannelId, ComplexArray
 
 class ConstellationDisplayParameters(BaseModel):
     model_config                    = ConfigDict(populate_by_name=True, extra="ignore")
@@ -34,8 +32,10 @@ class ConstellationDisplayReport(AnalysisReport):
 
     FNAME_TAG:str = 'constdisplay'
 
-    def __init__(self, analysis: Analysis):
-        super().__init__(analysis)
+    def __init__(self, analysis: Analysis, 
+                 analysis_matplot_config:AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(), 
+                 **kwargs):
+        super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("ConstellationDisplayReport")
         self._results: Dict[int, ConstellationDisplayAnalysisRptModel] = {}
         self._sig_cap_agg: SignalCaptureAggregator = SignalCaptureAggregator()
@@ -106,15 +106,20 @@ class ConstellationDisplayReport(AnalysisReport):
             Constellation Display - All OFDM DS Channels
             '''
             try:
-
+                title = f"Constellation Display - OFDM Channel: {channel_id} - Modulation: {modulation.name} - SampleSize: {sample_count}"
                 cfg = PlotConfig(
-                    title=f"Constellation Display - OFDM Channel: {channel_id} - Modulation: {modulation.name} - SampleSize: {sample_count}",
-                    x=[0], # TODO: need to fix this, don't need to put in a dummy value
-                    xlabel="In-phase (I)", ylabel="Quadrature (Q)",
-                    qam     =   modulation,
-                    hard    =   hard,
-                    soft    =   soft,
-                    grid=True, legend=True, transparent=False,)
+                    title       =   title,
+                    x           =   [0], # TODO: need to fix this, don't need to put in a dummy value
+                    xlabel      =   "In-phase (I)",
+                    ylabel      =   "Quadrature (Q)",
+                    qam         =   modulation,
+                    hard        =   hard,
+                    soft        =   soft,
+                    grid        =   False,
+                    legend      =   True,
+                    transparent =   False,
+                    theme       =   self.getAnalysisRptMatplotConfig().theme,
+                )
 
                 const_disp = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG])
                 self.logger.debug("Creating MatPlot: %s for channel: %s", const_disp, channel_id)
@@ -165,7 +170,7 @@ class ConstellationDisplayReport(AnalysisReport):
                 )
                 
                 model = ConstellationDisplayAnalysisRptModel(
-                        channel_id  =   channel_id,
+                        channel_id  =   ChannelId(channel_id),
                         raw_x       =   [0],    
                         raw_y       =   [0],
                         parameters  =   params

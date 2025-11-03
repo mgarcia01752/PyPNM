@@ -6,14 +6,14 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmDataResponse, PnmRequest, PnmAnalysisRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmDataResponse, PnmRequest, PnmAnalysisRequest, PnmSingleCaptureRequest
 from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst as ConsDisplaConstant
 
 class ConstellationDisplaySettings(BaseModel):
     modulation_order_offset:int = Field(default=ConsDisplaConstant.MODULATION_OFFSET.value, description="")
     number_sample_symbol:int    = Field(default=ConsDisplaConstant.NUM_SAMPLE_SYMBOL.value, description="")    
 
-class PnmConstellationDisplayAnalysisRequest(PnmAnalysisRequest):
+class PnmConstellationDisplayAnalysisRequest(PnmSingleCaptureRequest):
     """Generic response container for most PNM operations."""
     capture_settings:ConstellationDisplaySettings
 

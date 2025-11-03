@@ -22,6 +22,11 @@ from pypnm.lib.types import ArrayLike, ComplexArray, Number
 ThemeType = Literal["dark", "light", True, False]
 
 
+# Place near the top-level with other constants (no magic numbers)
+CROSSHAIR_MARKER_SIZE_PTS: float = 24.0   # very thin/small crosshair visual
+CROSSHAIR_LINEWIDTH_PTS:   float = 0.6    # very thin stroke
+
+
 # ───────────────────────── Plot configuration ─────────────────────────
 
 @dataclass(frozen=True)
@@ -416,11 +421,20 @@ class MatplotManager:
         soft: Optional[ComplexArray] = None,
         show_boundaries: bool = True,
         boundary_alpha: float = 0.25,
-        crosshair_size: float = 80.0,
-        crosshair_lw: float = 1.8,
+        crosshair_size: float = 80.0,   # ignored (hard-coded thin)
+        crosshair_lw: float = 1.8,      # ignored (hard-coded thin)
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
-        defaults = PlotConfig(grid=True, legend=None, transparent=False)
+        """
+        Plot a QAM constellation with labels only (no numeric tick values).
+
+        - Crosshair marker for hard decisions is hard-coded very thin.
+        - Decision regions are drawn as small squares around each hard point when
+          `show_boundaries=True`.
+        - Numeric tick labels are hidden on both axes, but axis labels remain.
+        """
+        import matplotlib.patches as mpatches
+        defaults = PlotConfig(grid=False, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
 
         if soft is None:
@@ -431,62 +445,85 @@ class MatplotManager:
         x_soft, y_soft = self._split_complex_array(soft)
         x_hard, y_hard = self._split_complex_array(hard)
 
+        _CROSS_S = 20.0  # thin crosshair size
+        _CROSS_LW = 0.6  # thin crosshair line width
+
         with self._theme_context(cfg):
             fig, ax = self._new_fig()
 
             if x_soft.size and y_soft.size:
-                ax.scatter(x_soft, y_soft, marker='.', s=8, linewidths=0,
-                           edgecolors='none', alpha=0.75, label='Soft', rasterized=True)
+                ax.scatter(
+                    x_soft, y_soft,
+                    marker='.', s=8, linewidths=0,
+                    edgecolors='none', alpha=0.75,
+                    label='Soft', rasterized=True
+                )
 
-            if x_hard.size and y_hard.size:
-                n = min(x_hard.size, y_hard.size)
+            n = min(x_hard.size, y_hard.size)
+            if n:
                 ax.scatter(
                     x_hard[:n], y_hard[:n],
-                    marker="+",
-                    c="red",
-                    s=crosshair_size,
-                    linewidths=crosshair_lw,
+                    marker="+", c="red",
+                    s=_CROSS_S, linewidths=_CROSS_LW,
                     label="Hard",
                 )
 
-                if show_boundaries:
-                    levels_i = np.unique(x_hard[:n])
-                    levels_q = np.unique(y_hard[:n])
-                    mids_i = (levels_i[1:] + levels_i[:-1]) / 2.0 if levels_i.size >= 2 else np.array([])
-                    mids_q = (levels_q[1:] + levels_q[:-1]) / 2.0 if levels_q.size >= 2 else np.array([])
+            if show_boundaries and n:
+                levels_i = np.unique(x_hard[:n])
+                levels_q = np.unique(y_hard[:n])
 
-                    all_x = np.concatenate([x_soft, x_hard[:n]]) if x_soft.size else x_hard[:n]
-                    all_y = np.concatenate([y_soft, y_hard[:n]]) if y_hard.size else y_hard[:n]
-                    if all_x.size:
-                        x_min, x_max = float(np.min(all_x)), float(np.max(all_x))
-                        x_pad = 0.05 * (x_max - x_min if x_max > x_min else 1.0)
-                        x_lo, x_hi = x_min - x_pad, x_max + x_pad
-                    else:
-                        x_lo, x_hi = -1.0, 1.0
-                    if all_y.size:
-                        # FIX: compute both min and max (previous bug)
-                        y_min, y_max = float(np.min(all_y)), float(np.max(all_y))
-                        y_pad = 0.05 * (y_max - y_min if y_max > y_min else 1.0)
-                        y_lo, y_hi = y_min - y_pad, y_max + y_pad
-                    else:
-                        y_lo, y_hi = -1.0, 1.0
+                def half_step(levels: np.ndarray) -> float:
+                    if levels.size < 2:
+                        return 0.5
+                    gaps = np.diff(np.sort(levels))
+                    if not np.all(np.isfinite(gaps)) or gaps.size == 0:
+                        return 0.5
+                    return float(np.min(gaps)) / 2.0
 
-                    for mx in mids_i:
-                        ax.axvline(mx, linestyle="--", linewidth=1.0, alpha=0.25, zorder=0)
-                    for my in mids_q:
-                        ax.axhline(my, linestyle="--", linewidth=1.0, alpha=0.25, zorder=0)
+                hx = half_step(levels_i)
+                hy = half_step(levels_q)
 
-                    if cfg.xlim is None:
-                        ax.set_xlim(x_lo, x_hi)
-                    if cfg.ylim is None:
-                        ax.set_ylim(y_lo, y_hi)
+                lw = 0.3
+                for xi, yi in zip(x_hard[:n], y_hard[:n]):
+                    rect = mpatches.Rectangle(
+                        (xi - hx, yi - hy), 2.0 * hx, 2.0 * hy,
+                        fill=False, linewidth=lw, alpha=boundary_alpha,
+                        edgecolor="gray", zorder=0, clip_on=True
+                    )
+                    ax.add_patch(rect)
+
+                all_x = np.concatenate([x_soft, x_hard[:n]]) if x_soft.size else x_hard[:n]
+                all_y = np.concatenate([y_soft, y_hard[:n]]) if y_soft.size else y_hard[:n]
+                if all_x.size and cfg.xlim is None:
+                    x_min, x_max = float(np.min(all_x)), float(np.max(all_x))
+                    pad = 0.05 * max(1e-9, (x_max - x_min))
+                    ax.set_xlim(x_min - pad, x_max + pad)
+                if all_y.size and cfg.ylim is None:
+                    y_min, y_max = float(np.min(all_y)), float(np.max(all_y))
+                    pad = 0.05 * max(1e-9, (y_max - y_min))
+                    ax.set_ylim(y_min - pad, y_max + pad)
 
             try:
                 ax.set_aspect("equal", adjustable="datalim")
             except Exception:
                 pass
 
-            # No special x tick formatting here (I/Q), but harmless to apply
+            # Ensure axis labels are present even if cfg didn't provide them
+            if not cfg.xlabel:
+                ax.set_xlabel("In-phase (I)")
+            if not cfg.ylabel:
+                ax.set_ylabel("Quadrature (Q)")
+
+            # Hide numeric tick labels but keep axes & labels
+            ax.tick_params(axis="x", which="both", labelbottom=False)
+            ax.tick_params(axis="y", which="both", labelleft=False)
+            try:
+                ax.get_xaxis().get_offset_text().set_visible(False)
+                ax.get_yaxis().get_offset_text().set_visible(False)
+            except Exception:
+                pass
+
+            # harmless even for I/Q axes
             self._apply_x_ticks(ax, cfg)
             return self._finish(fig, ax, self._resolve_path(filename), cfg)
 

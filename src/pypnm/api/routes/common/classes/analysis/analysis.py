@@ -451,201 +451,6 @@ class Analysis:
         return out
 
     @classmethod
-    def basic_analysis_ds_chan_est_D(cls, measurement: Dict[str, Any], cable_type: CableType = CableType.RG6) -> DsChannelEstAnalysisModel:
-        channel_id: ChannelId                   = measurement.get("channel_id",                    INVALID_CHANNEL_ID)
-        subcarrier_spacing: int                 = measurement.get("subcarrier_spacing",            INVALID_START_VALUE)
-        first_active_subcarrier_index: int      = measurement.get("first_active_subcarrier_index", INVALID_START_VALUE)
-        subcarrier_zero_frequency: FrequencyHz  = measurement.get("subcarrier_zero_frequency",     INVALID_START_VALUE)
-        occupied_channel_bandwidth: int         = measurement.get("occupied_channel_bandwidth",    INVALID_START_VALUE)
-
-        if (first_active_subcarrier_index < 0) or (subcarrier_zero_frequency < 0) or (subcarrier_spacing <= 0):
-            raise ValueError(
-                f"Active index: {first_active_subcarrier_index} or "
-                f"zero frequency: {subcarrier_zero_frequency} or "
-                f"spacing: {subcarrier_spacing} must be non-negative"
-            )
-
-        values: ComplexArray = measurement.get("values", [])
-        if not values:
-            raise ValueError("No complex channel estimation values provided in measurement.")
-
-        start_freq: FrequencyHz = (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency
-        freqs: FrequencySeriesHz = [start_freq + (i * subcarrier_spacing) for i in range(len(values))]
-
-        gd = GroupDelay.from_channel_estimate(Hhat=values, df_hz=subcarrier_spacing, f0_hz=start_freq)
-        gd_results = gd.to_result()
-
-        cao = ComplexArrayOps(values)
-        magnitudes_db: FloatSeries = cao.to_list(cao.power_db())
-
-        signal_stats_model = SignalStatistics(magnitudes_db).compute()
-        complex_arr = np.asarray(values, dtype=complex)
-
-        group_delay_stats: GrpDelayStatsModel = GrpDelayStatsModel(
-            group_delay_unit = "microsecond",
-            magnitude        = ComplexArrayOps.to_list(gd_results.group_delay_us),
-        )
-
-        # IFFT Echo Detection
-        N = len(values)
-        n_fft = 1 << (N - 1).bit_length()
-        if n_fft < 1024:
-            n_fft = 1024
-
-        det = EchoDetector(
-            freq_data               = values,
-            subcarrier_spacing_hz   = subcarrier_spacing,
-            n_fft                   = 4096,                 # or n_fft computed above
-            cable_type              = cable_type.name,
-            channel_id              = channel_id,
-        )
-
-        report: EchoDetectorReport = det.multi_echo(
-            threshold_frac          = 0.10,
-            guard_bins              = 2,
-            min_separation_s        = 0.0,
-            max_delay_s             = 7.7e-6,          # ~1 km one-way at VF≈0.87
-            max_peaks               = 5,
-            include_time_response   = False,
-            normalize_power         = True,
-            window                  = "hann",
-            min_echo_distance_m     = 5.0,
-            search_mode             = "recenter",      # now implemented
-            # threshold_mode        = "fraction",      # default behavior
-        )
-
-        echo_rpt = EchoDatasetModel(
-            type   = EchoDetectorType.IFFT,
-            report = report
-        )
-
-        carrier_values: ChanEstCarrierModel = ChanEstCarrierModel(
-            carrier_count               = len(freqs),
-            frequency_unit              = "Hz",
-            frequency                   = freqs,
-            complex                     = values,
-            complex_dimension           = int(complex_arr.ndim),
-            magnitudes                  = magnitudes_db,
-            group_delay                 = group_delay_stats,
-            occupied_channel_bandwidth  = occupied_channel_bandwidth,
-        )
-
-        result_model: DsChannelEstAnalysisModel = DsChannelEstAnalysisModel(
-            device_details                  = measurement.get("device_details", {}),
-            pnm_header                      = measurement.get("pnm_header", {}),
-            mac_address                     = measurement.get("mac_address", ""),
-            channel_id                      = int(measurement.get("channel_id", INVALID_START_VALUE)),
-            subcarrier_spacing              = subcarrier_spacing,
-            first_active_subcarrier_index   = first_active_subcarrier_index,
-            subcarrier_zero_frequency       = subcarrier_zero_frequency,
-            carrier_values                  = carrier_values,
-            signal_statistics               = signal_stats_model,
-            echo                            = echo_rpt,
-        )
-
-        return result_model
-
-    @classmethod
-    def basic_analysis_ds_chan_est___(cls, measurement: Dict[str, Any], cable_type: CableType = CableType.RG6) -> DsChannelEstAnalysisModel:
-        """
-        Perform downstream channel estimation analysis.
-
-        Computes per-subcarrier frequency, magnitude (from complex channel estimates),
-        group delay (from phase slope via OFDMGroupDelay), and time-domain signal statistics.
-        """
-        channel_id: ChannelId                   = measurement.get("channel_id",                    INVALID_CHANNEL_ID)
-        subcarrier_spacing: int                 = measurement.get("subcarrier_spacing",            INVALID_START_VALUE)
-        first_active_subcarrier_index: int      = measurement.get("first_active_subcarrier_index", INVALID_START_VALUE)
-        subcarrier_zero_frequency: FrequencyHz  = measurement.get("subcarrier_zero_frequency",     INVALID_START_VALUE)
-        occupied_channel_bandwidth: int         = measurement.get("occupied_channel_bandwidth",    INVALID_START_VALUE)
-
-        if (first_active_subcarrier_index < 0) or (subcarrier_zero_frequency < 0) or (subcarrier_spacing <= 0):
-            raise ValueError(
-                f"Active index: {first_active_subcarrier_index} or "
-                f"zero frequency: {subcarrier_zero_frequency} or "
-                f"spacing: {subcarrier_spacing} must be non-negative")
-
-        values: ComplexArray = measurement.get("values", [])
-        if not values:
-            raise ValueError("No complex channel estimation values provided in measurement.")
-
-        start_freq: FrequencyHz = (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency
-        freqs: FrequencySeriesHz = [start_freq + (i * subcarrier_spacing) for i in range(len(values))]
-
-        # ── Group delay via OFDMGroupDelay (uses complex series + uniform axis) ──
-        complex_series: ComplexSeries = [complex(r, i) for r, i in values]
-        axis = SpacedFrequencyAxisHz(f0_hz=FrequencyHz(int(start_freq)), df_hz=float(subcarrier_spacing))
-        gd = OFDMGroupDelay(H=complex_series, axis=axis, options=GroupDelayOptions(sign=SignConvention.PLUS))
-        gd_full = gd.result()
-
-        # ── Per-subcarrier magnitudes (power in dB from complex coefficients) ──
-        cao = ComplexArrayOps(values)
-        magnitudes_db: FloatSeries = cao.to_list(cao.power_db())
-
-        # ── Time-domain statistics of the magnitude sequence (returns BaseModel) ──
-        signal_stats_model = SignalStatistics(magnitudes_db).compute()
-
-        # ── Complex array dimensionality (for metadata only) ──
-        complex_arr = np.asarray(values, dtype=complex)
-
-        # ── Group delay result payload (microseconds) ──
-        group_delay_stats: GrpDelayStatsModel = GrpDelayStatsModel(
-            group_delay_unit = "microsecond",
-            magnitude        = gd_full.tau_us,
-        )
-
-        # ── IFFT Echo Detection ──
-        N = len(values)
-        n_fft = 1 << (N - 1).bit_length()
-        if n_fft < 1024:
-            n_fft = 1024
-
-        det = EchoDetector(
-            freq_data               = values,
-            subcarrier_spacing_hz   = subcarrier_spacing,
-            n_fft                   = n_fft,
-            cable_type              = cable_type.name,
-        )
-
-        report: EchoDetectorReport = det.multi_echo(
-            channel_id              = channel_id,
-            threshold_frac          = 0.2,
-            guard_bins              = 2,
-            min_separation_s        = 0.0,
-            max_delay_s             = None,
-            max_peaks               = 5,
-            include_time_response   = False,
-        )
-
-        echo_rpt = EchoDatasetModel(type=EchoDetectorType.IFFT, report=report)
-
-        carrier_values: ChanEstCarrierModel = ChanEstCarrierModel(
-            carrier_count               = len(freqs),
-            frequency_unit              = "Hz",
-            frequency                   = freqs,
-            complex                     = values,
-            complex_dimension           = int(complex_arr.ndim),
-            magnitudes                  = magnitudes_db,
-            group_delay                 = group_delay_stats,
-            occupied_channel_bandwidth  = occupied_channel_bandwidth,
-        )
-
-        result_model: DsChannelEstAnalysisModel = DsChannelEstAnalysisModel(
-            device_details                  = measurement.get("device_details", {}),
-            pnm_header                      = measurement.get("pnm_header", {}),
-            mac_address                     = measurement.get("mac_address", ""),
-            channel_id                      = cast(ChannelId, int(measurement.get("channel_id", INVALID_START_VALUE))),
-            subcarrier_spacing              = subcarrier_spacing,
-            first_active_subcarrier_index   = first_active_subcarrier_index,
-            subcarrier_zero_frequency       = subcarrier_zero_frequency,
-            carrier_values                  = carrier_values,
-            signal_statistics               = signal_stats_model,
-            echo                            = echo_rpt,
-        )
-
-        return result_model
-
-    @classmethod
     def basic_analysis_ds_modulation_profile(cls, measurement: Mapping[str, Any], split_carriers: bool = True) -> DsModulationProfileAnalysisModel:
         """
         Analyze the Downstream OFDM Modulation Profile and return a typed model.
@@ -878,37 +683,49 @@ class Analysis:
         Build a minimal constellation analysis payload from a downstream OFDM
         measurement dictionary.
 
+        CM Output Assumption
+        --------------------
+        The DOCSIS spec states the constellation display samples are provided as
+        s2.13 **soft decisions scaled to ~unit average power** at the slicer input.
+        Because your LUT hard points are likewise normalized, **do not rescale**
+        the CM-provided soft points here.
+
         Parameters
         ----------
         measurement : dict
             Expected keys (subset):
-                - ``samples`` : ComplexArray (list of [real, imag]); required
-                - ``pnm_header`` : dict
-                - ``mac_address`` : str
-                - ``channel_id`` : int
-                - ``num_sample_symbols`` : int (defaults to len(samples))
-                - ``actual_modulation_order`` : int | str (e.g., 256 or "QAM-256")
+            - ``samples`` : ComplexArray (list of [real, imag]) — required
+            - ``pnm_header`` : dict
+            - ``mac_address`` : str
+            - ``channel_id`` : int
+            - ``num_sample_symbols`` : int (defaults to len(samples))
+            - ``actual_modulation_order`` : int | str (e.g., 256 or "QAM-256")
 
         Returns
         -------
         ConstellationDisplayAnalysisModel
             Typed model carrying device/header info, inferred QAM order,
-            and hard/soft decision coordinates (scaled).
+            **hard** constellation points from the LUT, and the **unscaled soft**
+            decision coordinates provided by the CM.
 
         Raises
         ------
         ValueError
             If ``samples`` is missing or empty.
         """
-        samples: ComplexArray   = measurement.get("samples") or []
+        samples: ComplexArray = measurement.get("samples") or []
         if not samples:
-            raise ValueError("measurement['values'] is required and must be a non-empty ComplexArray.")
+            raise ValueError("measurement['samples'] is required and must be a non-empty ComplexArray.")
 
-        #Get Hard/Soft Decsions
-        amo:int                 = measurement.get("actual_modulation_order", DsOfdmModulationType.UNKNOWN)
-        qm:QamModulation    = QamModulation.from_DsOfdmModulationType(amo)
-        hard                = QamLutManager().get_hard_decisions(qm)
-        soft                = QamLutManager().scale_soft_decisions(qm, samples)
+        # Map actual modulation order → QamModulation
+        amo: int | str = measurement.get("actual_modulation_order", DsOfdmModulationType.UNKNOWN)
+        qm: QamModulation = QamModulation.from_DsOfdmModulationType(amo)
+
+        # Hard points come from LUT (already normalized)
+        hard = QamLutManager().get_hard_decisions(qm)
+
+        # IMPORTANT: Do NOT rescale the CM soft decisions; they are already unit-power normalized (s2.13).
+        soft = samples
 
         return ConstellationDisplayAnalysisModel(
             device_details      = measurement.get("device_details", SystemDescriptor.empty()),
@@ -916,9 +733,9 @@ class Analysis:
             mac_address         = measurement.get("mac_address", MacAddress.null()),
             channel_id          = measurement.get("channel_id", INVALID_CHANNEL_ID),
             num_sample_symbols  = measurement.get("num_sample_symbols", len(samples)),
-            modulation_order    = qm,           # QamModulation 
-            hard                = hard,         # Scaled
-            soft                = soft          # Scaled
+            modulation_order    = qm,       # QamModulation
+            hard                = hard,     # LUT hard points (normalized)
+            soft                = soft      # CM soft decisions (already normalized) ← changed
         )
 
     @classmethod
@@ -1594,7 +1411,7 @@ class Analysis:
             raise ValueError("No complex channel estimation values provided in measurement.")
 
         # Frequency axis
-        start_freq: FrequencyHz    = (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency
+        start_freq: FrequencyHz    = cast(FrequencyHz, (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency)
         freqs: FrequencySeriesHz   = [start_freq + (i * subcarrier_spacing) for i in range(len(values))]
 
         # Group delay and magnitudes
@@ -1622,7 +1439,7 @@ class Analysis:
             subcarrier_spacing_hz = float(subcarrier_spacing),
             n_fft                 = n_fft,
             cable_type            = cable_type.name,
-            channel_id            = int(channel_id),
+            channel_id            = ChannelId(channel_id),
         )
 
         fs = float(N) * float(subcarrier_spacing)
@@ -1691,7 +1508,7 @@ class Analysis:
             device_details                  = measurement.get("device_details", {}),
             pnm_header                      = measurement.get("pnm_header", {}),
             mac_address                     = measurement.get("mac_address", ""),
-            channel_id                      = int(measurement.get("channel_id", INVALID_START_VALUE)),
+            channel_id                      = ChannelId(measurement.get("channel_id", INVALID_START_VALUE)),
             subcarrier_spacing              = subcarrier_spacing,
             first_active_subcarrier_index   = first_active_subcarrier_index,
             subcarrier_zero_frequency       = subcarrier_zero_frequency,

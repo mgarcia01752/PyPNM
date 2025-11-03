@@ -1,60 +1,77 @@
 # PNM Operations – Downstream OFDM Constellation Display
 
-This API provides access to raw constellation symbols captured from DOCSIS 3.1 downstream OFDM channels, enabling visual inspection of I/Q (in-phase and quadrature) data. The constellation display is a cornerstone of RF diagnostics it reveals the actual symbol behavior at the demodulator and can highlight impairments such as phase noise, amplitude distortion, ingress, or burst noise.
+Visual Inspection Of Downstream OFDM I/Q Symbols For Rapid RF Diagnostics.
 
-By capturing and plotting these samples as a scatter plot, network operators can immediately assess modulation clarity, clustering, and the presence of impairments. This is particularly valuable when diagnosing subtle or transient RF issues that might not manifest in standard metrics like RxMER or FEC.
+## Overview
 
-Due to the volume of data returned, this endpoint is best consumed via Postman, CLI tools, or automation scripts rather than SwaggerUI. The capture supports per-channel modulation information, subcarrier mapping, and sampling configuration for precise control and reproducibility.
+[`CmDsOfdmConstellationDisplay`](https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/pnm/process/CmDsOfdmConstellationDisplay.py)
+validates constellation capture payloads, unpacks per-symbol I/Q samples, normalizes frequency metadata, and exposes a
+typed model for downstream plotting and analysis (scatter, cluster metrics, and profile-aligned modulation overlays).
 
-## 🔊 Endpoint
+## Endpoint
 
-**POST** `/docs/pnm/ds/ofdm/constellationDisplay/getMeasurement`
+`POST /docs/pnm/ds/ofdm/constellationDisplay/getCapture`
 
-Captures downstream OFDM constellation symbols from a DOCSIS cable modem for visualization as a scatter plot (I/Q points). Due to the volume of data returned, **Postman or CLI tools are recommended** over SwaggerUI.
+## Request
 
-## 📅 Request Body (JSON)
+Refer to [Common → Request](../../../common/request.md).  
+**Deltas (Analysis-only additions):** optional `analysis`, `analysis.output`, and `analysis.plot.ui` controls (same pattern as RxMER).
 
-```json
-{
-  "cable_modem": {
-  "mac_address": "aa:bb:cc:dd:ee:ff", 
-  "ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
-    },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
-    }
-  }
-}
-```
+### Delta Table
 
-### 🔑 Request Fields
+| JSON path                | Type   | Allowed values / format | Default | Description                                                                                               |
+| ------------------------ | ------ | ----------------------- | ------- | --------------------------------------------------------------------------------------------------------- |
+| `analysis.type`          | string | "basic"               | "basic" | Selects the analysis mode used during capture processing.                                                 |
+| `analysis.output.type`   | string | "json", "archive"   | "json"  | Output format: **`json`** returns inline `data`; **`archive`** returns a ZIP (CSV exports and PNG plots). |
+| `analysis.plot.ui.theme` | string | "light", "dark"     | "dark"  | Theme hint for plot generation (colors, grid, ticks). Does not affect raw metrics/CSV.                    |
 
-| Field                     | Type   | Description                                        |
-| ------------------------- | ------ | -------------------------------------------------- |
-| `mac_address`             | string | MAC address of the cable modem                     |
-| `ip_address`              | string | IP address of the cable modem                      |
-| `snmp.snmpV2C.community`  | string | SNMPv2c community string                           |
-| `snmp.snmpV3.*`           | string | SNMPv3 credentials and security options            |
-| `modulation_order_offset` | int    | Modulation offset (profile-based modulation shift) |
-| `number_sample_symbol`    | int    | Number of I/Q samples to retrieve (e.g., 8192)     |
+### Capture Settings
 
-## 📤 JSON Response
+| JSON path                                 | Type | Example | Description                                                                    |
+| ----------------------------------------- | ---- | ------- | ------------------------------------------------------------------------------ |
+| `capture_settings.modulation_order_offset` | int  | 0       | Profile-based modulation order shift applied during decoding (vendor-specific). |
+| `capture_settings.number_sample_symbol`    | int  | 8192    | Number of I/Q symbols to capture.                                              |
+
+**Notes**
+
+* When `analysis.output.type = "archive"`, the HTTP response body is the file (no `data` JSON payload).
+* Constellation points are reported as pairs of `[Real, Imaginary]` with `complex_unit = "[Real, Imaginary]"` in models.
+* **Warning:** If the selected `modulation_order_offset` corresponds to a stream for which the CMTS is not receiving traffic
+  (user data or MAC messages), the CM may take a long time to reach the requested `number_sample_symbol`.
+
+## Response
+
+Standard envelope with payload under `data`.
+
+### Abbreviated Example
 
 ```json
 {
-  "mac_address": "a1:b2:c3:d4:e5:f6",
+  "mac_address": "aa:bb:cc:dd:ee:ff",
   "status": 0,
   "message": null,
   "data": {
-    "data": [
+    "analysis": [
+      {
+        "device_details": {
+          "system_description": {
+            "HW_REV": "1.0",
+            "VENDOR": "LANCity",
+            "BOOTR": "NONE",
+            "SW_REV": "1.0.0",
+            "MODEL": "LCPET-3"
+          }
+        },
+        "mac_address": "aa:bb:cc:dd:ee:ff",
+        "channel_id": 160,
+        "num_sample_symbols": 8192,
+        "modulation_order": "qam256",
+        "complex_unit": "[Real, Imaginary]",
+        "soft": { "complex": [[0.0843505859375, 0.713623046875]] },
+        "hard": { "complex": [[1.1504474832710556, 1.1504474832710556]] }
+      }
+    ],
+    "primative": [
       {
         "status": "SUCCESS",
         "pnm_header": {
@@ -62,50 +79,98 @@ Captures downstream OFDM constellation symbols from a DOCSIS cable modem for vis
           "file_type_version": 3,
           "major_version": 1,
           "minor_version": 0,
-          "capture_time": 1751825651
+          "capture_time": 1762136604
         },
-        "channel_id": 197,
-        "mac_address": "a1:b2:c3:d4:e5:f6",
-        "subcarrier_zero_frequency": 1217600000,
-        "actual_modulation_order": "qam16",
-        "num_sample_symbols": 8192,
+        "channel_id": 160,
+        "mac_address": "aa:bb:cc:dd:ee:ff",
+        "subcarrier_zero_frequency": 683600000,
+        "first_active_subcarrier_index": -1,
         "subcarrier_spacing": 50000,
-        "sample_length": 32768,
-        "value_units": "[Real(I), Imaginary(Q)]",
-        "values": [
-          [2.8161, -0.9989],
-          [3.1241,  0.2345],
-          ...
-        ]
+        "num_sample_symbols": 8192,
+        "sample_length": 16384,
+        "value_units": "[Real, Imaginary]",
+        "values": [[0.0843505859375, 0.713623046875]]
+      }
+    ],
+    "measurement_stats": [
+      {
+        "index": 160,
+        "channel_id": 160,
+        "entry": {
+          "docsPnmCmDsConstDispTrigEnable": false,
+          "docsPnmCmDsConstDispModOrderOffset": 0,
+          "docsPnmCmDsConstDispNumSampleSymb": 8192,
+          "docsPnmCmDsConstDispSelModOrder": "qam256",
+          "docsPnmCmDsConstDispMeasStatus": "sample_ready",
+          "docsPnmCmDsConstDispFileName": "ds_constellation_disp_aabbccddeeff_160_1762136601.bin"
+        }
       }
     ]
   }
 }
 ```
 
-## 📊 Response Field Breakdown
+## Return Structure
 
-| Field                       | Type   | Description                                                |
-| --------------------------- | ------ | ---------------------------------------------------------- |
-| `status`                    | string | Status of the constellation capture (e.g., SUCCESS)        |
-| `pnm_header.*`              | object | Metadata about the capture format, version, and timestamp  |
-| `channel_id`                | int    | Downstream channel ID                                      |
-| `mac_address`               | string | MAC address of the modem                                   |
-| `subcarrier_zero_frequency` | int    | Base subcarrier frequency (Hz)                             |
-| `actual_modulation_order`   | string | OFDM modulation type (e.g., `qam16`, `qam1024`, `qam4096`) |
-| `num_sample_symbols`        | int    | Number of constellation sample points                      |
-| `subcarrier_spacing`        | int    | Frequency spacing between subcarriers (Hz)                 |
-| `sample_length`             | int    | Total data length (samples × 2)                            |
-| `value_units`               | string | Units of the sample values (I/Q format)                    |
-| `values`                    | array  | List of I/Q sample pairs representing constellation points |
+### Top-Level Envelope
 
-## 📈 Visualization
+| Field         | Type          | Description                                        |
+| ------------- | ------------- | -------------------------------------------------- |
+| `mac_address` | string        | Request echo of the modem MAC.                     |
+| `status`      | int           | 0 on success, non‑zero on error.                   |
+| `message`     | string\|null  | Optional message describing status.                |
+| `data`        | object        | Container for results (`analysis`, `primative`, `measurement_stats`). |
 
-* Data from `values` can be plotted as I (x-axis) vs Q (y-axis) for a **scatter plot**.
-* Ideal clusters represent good modulation; noise and spread may indicate impairment.
+### `data.analysis[]`
 
-## 📃 Notes
+Per‑channel analysis view aligned to the typed ConstellationDisplayAnalysisModel.
 
-* Large payloads are not suitable for SwaggerUI. Use Postman, `curl`, or Python clients.
-* Useful for evaluating demodulation performance and diagnosing OFDM reception impairments.
-* ⚠️ There may be **multiple OFDM channels** returned in the `data` array. Each entry corresponds to a distinct downstream OFDM channel.
+| Field               | Type    | Description                                                        |
+| ------------------- | ------- | ------------------------------------------------------------------ |
+| device_details.*    | object  | System descriptor at analysis time.                                 |
+| pnm_header.*        | object  | PNM header (file type, version, capture time).                     |
+| mac_address         | string  | MAC address (`aa:bb:cc:dd:ee:ff`).                                  |
+| channel_id          | int     | OFDM downstream channel ID.                                        |
+| num_sample_symbols  | int     | Number of constellation sample points.                              |
+| modulation_order    | string  | QAM order (e.g., `qam64`, `qam256`, `qam1024`).                    |
+| complex_unit        | string  | Always `"[Real, Imaginary]"`.                                      |
+| soft.complex        | array   | Soft‑decision I/Q pairs (`[[real, imag], ...]`).                   |
+| hard.complex        | array   | Hard‑decision I/Q pairs (`[[real, imag], ...]`).                   |
+
+### `data.primative[]`
+
+Normalized raw capture for export/plotting.
+
+| Field                     | Type         | Description                                         |
+| ------------------------- | ------------ | --------------------------------------------------- |
+| status                    | string       | Result for this capture (e.g., `SUCCESS`).          |
+| pnm_header.*              | object       | PNM header (type, version, capture time).           |
+| channel_id                | int          | Channel ID.                                         |
+| mac_address               | string       | MAC address.                                        |
+| subcarrier_zero_frequency | int (Hz)     | Subcarrier 0 frequency.                             |
+| first_active_subcarrier_index | int      | First active subcarrier index; `-1` if not present. |
+| subcarrier_spacing        | int (Hz)     | Subcarrier spacing.                                 |
+| num_sample_symbols        | int          | Number of captured symbols.                         |
+| sample_length             | int          | Total payload samples (often `2 × symbols`).        |
+| value_units               | string       | Always `"[Real, Imaginary]"`.                       |
+| values                    | array(float) | I/Q pairs per symbol.                               |
+
+### `data.measurement_stats[]`
+
+Snapshot of device‑reported constellation settings at capture time (per channel).
+
+| Field                                   | Type    | Description                                         |
+| --------------------------------------- | ------- | --------------------------------------------------- |
+| index                                   | int     | SNMP table row index.                               |
+| channel_id                              | int     | OFDM downstream channel ID.                         |
+| entry.docsPnmCmDsConstDispTrigEnable    | boolean | Trigger enable state.                               |
+| entry.docsPnmCmDsConstDispModOrderOffset| int     | Modulation order offset used for capture.           |
+| entry.docsPnmCmDsConstDispNumSampleSymb | int     | Requested number of constellation symbols.          |
+| entry.docsPnmCmDsConstDispSelModOrder   | string  | Selected modulation order (e.g., `qam256`).         |
+| entry.docsPnmCmDsConstDispMeasStatus    | string  | Measurement status (e.g., `sample_ready`).          |
+| entry.docsPnmCmDsConstDispFileName      | string  | Device‑side filename of the capture.                |
+
+## Notes
+
+* Large payloads are best handled via Postman/CLI or automation.
+* Each object in `data.analysis[]` or `data.primative[]` represents a **distinct OFDM channel**.

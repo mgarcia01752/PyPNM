@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
@@ -8,16 +7,20 @@ from typing import Optional, Callable, Union, List
 from pydantic import BaseModel
 import logging
 
+from pypnm.docsis.data_type.enums import MeasStatusType
 from pypnm.snmp.snmp_v2c import Snmp_v2c
+from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
+
 
 
 class DocsPnmCmDsConstDispFields(BaseModel):
-    docsPnmCmDsConstDispTrigEnable: Optional[bool] = None
-    docsPnmCmDsConstDispModOrderOffset: Optional[int] = None
-    docsPnmCmDsConstDispNumSampleSymb: Optional[int] = None
-    docsPnmCmDsConstDispSelModOrder: Optional[int] = None  # DsOfdmModulationType
-    docsPnmCmDsConstDispMeasStatus: Optional[int] = None   # MeasStatusType
-    docsPnmCmDsConstDispFileName: Optional[str] = None
+    docsPnmCmDsConstDispTrigEnable: bool
+    docsPnmCmDsConstDispModOrderOffset: int
+    docsPnmCmDsConstDispNumSampleSymb: int
+    # ↓ now strings (enum names) instead of raw ints
+    docsPnmCmDsConstDispSelModOrder: str      # e.g., "qam256"
+    docsPnmCmDsConstDispMeasStatus: str       # e.g., "sample_ready"
+    docsPnmCmDsConstDispFileName: str
 
 
 class DocsPnmCmDsConstDispMeasEntry(BaseModel):
@@ -42,13 +45,35 @@ class DocsPnmCmDsConstDispMeasEntry(BaseModel):
                 logger.warning(f"Fetch error for {oid}.{index}: {e}")
                 return None
 
+        # Raw values
+        trig_enable      = await fetch("docsPnmCmDsConstDispTrigEnable", Snmp_v2c.truth_value)
+        mod_order_offset = await fetch("docsPnmCmDsConstDispModOrderOffset", int)
+        num_sample_symb  = await fetch("docsPnmCmDsConstDispNumSampleSymb", int)
+        sel_mod_order_i  = await fetch("docsPnmCmDsConstDispSelModOrder", int)
+        meas_status_i    = await fetch("docsPnmCmDsConstDispMeasStatus", int)
+        file_name        = await fetch("docsPnmCmDsConstDispFileName", str)
+
+        # Map ints → enum names (strings)
+        # Modulation: use helper that tolerates unknowns
+        sel_mod_order_s = DsOfdmModulationType.get_name(int(sel_mod_order_i)) if sel_mod_order_i is not None else DsOfdmModulationType.UNKNOWN.name
+        sel_mod_order_s = sel_mod_order_s.lower()  # keep consistent with your style ("qam256", "qpsk", etc.)
+
+        # Measurement status: map to Enum; fall back to "unknown" if needed
+        if meas_status_i is not None:
+            try:
+                meas_status_s = str(MeasStatusType(meas_status_i))  # __str__ lowers the name
+            except Exception:
+                meas_status_s = "unknown"
+        else:
+            meas_status_s = "unknown"
+
         entry = DocsPnmCmDsConstDispFields(
-            docsPnmCmDsConstDispTrigEnable=await fetch("docsPnmCmDsConstDispTrigEnable", Snmp_v2c.truth_value),
-            docsPnmCmDsConstDispModOrderOffset=await fetch("docsPnmCmDsConstDispModOrderOffset", int),
-            docsPnmCmDsConstDispNumSampleSymb=await fetch("docsPnmCmDsConstDispNumSampleSymb", int),
-            docsPnmCmDsConstDispSelModOrder=await fetch("docsPnmCmDsConstDispSelModOrder", int),
-            docsPnmCmDsConstDispMeasStatus=await fetch("docsPnmCmDsConstDispMeasStatus", int),
-            docsPnmCmDsConstDispFileName=await fetch("docsPnmCmDsConstDispFileName", str),
+            docsPnmCmDsConstDispTrigEnable      = bool(trig_enable) if trig_enable is not None else False,
+            docsPnmCmDsConstDispModOrderOffset  = int(mod_order_offset or 0),
+            docsPnmCmDsConstDispNumSampleSymb   = int(num_sample_symb or 0),
+            docsPnmCmDsConstDispSelModOrder     = sel_mod_order_s,
+            docsPnmCmDsConstDispMeasStatus      = meas_status_s,
+            docsPnmCmDsConstDispFileName        = str(file_name or ""),
         )
 
         return cls(index=index, channel_id=index, entry=entry)
