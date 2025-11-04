@@ -32,3 +32,6 @@ data/
 output/*
 pypnm-version-control/*
 logs/*
+
+#mkdocs
+site/*
