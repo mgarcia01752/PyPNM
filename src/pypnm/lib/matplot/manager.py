@@ -7,27 +7,24 @@ import logging
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Iterable, List, Literal, Optional, Sequence, Tuple, Union
+from itertools import cycle
+from contextlib import nullcontext
 
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
-from contextlib import nullcontext
 from matplotlib.ticker import EngFormatter, FuncFormatter, ScalarFormatter
 
 from pypnm.lib.code_word.cw_generator import QamModulation
 from pypnm.lib.types import ArrayLike, ComplexArray, Number
 
+
 ThemeType = Literal["dark", "light", True, False]
 
+CROSSHAIR_MARKER_SIZE_PTS: float = 24.0
+CROSSHAIR_LINEWIDTH_PTS: float = 0.6
 
-# Place near the top-level with other constants (no magic numbers)
-CROSSHAIR_MARKER_SIZE_PTS: float = 24.0   # very thin/small crosshair visual
-CROSSHAIR_LINEWIDTH_PTS:   float = 0.6    # very thin stroke
-
-
-# ───────────────────────── Plot configuration ─────────────────────────
 
 @dataclass(frozen=True)
 class PlotConfig:
@@ -49,22 +46,23 @@ class PlotConfig:
 
         In "unit" mode, the axis label is built dynamically as "<xlabel_base> (<Unit>)"
         unless you explicitly provide `xlabel`.
-    """
 
-    # Data (optional convenience)
+    Line color controls:
+        - line_color:  single-series color used by plot_line when no explicit `color` is passed.
+        - line_colors: list of colors used by multi-series plots; cycled when shorter than series count.
+    """
+    # Data
     x: Optional[ArrayLike] = None
     y: Optional[ArrayLike] = None
     z: Optional[ArrayLike] = None
     y_multi: Optional[List[ArrayLike]] = None
-
-    # Optional labels for multi-series
     y_multi_label: Optional[List[str]] = None
 
-    # Axis labels / title
+    # Labels / title
     xlabel: Optional[str] = None
     ylabel: Optional[str] = None
     zlabel: Optional[str] = None
-    title:  Optional[str] = None
+    title: Optional[str] = None
 
     # Limits and style
     xlim: Optional[Tuple[Number, Number]] = None
@@ -73,34 +71,32 @@ class PlotConfig:
     legend: Optional[bool] = None
     transparent: Optional[bool] = None
 
-    # Constellation
-    qam:  Optional[QamModulation] = None
+    # Constellation data
+    qam: Optional[QamModulation] = None
     soft: Optional[ComplexArray] = None
     hard: Optional[ComplexArray] = None
 
     # Theme
     theme: Optional[ThemeType] = None
 
-    # X tick formatting (no data rescale)
+    # X tick formatting
     x_tick_mode: Optional[Literal["none", "eng", "unit"]] = "none"
     x_unit_from: Optional[Literal["hz", "khz", "mhz", "ghz"]] = "hz"
-    x_unit_out:  Optional[Literal["hz", "khz", "mhz", "ghz"]] = "mhz"
+    x_unit_out: Optional[Literal["hz", "khz", "mhz", "ghz"]] = "mhz"
     x_tick_decimals: Optional[int] = None
-    xlabel_base: Optional[str] = None  # base text to build "<base> (<Unit>)"
+    xlabel_base: Optional[str] = None
+
+    # Line color controls
+    line_color: Optional[str] = None
+    line_colors: Optional[List[str]] = None
 
     def update(self, **kwargs) -> "PlotConfig":
         return replace(self, **kwargs)
 
 
-# ───────────────────────── Manager ─────────────────────────
-
 class MatplotManager:
     """
     Lightweight Matplotlib manager for saving common plot types as PNG files.
-
-    - Uses the headless Agg backend (safe for servers/CI).
-    - Accepts a PlotConfig for shared options / data.
-    - All methods save and return the output ``pathlib.Path``.
     """
 
     def __init__(
@@ -168,6 +164,8 @@ class MatplotManager:
             x_unit_out  = pick(user_cfg.x_unit_out  if user_cfg else None, base.x_unit_out,  method_defaults.x_unit_out),
             x_tick_decimals = pick(user_cfg.x_tick_decimals if user_cfg else None, base.x_tick_decimals, method_defaults.x_tick_decimals),
             xlabel_base = pick(user_cfg.xlabel_base if user_cfg else None, base.xlabel_base, method_defaults.xlabel_base),
+            line_color  = pick(user_cfg.line_color  if user_cfg else None, base.line_color,  method_defaults.line_color),
+            line_colors = pick(user_cfg.line_colors if user_cfg else None, base.line_colors, method_defaults.line_colors),
         )
 
     def _theme_context(self, cfg: Optional[PlotConfig]):
@@ -177,10 +175,7 @@ class MatplotManager:
         return nullcontext()
 
     def _apply_x_ticks(self, ax, cfg: PlotConfig):
-        """Apply display-only x tick formatting (no data rescaling)."""
         mode = (cfg.x_tick_mode or "none").lower()
-
-        # Always kill sci-notation/offset first
         try:
             ax.ticklabel_format(axis="x", style="plain", useOffset=False)
             sf = ScalarFormatter(useOffset=False)
@@ -194,13 +189,12 @@ class MatplotManager:
             return
 
         if mode == "eng":
-            ax.xaxis.set_major_formatter(EngFormatter(unit="Hz"))  # auto k/M/G
+            ax.xaxis.set_major_formatter(EngFormatter(unit="Hz"))
             if not cfg.xlabel:
                 ax.set_xlabel(cfg.xlabel_base or "Frequency")
             return
 
         if mode == "unit":
-            # Generic unit forcing (Hz/kHz/MHz/GHz)
             unit_info = {
                 "hz":  (1.0,  "Hz"),
                 "khz": (1e3,  "kHz"),
@@ -209,10 +203,9 @@ class MatplotManager:
             }
             u_in  = (cfg.x_unit_from or "hz").lower()
             u_out = (cfg.x_unit_out  or "mhz").lower()
-            fin,  lab_in  = unit_info.get(u_in,  unit_info["hz"])
-            fout, lab_out = unit_info.get(u_out, unit_info["mhz"])
-
-            mult = fin / fout  # convert input numbers → display unit (label only)
+            fin,  _ = unit_info.get(u_in,  unit_info["hz"])
+            fout, lab_out  = unit_info.get(u_out, unit_info["mhz"])
+            mult = fin / fout
 
             if cfg.x_tick_decimals is None:
                 def _fmt(v, m=mult):
@@ -228,22 +221,43 @@ class MatplotManager:
                 ax.get_xaxis().get_offset_text().set_visible(False)
             except Exception:
                 pass
-
-            # Dynamic axis label if not explicitly provided
             if not cfg.xlabel:
                 base = cfg.xlabel_base or "Frequency"
                 ax.set_xlabel(f"{base} ({lab_out})")
-            return
 
-    def _finish(self, fig, ax, path: Path, cfg: PlotConfig) -> Path:
+    def _finish(self, fig, ax, path: Path, cfg: "PlotConfig") -> Path:
+        """
+        Finalize axes styling, save the PNG, and register the output path.
+
+        Parameters
+        ----------
+        fig :
+            Matplotlib Figure to save.
+        ax :
+            Matplotlib Axes with plotted content.
+        path : Path
+            Target file path ('.png' enforced).
+        cfg : PlotConfig
+            Active plot configuration controlling title/labels/limits/grid/legend/opacity.
+
+        Returns
+        -------
+        Path
+            Absolute path to the saved PNG.
+        """
         if cfg.title:  ax.set_title(cfg.title)
         if cfg.xlabel: ax.set_xlabel(cfg.xlabel)
         if cfg.ylabel: ax.set_ylabel(cfg.ylabel)
         if cfg.xlim:   ax.set_xlim(*cfg.xlim)
         if cfg.ylim:   ax.set_ylim(*cfg.ylim)
+
         if cfg.grid is True:
             ax.grid(True, which="both", linestyle="--", alpha=0.4)
 
+        # Legend behavior:
+        # - cfg.legend is None  → add legend only if there are labeled handles
+        # - cfg.legend is True  → always add legend
+        # - cfg.legend is False → never add legend
         if cfg.legend is None:
             handles, labels = ax.get_legend_handles_labels()
             if any(labels):
@@ -254,15 +268,16 @@ class MatplotManager:
         if self.tight_layout:
             fig.tight_layout()
 
-        path = path.with_suffix(".png")
-        path.parent.mkdir(parents=True, exist_ok=True)
-        fig.savefig(path, dpi=self.dpi, bbox_inches="tight", transparent=bool(cfg.transparent))
+        out = path.with_suffix(".png")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(out, dpi=self.dpi, bbox_inches="tight", transparent=bool(cfg.transparent))
         plt.close(fig)
-        self._update_png_file(path)
-        self.logger.debug("Saved plot: %s", path)
-        return path
 
-    # ---- tolerant array helpers ----
+        self._update_png_file(out)
+        self.logger.debug("Saved plot: %s", out)
+        return out
+
+    # ───────────────────────── helpers ─────────────────────────
 
     def _to_1d(self, a: Optional[ArrayLike]) -> np.ndarray:
         if a is None:
@@ -295,6 +310,23 @@ class MatplotManager:
             a = a.reshape(-1, 2)
         return a[:, 0], a[:, 1]
 
+    def _resolve_colors(self, count: int, cfg: PlotConfig) -> List[Optional[str]]:
+        """
+        Resolve a list of per-series colors for multi-series plots.
+
+        Behavior
+        --------
+        - If cfg.line_colors is None/empty, returns [None]*count (Matplotlib defaults).
+        - If cfg.line_colors has fewer than `count` entries, the palette is cycled.
+        - If cfg.line_colors has >= `count`, it is truncated to `count`.
+        """
+        if not cfg.line_colors:
+            return [None] * count
+        if len(cfg.line_colors) >= count:
+            return list(cfg.line_colors[:count])
+        cyc = cycle(cfg.line_colors)
+        return [next(cyc) for _ in range(count)]
+
     # ───────────────────────── plots ─────────────────────────
 
     def plot_line(
@@ -306,14 +338,36 @@ class MatplotManager:
         label: Optional[str] = None,
         linewidth: Optional[float] = None,
         marker: Optional[str] = None,
+        color: Optional[str] = None,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """
+        Plot a single line and save as PNG.
+
+        Parameters
+        ----------
+        filename : Union[str, Path]
+            Output path ('.png' extension is enforced).
+        x, y : Optional[ArrayLike]
+            X/Y data. If only Y is provided, X defaults to arange(len(Y)).
+        label : Optional[str]
+            Legend label for the series.
+        linewidth : Optional[float]
+            Line width forwarded to Matplotlib.
+        marker : Optional[str]
+            Point marker forwarded to Matplotlib.
+        color : Optional[str]
+            Color spec overriding cfg.line_color and Matplotlib defaults.
+        cfg : Optional[PlotConfig]
+            Plot configuration; honors `line_color` for single-series color.
+        """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
+        resolved_color = color if color is not None else cfg.line_color
         with self._theme_context(cfg):
             fig, ax = self._new_fig()
-            ax.plot(x, y, label=label, linewidth=linewidth, marker=marker)
+            ax.plot(x, y, label=label, linewidth=linewidth, marker=marker, color=resolved_color)
             self._apply_x_ticks(ax, cfg)
             return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
@@ -326,6 +380,15 @@ class MatplotManager:
         marker: Optional[str] = None,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """
+        Plot multiple line series and save as PNG.
+
+        Colors
+        ------
+        Uses `cfg.line_colors` when provided; the palette is cycled if fewer than
+        the number of plotted series. If `cfg.line_colors` is missing/empty,
+        Matplotlib's default color cycle is used.
+        """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         with self._theme_context(cfg):
@@ -339,21 +402,24 @@ class MatplotManager:
                     labels += [None] * (len(ys) - len(labels))
                 else:
                     labels = labels[:len(ys)]
-                for Y, lab in zip(ys, labels):
+                colors = self._resolve_colors(len(ys), cfg)
+                for Y, lab, col in zip(ys, labels, colors):
                     x_i, y_i = self._coerce_xy(X, Y)
-                    ax.plot(x_i, y_i, label=lab, linewidth=linewidth, marker=marker)
+                    ax.plot(x_i, y_i, label=lab, linewidth=linewidth, marker=marker, color=col)
                 self._apply_x_ticks(ax, cfg)
                 return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
             if series:
                 override_x = (cfg.x is not None)
                 X_override = self._to_1d(cfg.x) if override_x else None
+                ser = list(series)
+                colors = self._resolve_colors(len(ser), cfg)
                 cfg_labels = list(cfg.y_multi_label or [])
-                for idx, (sx, sy, slabel) in enumerate(series):
+                for idx, ((sx, sy, slabel), col) in enumerate(zip(ser, colors)):
                     label = cfg_labels[idx] if idx < len(cfg_labels) else slabel
                     x_src = X_override if override_x else sx
                     x_i, y_i = self._coerce_xy(x_src, sy)
-                    ax.plot(x_i, y_i, label=label, linewidth=linewidth, marker=marker)
+                    ax.plot(x_i, y_i, label=label, linewidth=linewidth, marker=marker, color=col)
                 self._apply_x_ticks(ax, cfg)
                 return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
@@ -367,6 +433,15 @@ class MatplotManager:
         *,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """
+        Plot multiple line series using only the provided PlotConfig.
+
+        Behavior
+        --------
+        - X data is taken from `cfg.x`.
+        - Series are taken from `cfg.y_multi` with corresponding `cfg.y_multi_label`.
+        - Colors come from `cfg.line_colors` (cycled) or Matplotlib defaults.
+        """
         if cfg is None:
             cfg = PlotConfig()
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
@@ -374,42 +449,15 @@ class MatplotManager:
 
         X = self._to_1d(cfg.x)
         ys = cfg.y_multi or []
-        if not len(ys):
-            self.logger.warning("cfg.y_multi is empty; producing empty axes.")
         labels = (cfg.y_multi_label or []) + [None] * max(0, len(ys) - len(cfg.y_multi_label or []))
         labels = labels[:len(ys)]
+        colors = self._resolve_colors(len(ys), cfg)
 
         with self._theme_context(cfg):
             fig, ax = self._new_fig()
-            for Y, lab in zip(ys, labels):
+            for Y, lab, col in zip(ys, labels, colors):
                 x_i, y_i = self._coerce_xy(X, Y)
-                ax.plot(x_i, y_i, label=lab)
-            self._apply_x_ticks(ax, cfg)
-            return self._finish(fig, ax, self._resolve_path(filename), cfg)
-
-    def plot_scatter(
-        self,
-        filename: Union[str, Path],
-        *,
-        x: Optional[ArrayLike] = None,
-        y: Optional[ArrayLike] = None,
-        c: Optional[ArrayLike] = None,
-        s: Optional[ArrayLike] = None,
-        add_colorbar: bool = True,
-        cfg: Optional[PlotConfig] = None,
-    ) -> Path:
-        defaults = PlotConfig(grid=True, legend=None, transparent=False)
-        cfg = self._merge_cfg(cfg, defaults)
-        x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
-        with self._theme_context(cfg):
-            fig, ax = self._new_fig()
-            sc = ax.scatter(
-                x, y,
-                c=None if c is None else np.asarray(c).ravel()[:len(x)],
-                s=None if s is None else np.asarray(s).ravel()[:len(x)]
-            )
-            if add_colorbar and c is not None:
-                fig.colorbar(sc, ax=ax)
+                ax.plot(x_i, y_i, label=lab, color=col)
             self._apply_x_ticks(ax, cfg)
             return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
@@ -421,17 +469,10 @@ class MatplotManager:
         soft: Optional[ComplexArray] = None,
         show_boundaries: bool = True,
         boundary_alpha: float = 0.25,
-        crosshair_size: float = 80.0,   # ignored (hard-coded thin)
-        crosshair_lw: float = 1.8,      # ignored (hard-coded thin)
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
         """
         Plot a QAM constellation with labels only (no numeric tick values).
-
-        - Crosshair marker for hard decisions is hard-coded very thin.
-        - Decision regions are drawn as small squares around each hard point when
-          `show_boundaries=True`.
-        - Numeric tick labels are hidden on both axes, but axis labels remain.
         """
         import matplotlib.patches as mpatches
         defaults = PlotConfig(grid=False, legend=None, transparent=False)
@@ -445,28 +486,15 @@ class MatplotManager:
         x_soft, y_soft = self._split_complex_array(soft)
         x_hard, y_hard = self._split_complex_array(hard)
 
-        _CROSS_S = 20.0  # thin crosshair size
-        _CROSS_LW = 0.6  # thin crosshair line width
-
         with self._theme_context(cfg):
             fig, ax = self._new_fig()
 
             if x_soft.size and y_soft.size:
-                ax.scatter(
-                    x_soft, y_soft,
-                    marker='.', s=8, linewidths=0,
-                    edgecolors='none', alpha=0.75,
-                    label='Soft', rasterized=True
-                )
+                ax.scatter(x_soft, y_soft, marker='.', s=8, linewidths=0, edgecolors='none', alpha=0.75, label='Soft', rasterized=True)
 
             n = min(x_hard.size, y_hard.size)
             if n:
-                ax.scatter(
-                    x_hard[:n], y_hard[:n],
-                    marker="+", c="red",
-                    s=_CROSS_S, linewidths=_CROSS_LW,
-                    label="Hard",
-                )
+                ax.scatter(x_hard[:n], y_hard[:n], marker="+", c="red", s=CROSSHAIR_MARKER_SIZE_PTS, linewidths=CROSSHAIR_LINEWIDTH_PTS, label="Hard")
 
             if show_boundaries and n:
                 levels_i = np.unique(x_hard[:n])
@@ -482,14 +510,9 @@ class MatplotManager:
 
                 hx = half_step(levels_i)
                 hy = half_step(levels_q)
-
                 lw = 0.3
                 for xi, yi in zip(x_hard[:n], y_hard[:n]):
-                    rect = mpatches.Rectangle(
-                        (xi - hx, yi - hy), 2.0 * hx, 2.0 * hy,
-                        fill=False, linewidth=lw, alpha=boundary_alpha,
-                        edgecolor="gray", zorder=0, clip_on=True
-                    )
+                    rect = mpatches.Rectangle((xi - hx, yi - hy), 2.0 * hx, 2.0 * hy, fill=False, linewidth=lw, alpha=boundary_alpha, edgecolor="gray", zorder=0, clip_on=True)
                     ax.add_patch(rect)
 
                 all_x = np.concatenate([x_soft, x_hard[:n]]) if x_soft.size else x_hard[:n]
@@ -508,13 +531,11 @@ class MatplotManager:
             except Exception:
                 pass
 
-            # Ensure axis labels are present even if cfg didn't provide them
             if not cfg.xlabel:
                 ax.set_xlabel("In-phase (I)")
             if not cfg.ylabel:
                 ax.set_ylabel("Quadrature (Q)")
 
-            # Hide numeric tick labels but keep axes & labels
             ax.tick_params(axis="x", which="both", labelbottom=False)
             ax.tick_params(axis="y", which="both", labelleft=False)
             try:
@@ -523,7 +544,6 @@ class MatplotManager:
             except Exception:
                 pass
 
-            # harmless even for I/Q axes
             self._apply_x_ticks(ax, cfg)
             return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
@@ -734,68 +754,3 @@ class MatplotManager:
                 fig.colorbar(im, ax=ax)
             self._apply_x_ticks(ax, cfg)
             return self._finish(fig, ax, self._resolve_path(filename), cfg)
-
-    def heatmap3d(
-        self,
-        Z: ArrayLike,
-        filename: Union[str, Path],
-        *,
-        x: Optional[ArrayLike] = None,
-        y: Optional[ArrayLike] = None,
-        rstride: int = 1,
-        cstride: int = 1,
-        antialiased: bool = True,
-        wireframe: bool = False,
-        zlabel: Optional[str] = None,
-        cfg: Optional[PlotConfig] = None,
-    ) -> Path:
-        Z = np.asarray(Z, dtype=float)
-        if Z.ndim > 2:
-            self.logger.warning("Z has ndim=%d; squeezing to 2D.", Z.ndim)
-            Z = np.squeeze(Z)
-        if Z.ndim == 1:
-            Z = Z.reshape(-1, 1)
-        ny, nx = Z.shape
-
-        defaults = PlotConfig(grid=None, legend=None, transparent=False)
-        cfg = self._merge_cfg(cfg, defaults)
-
-        x = self._to_1d(x if x is not None else cfg.x)
-        y = self._to_1d(y if y is not None else cfg.y)
-
-        if not x.size:
-            x = np.arange(nx, dtype=float)
-        if not y.size:
-            y = np.arange(ny, dtype=float)
-        if x.size != nx:
-            n = min(x.size, nx)
-            self.logger.warning("3D: x len=%d, nx=%d; truncating to %d.", x.size, nx, n)
-            x = x[:n]; Z = Z[:, :n]; nx = n
-        if y.size != ny:
-            n = min(y.size, ny)
-            self.logger.warning("3D: y len=%d, ny=%d; truncating to %d.", y.size, ny, n)
-            y = y[:n]; Z = Z[:n, :]; ny = n
-
-        X, Y = np.meshgrid(x, y)
-        with self._theme_context(cfg):
-            fig, ax = self._new_fig(projection="3d")
-            if wireframe:
-                ax.plot_wireframe(X, Y, Z, rstride=rstride, cstride=cstride, antialiased=antialiased)
-            else:
-                ax.plot_surface(X, Y, Z, rstride=rstride, cstride=cstride, antialiased=antialiased)
-
-            if cfg.title:  ax.set_title(cfg.title)
-            if cfg.xlabel: ax.set_xlabel(cfg.xlabel)
-            if cfg.ylabel: ax.set_ylabel(cfg.ylabel)
-            zl = zlabel if zlabel is not None else cfg.zlabel
-            if zl: ax.set_zlabel(zl)
-            if self.tight_layout:
-                fig.tight_layout()
-
-            path = self._resolve_path(filename).with_suffix(".png")
-            path.parent.mkdir(parents=True, exist_ok=True)
-            fig.savefig(path, dpi=self.dpi, bbox_inches="tight", transparent=bool(cfg.transparent))
-            plt.close(fig)
-            self._update_png_file(path)
-            self.logger.info("Saved 3D plot: %s", path)
-            return path

@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Sequence, cast
 
 from pydantic import Field
 
-from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport
+from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport, AnalysisRptMatplotConfig
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.api.routes.common.classes.analysis.model.schema import OfdmFecSummaryAnalysisModel
@@ -43,8 +43,10 @@ class FecSummaryAnalysisReport(AnalysisReport):
     """
     FNAME_TAG: str = "FecSummary"
 
-    def __init__(self, analysis: Analysis):
-        super().__init__(analysis)
+    def __init__(self, analysis: Analysis, 
+                 analysis_matplot_config:AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(), 
+                 **kwargs):
+        super().__init__(analysis, analysis_matplot_config)    
         self.logger = logging.getLogger("FecSummaryAnalysisReport")
         self._results: Dict[int, FecSummaryAnalysisRptModel] = {}
 
@@ -140,11 +142,16 @@ class FecSummaryAnalysisReport(AnalysisReport):
 
                 try:
                     cfg = PlotConfig(
-                        title=f"FEC Summary - OFDM Channel {channel_id} (Profile {profile})",
-                        x=timestamps,   xlabel="Timestamp",
-                        y_multi         = [total_codewords, corrected, uncorrected],
-                        y_multi_label   = ["Total Codewords", "Corrected", "Uncorrected"],
-                        grid=True, legend=True, transparent=False,
+                        title           =   f"FEC Summary - OFDM Channel {channel_id} (Profile {profile})",
+                        x               =   timestamps,   
+                        xlabel          =   "Timestamp",
+                        y_multi         =   [total_codewords, corrected, uncorrected],
+                        y_multi_label   =   ["Total Codewords", "Corrected", "Uncorrected"],
+                        grid            =   True, 
+                        legend          =   True, 
+                        transparent     =   False,
+                        theme           =   self.getAnalysisRptMatplotConfig().theme,
+                        line_colors     =   ["tab:blue", "tab:green", "tab:red"],
                     )
 
                     mgr = MatplotManager(default_cfg=cfg)

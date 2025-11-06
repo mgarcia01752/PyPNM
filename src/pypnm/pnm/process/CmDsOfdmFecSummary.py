@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
@@ -6,7 +5,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any, Dict, List, cast
-from struct import Struct, iter_unpack
+from struct import Struct
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
@@ -17,13 +16,10 @@ from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader, PnmHeaderParameters
 from pypnm.lib.mac_address import MacAddress
 
-
-
-
 # -------- Struct formats (network/big-endian) --------
-SUMMARY_HDR = Struct('!B6sBB')   # channel_id, mac(6), summary_type, num_profiles
-PROFILE_HDR = Struct('!BH')      # profile_id, number_of_sets
-SET_FMT = '!I3I'                 # timestamp, total_codewords, corrected_codewords, uncorrectable_codewords
+SUMMARY_HDR = Struct("!B6sBB")   # channel_id, mac(6), summary_type, num_profiles
+PROFILE_HDR = Struct("!BH")      # profile_id, number_of_sets
+SET_FMT = "!I3I"                 # timestamp, total_codewords, corrected_codewords, uncorrectable_codewords
 SET_REC = Struct(SET_FMT)        # for .size and consistency
 
 
@@ -169,7 +165,7 @@ class CmDsOfdmFecSummary(PnmHeader):
         self.logger.debug(f"FEC Summary Header Data: {bytes(mv[:SUMMARY_HDR.size]).hex()}")
 
         self._channel_id = channel_id
-        self._mac_address = mac_raw.hex(':')  # AA:BB:CC:DD:EE:FF
+        self._mac_address = MacAddress(mac_raw).mac_address
         self._summary_type = summary_type
         self._num_profiles = num_profiles
 
@@ -184,6 +180,7 @@ class CmDsOfdmFecSummary(PnmHeader):
                 break
 
             profile_id, number_of_sets = PROFILE_HDR.unpack(mv[pos:pos + PROFILE_HDR.size])
+            self.logger.debug(f"profile_id={int(profile_id)}, number_of_sets={int(number_of_sets)}, pos=+{pos}")
             pos += PROFILE_HDR.size
 
             self.logger.debug(f"Profile {profile_id} declares {number_of_sets} set(s)")
@@ -199,17 +196,35 @@ class CmDsOfdmFecSummary(PnmHeader):
                 )
                 number_of_sets = max_sets
 
-            # Slice the exact bytes for this profile's sets and iterate without manual index math
+            # Slice the exact bytes for this profile's sets so we can log hex per-record
             set_bytes_len = number_of_sets * SET_REC.size
             sets_slice = mv[pos:pos + set_bytes_len]
 
-            ts: FloatSeries = []
-            tc: FloatSeries = []
-            cc: FloatSeries = []
-            uc: FloatSeries = []
+            ts: List[TimeStamp] = []
+            tc: CodeWordArray = []
+            cc: CodeWordArray = []
+            uc: CodeWordArray = []
 
-            for timestamp, total, corrected, uncorrectable in iter_unpack(SET_FMT, sets_slice):
-                self.logger.debug(f"Profile {profile_id} Set: ts={timestamp}, total={total}, corrected={corrected}, uncorrectable={uncorrectable}")
+            # Manual walk so we can log raw hex of each record and timestamp
+            for rec_idx in range(number_of_sets):
+                off = rec_idx * SET_REC.size
+                rec = sets_slice[off:off + SET_REC.size]
+                rec_hex = bytes(rec).hex()
+                ts_bytes = bytes(rec[0:4])
+                ts_hex = ts_bytes.hex()
+
+                timestamp, total, corrected, uncorrectable = SET_REC.unpack(rec)
+
+                # For visibility: show both BE (parsed) and LE interpretations of the timestamp
+                ts_be = timestamp
+                ts_le = int.from_bytes(ts_bytes, "little", signed=False)
+
+                self.logger.debug(
+                    f"prof={int(profile_id)} rec={rec_idx:05d} @+{pos + off} "
+                    f"raw=0x{rec_hex} ts=0x{ts_hex} ts_big-end={ts_be} ts_little-end={ts_le} "
+                    f"total={int(total)} corr={int(corrected)} unc={int(uncorrectable)}"
+                )
+
                 ts.append(timestamp)
                 tc.append(total)
                 cc.append(corrected)
@@ -218,10 +233,10 @@ class CmDsOfdmFecSummary(PnmHeader):
             pos += set_bytes_len
 
             cwe_model = OfdmFecSumCodeWordEntryModel(
-                timestamp       =   ts,
-                total_codewords =   tc,
-                corrected       =   cc,
-                uncorrectable   =   uc,
+                timestamp       =   cast(List[TimeStamp], ts),
+                total_codewords =   cast(CodeWordArray, tc),
+                corrected       =   cast(CodeWordArray, cc),
+                uncorrectable   =   cast(CodeWordArray, uc),
             )
 
             profile_entry = OfdmFecSumDataModel(
@@ -233,22 +248,24 @@ class CmDsOfdmFecSummary(PnmHeader):
 
         if len(profile_entries) != self._num_profiles:
             self.logger.debug(
-                f"Parsed {len(profile_entries)} profile(s), header declared {self._num_profiles}")
+                f"Parsed {len(profile_entries)} profile(s), header declared {self._num_profiles}"
+            )
 
         # Get the first timestamp for reference/logging
         first_timestamp: CaptureTime = cast(CaptureTime, profile_entries[0].codeword_entries.timestamp[0])
- 
+
         if not self.override_capture_time(first_timestamp):
-            self.logger.error(f'Unable to update CaptureTime from {self._capture_time} -> {first_timestamp}')
+            self.logger.error(f"Unable to update CaptureTime from {self._capture_time} -> {first_timestamp}")
 
         # 4) Build the pydantic model
-        self._model = CmDsOfdmFecSummaryModel (
+        self._model = CmDsOfdmFecSummaryModel(
             pnm_header      = self.getPnmHeaderParameterModel(),
             channel_id      = self._channel_id,
             mac_address     = self._mac_address,
             summary_type    = self._summary_type,
             num_profiles    = self._num_profiles,
-            fec_summary_data=profile_entries,)
+            fec_summary_data= profile_entries,
+        )
 
     def to_model(self) -> CmDsOfdmFecSummaryModel:
         """Return the structured pydantic model for the parsed FEC summary."""
