@@ -6,8 +6,7 @@ from __future__ import annotations
 
 from pydantic import Field
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmDataResponse, PnmRequest
-from pypnm.api.routes.docs.pnm.ds.histogram.schemas import PnmAnalysisRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisRequest, PnmDataResponse, PnmRequest
 from pypnm.docsis.cm_snmp_operation import FecSummaryType
 
 class PnmFecSummaryRequest(PnmRequest):
@@ -21,6 +20,4 @@ class PnmFecSummaryResponse(PnmDataResponse):
 
 class PnmFecSummaryAnalysisRequest(PnmAnalysisRequest):
     """"""
-    fec_summary_type:int = Field(
-        default=int(FecSummaryType.TEN_MIN.value), description="FEC Summuary 10 Min = 2, 24 Hr = 3"
-    )
+    fec_summary_type:int = Field(default=int(FecSummaryType.TEN_MIN.value), description="FEC Summuary 10 Min = 2, 24 Hr = 3")

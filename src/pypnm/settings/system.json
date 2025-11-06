@@ -27,7 +27,7 @@
     "PnmBulkDataTransfer": {
         "method": "tftp",
         "tftp": {
-            "ip_v4": "172.19.0.56",
+            "ip_v4": "172.19.8.28",
             "ip_v6": "2001:428:3800:100:283f:2967:938a:bd68",
             "remote_dir": ""
         },

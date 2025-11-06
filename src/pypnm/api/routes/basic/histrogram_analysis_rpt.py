@@ -4,58 +4,85 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Iterable, cast
+from typing import Any, Iterable, List, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport
+from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport, AnalysisRptMatplotConfig
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, DsHistogramAnalysisModel
 from pypnm.lib.constants import INVALID_CHANNEL_ID, T
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
-from pypnm.lib.types import FloatSeries
+from pypnm.lib.types import ArrayLike, ChannelId, FloatSeries, IntSeries
+
 
 class DsHistrogramParameters(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
-    symmetry: int           = Field(..., description="Histogram symmetry flag (implementation-defined)")
-    dwell_count: FloatSeries  = Field(..., description="Capture dwell count (implementation-defined)")
-    hit_counts: FloatSeries   = Field(default_factory=list, description="Histogram bin hit counts")
+    symmetry: int              = Field(..., description="Histogram symmetry flag (implementation-defined)")
+    dwell_counts: IntSeries    = Field(..., description="Total capture dwell count in samples")
+    hit_counts: IntSeries      = Field(default_factory=list, description="Histogram bin hit counts (one value per bin)")
 
 
 class DsHistrogramAnalysisRpt(CommonAnalysis):
-    parameters: DsHistrogramParameters = Field(..., description="Ds Histogram parameters")
-
+    parameters: DsHistrogramParameters = Field(..., description="Downstream Histogram parameters and bin counts")
 
 class DsHistrogramReport(AnalysisReport):
+    """
+    Build CSV and Matplotlib artifacts for Downstream Histogram analysis.
+
+    This report consumes `DsHistogramAnalysisModel` items from `Analysis`, normalizes them
+    into `DsHistrogramAnalysisRpt` per-channel models, and emits:
+      - One CSV per channel with per-bin hit counts and metadata.
+      - One PNG histogram per channel (options via kwargs to `create_matplot`).
+    """
+
     FNAME_TAG: str = "DsHistrogram"
 
-    def __init__(self, analysis: Analysis):
-        super().__init__(analysis)
-        self.logger = logging.getLogger("DsHistrogramReport")
-        self._results: Dict[int, DsHistrogramAnalysisRpt] = {}
+    def __init__(self, analysis: Analysis, 
+                 analysis_matplot_config: AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(), 
+                 **kwargs) -> None:
+        """
+        Initialize the report builder.
+
+        Parameters
+        ----------
+        analysis : Analysis
+            Source analysis instance providing `DsHistogramAnalysisModel` items.
+        analysis_matplot_config : AnalysisRptMatplotConfig
+            Theme and rendering options used by downstream plots.
+        """
+        super().__init__(analysis, analysis_matplot_config)
+        self.logger = logging.getLogger(f"{self.__class__.__name__}")
+        self._results: dict[int, DsHistrogramAnalysisRpt] = {}
 
     def create_csv(self, **kwargs: Any) -> List[CSVManager]:
-        """Emit one CSV per channel with per-bin histogram rows."""
+        """
+        Emit one CSV per channel; rows are (ChannelID, BinIndex, HitCount, Symmetry, DwellCount).
+
+        Returns
+        -------
+        List[CSVManager]
+            Managers with headers, rows, and target filenames set. The caller can persist them.
+        """
         csv_mgr_list: List[CSVManager] = []
 
         for common_model in self.get_common_analysis_model():
-            model                   = cast(DsHistrogramAnalysisRpt, common_model)
-            channel_id: int         = model.channel_id
-            symmetry: int           = model.parameters.symmetry
-            dwell_count: int        = model.parameters.dwell_count
-            hit_counts: FloatSeries   = model.parameters.hit_counts
+            model = cast(DsHistrogramAnalysisRpt, common_model)
+            channel_id: int = int(model.channel_id)
+            symmetry: int = int(model.parameters.symmetry)
+            dwell_counts: IntSeries = list(model.parameters.dwell_counts)
+            hit_counts: IntSeries = list(model.parameters.hit_counts)
 
             try:
                 csv_mgr: CSVManager = self.csv_manager_factory()
-                csv_mgr.set_header(["ChannelID", "BinIndex", "HitCount", "Symmetry", "DwellCount"])  # include bin index for clarity
+                csv_mgr.set_header(["ChannelID", "BinIndex", "HitCount", "Symmetry", "DwellCount"])
                 csv_fname = self.create_csv_fname(tags=[str(channel_id), self.FNAME_TAG])
                 csv_mgr.set_path_fname(csv_fname)
 
                 for idx, hit in enumerate(hit_counts):
-                    csv_mgr.insert_row([channel_id, idx, int(hit), symmetry, dwell_count])
+                    csv_mgr.insert_row([channel_id, idx, int(hit), symmetry, dwell_counts])
 
-                self.logger.debug(f"CSV created for channel {channel_id}: {csv_fname} (rows={csv_mgr.get_row_count()})")
                 csv_mgr_list.append(csv_mgr)
 
             except Exception as exc:
@@ -65,46 +92,55 @@ class DsHistrogramReport(AnalysisReport):
 
     def create_matplot(self, **kwargs: Any) -> List[MatplotManager]:
         """
-        Render a per-channel histogram view from **pre-binned counts** using `MatplotManager.plot_histogram`.
+        Render a per-channel histogram using `MatplotManager.plot_histogram` and pre-binned counts.
 
-        Keyword args (optional):
-            normalized (bool): If True, use probability density (fractions) instead of raw counts. Default False.
-            cumulative (bool): If True, draw the cumulative histogram. Default False.
-            orientation (str): "vertical" (default) or "horizontal".
-            histtype (str): One of {"bar", "step", "stepfilled", "barstacked"}. Default "bar".
-            align (str): "mid" | "left" | "right". Default "mid".
-            bins (int | Sequence[number]): Optional override for bin edges/count. By default uses unit-width bins per entry in `hit_counts`.
-            label (str | None): Optional legend label.
+        Keyword Args
+        ------------
+        normalized : bool
+            If True, render probability density (fractions). Default False.
+        cumulative : bool
+            If True, render cumulative histogram. Default False.
+        orientation : str
+            "vertical" (default) or "horizontal".
+        histtype : str
+            One of {"bar", "step", "stepfilled", "barstacked"}. Default "bar".
+        align : str
+            "mid" | "left" | "right". Default "mid".
+        bins : int | Sequence[number]
+            Optional override for bin edges/count. By default uses unit-width bins per hit_counts entry.
+        label : str | None
+            Optional legend label.
+
+        Returns
+        -------
+        List[MatplotManager]
+            Plot managers with PNGs saved to disk and file paths tracked.
         """
         out: List[MatplotManager] = []
 
-        normalized: bool = bool(kwargs.get("normalized", False))
-        cumulative: bool = bool(kwargs.get("cumulative", False))
-        orientation: str = str(kwargs.get("orientation", "vertical")).lower()
-        histtype: str = str(kwargs.get("histtype", "bar"))
-        align: str = str(kwargs.get("align", "mid"))
-        label = kwargs.get("label", None)
-        bins_override = kwargs.get("bins", None)
+        normalized: bool    = bool(kwargs.get("normalized", False))
+        cumulative: bool    = bool(kwargs.get("cumulative", False))
+        orientation: str    = str(kwargs.get("orientation", "vertical")).lower()
+        histtype: str       = str(kwargs.get("histtype", "bar"))
+        align: str          = str(kwargs.get("align", "mid"))
+        label               = kwargs.get("label", None)
+        bins_override       = kwargs.get("bins", None)
 
         for common_model in self.get_common_analysis_model():
             model = cast(DsHistrogramAnalysisRpt, common_model)
-            channel_id: int = int(model.channel_id)
-            hit_counts: List[float] = [float(v) for v in (model.parameters.hit_counts or [])]
+            channel_id: ChannelId = ChannelId(model.channel_id)
+            hit_counts: FloatSeries = [float(v) for v in (model.parameters.hit_counts or [])]
 
             if not hit_counts:
-                self.logger.debug(f"Channel {channel_id} has empty hit_counts; skipping plot.")
                 continue
 
-            # Build a histogram from pre-binned counts: one sample per bin index with a weight equal to that bin's count.
-            bin_indices: List[float] = [float(i) for i in range(len(hit_counts))]
-            default_edges: List[float] = [float(i) for i in range(len(hit_counts) + 1)]  # unit-width bins
+            bin_indices: FloatSeries = [float(i) for i in range(len(hit_counts))]
+            default_edges: FloatSeries = [float(i) for i in range(len(hit_counts) + 1)]
             bins_arg = bins_override if bins_override is not None else default_edges
 
-            # Title/labels
-            title = f"Downstream Histogram"
+            title = "Downstream Histogram"
             xlabel = "Bin Index"
             ylabel = "Hit Count"
-
             if normalized and not cumulative:
                 ylabel = "Fraction"
             elif not normalized and cumulative:
@@ -121,74 +157,94 @@ class DsHistrogramReport(AnalysisReport):
                 png_tags.append("h")
 
             png = self.create_png_fname(tags=png_tags)
-            self.logger.debug(f"Creating histogram plot: {png} for channel: {channel_id}")
 
-            cfg = PlotConfig(title=title, 
-                             x=bin_indices,     xlabel=xlabel, 
-                             y=hit_counts,      ylabel=ylabel, 
-                             grid=True, legend=(label is not None), transparent=False)
-            
-            mgr = MatplotManager(default_cfg=cfg)
-
-            mgr.plot_histogram(
-                data=bin_indices,
-                filename=png,
-                bins=bins_arg,
-                density=normalized,
-                weights=hit_counts,
-                orientation=orientation,  # "vertical" or "horizontal"
-                cumulative=cumulative,
-                histtype=histtype,        # "bar", "step", etc.
-                align=align,              # "mid", "left", "right"
-                label=label,
-                cfg=cfg,
+            cfg = PlotConfig(
+                title       =   title,
+                x           =   cast(ArrayLike, bin_indices),
+                xlabel      =   xlabel,
+                y           =   cast(ArrayLike, hit_counts),
+                ylabel      =   ylabel,
+                grid        =   True,
+                legend      =   False,
+                transparent =   False,
+                theme       =   self.getAnalysisRptMatplotConfig().theme,
             )
 
+            mgr = MatplotManager(default_cfg=cfg)
+            mgr.plot_histogram(
+                data        =   cast(ArrayLike, bin_indices),
+                filename    =   png,
+                bins        =   bins_arg,
+                density     =   normalized,
+                weights     =   cast(ArrayLike, hit_counts),
+                orientation =   orientation,
+                cumulative  =   cumulative,
+                histtype    =   histtype,
+                align       =   align,
+                label       =   label,
+                cfg         =   cfg,
+            )
             out.append(mgr)
 
         return out
 
     def _process(self) -> None:
         """
-        Expected per-item shape (keys are case-sensitive):
+        Normalize `DsHistogramAnalysisModel` items into `DsHistrogramAnalysisRpt` records.
 
+        Expected input shape (illustrative):
         {
-            "device_details": {"system_description": {}},
-            "pnm_header": {},
-            "mac_address": "...",
             "channel_id": int,
             "symmetry": int,
             "dwell_count": int,
             "hit_counts": List[int]
         }
         """
-        models:List[DsHistogramAnalysisModel] = cast(List[DsHistogramAnalysisModel], self.get_analysis_model())
+        models: List[DsHistogramAnalysisModel] = cast(List[DsHistogramAnalysisModel], self.get_analysis_model())
 
-        for idx, model in enumerate(models):
+        for idx, src in enumerate(models):
             try:
-                symmetry    = model.symmetry
-                dwell_count = model.dwell_count
-                hit_counts  = model.hit_counts
+                channel_id: ChannelId   = ChannelId(getattr(src, "channel_id", INVALID_CHANNEL_ID))
+                symmetry: int           = int(src.symmetry)
+                dwell_counts: IntSeries = list(src.dwell_counts)
+                hit_counts: IntSeries   = list(src.hit_counts)
 
-                raw_x = list(range(len(hit_counts)))
-                raw_y:FloatSeries = hit_counts
+                raw_x: IntSeries = list(range(len(hit_counts)))
+                raw_y: IntSeries = hit_counts
 
                 model = DsHistrogramAnalysisRpt(
-                    channel_id  =   INVALID_CHANNEL_ID, 
-                    raw_x=cast(int, raw_x),    raw_y=cast(int, raw_y), 
-                    parameters=DsHistrogramParameters(
-                        symmetry    =   symmetry, 
-                        dwell_count =   dwell_count, 
-                        hit_counts  =   hit_counts
-                    )
+                    channel_id  =   channel_id,
+                    raw_x       =   raw_x,
+                    raw_y       =   raw_y,
+                    parameters  =   DsHistrogramParameters(
+                        symmetry        =   symmetry,
+                        dwell_counts    =   dwell_counts,
+                        hit_counts      =   hit_counts,),
                 )
-                self.register_common_analysis_model(INVALID_CHANNEL_ID, model)
+                self.register_common_analysis_model(channel_id, model)
 
             except Exception as exc:
                 self.logger.exception(f"Failed to process DS Histogram item {idx}: {exc}", exc_info=True)
 
     @staticmethod
     def _align_len(seq: Iterable[T] | List[T], n: int, *, fill: T) -> List[T]:
+        """
+        Ensure `seq` has length `n` by truncation or padding with `fill`.
+
+        Parameters
+        ----------
+        seq : Iterable[T] | List[T]
+            Source sequence.
+        n : int
+            Desired length.
+        fill : T
+            Pad value when `seq` is shorter than `n`.
+
+        Returns
+        -------
+        List[T]
+            Sequence of exactly length `n`.
+        """
         lst = list(seq) if not isinstance(seq, list) else seq
         if n <= 0:
             return []

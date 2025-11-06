@@ -17,7 +17,7 @@ from pypnm.snmp.casts import as_bool, as_int, as_str, as_float2  # freq stays in
 class DocsPnmCmDsOfdmRxMerFields(BaseModel):
     docsPnmCmDsOfdmRxMerFileEnable: bool
     docsPnmCmDsOfdmRxMerFileName: str
-    docsPnmCmDsOfdmRxMerMeasStatus: str  # ← now a string (e.g., "sample_ready")
+    docsPnmCmDsOfdmRxMerMeasStatus: str
     docsPnmCmDsOfdmRxMerPercentile: float
     docsPnmCmDsOfdmRxMerMean: float
     docsPnmCmDsOfdmRxMerStdDev: float

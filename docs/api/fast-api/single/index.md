@@ -59,7 +59,7 @@ Endpoints that perform one-shot capture or query against a single device.
 | [OFDM Constellation Display](ds/ofdm/constellation-display.md)    | Visual modulation symbols    |
 | [OFDM FEC Summary](ds/ofdm/fec-summary.md)                        | Forward error correction summary  |
 | [OFDM Modulation Profile](ds/ofdm/modulation-profile.md)          | Bit-loading and profile usage     |
-| [Histogram](histogram.md)                                         | Downstream power-level histogram  |
+| [Histogram](ds/histogram.md)                                      | Downstream power-level histogram  |
 
 ### Upstream (US)
 

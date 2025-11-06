@@ -76,12 +76,12 @@ class DsHistogramAnalysisModel(BaseAnalysisModel):
     """
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
     symmetry: int               = Field(..., description="Histogram symmetry flag as reported by the device (implementation- or vendor-defined).")
-    dwell_count: FloatSeries    = Field(..., description="Measurement dwell/accumulation count used when collecting the histogram.")
-    hit_counts: FloatSeries     = Field(..., description="Per-bin hit counts; index i corresponds to bin i. Length equals number of bins.")
+    dwell_counts: IntSeries     = Field(..., description="Measurement dwell/accumulation count used when collecting the histogram.")
+    hit_counts: IntSeries       = Field(..., description="Per-bin hit counts; index i corresponds to bin i. Length equals number of bins.")
 
 class FecSummaryCodeWordModel(BaseModel):
     """Vectorized FEC codeword summary for a single OFDM profile.
-
+    
     Each list is aligned by index: ``timestamp[i]`` corresponds to
     ``total_codewords[i]``, ``corrected[i]``, and ``uncorrected[i]``.
     """

@@ -765,8 +765,8 @@ class Analysis:
             pnm_header      = measurement.get("pnm_header", {}),
             mac_address     = measurement.get("mac_address", MacAddress.null()),
             channel_id      = measurement.get("channel_id", INVALID_CHANNEL_ID),
-            symmetry        = measurement.get("symmetry", INVALID_CHANNEL_ID),
-            dwell_count     = measurement.get("dwell_count_values", INVALID_CHANNEL_ID),
+            symmetry        = measurement.get("symmetry", -1),
+            dwell_counts    = measurement.get("dwell_count_values", []),
             hit_counts      = measurement.get("hit_count_values", []),
         )
 
@@ -1354,7 +1354,6 @@ class Analysis:
         )
 
         return echo_report
-
 
     @classmethod
     def basic_analysis_ds_chan_est(

@@ -30,6 +30,7 @@ from pypnm.docsis.data_type.InterfaceStats import InterfaceStats
 from pypnm.docsis.data_type.OfdmProfiles import OfdmProfiles
 from pypnm.docsis.data_type.enums import MeasStatusType
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsHistEntry import DocsPnmCmDsHistEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmMerMarEntry import DocsPnmCmDsOfdmMerMarEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOfdmChanEstCoefEntry
@@ -1493,7 +1494,35 @@ class CmSnmpOperation:
             self.logger.exception("Failed to retrieve DocsPnmCmDsOfdmMerMarEntry entries")
 
         return entries
-      
+
+    async def getDocsPnmCmDsHistEntry(self) -> List[DocsPnmCmDsHistEntry]:
+        """
+        Retrieves DOCSIS 3.1 Downstream Histogram entries.
+
+        This method queries the SNMP agent to collect histogram data for each downstream OFDM channel
+        using the ifIndex values retrieved from the modem. Each returned entry corresponds to a channel's
+        histogram configuration and status.
+
+        """
+        entries: List[DocsPnmCmDsHistEntry] = []
+
+        try:
+            indices = await self.getIfTypeIndex(DocsisIfType.docsCableMaclayer)
+
+            if not indices:
+                self.logger.error("No docsCableMaclayer indices found.")
+                return entries
+            
+            self.logger.info(f'Found docsCableDownstream Indices: {indices}')
+
+            entries = await DocsPnmCmDsHistEntry.get(snmp=self._snmp, indices=indices)
+            self.logger.debug(f'Number of DocsPnmCmDsHistEntry Found: {len(entries)}')
+
+        except Exception as e:
+            self.logger.exception("Failed to retrieve DocsPnmCmDsHistEntry entries")
+
+        return entries
+
     async def getOfdmProfiles(self) -> List[Tuple[int, OfdmProfiles]]:
         """
         Retrieve provisioned OFDM profile bits for each downstream OFDM channel.

@@ -30,6 +30,7 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import (
     DocsPnmBulkFileUploadStatus, DocsPnmCmCtlStatus, FecSummaryType)
 from pypnm.docsis.data_type.enums import MeasStatusType
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsHistEntry import DocsPnmCmDsHistEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
@@ -55,6 +56,7 @@ MeasurementEntry: TypeAlias = Union[
     DocsPnmCmDsConstDispMeasEntry,
     DocsPnmCmDsOfdmRxMerEntry,
     DocsPnmCmUsPreEqEntry,
+    DocsPnmCmDsHistEntry,
 ]
 class CommonMeasureService(CommonMessagingService):
     """
@@ -300,6 +302,7 @@ class CommonMeasureService(CommonMessagingService):
             - DS_CONSTELLATION_DISP       → List[DocsPnmCmDsConstDispMeasEntry]
             - DS_OFDM_RXMER_PER_SUBCAR    → List[DocsPnmCmDsOfdmRxMerEntry]
             - US_PRE_EQUALIZER_COEF       → List[DocsPnmCmUsPreEqEntry]
+            - DS_HISTOGRAM                → List[DocsPnmCmDsHistEntry]
             For other (stub/unsupported) test types, an empty list is returned.
 
         Notes
@@ -336,7 +339,9 @@ class CommonMeasureService(CommonMessagingService):
             self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_CODEWORD_ERROR_RATE")
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_HISTOGRAM:
-            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_HISTOGRAM")
+            self.logger.info(f"{self.log_prefix} - Running DS_HISTOGRAM")
+            concrete = await self.cm.getDocsPnmCmDsHistEntry()
+            return cast(List[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF:
             self.logger.info(f"{self.log_prefix} - Running Upstream Pre-Equalization entry collection")
@@ -423,8 +428,12 @@ class CommonMeasureService(CommonMessagingService):
             return build_response("DS_OFDM_CODEWORD_ERROR_RATE", "Not implemented yet")
 
         elif pnm_test_type == DocsPnmCmCtlTest.DS_HISTOGRAM:
-            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_HISTOGRAM")
-            return build_response("DS_HISTOGRAM", "Not implemented yet")
+            self.logger.info(f"{self.log_prefix} - Running DS_HISTOGRAM")
+            entries: List[DocsPnmCmDsHistEntry] = await self.cm.getDocsPnmCmDsHistEntry()
+
+            if return_type == MeasureServiceReturnTypes.DICT:
+                return build_response("DS_HISTOGRAM", [e.model_dump() for e in entries])
+            return entries
 
         elif pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF:
             self.logger.info(f"{self.log_prefix} - Running Upstream Pre-Equalization entry collection")

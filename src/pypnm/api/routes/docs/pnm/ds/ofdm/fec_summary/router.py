@@ -47,7 +47,7 @@ class FecSummaryRouter:
             This endpoint fetches FEC summary counters for each active OFDM downstream profile,
             including corrected and uncorrectable codewords over a defined interval.
 
-            [API Guide - OFDM FEC Summary Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/fec-summary.md)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/fec-summary.md)
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
@@ -92,7 +92,7 @@ class FecSummaryRouter:
             This endpoint fetches FEC summary counters for each active OFDM downstream profile,
             including corrected and uncorrectable codewords over a defined interval.
 
-            [API Guide - OFDM FEC Summary Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/fec-summary.md)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/fec-summary.md)
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
