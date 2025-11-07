@@ -12,7 +12,7 @@ from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport, Anal
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.api.routes.common.classes.analysis.model.schema import OfdmFecSummaryAnalysisModel
-from pypnm.lib.types import ArrayLike
+from pypnm.lib.types import ArrayLike, ChannelId
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 
@@ -126,7 +126,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
 
         for common_model in self.get_common_analysis_model():
             c_model = cast(FecSummaryAnalysisRptModel, common_model)
-            channel_id: int = int(c_model.channel_id)
+            channel_id: ChannelId = ChannelId(c_model.channel_id)
 
             analysis_model = c_model.parameters
             profiles = analysis_model.profiles
@@ -145,12 +145,13 @@ class FecSummaryAnalysisReport(AnalysisReport):
                         title           =   f"FEC Summary - OFDM Channel {channel_id} (Profile {profile})",
                         x               =   timestamps,   
                         xlabel          =   "Timestamp",
+                        ylabel          =   "Codeword Count",
                         y_multi         =   [total_codewords, corrected, uncorrected],
-                        y_multi_label   =   ["Total Codewords", "Corrected", "Uncorrected"],
+                        y_multi_label   =   ["Total", "Corrected", "Uncorrected"],
                         grid            =   True, 
                         legend          =   True, 
                         transparent     =   False,
-                        theme           =   self.getAnalysisRptMatplotConfig().theme,
+                        theme           =   self.getAnalysisRptMatplotConfig().theme,   
                         line_colors     =   ["tab:blue", "tab:green", "tab:red"],
                     )
 

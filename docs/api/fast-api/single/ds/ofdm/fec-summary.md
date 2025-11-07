@@ -1,52 +1,68 @@
-# PNM Operations – Downstream OFDM FEC Summary API
+# PNM Operations – Downstream OFDM FEC Summary
 
-This API enables proactive monitoring of DOCSIS 3.1 cable modems by retrieving Forward Error Correction (FEC) summary statistics for downstream OFDM channels. FEC summaries are crucial for evaluating the health of the RF link, identifying packet loss trends, and assessing the effectiveness of error correction mechanisms over time.
+Forward Error Correction Trends For Proactive Monitoring Of OFDM Downstream Health.
 
-Operators can select between a 10-minute high-resolution view or a 24-hour long-term overview using the fec_summary_type parameter. The results are organized by modulation profile and include timestamps with raw codeword counts—total, corrected, and uncorrectable—offering clear insights into persistent versus transient issues.
+## Overview
 
-This API supports secure SNMP-based collection and is often used in automation pipelines or integrated into network performance dashboards.
+Retrieves DOCSIS 3.1 OFDM Forward Error Correction (FEC) summary statistics per modulation profile, suitable for
+dashboards and automation. Each profile contains a time‑series of codeword counters: total, corrected, and
+uncorrectable. Use this to separate transient bursts from persistent issues and to validate error‑protection efficacy.
 
-## 📰 Endpoint
+## Endpoint
 
-**POST** `/docs/pnm/ds/ofdm/fecSummary/getMeasurement`
+`POST /docs/pnm/ds/ofdm/fecSummary/getCapture`
 
-Retrieves the Forward Error Correction (FEC) summary data from DOCSIS 3.1 downstream OFDM channels.
+## Request
 
-## 📥 Request Body (JSON)
+Refer to [Common → Request](../../../common/request.md).  
+**Deltas (Analysis‑Only Additions):** optional `analysis`, `analysis.output`, and `analysis.plot.ui` controls
+(same pattern as RxMER).
+
+### Delta Table
+
+| JSON path                | Type   | Allowed values / format | Default | Description                                                                                               |
+| ------------------------ | ------ | ----------------------- | ------- | --------------------------------------------------------------------------------------------------------- |
+| `analysis.type`          | string | "basic"                 | "basic" | Selects the analysis mode used during capture processing.                                                 |
+| `analysis.output.type`   | string | "json", "archive"       | "json"  | Output format: **`json`** returns inline `data`; **`archive`** returns a ZIP (CSV exports and PNG plots). |
+| `analysis.plot.ui.theme` | string | "light", "dark"         | "dark"  | Theme hint for plot generation (colors, grid, ticks). Does not affect raw metrics/CSV.                    |
+
+### Capture Settings
+
+| JSON path                             | Type | Example | Description                                                                                  |
+| ------------------------------------- | ---- | ------- | -------------------------------------------------------------------------------------------- |
+| `capture_settings.fec_summary_type`   | int  | 2       | Summary type per SNMP `docsPnmCmDsOfdmFecSumType`. **2 = 24‑hour**, **3 = 10‑minute**.      |
+
+**Notes**
+
+* Your project setting: **Type 2 corresponds to a 24‑hour interval**; **Type 3 corresponds to a 10‑minute interval**.  
+* The time‑series set count depends on the type (see *Return Structure* → `number_of_sets`).  
+* Profile `255` commonly refers to **NCP** (Next Codeword Pointer).
+
+### Example Request
 
 ```json
 {
   "cable_modem": {
-  "mac_address": "aa:bb:cc:dd:ee:ff", 
-  "ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
-    },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
-    }
+    "mac_address": "aa:bb:cc:dd:ee:ff",
+    "ip_address": "192.168.0.100",
+    "snmp": { "snmpV2C": { "community": "private" } }
+  },
+  "analysis": {
+    "type": "basic",
+    "output": { "type": "json" },
+    "plot": { "ui": { "theme": "dark" } }
+  },
+  "capture_settings": {
+    "fec_summary_type": 2
   }
-},
-  "fec_summary_type": 2
 }
 ```
 
-### 🔑 Fields
+## Response
 
-| Field              | Type   | Description                                                      |
-| ------------------ | ------ | ---------------------------------------------------------------- |
-| mac\_address       | string | MAC address of the cable modem                                   |
-| ip\_address        | string | IP address of the cable modem                                    |
-| snmp               | object | SNMPv2c or SNMPv3 credentials                                    |
-| fec\_summary\_type | int    | 2 = 10-minute (1 record/sec), <br> 3 = 24-hour summary (1 record/min) |
+Standard envelope with payload under `data`.
 
-## 📦 Response Body
+### Abbreviated Example
 
 ```json
 {
@@ -54,81 +70,148 @@ Retrieves the Forward Error Correction (FEC) summary data from DOCSIS 3.1 downst
   "status": 0,
   "message": null,
   "data": {
-    "data": [
+    "analysis": [
+      {
+        "device_details": {
+          "system_description": {
+            "HW_REV": "1.0",
+            "VENDOR": "LANCity",
+            "BOOTR": "NONE",
+            "SW_REV": "1.0.0",
+            "MODEL": "LCPET-3"
+          }
+        },
+        "channel_id": 159,
+        "profiles": [
+          {
+            "profile": 255,
+            "number_of_sets": 600,
+            "codewords": {
+              "timestamps": [],
+              "total_codewords": [],
+              "corrected": [],
+              "uncorrectable": []
+            }
+          }
+        ]
+      }
+    ],
+    "primative": [
       {
         "status": "SUCCESS",
-        "channel_id": 32,
+        "pnm_header": {
+          "file_type": "PNN",
+          "file_type_version": 8,
+          "major_version": 1,
+          "minor_version": 0,
+          "capture_time": 1762466502
+        },
+        "channel_id": 159,
         "mac_address": "aa:bb:cc:dd:ee:ff",
         "summary_type": 2,
-        "num_profiles": 3,
+        "num_profiles": 5,
         "fec_summary_data": [
           {
             "profile_id": 255,
             "number_of_sets": 600,
-            "codeword_entries": [
-              {
-                "timestamp": 2157931112,
-                "total_codewords": 297467904,
-                "corrected_codewords": 0,
-                "uncorrectable_codewords": 0
-              }
-            ]
-          },
-          {
-            "profile_id": 0,
-            "number_of_sets": 600,
-            "codeword_entries": [
-              {
-                "timestamp": 2157931112,
-                "total_codewords": 50331648,
-                "corrected_codewords": 0,
-                "uncorrectable_codewords": 0
-              }
-            ]
-          },
-          {
-            "profile_id": 4,
-            "number_of_sets": 600,
-            "codeword_entries": [
-              {
-                "timestamp": 2157931112,
-                "total_codewords": 0,
-                "corrected_codewords": 0,
-                "uncorrectable_codewords": 0
-              }
-            ]
+            "codeword_entries": {
+              "timestamp": [],
+              "total_codewords": [],
+              "corrected": [],
+              "uncorrectable": []
+            }
           }
-        ]
+        ],
+        "summary_type_label": "24-hour interval"
+      }
+    ],
+    "measurement_stats": [
+      {
+        "index": 3,
+        "entry": {
+          "docsPnmCmDsOfdmFecSumType": "24-hour",
+          "docsPnmCmDsOfdmFecFileEnable": true,
+          "docsPnmCmDsOfdmFecMeasStatus": "sample_ready",
+          "docsPnmCmDsOfdmFecFileName": "ds_ofdm_codeword_error_rate_aabbccddeeff_159_1762468766.bin"
+        }
+      },
+      {
+        "index": 48,
+        "entry": {
+          "docsPnmCmDsOfdmFecSumType": "10-minute",
+          "docsPnmCmDsOfdmFecFileEnable": true,
+          "docsPnmCmDsOfdmFecMeasStatus": "sample_ready",
+          "docsPnmCmDsOfdmFecFileName": "ds_ofdm_codeword_error_rate_aabbccddeeff_160_1762468768.bin"
+        }
       }
     ]
   }
 }
 ```
 
-### 📊 Response Fields
+## Return Structure
 
-| Field                        | Type        | Description                                    |
-| ---------------------------- | ----------- | ---------------------------------------------- |
-| status                       | int         | 0 = success                                    |
-| channel\_id                  | int         | OFDM channel identifier                        |
-| summary\_type                | int         | FEC type: 2 = 10-min, 3 = 24-hour              |
-| num\_profiles                | int         | Total number of OFDM profiles reported         |
-| fec\_summary\_data           | list        | List of FEC summaries for each profile         |
-| └→ profile\_id               | int         | Profile identifier (e.g., 0, 1, 255)           |
-| └→ number\_of\_sets          | int         | Total number of time samples                   |
-| └→ codeword\_entries         | list        | List of codeword stats per time unit           |
-| └└→ timestamp                | int (epoch) | Capture time (seconds since epoch)             |
-| └└→ total\_codewords         | int         | Total number of received codewords             |
-| └└→ corrected\_codewords     | int         | Count of FEC-corrected codewords               |
-| └└→ uncorrectable\_codewords | int         | Count of codewords that could not be corrected |
+### Top‑Level Envelope
 
-## 📑 Notes
+| Field         | Type          | Description                                                               |
+| ------------- | ------------- | ------------------------------------------------------------------------- |
+| `mac_address` | string        | Request echo of the modem MAC.                                            |
+| `status`      | int           | 0 on success, non‑zero on error.                                          |
+| `message`     | string\|null | Optional message describing status.                                       |
+| `data`        | object        | Container for results (`analysis`, `primative`, `measurement_stats`).     |
 
-* The number of `codeword_entries` is tied to `fec_summary_type`:
+### `data.analysis[]`
 
-  * Type 2 = 10-minute window (600 sets @ 1/sec)
-  * Type 3 = 24-hour window (1440 sets @ 1/min)
-* Profile ID `255` typically refers to NCP (Next Codeword Pointer).
-* This summary data can be used to monitor FEC performance trends.
+Analysis view per channel, grouped by profile.
 
-> 📂 For implementation, refer to `src/pnm/analysis/ofdm_fec_summary.py`.
+| Field                      | Type    | Description                                                                 |
+| -------------------------- | ------- | --------------------------------------------------------------------------- |
+| device_details.*           | object  | System descriptor at analysis time.                                         |
+| channel_id                 | int     | OFDM downstream channel ID.                                                 |
+| profiles[].profile         | int     | Modulation profile identifier (`0..N`, `255` for NCP in many deployments).  |
+| profiles[].number_of_sets  | int     | Number of time samples in this capture (depends on summary type).           |
+| profiles[].codewords.*     | arrays  | Parallel arrays: `timestamps`, `total_codewords`, `corrected`, `uncorrectable`. |
+
+### `data.primative[]`
+
+Normalized raw capture for export/plotting.
+
+| Field                               | Type    | Description                                                       |
+| ----------------------------------- | ------- | ----------------------------------------------------------------- |
+| status                              | string  | Result for this capture (e.g., `SUCCESS`).                        |
+| pnm_header.*                        | object  | PNM header (type, version, capture time).                         |
+| channel_id                          | int     | Channel ID.                                                       |
+| mac_address                         | string  | MAC address.                                                      |
+| summary_type                        | int     | SNMP value (2 or 3).                                              |
+| num_profiles                        | int     | Number of profiles present in the payload.                        |
+| fec_summary_data[]                  | array   | Raw profile entries as captured.                                  |
+| fec_summary_data[].profile_id       | int     | Profile ID (e.g., `0..N`, `255`).                                 |
+| fec_summary_data[].number_of_sets   | int     | Number of time samples in the series.                             |
+| fec_summary_data[].codeword_entries.* | arrays | `timestamp`, `total_codewords`, `corrected`, `uncorrectable`.     |
+| summary_type_label                  | string  | Human‑readable label (e.g., `24-hour interval`).                  |
+
+### `data.measurement_stats[]`
+
+Snapshot of CM FEC‑summary configuration and state via SNMP at capture time.
+
+| Field                                         | Type    | Description                                                              |
+| --------------------------------------------- | ------- | ------------------------------------------------------------------------ |
+| index                                         | int     | SNMP table row index.                                                    |
+| entry.docsPnmCmDsOfdmFecSumType               | string  | Selected summary type (`24-hour`, `10-minute`).                          |
+| entry.docsPnmCmDsOfdmFecFileEnable            | boolean | Whether CM capture‑to‑file was enabled.                                  |
+| entry.docsPnmCmDsOfdmFecMeasStatus            | string  | Measurement status (e.g., `sample_ready`).                               |
+| entry.docsPnmCmDsOfdmFecFileName              | string  | Device‑side filename of the summary payload.                             |
+
+## Matplot Plotting
+
+| Plot                                                                          | Description                                                                                          |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [Uncorrectable Rate vs Time](./images/fecsummary/uncorrectable_rate.png)      | Line or area plot of uncorrectable codewords to visualize bursts and persistent tails.               |
+| [Corrected vs Uncorrectable (Stacked)](./images/fecsummary/cw_stacked.png)    | Stacked area of corrected/uncorrectable counts to show protection effectiveness over time.           |
+| [Profile Comparison](./images/fecsummary/profile_compare.png)                 | Multiple lines by profile to identify outliers (e.g., NCP vs data profiles).                         |
+
+## Notes
+
+* **Summary Type Mapping (Project Standard):** `2 → 24‑hour` (1 record/min, up to 1440), `3 → 10‑minute` (1 record/sec, up to 600).  
+* Use per‑profile trends to identify *when* and *where* errors occur (e.g., profile‑specific ingress or plant issues).  
+* For NCP display questions, align with current ECN/SPEC guidance when interpreting corrected counters.

@@ -31,6 +31,7 @@ from pypnm.docsis.data_type.OfdmProfiles import OfdmProfiles
 from pypnm.docsis.data_type.enums import MeasStatusType
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsHistEntry import DocsPnmCmDsHistEntry
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmFecEntry import DocsPnmCmDsOfdmFecEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmMerMarEntry import DocsPnmCmDsOfdmMerMarEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOfdmChanEstCoefEntry
@@ -1522,6 +1523,35 @@ class CmSnmpOperation:
             self.logger.exception("Failed to retrieve DocsPnmCmDsHistEntry entries")
 
         return entries
+
+    async def getDocsPnmCmDsOfdmFecEntry(self) -> List[DocsPnmCmDsOfdmFecEntry]:
+        """
+        Retrieve FEC Summary entries for all downstream OFDM channels.
+
+        Returns
+        -------
+        List[DocsPnmCmDsOfdmFecEntry].
+        """
+        self.logger.debug('Entering into -> getDocsPnmCmDsOfdmFecEntry()')
+        entries: List[DocsPnmCmDsOfdmFecEntry] = []
+        try:
+            indices = await self.getDocsIf31CmDsOfdmChannelIdIndex()
+
+            if not indices:
+                self.logger.warning("No DocsIf31CmDsOfdmChanChannelIdIndex indices found.")
+                return entries
+
+            unique_indices = sorted(set(int(i) for i in indices))
+            self.logger.debug(f"`FEC Summary fetch: indices={unique_indices}")
+
+            entries = await DocsPnmCmDsOfdmFecEntry.get(snmp=self._snmp, indices=unique_indices)
+
+            self.logger.debug("FEC Summary fetch complete: %d entries", len(entries))
+            return entries
+
+        except Exception as e:
+            self.logger.exception("Failed to retrieve DocsPnmCmDsOfdmFecEntry entries: %s", e)
+            return entries
 
     async def getOfdmProfiles(self) -> List[Tuple[int, OfdmProfiles]]:
         """

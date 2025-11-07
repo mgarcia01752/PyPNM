@@ -31,6 +31,7 @@ from pypnm.docsis.cm_snmp_operation import (
     DocsPnmBulkFileUploadStatus, DocsPnmCmCtlStatus, FecSummaryType)
 from pypnm.docsis.data_type.enums import MeasStatusType
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsHistEntry import DocsPnmCmDsHistEntry
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmFecEntry import DocsPnmCmDsOfdmFecEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
@@ -57,6 +58,7 @@ MeasurementEntry: TypeAlias = Union[
     DocsPnmCmDsOfdmRxMerEntry,
     DocsPnmCmUsPreEqEntry,
     DocsPnmCmDsHistEntry,
+    DocsPnmCmDsOfdmFecEntry,
 ]
 class CommonMeasureService(CommonMessagingService):
     """
@@ -303,6 +305,7 @@ class CommonMeasureService(CommonMessagingService):
             - DS_OFDM_RXMER_PER_SUBCAR    → List[DocsPnmCmDsOfdmRxMerEntry]
             - US_PRE_EQUALIZER_COEF       → List[DocsPnmCmUsPreEqEntry]
             - DS_HISTOGRAM                → List[DocsPnmCmDsHistEntry]
+            - DS_OFDM_FEC_SUMMARY         → List[DocsPnmCmDsOfdmFecEntry]
             For other (stub/unsupported) test types, an empty list is returned.
 
         Notes
@@ -321,30 +324,32 @@ class CommonMeasureService(CommonMessagingService):
             self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_SYMBOL_CAPTURE")
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF:
-            self.logger.info(f"{self.log_prefix} - Running OFDM Channel Estimation Coefficient collection")
+            self.logger.debug(f"{self.log_prefix} - Running OFDM Channel Estimation Coefficient collection")
             concrete = await self.cm.getDocsPnmCmOfdmChanEstCoefEntry()
             return cast(List[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_CONSTELLATION_DISP:
-            self.logger.info(f"{self.log_prefix} - Running OFDM Constellation Display collection")
+            self.logger.debug(f"{self.log_prefix} - Running OFDM Constellation Display collection")
             concrete = await self.cm.getDocsPnmCmDsConstDispMeasEntry()
             return cast(List[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR:
-            self.logger.info(f"{self.log_prefix} - Running RXMER entry collection")
+            self.logger.debug(f"{self.log_prefix} - Running RXMER entry collection")
             concrete = await self.cm.getDocsPnmCmDsOfdmRxMerEntry()
             return cast(List[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CODEWORD_ERROR_RATE:
-            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_CODEWORD_ERROR_RATE")
+            self.logger.debug(f"{self.log_prefix} - Running DS_OFDM_CODEWORD_ERROR_RATE")
+            concrete = await self.cm.getDocsPnmCmDsOfdmFecEntry()
+            return cast(List[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_HISTOGRAM:
-            self.logger.info(f"{self.log_prefix} - Running DS_HISTOGRAM")
+            self.logger.debug(f"{self.log_prefix} - Running DS_HISTOGRAM")
             concrete = await self.cm.getDocsPnmCmDsHistEntry()
             return cast(List[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF:
-            self.logger.info(f"{self.log_prefix} - Running Upstream Pre-Equalization entry collection")
+            self.logger.debug(f"{self.log_prefix} - Running Upstream Pre-Equalization entry collection")
             concrete = await self.cm.getDocsPnmCmUsPreEqEntry()
             return cast(List[MeasurementEntry], concrete)
 

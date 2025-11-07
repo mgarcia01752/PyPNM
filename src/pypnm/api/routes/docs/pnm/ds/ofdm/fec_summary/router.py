@@ -13,28 +13,20 @@ from pypnm.api.routes.basic.abstract.analysis_report import AnalysisRptMatplotCo
 from pypnm.api.routes.basic.fec_summary_analysis_rpt import FecSummaryAnalysisReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
 from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
-    PnmAnalysisResponse, PnmSingleCaptureRequest,
-)
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import (
-    SnmpResponse,
-)
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
-from pypnm.api.routes.common.classes.operation.cable_modem_precheck import (
-    CableModemServicePreCheck,
-)
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.api.routes.docs.pnm.ds.ofdm.fec_summary.schemas import (
-    PnmFecSummaryAnalysisRequest,
-)
-from pypnm.api.routes.docs.pnm.ds.ofdm.fec_summary.service import (
-    CmDsOfdmFecSummaryService,
-)
+from pypnm.api.routes.docs.pnm.ds.ofdm.fec_summary.schemas import PnmFecSummaryAnalysisRequest
+from pypnm.api.routes.docs.pnm.ds.ofdm.fec_summary.service import CmDsOfdmFecSummaryService
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import FecSummaryType
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmFecEntry import DocsPnmCmDsOfdmFecEntry
+from pypnm.lib.dict_utils import DictUtils
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -53,8 +45,7 @@ class FecSummaryRouter:
         @self.router.post(
             f"{self.base_endpoint}/getCapture",
             summary="Get FEC Summary PNM Capture",
-            responses=FAST_API_RESPONSE,
-        )
+            responses=FAST_API_RESPONSE,)
         async def get_capture(request: PnmFecSummaryAnalysisRequest):
             """
             Capture Downstream OFDM FEC Summary Statistics.
@@ -85,6 +76,9 @@ class FecSummaryRouter:
                 err = "Unable to complete FEC Summary capture."
                 return SnmpResponse(mac_address=mac, message=err, status=msg_rsp.status)
 
+            measurement_stats:List[DocsPnmCmDsOfdmFecEntry] = \
+                cast(List[DocsPnmCmDsOfdmFecEntry], await service.getPnmMeasurementStatistics())
+
             cps = CommonProcessService(msg_rsp)
             msg_rsp = cps.process()
 
@@ -92,12 +86,18 @@ class FecSummaryRouter:
 
             if request.analysis.output.type == OutputType.JSON:
                 payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
+                DictUtils.pop_keys_recursive(payload, ["pnm_header", "mac_address"])
+
+                primative = msg_rsp.payload_to_dict('primative')
+                DictUtils.pop_keys_recursive(primative, ["device_details"])
                 payload.update(msg_rsp.payload_to_dict("primative"))
 
+                payload.update(DictUtils.models_to_nested_dict(measurement_stats, 'measurement_stats',))
+
                 return PnmAnalysisResponse(
-                    mac_address=mac,
-                    status=ServiceStatusCode.SUCCESS,
-                    data=payload,)
+                    mac_address =   mac,
+                    status      =   ServiceStatusCode.SUCCESS,
+                    data        =   payload)
 
             elif request.analysis.output.type == OutputType.ARCHIVE:
                 theme = request.analysis.plot.ui.theme
@@ -108,9 +108,9 @@ class FecSummaryRouter:
 
             else:
                 return PnmAnalysisResponse(
-                    mac_address=mac,
-                    status=ServiceStatusCode.INVALID_OUTPUT_TYPE,
-                    data={},)
+                    mac_address =   mac,
+                    status      =   ServiceStatusCode.INVALID_OUTPUT_TYPE,
+                    data        =   {},)
 
 
 # Required for dynamic auto-registration
