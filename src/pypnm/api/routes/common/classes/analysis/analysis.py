@@ -773,78 +773,67 @@ class Analysis:
     @classmethod
     def basic_analysis_ds_ofdm_fec_summary(cls, measurement: Dict[str, Any]) -> OfdmFecSummaryAnalysisModel:
         """
-        Build an :class:`OfdmFecSummaryAnalysisModel` from a DS OFDM FEC summary payload.
+        Build an OfdmFecSummaryAnalysisModel from a DS OFDM FEC summary payload.
 
-        Expected input (keys are case-sensitive)
-        ----------------------------------------
-        {
-            "device_details": {"system_description": {...}},
-            "pnm_header": {...},
-            "channel_id": int,
-            "mac_address": "xx:xx:xx:xx:xx:xx",
-            "summary_type": int,                # e.g., 2 | 3 (aggregation code)
-            "num_profiles": int,
-            "fec_summary_data": [
-                {
-                    "profile_id": int,
-                    "number_of_sets": int,
-                    "codeword_entries": {
-                        "timestamp": List[int],
-                        "total_codewords": List[int],
-                        "corrected": List[int],
-                        "uncorrected": List[int]
-                    }
-                },
-                ...
-            ]
-        }
+        Accepts EITHER:
+        - parser shape:   fec_summary_data[*].codeword_entries.{timestamp,total_codewords,corrected,uncorrectable}
+        - analysis shape: profiles[*].codewords.{timestamps,total_codewords,corrected,uncorrected}
 
-        Behavior
-        --------
-        - Coerces all codeword series to ints.
-        - If series lengths differ, truncates to the shortest and logs a warning.
-        - Uses the **computed** series length for ``number_of_sets`` (logs if it disagrees with declared).
-
-        Parameters
-        ----------
-        measurement : dict
-            DS OFDM FEC summary structure as shown above.
-
-        Returns
-        -------
-        OfdmFecSummaryAnalysisModel
-            Collection of per-profile codeword time-series aligned by shortest length,
-            plus header/device metadata.
-
-        Notes
-        -----
-        The top-level ``num_profiles`` is compared with the actual parsed count and
-        differences are logged at DEBUG level.
+        Truncates to the shortest parallel length per profile and logs length issues.
         """
         log = logging.getLogger(getattr(cls, "__name__", "OfdmFecSummaryAnalysis"))
 
-        profiles: List[OfdmFecSummaryProfileModel] = []
+        # Prefer parser shape; fall back to analysis shape.
+        raw_profiles = measurement.get("fec_summary_data")
+        alt_profiles = measurement.get("profiles")
 
-        for prof in (measurement.get("fec_summary_data") or []):
-            profile_id: int     = int(prof.get("profile_id", INVALID_CHANNEL_ID))
-            declared_sets: int  = int(prof.get("number_of_sets", 0))
-            cwe: Dict[str, Any] = prof.get("codeword_entries") or {}
+        profiles_src = "fec_summary_data" if raw_profiles else ("profiles" if alt_profiles else None)
+        prof_iter = raw_profiles if raw_profiles is not None else (alt_profiles or [])
 
-            # Extract parallel arrays and coerce to int lists
-            ts_list:  List[int] = [int(x) for x in (cwe.get("timestamp") or [])]
-            tot_list: List[int] = [int(x) for x in (cwe.get("total_codewords") or [])]
-            cor_list: List[int] = [int(x) for x in (cwe.get("corrected") or [])]
-            unc_list: List[int] = [int(x) for x in (cwe.get("uncorrected") or [])]
+        if profiles_src is None:
+            log.warning("FEC Summary: no 'fec_summary_data' or 'profiles' in measurement; returning empty model.")
+            return OfdmFecSummaryAnalysisModel(
+                device_details = measurement.get("device_details", {}),
+                pnm_header     = measurement.get("pnm_header", {}),
+                mac_address    = measurement.get("mac_address", MacAddress.null()),
+                channel_id     = ChannelId(measurement.get("channel_id", INVALID_CHANNEL_ID)),
+                profiles       = [],
+            )
 
-            # Enforce equal lengths by truncating to the shortest (robustness over hard failure)
+        out_profiles: List[OfdmFecSummaryProfileModel] = []
+
+        for idx, prof in enumerate(prof_iter):
+            # Profile id + declared sets field name differs per shape.
+            profile_id = int(prof.get("profile_id", prof.get("profile", INVALID_CHANNEL_ID)))
+            declared_sets = int(prof.get("number_of_sets", 0))
+
+            # Choose inner block by shape:
+            # - parser shape:   codeword_entries.{timestamp, total_codewords, corrected, uncorrectable}
+            # - analysis shape: codewords.{timestamps, total_codewords, corrected, uncorrected}
+            cwe = prof.get("codeword_entries")
+            if cwe is None:
+                cwe = prof.get("codewords") or {}
+
+            # Try both key spellings for timestamps
+            ts_raw  = cwe.get("timestamp")
+            if ts_raw is None:
+                ts_raw = cwe.get("timestamps")
+
+            # Coerce to ints; be tolerant of None/empty lists
+            ts_list  = [int(x) for x in (ts_raw or [])]
+            tot_list = [int(x) for x in (cwe.get("total_codewords") or [])]
+            cor_list = [int(x) for x in (cwe.get("corrected") or [])]
+            unc_list = [int(x) for x in (cwe.get("uncorrectable") or [])]
+
             n = min(len(ts_list), len(tot_list), len(cor_list), len(unc_list)) if any(
                 (ts_list, tot_list, cor_list, unc_list)
             ) else 0
 
             if n and any(len(lst) != n for lst in (ts_list, tot_list, cor_list, unc_list)):
                 log.warning(
-                    f"Profile {profile_id}: series length mismatch; truncating to {n} "
-                    f"(ts={len(ts_list)}, total={len(tot_list)}, corrected={len(cor_list)}, uncorrected={len(unc_list)})"
+                    "FEC Summary: profile=%s (%s[%d]) series mismatch; truncating to %d "
+                    "(ts=%d, total=%d, corrected=%d, uncorrectable=%d)",
+                    profile_id, profiles_src, idx, n, len(ts_list), len(tot_list), len(cor_list), len(unc_list)
                 )
                 ts_list, tot_list, cor_list, unc_list = (
                     ts_list[:n], tot_list[:n], cor_list[:n], unc_list[:n]
@@ -852,35 +841,46 @@ class Analysis:
 
             if declared_sets and declared_sets != n:
                 log.debug(
-                    f"Profile {profile_id}: number_of_sets declared={declared_sets}, computed={n}; using computed."
+                    "FEC Summary: profile=%s declared number_of_sets=%d, computed=%d; using computed.",
+                    profile_id, declared_sets, n
+                )
+
+            # Helpful debug when n == 0 so you can see the shape that arrived
+            if n == 0:
+                log.debug(
+                    "FEC Summary: profile=%s has no aligned data (src=%s[%d]); "
+                    "lens ts/total/corr/unc = %d/%d/%d/%d; keys=%s",
+                    profile_id, profiles_src, idx,
+                    len(ts_list), len(tot_list), len(cor_list), len(unc_list),
+                    list(cwe.keys())
                 )
 
             cw = FecSummaryCodeWordModel(
-                timestamps      =   ts_list,
-                total_codewords =   tot_list,
-                corrected       =   cor_list,
-                uncorrected     =   unc_list,
+                timestamps      = ts_list,
+                total_codewords = tot_list,
+                corrected       = cor_list,
+                uncorrected     = unc_list,
             )
 
-            profiles.append(
+            out_profiles.append(
                 OfdmFecSummaryProfileModel(
-                    profile         =   profile_id,
-                    number_of_sets  =   n,
-                    codewords       =   cw,
+                    profile         = profile_id,
+                    number_of_sets  = n,
+                    codewords       = cw,
                 )
             )
 
-        # Optional sanity check: header-declared num_profiles vs parsed count
-        declared_num_profiles = int(measurement.get("num_profiles", len(profiles)))
-        if declared_num_profiles != len(profiles):
-            log.debug(f"num_profiles declared={declared_num_profiles}, parsed={len(profiles)}")
+        # Optional top-level sanity
+        declared_num_profiles = int(measurement.get("num_profiles", len(out_profiles)))
+        if declared_num_profiles != len(out_profiles):
+            log.debug("FEC Summary: num_profiles declared=%d, parsed=%d", declared_num_profiles, len(out_profiles))
 
         return OfdmFecSummaryAnalysisModel(
-            device_details      =   measurement.get("device_details", SystemDescriptor.empty()),
-            pnm_header          =   measurement.get("pnm_header", {}),
-            mac_address         =   measurement.get("mac_address", MacAddress.null()),
-            channel_id          =   int(measurement.get("channel_id", INVALID_CHANNEL_ID)),
-            profiles            =   profiles,
+            device_details = measurement.get("device_details", {}),
+            pnm_header     = measurement.get("pnm_header", {}),
+            mac_address    = measurement.get("mac_address", MacAddress.null()),
+            channel_id     = int(measurement.get("channel_id", INVALID_CHANNEL_ID)),
+            profiles       = out_profiles,
         )
 
     @classmethod

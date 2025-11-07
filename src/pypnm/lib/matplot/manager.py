@@ -1,6 +1,5 @@
+# pypnm/lib/matplot/manager.py
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
-
 from __future__ import annotations
 
 import logging
@@ -9,6 +8,7 @@ from pathlib import Path
 from typing import Iterable, List, Literal, Optional, Sequence, Tuple, Union
 from itertools import cycle
 from contextlib import nullcontext
+from datetime import datetime
 
 import numpy as np
 import matplotlib
@@ -19,7 +19,6 @@ from matplotlib.ticker import EngFormatter, FuncFormatter, ScalarFormatter
 from pypnm.lib.code_word.cw_generator import QamModulation
 from pypnm.lib.types import ArrayLike, ComplexArray, Number
 
-
 ThemeType = Literal["dark", "light", True, False]
 
 CROSSHAIR_MARKER_SIZE_PTS: float = 24.0
@@ -29,27 +28,21 @@ CROSSHAIR_LINEWIDTH_PTS: float = 0.6
 @dataclass(frozen=True)
 class PlotConfig:
     """
-    Lightweight configuration for Matplotlib plots.
+    Lightweight configuration bundle for Matplotlib plots.
 
-    Theme:
-        Set ``theme`` to ``"dark"`` (or ``True``) to render with Matplotlib's
-        ``dark_background`` style. Use ``None``/``"light"``/``False`` for the default style.
-
-    X-axis tick formatting (no data rescaling):
-        - x_tick_mode="none": default numeric ticks (we disable sci-offset).
-        - x_tick_mode="eng":  EngFormatter with SI prefixes on ticks (unit shown per tick).
-        - x_tick_mode="unit": Force ticks to a specific unit (Hz/kHz/MHz/GHz); ticks are numbers only.
-          Use:
-            x_unit_from: input unit of x data ("hz"|"khz"|"mhz"|"ghz")
-            x_unit_out:  target display unit ("hz"|"khz"|"mhz"|"ghz")
-            x_tick_decimals: optional decimal places for tick labels
-
-        In "unit" mode, the axis label is built dynamically as "<xlabel_base> (<Unit>)"
-        unless you explicitly provide `xlabel`.
-
-    Line color controls:
-        - line_color:  single-series color used by plot_line when no explicit `color` is passed.
-        - line_colors: list of colors used by multi-series plots; cycled when shorter than series count.
+    Notes
+    -----
+    - Theme: set `theme="dark"` or True for dark_background style.
+    - X-tick formatting:
+        * x_tick_mode="none" → raw numeric ticks.
+        * x_tick_mode="eng"  → SI engineering formatter with Hz unit.
+        * x_tick_mode="unit" → force ticks into Hz/kHz/MHz/GHz via x_unit_from/x_unit_out.
+    - Human time label:
+        * x_time_labels="from_to" uses X limits as epoch to render "start → end" as xlabel.
+        * x_time_input_unit in {"s","ms","ns"} controls epoch scaling.
+        * x_ticks_visible=False hides ticks/labels while keeping the single range label.
+    - X label prefix:
+        * xlabel_prefix prepends a string to any resolved x-axis label (explicit, unit/eng, or from_to).
     """
     # Data
     x: Optional[ArrayLike] = None
@@ -63,6 +56,7 @@ class PlotConfig:
     ylabel: Optional[str] = None
     zlabel: Optional[str] = None
     title: Optional[str] = None
+    xlabel_prefix: Optional[str] = None
 
     # Limits and style
     xlim: Optional[Tuple[Number, Number]] = None
@@ -90,13 +84,35 @@ class PlotConfig:
     line_color: Optional[str] = None
     line_colors: Optional[List[str]] = None
 
+    # X-axis visibility / human time label
+    x_ticks_visible: bool = True
+    x_time_labels: Optional[Literal["none", "from_to"]] = "none"
+    x_time_input_unit: Optional[Literal["s", "ms", "ns"]] = "s"
+    x_time_format: Optional[str] = "%Y-%m-%d %H:%M:%S"
+
     def update(self, **kwargs) -> "PlotConfig":
+        """Create a new PlotConfig with fields replaced by kwargs."""
         return replace(self, **kwargs)
 
 
 class MatplotManager:
     """
-    Lightweight Matplotlib manager for saving common plot types as PNG files.
+    Lightweight Matplotlib wrapper for saving common plot types as PNG files.
+
+    Parameters
+    ----------
+    output_dir : Union[str, Path]
+        Directory where PNGs are written.
+    dpi : int
+        Figure DPI.
+    figsize : Tuple[float, float]
+        Figure size in inches.
+    tight_layout : bool
+        Apply `fig.tight_layout()` prior to save.
+    default_cfg : Optional[PlotConfig]
+        Default configuration applied to all plots (can be overridden per call).
+    logger : Optional[logging.Logger]
+        Logger instance; defaults to module logger.
     """
 
     def __init__(
@@ -134,6 +150,7 @@ class MatplotManager:
         return fname
 
     def get_png_files(self) -> List[Path]:
+        """Return a list of all PNG paths created by this manager instance."""
         return self._png_files
 
     def _merge_cfg(self, user_cfg: Optional[PlotConfig], method_defaults: PlotConfig) -> PlotConfig:
@@ -141,31 +158,36 @@ class MatplotManager:
         def pick(top, mid, low):
             return top if top is not None else (mid if mid is not None else low)
         return PlotConfig(
-            title       = pick(user_cfg.title       if user_cfg else None, base.title,       method_defaults.title),
-            xlabel      = pick(user_cfg.xlabel      if user_cfg else None, base.xlabel,      method_defaults.xlabel),
-            ylabel      = pick(user_cfg.ylabel      if user_cfg else None, base.ylabel,      method_defaults.ylabel),
-            zlabel      = pick(user_cfg.zlabel      if user_cfg else None, base.zlabel,      method_defaults.zlabel),
-            xlim        = pick(user_cfg.xlim        if user_cfg else None, base.xlim,        method_defaults.xlim),
-            ylim        = pick(user_cfg.ylim        if user_cfg else None, base.ylim,        method_defaults.ylim),
-            grid        = pick(user_cfg.grid        if user_cfg else None, base.grid,        method_defaults.grid),
-            legend      = pick(user_cfg.legend      if user_cfg else None, base.legend,      method_defaults.legend),
-            transparent = pick(user_cfg.transparent if user_cfg else None, base.transparent, method_defaults.transparent),
-            x           = pick(user_cfg.x           if user_cfg else None, base.x,           method_defaults.x),
-            y           = pick(user_cfg.y           if user_cfg else None, base.y,           method_defaults.y),
-            z           = pick(user_cfg.z           if user_cfg else None, base.z,           method_defaults.z),
-            y_multi     = pick(user_cfg.y_multi     if user_cfg else None, base.y_multi,     method_defaults.y_multi),
-            y_multi_label = pick(user_cfg.y_multi_label if user_cfg else None, base.y_multi_label, method_defaults.y_multi_label),
-            qam         = pick(user_cfg.qam         if user_cfg else None, base.qam,         method_defaults.qam),
-            soft        = pick(user_cfg.soft        if user_cfg else None, base.soft,        method_defaults.soft),
-            hard        = pick(user_cfg.hard        if user_cfg else None, base.hard,        method_defaults.hard),
-            theme       = pick(user_cfg.theme       if user_cfg else None, base.theme,       method_defaults.theme),
-            x_tick_mode = pick(user_cfg.x_tick_mode if user_cfg else None, base.x_tick_mode, method_defaults.x_tick_mode),
-            x_unit_from = pick(user_cfg.x_unit_from if user_cfg else None, base.x_unit_from, method_defaults.x_unit_from),
-            x_unit_out  = pick(user_cfg.x_unit_out  if user_cfg else None, base.x_unit_out,  method_defaults.x_unit_out),
-            x_tick_decimals = pick(user_cfg.x_tick_decimals if user_cfg else None, base.x_tick_decimals, method_defaults.x_tick_decimals),
-            xlabel_base = pick(user_cfg.xlabel_base if user_cfg else None, base.xlabel_base, method_defaults.xlabel_base),
-            line_color  = pick(user_cfg.line_color  if user_cfg else None, base.line_color,  method_defaults.line_color),
-            line_colors = pick(user_cfg.line_colors if user_cfg else None, base.line_colors, method_defaults.line_colors),
+            title               = pick(user_cfg.title               if user_cfg else None, base.title,       method_defaults.title),
+            xlabel              = pick(user_cfg.xlabel              if user_cfg else None, base.xlabel,      method_defaults.xlabel),
+            ylabel              = pick(user_cfg.ylabel              if user_cfg else None, base.ylabel,      method_defaults.ylabel),
+            zlabel              = pick(user_cfg.zlabel              if user_cfg else None, base.zlabel,      method_defaults.zlabel),
+            xlabel_prefix       = pick(user_cfg.xlabel_prefix       if user_cfg else None, base.xlabel_prefix, method_defaults.xlabel_prefix),
+            xlim                = pick(user_cfg.xlim                if user_cfg else None, base.xlim,        method_defaults.xlim),
+            ylim                = pick(user_cfg.ylim                if user_cfg else None, base.ylim,        method_defaults.ylim),
+            grid                = pick(user_cfg.grid                if user_cfg else None, base.grid,        method_defaults.grid),
+            legend              = pick(user_cfg.legend              if user_cfg else None, base.legend,      method_defaults.legend),
+            transparent         = pick(user_cfg.transparent         if user_cfg else None, base.transparent, method_defaults.transparent),
+            x                   = pick(user_cfg.x                   if user_cfg else None, base.x,           method_defaults.x),
+            y                   = pick(user_cfg.y                   if user_cfg else None, base.y,           method_defaults.y),
+            z                   = pick(user_cfg.z                   if user_cfg else None, base.z,           method_defaults.z),
+            y_multi             = pick(user_cfg.y_multi             if user_cfg else None, base.y_multi,     method_defaults.y_multi),
+            y_multi_label       = pick(user_cfg.y_multi_label       if user_cfg else None, base.y_multi_label, method_defaults.y_multi_label),
+            qam                 = pick(user_cfg.qam                 if user_cfg else None, base.qam,         method_defaults.qam),
+            soft                = pick(user_cfg.soft                if user_cfg else None, base.soft,        method_defaults.soft),
+            hard                = pick(user_cfg.hard                if user_cfg else None, base.hard,        method_defaults.hard),
+            theme               = pick(user_cfg.theme               if user_cfg else None, base.theme,       method_defaults.theme),
+            x_tick_mode         = pick(user_cfg.x_tick_mode         if user_cfg else None, base.x_tick_mode, method_defaults.x_tick_mode),
+            x_unit_from         = pick(user_cfg.x_unit_from         if user_cfg else None, base.x_unit_from, method_defaults.x_unit_from),
+            x_unit_out          = pick(user_cfg.x_unit_out          if user_cfg else None, base.x_unit_out,  method_defaults.x_unit_out),
+            x_tick_decimals     = pick(user_cfg.x_tick_decimals     if user_cfg else None, base.x_tick_decimals, method_defaults.x_tick_decimals),
+            xlabel_base         = pick(user_cfg.xlabel_base         if user_cfg else None, base.xlabel_base, method_defaults.xlabel_base),
+            line_color          = pick(user_cfg.line_color          if user_cfg else None, base.line_color,  method_defaults.line_color),
+            line_colors         = pick(user_cfg.line_colors         if user_cfg else None, base.line_colors, method_defaults.line_colors),
+            x_ticks_visible     = pick(user_cfg.x_ticks_visible     if user_cfg else None, base.x_ticks_visible,   method_defaults.x_ticks_visible),
+            x_time_labels       = pick(user_cfg.x_time_labels       if user_cfg else None, base.x_time_labels,     method_defaults.x_time_labels),
+            x_time_input_unit   = pick(user_cfg.x_time_input_unit   if user_cfg else None, base.x_time_input_unit, method_defaults.x_time_input_unit),
+            x_time_format       = pick(user_cfg.x_time_format       if user_cfg else None, base.x_time_format,     method_defaults.x_time_format),
         )
 
     def _theme_context(self, cfg: Optional[PlotConfig]):
@@ -175,6 +197,7 @@ class MatplotManager:
         return nullcontext()
 
     def _apply_x_ticks(self, ax, cfg: PlotConfig):
+        """Apply x-axis tick formatter/visibility and optional human time label."""
         mode = (cfg.x_tick_mode or "none").lower()
         try:
             ax.ticklabel_format(axis="x", style="plain", useOffset=False)
@@ -185,26 +208,48 @@ class MatplotManager:
         except Exception:
             pass
 
-        if mode == "none":
+        # Optional single "start → end" label from epoch timestamps
+        if (cfg.x_time_labels or "none") == "from_to":
+            x_min, x_max = ax.get_xlim()
+            unit = (cfg.x_time_input_unit or "s").lower()
+            if unit == "ms":
+                x_min /= 1_000.0; x_max /= 1_000.0
+            elif unit == "ns":
+                x_min /= 1_000_000_000.0
+            fmt = cfg.x_time_format or "%Y-%m-%d %H:%M:%S"
+            try:
+                start_str = datetime.fromtimestamp(float(x_min)).strftime(fmt)
+                end_str   = datetime.fromtimestamp(float(x_max)).strftime(fmt)
+                if not cfg.xlabel:
+                    prefix = cfg.xlabel_prefix or ""
+                    ax.set_xlabel(f"{prefix}{start_str} → {end_str}")
+            except Exception:
+                pass
+            if cfg.x_ticks_visible is False:
+                ax.set_xticks([])
+                ax.tick_params(axis="x", which="both", labelbottom=False)
+                return
+
+        if cfg.x_ticks_visible is False:
+            ax.set_xticks([])
+            ax.tick_params(axis="x", which="both", labelbottom=False)
             return
 
+        if mode == "none":
+            return
         if mode == "eng":
             ax.xaxis.set_major_formatter(EngFormatter(unit="Hz"))
             if not cfg.xlabel:
-                ax.set_xlabel(cfg.xlabel_base or "Frequency")
+                base = cfg.xlabel_base or "Frequency"
+                prefix = cfg.xlabel_prefix or ""
+                ax.set_xlabel(f"{prefix}{base}")
             return
-
         if mode == "unit":
-            unit_info = {
-                "hz":  (1.0,  "Hz"),
-                "khz": (1e3,  "kHz"),
-                "mhz": (1e6,  "MHz"),
-                "ghz": (1e9,  "GHz"),
-            }
+            unit_info = {"hz": (1.0, "Hz"), "khz": (1e3, "kHz"), "mhz": (1e6, "MHz"), "ghz": (1e9, "GHz")}
             u_in  = (cfg.x_unit_from or "hz").lower()
             u_out = (cfg.x_unit_out  or "mhz").lower()
-            fin,  _ = unit_info.get(u_in,  unit_info["hz"])
-            fout, lab_out  = unit_info.get(u_out, unit_info["mhz"])
+            fin,  _       = unit_info.get(u_in,  unit_info["hz"])
+            fout, lab_out = unit_info.get(u_out, unit_info["mhz"])
             mult = fin / fout
 
             if cfg.x_tick_decimals is None:
@@ -223,41 +268,36 @@ class MatplotManager:
                 pass
             if not cfg.xlabel:
                 base = cfg.xlabel_base or "Frequency"
-                ax.set_xlabel(f"{base} ({lab_out})")
+                prefix = cfg.xlabel_prefix or ""
+                ax.set_xlabel(f"{prefix}{base} ({lab_out})")
 
     def _finish(self, fig, ax, path: Path, cfg: "PlotConfig") -> Path:
         """
-        Finalize axes styling, save the PNG, and register the output path.
-
-        Parameters
-        ----------
-        fig :
-            Matplotlib Figure to save.
-        ax :
-            Matplotlib Axes with plotted content.
-        path : Path
-            Target file path ('.png' enforced).
-        cfg : PlotConfig
-            Active plot configuration controlling title/labels/limits/grid/legend/opacity.
+        Finalize axes styling, save PNG to disk, and register the output path.
 
         Returns
         -------
         Path
             Absolute path to the saved PNG.
         """
-        if cfg.title:  ax.set_title(cfg.title)
-        if cfg.xlabel: ax.set_xlabel(cfg.xlabel)
-        if cfg.ylabel: ax.set_ylabel(cfg.ylabel)
-        if cfg.xlim:   ax.set_xlim(*cfg.xlim)
-        if cfg.ylim:   ax.set_ylim(*cfg.ylim)
+        if cfg.title:
+            ax.set_title(cfg.title)
+
+        # If user supplied an explicit xlabel, prepend prefix here
+        if cfg.xlabel:
+            prefix = cfg.xlabel_prefix or ""
+            ax.set_xlabel(f"{prefix}{cfg.xlabel}")
+
+        if cfg.ylabel:
+            ax.set_ylabel(cfg.ylabel)
+        if cfg.xlim:
+            ax.set_xlim(*cfg.xlim)
+        if cfg.ylim:
+            ax.set_ylim(*cfg.ylim)
 
         if cfg.grid is True:
             ax.grid(True, which="both", linestyle="--", alpha=0.4)
 
-        # Legend behavior:
-        # - cfg.legend is None  → add legend only if there are labeled handles
-        # - cfg.legend is True  → always add legend
-        # - cfg.legend is False → never add legend
         if cfg.legend is None:
             handles, labels = ax.get_legend_handles_labels()
             if any(labels):
@@ -280,11 +320,13 @@ class MatplotManager:
     # ───────────────────────── helpers ─────────────────────────
 
     def _to_1d(self, a: Optional[ArrayLike]) -> np.ndarray:
+        """Convert input to a flattened float64 numpy array (empty if None)."""
         if a is None:
             return np.array([], dtype=float)
         return np.asarray(a, dtype=float).ravel()
 
     def _coerce_xy(self, x: Optional[ArrayLike], y: Optional[ArrayLike]) -> Tuple[np.ndarray, np.ndarray]:
+        """Validate/align X and Y arrays; auto-generate missing axis, truncate to min length."""
         xa = self._to_1d(x if x is not None else None)
         ya = self._to_1d(y if y is not None else None)
         if ya.size == 0 and xa.size > 0:
@@ -300,6 +342,7 @@ class MatplotManager:
         return xa, ya
 
     def _split_complex_array(self, arr: Optional[ComplexArray]) -> Tuple[np.ndarray, np.ndarray]:
+        """Split ComplexArray into (I, Q) float arrays, accepting [N,2] or flat [2N] inputs."""
         if not arr:
             return np.array([], dtype=float), np.array([], dtype=float)
         a = np.asarray(arr, dtype=float)
@@ -311,15 +354,7 @@ class MatplotManager:
         return a[:, 0], a[:, 1]
 
     def _resolve_colors(self, count: int, cfg: PlotConfig) -> List[Optional[str]]:
-        """
-        Resolve a list of per-series colors for multi-series plots.
-
-        Behavior
-        --------
-        - If cfg.line_colors is None/empty, returns [None]*count (Matplotlib defaults).
-        - If cfg.line_colors has fewer than `count` entries, the palette is cycled.
-        - If cfg.line_colors has >= `count`, it is truncated to `count`.
-        """
+        """Resolve per-series colors: cycle cfg.line_colors or use Matplotlib defaults."""
         if not cfg.line_colors:
             return [None] * count
         if len(cfg.line_colors) >= count:
@@ -344,22 +379,10 @@ class MatplotManager:
         """
         Plot a single line and save as PNG.
 
-        Parameters
-        ----------
-        filename : Union[str, Path]
-            Output path ('.png' extension is enforced).
-        x, y : Optional[ArrayLike]
-            X/Y data. If only Y is provided, X defaults to arange(len(Y)).
-        label : Optional[str]
-            Legend label for the series.
-        linewidth : Optional[float]
-            Line width forwarded to Matplotlib.
-        marker : Optional[str]
-            Point marker forwarded to Matplotlib.
-        color : Optional[str]
-            Color spec overriding cfg.line_color and Matplotlib defaults.
-        cfg : Optional[PlotConfig]
-            Plot configuration; honors `line_color` for single-series color.
+        Returns
+        -------
+        Path
+            Absolute path to the saved PNG.
         """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
@@ -383,11 +406,15 @@ class MatplotManager:
         """
         Plot multiple line series and save as PNG.
 
-        Colors
-        ------
-        Uses `cfg.line_colors` when provided; the palette is cycled if fewer than
-        the number of plotted series. If `cfg.line_colors` is missing/empty,
-        Matplotlib's default color cycle is used.
+        Notes
+        -----
+        - Uses `cfg.y_multi`/`cfg.y_multi_label` if provided; otherwise consumes `series`.
+        - Colors cycle through `cfg.line_colors` or Matplotlib defaults.
+
+        Returns
+        -------
+        Path
+            Absolute path to the saved PNG.
         """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
@@ -427,20 +454,14 @@ class MatplotManager:
             self._apply_x_ticks(ax, cfg)
             return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
-    def plot_multi_line_from_cfg(
-        self,
-        filename: Union[str, Path],
-        *,
-        cfg: Optional[PlotConfig] = None,
-    ) -> Path:
+    def plot_multi_line_from_cfg(self, filename: Union[str, Path], *, cfg: Optional[PlotConfig] = None) -> Path:
         """
         Plot multiple line series using only the provided PlotConfig.
 
-        Behavior
-        --------
-        - X data is taken from `cfg.x`.
-        - Series are taken from `cfg.y_multi` with corresponding `cfg.y_multi_label`.
-        - Colors come from `cfg.line_colors` (cycled) or Matplotlib defaults.
+        Returns
+        -------
+        Path
+            Absolute path to the saved PNG.
         """
         if cfg is None:
             cfg = PlotConfig()
@@ -472,7 +493,12 @@ class MatplotManager:
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
         """
-        Plot a QAM constellation with labels only (no numeric tick values).
+        Plot a QAM constellation. Axis ticks are suppressed; only axis labels are shown.
+
+        Returns
+        -------
+        Path
+            Absolute path to the saved PNG.
         """
         import matplotlib.patches as mpatches
         defaults = PlotConfig(grid=False, legend=None, transparent=False)
@@ -556,6 +582,14 @@ class MatplotManager:
         orientation: str = "vertical",
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """
+        Plot a bar chart (vertical or horizontal) and save as PNG.
+
+        Returns
+        -------
+        Path
+            Absolute path to the saved PNG.
+        """
         vals = np.asarray(values, dtype=float).ravel()
         cats = list(categories)
         if len(cats) != len(vals):
@@ -596,6 +630,14 @@ class MatplotManager:
         label: Optional[str] = None,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """
+        Plot a histogram and save as PNG.
+
+        Returns
+        -------
+        Path
+            Absolute path to the saved PNG.
+        """
         vals = np.asarray(data, dtype=float).ravel()
 
         w = None
@@ -645,6 +687,14 @@ class MatplotManager:
         where: str = "pre",
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """
+        Plot a step chart and save as PNG.
+
+        Returns
+        -------
+        Path
+            Absolute path to the saved PNG.
+        """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
@@ -663,6 +713,14 @@ class MatplotManager:
         use_line_collection: bool = True,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """
+        Plot a stem chart and save as PNG.
+
+        Returns
+        -------
+        Path
+            Absolute path to the saved PNG.
+        """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
@@ -682,6 +740,14 @@ class MatplotManager:
         capsize: float = 3.0,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """
+        Plot a line with error bars and save as PNG.
+
+        Returns
+        -------
+        Path
+            Absolute path to the saved PNG.
+        """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
@@ -702,6 +768,14 @@ class MatplotManager:
         baseline: float = 0.0,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """
+        Plot a filled area (optionally between y and y2) and save as PNG.
+
+        Returns
+        -------
+        Path
+            Absolute path to the saved PNG.
+        """
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
         x, y = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
@@ -730,6 +804,14 @@ class MatplotManager:
         vmax: Optional[float] = None,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
+        """
+        Plot a 2D heatmap and save as PNG.
+
+        Returns
+        -------
+        Path
+            Absolute path to the saved PNG.
+        """
         Z = np.asarray(Z, dtype=float)
         if Z.ndim > 2:
             self.logger.warning("Z has ndim=%d; squeezing to 2D.", Z.ndim)
