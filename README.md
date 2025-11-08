@@ -35,7 +35,7 @@ Linux. Validated on:
 ```bash
 sudo apt update
 sudo apt install -y git
-````
+```
 
 ## Getting started
 
@@ -65,10 +65,10 @@ source .env/bin/activate
 
 You’ll need:
 
-* Cable Modem (CM) MAC address and IP address
-* SNMPv2c write community string
-* TFTP server IP (IPv4/IPv6) reachable by the CM and PyPNM
-* A retrieval method for PNM files from the TFTP server
+- Cable Modem (CM) MAC address and IP address
+- SNMPv2c write community string
+- TFTP server IP (IPv4/IPv6) reachable by the CM and PyPNM
+- A retrieval method for PNM files from the TFTP server
 
 See: [System Configuration](docs/api/fast-api/pypnm/system/system_config.md)
 
@@ -92,7 +92,7 @@ HTTPS example:
 pypnm --host 0.0.0.0 --port 443 --ssl --cert ./certs/cert.pem --key ./certs/key.pem
 ```
 
-Dev hot-reload:
+Development Hot-Reload:
 
 ```bash
 pypnm --reload
@@ -100,7 +100,7 @@ pypnm --reload
 
 ### 6) (Optional) Serve the documentation
 
-HTTP (default: `http://127.0.0.1:8001`
+HTTP (default: `http://127.0.0.1:8001`):
 
 ```bash
 mkdocs serve
@@ -108,41 +108,41 @@ mkdocs serve
 
 ### 7) Explore the API
 
-* Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
-* MkDocs docs: [http://localhost:8001](http://localhost:8001)
-* ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
-* Install Postman: [https://www.postman.com/downloads/](https://www.postman.com/downloads/)
+- Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
+- MkDocs docs: [http://localhost:8001](http://localhost:8001)
+- ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+- Install Postman: [https://www.postman.com/downloads/](https://www.postman.com/downloads/)
 
 *Tip:* Postman is often better for large or deeply nested JSON payloads.
 
-## API documentation
+## API Documentation Quick links
 
-* [Docs index](./docs/index.md)
-* [FastAPI reference](./docs/api/fast-api/index.md)
-* [Python API reference](./docs/api/python/index.md)
+- [Docs index](./docs/index.md)
+- [FastAPI reference](./docs/api/fast-api/index.md)
+- [Python API reference](./docs/api/python/index.md)
 
 ## SNMP notes
 
-* SNMPv2c is supported in pre-alpha.
-* SNMPv3 is stubbed; enabling SNMPv3 in config raises a clear `NotImplementedError`.
+- SNMPv2c Supported.
+- SNMPv3 is stubbed, but not Supported as of yet.
 
 ## CableLabs specifications & MIBs
 
-* DOCSIS 3.1: [https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
-* DOCSIS 4.0: [https://www.cablelabs.com/specifications/CM-SP-MULPIv4.0](https://www.cablelabs.com/specifications/CM-SP-MULPIv4.0)
-* CM-SP-CM-OSSIv3.1 (PNM): [https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
-* CM-SP-CM-OSSIv4.0 (PNM): [https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv4.0](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv4.0)
-* DOCSIS MIBs: [https://mibs.cablelabs.com/MIBs/DOCSIS/](https://mibs.cablelabs.com/MIBs/DOCSIS/)
+- DOCSIS 3.1: [https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
+- DOCSIS 4.0: [https://www.cablelabs.com/specifications/CM-SP-MULPIv4.0](https://www.cablelabs.com/specifications/CM-SP-MULPIv4.0)
+- CM-SP-CM-OSSIv3.1 (PNM): [https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
+- CM-SP-CM-OSSIv4.0 (PNM): [https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv4.0](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv4.0)
+- DOCSIS MIBs: [https://mibs.cablelabs.com/MIBs/DOCSIS/](https://mibs.cablelabs.com/MIBs/DOCSIS/)
 
-PNM architecture & guidance:
+## PNM architecture & guidance:
 
-* CM-TR-PMA: [https://www.cablelabs.com/specifications/CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)
-* CM-GL-PNM-HFC: [https://www.cablelabs.com/specifications/CM-GL-PNM-HFC](https://www.cablelabs.com/specifications/CM-GL-PNM-HFC)
-* CM-GL-PNM-3.1: [https://www.cablelabs.com/specifications/CM-GL-PNM-3.1](https://www.cablelabs.com/specifications/CM-GL-PNM-3.1)
+- CM-TR-PMA: [https://www.cablelabs.com/specifications/CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)
+- CM-GL-PNM-HFC: [https://www.cablelabs.com/specifications/CM-GL-PNM-HFC](https://www.cablelabs.com/specifications/CM-GL-PNM-HFC)
+- CM-GL-PNM-3.1: [https://www.cablelabs.com/specifications/CM-GL-PNM-3.1](https://www.cablelabs.com/specifications/CM-GL-PNM-3.1)
 
 ## License
 
-MIT. See `LICENSE`.
+MIT. See `[LICENSE](./LICENSE)`.
 
 ## Maintainer
 
