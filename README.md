@@ -142,7 +142,7 @@ mkdocs serve
 
 ## License
 
-MIT. See [`LICENSE`](./LICENSE).
+[`MIT LICENSE`](./LICENSE).
 
 ## Maintainer
 
