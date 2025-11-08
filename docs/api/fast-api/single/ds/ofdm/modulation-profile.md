@@ -309,7 +309,7 @@ These images are generated when `analysis.output.type = "archive"` and plotting 
 | Profile Segments    | [Profile 0](./images/modulation-profile/profile-0-segments-modulation-profile.png) &#124; [Profile 3](./images/modulation-profile/profile-3-mqam-modulation-profile.png) | Modulation partitions across the OFDM carriers.     |
 | Shannon-MER Context | [Profile 0](./images/modulation-profile/profile-0-shannon-mer-modulation-profile.png) &#124; [Profile 3](./images/modulation-profile/profile-3-shannon-mer-modulation-profile.png) | Shannon / minimum MER requirement versus frequency. |
 
-Additional images for other profiles (for example, `profile-7-*.png`) follow the same naming pattern:
+Additional images for other profiles (for example, `profile-1-*.png`) follow the same naming pattern:
 `profile-<profile_id>-<plot>-modulation-profile.png`.
 
 ## Differences Between Capture And Analysis
