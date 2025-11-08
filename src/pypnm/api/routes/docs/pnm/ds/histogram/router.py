@@ -50,13 +50,14 @@ class DsHistogramRouter:
         @self.router.post(
             f"{self.base_endpoint}/getCapture",
             summary="Get Downstream Histogram PNM Capture",
-            responses=FAST_API_RESPONSE,
-        )
+            responses=FAST_API_RESPONSE,)
+        
         async def get_capture(request: PnmHistogramAnalysisRequest):
             """
             Capture DOCSIS Downstream Histogram and return results as JSON or archive.
 
-            The endpoint triggers a histogram capture on the cable modem using SNMP,
+            The endpoint triggers a histogram capture on the cable modem using SNMP
+
             [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/ds/histogram.md)
             """
             mac: MacAddressStr = request.cable_modem.mac_address
