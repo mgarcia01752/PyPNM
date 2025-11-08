@@ -49,7 +49,7 @@ class ModulationProfileRouter:
             """
             Capture Downstream OFDM Modulation Profile.
 
-            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/modulation-profile.md)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/ds/ofdm/modulation-profile.md)
             """
             mac: MacAddressStr = request.cable_modem.mac_address
             ip: InetAddressStr = request.cable_modem.ip_address
@@ -85,8 +85,7 @@ class ModulationProfileRouter:
                 primative = msg_rsp.payload_to_dict('primative')
                 DictUtils.pop_keys_recursive(primative, ["device_details", "modulation_statistics"])
                 payload.update(primative)
-
-                payload.update(DictUtils.models_to_nested_dict(measurement_stats, 'measurement_stats',))
+                payload.update(DictUtils.models_to_nested_dict(measurement_stats, 'measurement_stats'))
 
                 return PnmAnalysisResponse(
                     mac_address =   mac,
