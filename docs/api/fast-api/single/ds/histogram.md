@@ -4,7 +4,7 @@ Nonlinearity Insight From Time‑Domain Sample Distributions (Amplifier Compress
 
 ## Overview
 
-[`CmDsHistogramService`](http://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/pnm/measure/CmDsHistogramService.py)
+[`CmDsHistogram`](http://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/pnm/process/CmDsHist.py)
 controls the CM to run a downstream histogram capture, retrieves the result file, and parses per‑bin hit counts and dwell
 metadata into a typed model ready for analysis and plotting (PDF‑like two‑sided histograms, symmetry checks, and clip
 detection heuristics).
