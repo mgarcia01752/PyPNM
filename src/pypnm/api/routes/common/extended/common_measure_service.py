@@ -32,6 +32,7 @@ from pypnm.docsis.cm_snmp_operation import (
 from pypnm.docsis.data_type.enums import MeasStatusType
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsHistEntry import DocsPnmCmDsHistEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmFecEntry import DocsPnmCmDsOfdmFecEntry
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmModProfEntry import DocsPnmCmDsOfdmModProfEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
@@ -59,6 +60,7 @@ MeasurementEntry: TypeAlias = Union[
     DocsPnmCmUsPreEqEntry,
     DocsPnmCmDsHistEntry,
     DocsPnmCmDsOfdmFecEntry,
+    DocsPnmCmDsOfdmModProfEntry,
 ]
 class CommonMeasureService(CommonMessagingService):
     """
@@ -306,14 +308,15 @@ class CommonMeasureService(CommonMessagingService):
             - US_PRE_EQUALIZER_COEF       → List[DocsPnmCmUsPreEqEntry]
             - DS_HISTOGRAM                → List[DocsPnmCmDsHistEntry]
             - DS_OFDM_FEC_SUMMARY         → List[DocsPnmCmDsOfdmFecEntry]
+            - DS_OFDM_MODULATION_PROFILE  → List[DocsPnmCmDsOfdmModProfEntry]
             For other (stub/unsupported) test types, an empty list is returned.
 
         Notes
         -----
         - This method performs no aggregation; it returns the raw per-entry models
-        fetched from the cable modem for the selected measurement type.
+          fetched from the cable modem for the selected measurement type.
         - For strict typing, concrete lists are cast to `List[MeasurementEntry]`
-        at return points (because `List` is invariant in the type system).
+          at return points (because `List` is invariant in the type system).
         """
         entries: List[MeasurementEntry] = []
 
@@ -354,7 +357,9 @@ class CommonMeasureService(CommonMessagingService):
             return cast(List[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_MODULATION_PROFILE:
-            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_MODULATION_PROFILE")
+            self.logger.warning(f"{self.log_prefix} - Running DS_OFDM_MODULATION_PROFILE")
+            concrete = await self.cm.getDocsPnmCmDsOfdmModProfEntry()
+            return cast(List[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.LATENCY_REPORT:
             self.logger.warning(f"{self.log_prefix} - Stub handler: LATENCY_REPORT")

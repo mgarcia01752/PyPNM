@@ -1,58 +1,99 @@
 # PNM Operations – Downstream OFDM Modulation Profile
 
-This API gives operators visibility into how subcarriers are modulated within DOCSIS 3.1 OFDM downstream channels. Each OFDM channel can carry multiple modulation profiles (e.g., QAM-16 to QAM-4096), each tailored to the SNR conditions across frequency ranges. This endpoint retrieves the raw profile data and maps which modulation scheme is used across subcarrier groups.
+Per-Subcarrier Modulation Mapping And Shannon Context For DOCSIS 3.1+ OFDM Downstream Channels.
 
-By pairing the /getMeasurement and /getAnalysis endpoints, operators can transform raw schema data into a meaningful per-subcarrier view, including estimated Shannon limits. These insights are crucial for validating profile assignments, identifying potential overmodulation or underutilization, and assessing channel capacity performance under real-world conditions.
+## Overview
 
-The analysis output is suitable for both automation and visualization, supporting export to Excel for offline diagnostics and engineering reports.
+[`CmDsOfdmModulationProfile`](http://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/pnm/process/CmDsOfdmModulationProfile.py)
+retrieves raw modulation profile structures and normalizes them into frequency-aligned carrier mappings. Analysis expands
+this into per-subcarrier modulation with optional Shannon limits for capacity context. Results are export-friendly for
+automation and visualization.
 
-## 📂 Table of Contents
+## Endpoint
 
-* [Get Measurement](#get-measurement)
-* [Get Analysis](#get-analysis)
-* [Analysis and Output Types](#analysis-and-output-types)
-* [Differences Between Measurement and Analysis](#differences-between-measurement-and-analysis)
+`POST /docs/pnm/ds/ofdm/modulationProfile/getCapture`
 
-## Get Measurement
+## Request
 
-### 📊 Endpoint
+Refer to [Common → Request](../../../common/request.md).  
+**Deltas (Analysis-Only Additions):** optional `analysis`, `analysis.output`, and `analysis.plot.ui` controls
+(same pattern as RxMER).
 
-**POST** `/docs/pnm/ds/ofdm/modulationProfile/getMeasurement`
+### Delta Table
 
-This endpoint retrieves the modulation profile used in DOCSIS 3.1 OFDM downstream channels. It provides metadata and modulation schemes across available OFDM profiles, including per-subcarrier modulation orders. Note that this is a raw conversion; additional processing is needed to analyze full bit-loading and carrier types.
+| JSON path                | Type   | Allowed values / format | Default | Description                                                                                               |
+| ------------------------ | ------ | ----------------------- | ------- | --------------------------------------------------------------------------------------------------------- |
+| `analysis.type`          | string | "basic"               | "basic" | Selects the analysis mode used during processing.                                                         |
+| `analysis.output.type`   | string | "json", "archive"   | "json"  | Output format: **`json`** returns inline `data`; **`archive`** returns a ZIP (CSV exports and PNG plots). |
+| `analysis.plot.ui.theme` | string | "light", "dark"     | "dark"  | Theme hint for plots (colors, grid, ticks). Does not affect raw metrics/CSV.                              |
 
-### 📅 Request Body (JSON)
+### Example Request – `/getCapture`
 
 ```json
 {
   "cable_modem": {
-  "mac_address": "aa:bb:cc:dd:ee:ff", 
-  "ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
-    },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
+    "mac_address": "aa:bb:cc:dd:ee:ff",
+    "ip_address": "192.168.0.100",
+    "snmp": {
+      "snmpV2C": { "community": "private" }
     }
+  },
+  "analysis": {
+    "type": "basic",
+    "output": { "type": "json" },
+    "plot": { "ui": { "theme": "dark" } }
   }
 }
 ```
 
-### 📤 Response Body
+## Response
+
+Standard envelope with payload under `data`.
+
+### Abbreviated Example – `/getCapture`
 
 ```json
 {
   "mac_address": "aa:bb:cc:dd:ee:ff",
   "status": 0,
   "message": null,
-  "measurement": {
-    "data": [
+  "data": {
+    "analysis": [
+      {
+        "device_details": {
+          "system_description": {
+            "HW_REV": "1.0",
+            "VENDOR": "LANCity",
+            "BOOTR": "NONE",
+            "SW_REV": "1.0.0",
+            "MODEL": "LCPET-3"
+          }
+        },
+        "pnm_header": {
+          "file_type": "PNN",
+          "file_type_version": 10,
+          "major_version": 1,
+          "minor_version": 0,
+          "capture_time": 1762618532
+        },
+        "mac_address": "aa:bb:cc:dd:ee:ff",
+        "channel_id": 160,
+        "frequency_unit": "Hz",
+        "shannon_min_unit": "dB",
+        "profiles": [
+          {
+            "profile_id": 3,
+            "carrier_values": {
+              "layout": "split",
+              "frequency": [],
+              "modulation": [],
+              "shannon_min_mer": []
+            }
+          }
+        ]
+      }
+    ],
+    "primative": [
       {
         "status": "SUCCESS",
         "pnm_header": {
@@ -60,100 +101,161 @@ This endpoint retrieves the modulation profile used in DOCSIS 3.1 OFDM downstrea
           "file_type_version": 10,
           "major_version": 1,
           "minor_version": 0,
-          "capture_time": 1751820333
+          "capture_time": 1762618532
         },
-        "channel_id": 197,
+        "channel_id": 160,
         "mac_address": "aa:bb:cc:dd:ee:ff",
-        "num_profiles": 2,
-        "zero_frequency": 1217600000,
-        "first_active_subcarrier_index": 148,
+        "subcarrier_zero_frequency": 683600000,
+        "first_active_subcarrier_index": 1108,
         "subcarrier_spacing": 50000,
-        "profile_data_length_bytes": 926,
+        "num_profiles": 4,
+        "profile_data_length_bytes": 1084,
         "profiles": [
           {
-            "profile_id": 4,
+            "profile_id": 3,
             "schemes": [
               {
                 "schema_type": 0,
                 "modulation_order": "qam_4096",
-                "num_subcarriers": 38
-              }
-            ]
-          },
-          {
-            "profile_id": 0,
-            "schemes": [
+                "num_subcarriers": 37
+              },
               {
                 "schema_type": 0,
-                "modulation_order": "qam_16",
-                "num_subcarriers": 38
+                "modulation_order": "continuous_pilot",
+                "num_subcarriers": 1
               }
             ]
           }
         ]
+      }
+    ],
+    "measurement_stats": [
+      {
+        "index": 160,
+        "channel_id": 160,
+        "entry": {
+          "docsPnmCmDsOfdmModProfFileEnable": true,
+          "docsPnmCmDsOfdmModProfMeasStatus": "sample_ready",
+          "docsPnmCmDsOfdmModProfFileName": "ds_ofdm_modulation_profile_aabbccddeeff_160_1762618536.bin"
+        }
       }
     ]
   }
 }
 ```
 
-### 📘 Field Breakdown
+## Return Structure
 
-| Field                            | Type     | Description                                                           |
-| -------------------------------- | -------- | --------------------------------------------------------------------- |
-| status                           | string   | Status of the measurement (e.g., SUCCESS)                             |
-| pnm\_header                      | object   | Header metadata for the PNM file                                      |
-| → file\_type                     | string   | File type identifier (e.g., PNN)                                      |
-| → file\_type\_version            | int      | Version of the file type                                              |
-| → major\_version                 | int      | Major version of the format                                           |
-| → minor\_version                 | int      | Minor version of the format                                           |
-| → capture\_time                  | int      | Timestamp when the data was captured                                  |
-| channel\_id                      | int      | OFDM downstream channel ID                                            |
-| mac\_address                     | string   | MAC address of the cable modem                                        |
-| num\_profiles                    | int      | Number of profiles present                                            |
-| zero\_frequency                  | int (Hz) | Frequency of subcarrier index 0                                       |
-| first\_active\_subcarrier\_index | int      | First active subcarrier in the OFDM profile                           |
-| subcarrier\_spacing              | int (Hz) | Spacing between subcarriers in Hz (e.g., 50 kHz)                      |
-| profile\_data\_length\_bytes     | int      | Length in bytes of the encoded profile data                           |
-| profiles                         | array    | List of profile entries                                               |
-| → profile\_id                    | int      | Profile identifier (e.g., 0, 4)                                       |
-| → schemes                        | array    | List of modulation schemes per profile                                |
-| →→ schema\_type                  | int      | Internal type ID (typically 0; may be reserved for future extensions) |
-| →→ modulation\_order             | string   | Modulation type (e.g., qam\_16, qam\_4096)                            |
-| →→ num\_subcarriers              | int      | Number of subcarriers using this modulation scheme                    |
+### Top-Level Envelope
 
-## Get Analysis
+| Field         | Type         | Description                                                               |
+| ------------- | ------------ | ------------------------------------------------------------------------- |
+| `mac_address` | string       | Request echo of the modem MAC.                                            |
+| `status`      | int          | 0 on success, non-zero on error.                                          |
+| `message`     | string\|null | Optional message describing status.                                       |
+| `data`        | object       | Container for results (`analysis`, `primative`, `measurement_stats`).     |
 
-### 🛁 Endpoint
+### `data.analysis[]`
 
-**POST** `/docs/pnm/ds/ofdm/modulationProfile/getAnalysis`
+Per-channel analysis view aligned to your typed modulation-profile model.
 
-Performs analysis of the downstream OFDM modulation profile for DOCSIS 3.1, calculating per-subcarrier modulation and Shannon capacity estimates. Supports JSON or XLSX output for easy visualization and processing.
+| Field                                     | Type    | Description                                                                |
+| ----------------------------------------- | ------- | -------------------------------------------------------------------------- |
+| device_details.*                          | object  | System descriptor captured at analysis time.                               |
+| pnm_header.*                              | object  | PNM header (type, version, capture time).                                  |
+| mac_address                               | string  | MAC address (`aa:bb:cc:dd:ee:ff`).                                         |
+| channel_id                                | int     | OFDM downstream channel ID.                                                |
+| frequency_unit                            | string  | Unit for `carrier_values.frequency` (e.g., `"Hz"`).                        |
+| shannon_min_unit                          | string  | Unit for `carrier_values.shannon_min_mer` (typically `"dB"`).              |
+| profiles[].profile_id                     | int     | Profile identifier (e.g., `0`, `3`, `4`, `255`).                           |
+| profiles[].carrier_values.layout          | string  | Layout hint (e.g., `"split"` for multi-array layout).                      |
+| profiles[].carrier_values.frequency       | array   | Per-carrier center frequency values.                                       |
+| profiles[].carrier_values.modulation      | array   | Per-carrier modulation (e.g., `"qam_256"`, `"qam_4096"`, `"continuous_pilot"`). |
+| profiles[].carrier_values.shannon_min_mer | array   | Per-carrier minimum MER required to support the configured modulation.     |
 
-### 📅 Request Body (JSON)
+### `data.primative[]`
+
+Normalized raw capture for export/plotting.
+
+| Field                         | Type     | Description                                       |
+| ----------------------------- | -------- | ------------------------------------------------- |
+| status                        | string   | Result for this capture (e.g., `SUCCESS`).        |
+| pnm_header.*                  | object   | PNM header (type, version, capture time).         |
+| channel_id                    | int      | Channel ID.                                       |
+| mac_address                   | string   | MAC address.                                      |
+| num_profiles                  | int      | Number of profiles present.                       |
+| subcarrier_zero_frequency     | int (Hz) | Frequency of subcarrier index 0.                  |
+| first_active_subcarrier_index | int      | Index of first active subcarrier.                 |
+| subcarrier_spacing            | int (Hz) | Spacing between subcarriers (e.g., 50 kHz).       |
+| profile_data_length_bytes     | int      | Length of encoded profile payload in bytes.       |
+| profiles[]                    | array    | Raw profile schemes (per profile).                |
+| profiles[].profile_id         | int      | Profile identifier.                               |
+| profiles[].schemes[]          | array    | Modulation partitions within this profile.        |
+| profiles[].schemes[].schema_type | int   | Internal type (commonly `0`).                     |
+| profiles[].schemes[].modulation_order | string | Modulation/carry type string. Values map to `ModulationOrderType`. |
+| profiles[].schemes[].num_subcarriers | int | Number of subcarriers using this scheme.          |
+
+#### ModulationOrderType enum
+
+`profiles[].schemes[].modulation_order` corresponds to these symbolic names:
+
+| Name               | Value |
+| ------------------ | ----- |
+| `zero_bit_loaded`  | 0     |
+| `continuous_pilot` | 1     |
+| `qpsk`             | 2     |
+| `reserved_3`       | 3     |
+| `qam_16`           | 4     |
+| `reserved_5`       | 5     |
+| `qam_64`           | 6     |
+| `qam_128`          | 7     |
+| `qam_256`          | 8     |
+| `qam_512`          | 9     |
+| `qam_1024`         | 10    |
+| `qam_2048`         | 11    |
+| `qam_4096`         | 12    |
+| `qam_8192`         | 13    |
+| `qam_16384`        | 14    |
+| `exclusion`        | 16    |
+| `plc`              | 20    |
+
+### `data.measurement_stats[]`
+
+Snapshot of CM modulation-profile capture state via SNMP at capture time.
+
+| Field                                        | Type    | Description                                             |
+| -------------------------------------------- | ------- | ------------------------------------------------------- |
+| index                                        | int     | SNMP table row index.                                   |
+| channel_id                                   | int     | OFDM downstream channel ID.                             |
+| entry.docsPnmCmDsOfdmModProfFileEnable      | boolean | Whether CM capture-to-file was enabled.                 |
+| entry.docsPnmCmDsOfdmModProfMeasStatus      | string  | Measurement status (e.g., `"sample_ready"`).            |
+| entry.docsPnmCmDsOfdmModProfFileName        | string  | Device-side filename of the profile payload.            |
+
+## Analysis
+
+The same `/getCapture` endpoint returns both:
+
+* `data.primative[]` – normalized raw profile structures (subcarrier ranges, schemes, counts).  
+* `data.analysis[]` – frequency-aligned per-carrier view with layout and Shannon-min MER context.
+
+### Example Request – With Analysis Controls
 
 ```json
 {
   "cable_modem": {
-	"mac_address": "aa:bb:cc:dd:ee:ff",
-	"ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": { "community": "private" },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
-    }
+    "mac_address": "aa:bb:cc:dd:ee:ff",
+    "ip_address": "192.168.0.100",
+    "snmp": { "snmpV2C": { "community": "private" } }
   },
-  "analysis": { "type": 0 },
-  "output": { "type": 0 }
+  "analysis": {
+    "type": "basic",
+    "output": { "type": "json" },
+    "plot": { "ui": { "theme": "dark" } }
+  }
 }
 ```
 
-### 📤 JSON Response (Output Type 0)
+### Abbreviated Example – Analysis-Focused View
 
 ```json
 {
@@ -167,19 +269,20 @@ Performs analysis of the downstream OFDM modulation profile for DOCSIS 3.1, calc
           "file_type_version": 10,
           "major_version": 1,
           "minor_version": 0,
-          "capture_time": 1751821207
+          "capture_time": 1762501000
         },
         "mac_address": "aa:bb:cc:dd:ee:ff",
         "channel_id": 197,
         "frequency_unit": "Hz",
-        "shannon_limit_unit": "dB",
+        "shannon_min_unit": "dB",
         "profiles": [
           {
             "profile_id": 4,
             "carrier_values": {
+              "layout": "split",
               "frequency": [1225000000],
               "modulation": ["qam_4096"],
-              "shannon_limit": [36.12]
+              "shannon_min_mer": [36.12]
             }
           }
         ]
@@ -189,39 +292,32 @@ Performs analysis of the downstream OFDM modulation profile for DOCSIS 3.1, calc
 }
 ```
 
-### 📊 XLSX Output (Output Type 2)
+### Output Types
 
-When `output.type` is set to 2, the response is an Excel file with columns:
+| JSON path              | Allowed values    | Description                                                                    |
+| ---------------------- | ----------------- | ------------------------------------------------------------------------------ |
+| `analysis.type`        | "basic"         | Static profile decoding with optional Shannon/MER context.                     |
+| `analysis.output.type` | "json", "archive" | `json` returns structured data; `archive` returns ZIP (CSV + PNG plots).      |
 
-* Frequency (Hz)
-* Modulation Order (e.g., QAM-256)
-* Shannon Limit (dB)
-* Profile ID
+## Matplot Plotting
 
-Useful for data visualization, graphing, and statistical modeling.
+These images are generated when `analysis.output.type = "archive"` and plotting is enabled.
 
-## Analysis and Output Types
+| Plot type           | Examples (Profiles 0 and 3)                                                                                                         | Description                                          |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Bits-Per-Symbol     | [Profile 0](./images/modulation-profile/profile-0-bps-modulation-profile.png) &#124; [Profile 3](./images/modulation-profile/profile-3-bps-modulation-profile.png) | Bits-per-symbol vs subcarrier or frequency.         |
+| Profile Segments    | [Profile 0](./images/modulation-profile/profile-0-segments-modulation-profile.png) &#124; [Profile 3](./images/modulation-profile/profile-3-mqam-modulation-profile.png) | Modulation partitions across the OFDM carriers.     |
+| Shannon-MER Context | [Profile 0](./images/modulation-profile/profile-0-shannon-mer-modulation-profile.png) &#124; [Profile 3](./images/modulation-profile/profile-3-shannon-mer-modulation-profile.png) | Shannon / minimum MER requirement versus frequency. |
 
-### `analysis.type`
+Additional images for other profiles (for example, `profile-7-*.png`) follow the same naming pattern:
+`profile-<profile_id>-<plot>-modulation-profile.png`.
 
-| Value | Type  | Description                                                                                |
-| ----- | ----- | ------------------------------------------------------------------------------------------ |
-| `0`   | BASIC | Performs static profile decoding and Shannon performance estimation per subcarrier profile |
+## Differences Between Capture And Analysis
 
-### `output.type`
-
-| Value | Format | Description                                                               |
-| ----- | ------ | ------------------------------------------------------------------------- |
-| `0`   | JSON   | Standard structured JSON suitable for API responses and dashboards        |
-| `1`   | CSV    | Not supported                                                             |
-| `2`   | XLSX   | Excel-compatible output for offline review, reporting, or spreadsheet use |
-
-## Differences Between Measurement and Analysis
-
-| Feature               | `/getMeasurement`                        | `/getAnalysis`                                           |
-| --------------------- | ---------------------------------------- | -------------------------------------------------------- |
-| Primary Output        | Raw modulation profile and scheme data   | Per-subcarrier frequency, modulation, Shannon capacity   |
-| Channel Coverage      | Captures all OFDM profiles               | Breaks down per-profile subcarrier-level detail          |
-| Output Format Options | JSON only                                | JSON or XLSX                                             |
-| Analysis Mode         | Not applicable                           | Supports `BASIC` (additional types planned)              |
-| Best Use Case         | Profile decoding and metadata inspection | Visualization, modeling, advanced modulation diagnostics |
+| Feature               | `/getCapture`                                | Analysis View (`data.analysis[]`)                          |
+| --------------------- | -------------------------------------------- | ---------------------------------------------------------- |
+| Primary Output        | Raw profile structures and scheme partitions | Per-carrier frequency, modulation, Shannon-min MER         |
+| Channel Coverage      | Captures all OFDM profiles                   | Breaks down per-profile to subcarrier-level detail         |
+| Output Format Options | JSON (or Archive via analysis controls)      | Same envelope; JSON or Archive (CSV + PNG)                 |
+| Analysis Mode         | Not applicable without `analysis.*`          | "basic" (additional analysis types planned)              |
+| Best Use Case         | Profile decoding and metadata inspection     | Visualization, modeling, advanced modulation diagnostics   |

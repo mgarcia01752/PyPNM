@@ -33,6 +33,7 @@ from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDs
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsHistEntry import DocsPnmCmDsHistEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmFecEntry import DocsPnmCmDsOfdmFecEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmMerMarEntry import DocsPnmCmDsOfdmMerMarEntry
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmModProfEntry import DocsPnmCmDsOfdmModProfEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOfdmChanEstCoefEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEntry
@@ -1551,6 +1552,38 @@ class CmSnmpOperation:
 
         except Exception as e:
             self.logger.exception("Failed to retrieve DocsPnmCmDsOfdmFecEntry entries: %s", e)
+            return entries
+
+    async def getDocsPnmCmDsOfdmModProfEntry(self) -> List[DocsPnmCmDsOfdmModProfEntry]:
+        """
+        Retrieve Modulation Profile entries for all downstream OFDM channels.
+
+        Returns
+        -------
+        List[DocsPnmCmDsOfdmModProfEntry].
+        """
+        self.logger.info('Entering into -> getDocsPnmCmDsOfdmModProfEntry()')
+        entries: List[DocsPnmCmDsOfdmModProfEntry] = []
+        try:
+            indices = await self.getDocsIf31CmDsOfdmChannelIdIndex()
+
+            if not indices:
+                self.logger.warning("No DocsIf31CmDsOfdmChanChannelIdIndex indices found.")
+                return entries
+
+            # De-dupe and sort for predictable iteration (optional but nice for logs)
+            unique_indices = sorted(set(int(i) for i in indices))
+            self.logger.info(f"ModProf fetch: indices={unique_indices}")
+
+            entries = await DocsPnmCmDsOfdmModProfEntry.get(snmp=self._snmp, indices=unique_indices)
+
+            # Helpful summary log—count only; detailed per-field logs happen in the entry fetcher
+            self.logger.info("ModProf fetch complete: %d entries", len(entries))
+            return entries
+
+        except Exception as e:
+            # Keep the exception in logs for debugging (stacktrace included)
+            self.logger.exception("Failed to retrieve DocsPnmCmDsOfdmModProfEntry entries: %s", e)
             return entries
 
     async def getOfdmProfiles(self) -> List[Tuple[int, OfdmProfiles]]:

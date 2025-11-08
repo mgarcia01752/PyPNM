@@ -8,13 +8,13 @@ from typing import Any, Dict, Iterable, List,  TypeVar, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport
+from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport, AnalysisRptMatplotConfig
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_PROFILE_ID
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
-from pypnm.lib.types import FloatSeries, FrequencySeriesHz, FloatSeries, StringArray
+from pypnm.lib.types import ArrayLike, ChannelId, FloatSeries, FrequencyHz, FrequencySeriesHz, ProfileId, StringArray
 
 
 class ModulationProfileRptModel(BaseModel):
@@ -37,8 +37,10 @@ class ModulationProfileAnalysisRptModel(CommonAnalysis):
 class ModulationProfileReport(AnalysisReport):
     FNAME_TAG: str = "modulationprofile"
 
-    def __init__(self, analysis: Analysis):
-        super().__init__(analysis)
+    def __init__(self, analysis: Analysis,  
+                 analysis_matplot_config: AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(), 
+                 **kwargs):
+        super().__init__(analysis, analysis_matplot_config) 
         self.logger = logging.getLogger("ModulationProfileReport")
         self._results: Dict[int, ModulationProfileAnalysisRptModel] = {}
 
@@ -93,18 +95,26 @@ class ModulationProfileReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self, **kwargs: Any) -> List[MatplotManager]:
+    def create_matplot(self) -> List[MatplotManager]:
         """
         Generate per-channel plots, one set per profile:
-          1) Bits-per-symbol vs. Frequency
-          2) Shannon Min MER vs. Frequency
-          3) Modulation order (M-QAM) vs. Frequency
+        1) Bits-per-symbol vs. Frequency
+        2) Shannon Min MER vs. Frequency
+        3) Modulation vs. Frequency with a preloaded M-QAM scale (linear spacing via log₂(M) positions,
+            tick labels shown as M values: 4, 8, 16, 32, …, 4096)
+
+        Notes
+        -----
+        - Frequency axis is formatted by Matplot using unit scaling (Hz → MHz) and zero decimals.
+        - Theme is taken from AnalysisRptMatplotConfig (e.g., "dark" or "light").
+        - The M-QAM axis uses evenly spaced positions at log₂(M) to avoid visually "log-like" spacing,
+        while the visible tick labels are the true QAM orders (M).
         """
         out: List[MatplotManager] = []
 
         for common_model in self.get_common_analysis_model():
             model = cast(ModulationProfileAnalysisRptModel, common_model)
-            channel_id: int = int(model.channel_id)
+            channel_id: ChannelId = ChannelId(model.channel_id)
             freq: FrequencySeriesHz = cast(FrequencySeriesHz, model.raw_x)
 
             if not freq:
@@ -112,18 +122,37 @@ class ModulationProfileReport(AnalysisReport):
                 continue
 
             for profile in model.parameters.profiles:
-                profile_id: int = profile.profile_id
+                profile_id: ProfileId = ProfileId(profile.profile_id)
+
+                # Align inputs to frequency length
                 try:
-                    bpsym: FloatSeries = self._align_len(profile.bits_per_symbol, len(freq), fill=0)
-                    min_mer: FloatSeries = self._align_len(profile.shannon_min_mer, len(freq), fill=float("nan"))
-                    mod_lbls: StringArray = self._align_len(profile.modulation, len(freq), fill="UNKNOWN")
+                    n = len(freq)
+                    bpsym: FloatSeries = self._align_len(profile.bits_per_symbol, n, fill=0)
+                    min_mer: FloatSeries = self._align_len(profile.shannon_min_mer, n, fill=float("nan"))
+                    mod_lbls: StringArray = self._align_len(profile.modulation, n, fill="UNKNOWN")
                     mod_order: List[int] = [self._derive_qam_order(lbl) for lbl in mod_lbls]
                 except Exception as exc:
                     self.logger.exception(f"Failed to align arrays for channel {channel_id} profile {profile_id}: {exc}", exc_info=True)
                     continue
 
+                # 1) Bits-per-symbol vs Frequency
                 try:
-                    bps_cfg = PlotConfig(title=f"Bits-Per-Symbol vs Frequency — OFDM Ch {channel_id} - ProfileID: {profile_id}", x=freq, xlabel="Frequency (Hz)", y=bpsym, ylabel="Bits-Per-Symbol", grid=True, legend=True, transparent=False)
+                    bps_cfg = PlotConfig(
+                        title             = f"Bits-Per-Symbol vs Frequency — OFDM Ch {channel_id} · Profile {profile_id}",
+                        x                 = cast(ArrayLike, freq),
+                        y                 = cast(ArrayLike, bpsym),
+                        ylabel            = "Bits per Symbol",
+                        x_tick_mode       = "unit",
+                        x_unit_from       = "hz",
+                        x_unit_out        = "mhz",
+                        x_tick_decimals   = 0,
+                        xlabel_base       = "Frequency",
+                        grid              = True,
+                        legend            = False,
+                        transparent       = False,
+                        theme             = self.getAnalysisRptMatplotConfig().theme,
+                    )
+
                     png_fname = self.create_png_fname(tags=[str(channel_id), str(profile_id), "bps", self.FNAME_TAG])
                     self.logger.info(f"Creating Bits-Per-Symbol plot: {png_fname} for channel: {channel_id}")
                     mplot_mgr = MatplotManager(default_cfg=bps_cfg)
@@ -132,8 +161,24 @@ class ModulationProfileReport(AnalysisReport):
                 except Exception as exc:
                     self.logger.exception(f"Failed to create Bits-Per-Symbol plot for channel {channel_id} profile {profile_id}: {exc}", exc_info=True)
 
+                # 2) Shannon Min MER vs Frequency
                 try:
-                    mer_cfg = PlotConfig(title=f"Shannon Min MER vs Frequency — OFDM Ch {channel_id} - ProfileID: {profile_id}", x=freq, xlabel="Frequency (Hz)", y=min_mer, ylabel="Shannon Min MER (dB)", grid=True, legend=True, transparent=False)
+                    mer_cfg = PlotConfig(
+                        title             = f"Shannon Min MER vs Frequency — OFDM Ch {channel_id} · Profile {profile_id}",
+                        x                 = cast(ArrayLike, freq),
+                        y                 = cast(ArrayLike, min_mer),
+                        ylabel            = "Shannon Min MER (dB)",
+                        x_tick_mode       = "unit",
+                        x_unit_from       = "hz",
+                        x_unit_out        = "mhz",
+                        x_tick_decimals   = 0,
+                        xlabel_base       = "Frequency",
+                        grid              = True,
+                        legend            = False,
+                        transparent       = False,
+                        theme             = self.getAnalysisRptMatplotConfig().theme,
+                    )
+
                     png_fname = self.create_png_fname(tags=[str(channel_id), str(profile_id), "shannon", self.FNAME_TAG])
                     self.logger.info(f"Creating Shannon Min MER plot: {png_fname} for channel: {channel_id}")
                     mplot_mgr = MatplotManager(default_cfg=mer_cfg)
@@ -142,15 +187,61 @@ class ModulationProfileReport(AnalysisReport):
                 except Exception as exc:
                     self.logger.exception(f"Failed to create Shannon Min MER plot for channel {channel_id} profile {profile_id}: {exc}", exc_info=True)
 
+                # 3) Modulation vs Frequency with preloaded M-QAM scale (linear spacing via log₂(M), labels show M)
                 try:
-                    mod_cfg = PlotConfig(title=f"Modulation Order vs Frequency — OFDM Ch {channel_id} - ProfileID: {profile_id}", x=freq, xlabel="Frequency (Hz)", y=mod_order, ylabel="Modulation Order (M in M-QAM)", grid=True, legend=True, transparent=False)
+                    from math import log2, isfinite
+
+                    # Convert M to positions (bits per symbol) for linear spacing
+                    mod_bits: List[int] = []
+                    for m in mod_order:
+                        if m and m > 0:
+                            try:
+                                v = log2(m)
+                                mod_bits.append(int(v) if isfinite(v) else 0)
+                            except Exception:
+                                mod_bits.append(0)
+                        else:
+                            mod_bits.append(0)
+
+                    # Predefine a comprehensive M-QAM ladder and its bit positions
+                    ladder_M = [4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
+                    ladder_bits = [int(log2(m)) for m in ladder_M]
+
+                    max_bits_seen = max(mod_bits) if mod_bits else 8
+                    max_bits_cap = max(2, min(max_bits_seen, ladder_bits[-1]))
+
+                    y_ticks_bits = [b for b in ladder_bits if b <= max_bits_cap]
+                    y_labels_M = [str(2 ** b) for b in y_ticks_bits]  # labels: "4","8","16","32",...
+
+                    mod_cfg = PlotConfig(
+                        title             = f"Modulation vs Frequency — OFDM Ch {channel_id} · Profile {profile_id}",
+                        x                 = cast(ArrayLike, freq),
+                        y                 = cast(ArrayLike, mod_bits),
+                        ylabel            = "Modulation Order (M-QAM)",
+                        x_tick_mode       = "unit",
+                        x_unit_from       = "hz",
+                        x_unit_out        = "mhz",
+                        x_tick_decimals   = 0,
+                        xlabel_base       = "Frequency",
+                        y_ticks           = y_ticks_bits,
+                        y_tick_labels     = y_labels_M,
+                        ylim              = (0.0, float(max_bits_cap)),
+                        grid              = True,
+                        legend            = False,
+                        transparent       = False,
+                        theme             = self.getAnalysisRptMatplotConfig().theme,
+                    )
+
                     png_fname = self.create_png_fname(tags=[str(channel_id), str(profile_id), "modulation", self.FNAME_TAG])
-                    self.logger.info(f"Creating Modulation Order plot: {png_fname} for channel: {channel_id}")
+                    self.logger.info(f"Creating Modulation plot: {png_fname} for channel: {channel_id}")
                     mplot_mgr = MatplotManager(default_cfg=mod_cfg)
                     mplot_mgr.plot_line(filename=png_fname)
                     out.append(mplot_mgr)
                 except Exception as exc:
-                    self.logger.exception(f"Failed to create Modulation Order plot for channel {channel_id} profile {profile_id}: {exc}", exc_info=True)
+                    self.logger.exception(f"Failed to create Modulation plot for channel {channel_id} profile {profile_id}: {exc}", exc_info=True)
+
+        if not out:
+            self.logger.info("No analysis data available; no plots created.")
 
         return out
 
@@ -183,7 +274,7 @@ class ModulationProfileReport(AnalysisReport):
 
         for idx, data in enumerate(data_list):
             try:
-                channel_id = int(data.get("channel_id", INVALID_CHANNEL_ID))
+                channel_id = ChannelId(data.get("channel_id", INVALID_CHANNEL_ID))
                 profiles_in: List[Dict[str, Any]] = data.get("profiles", [])
 
                 freq_array: FrequencySeriesHz = []
@@ -193,28 +284,36 @@ class ModulationProfileReport(AnalysisReport):
                     cv: Dict[str, Any] = profile_entry.get("carrier_values", {})
                     profile_id: int = int(profile_entry.get("profile_id", INVALID_PROFILE_ID))
 
-                    freq: List[float] = list(map(float, cv.get("frequency", []) or []))
-                    mod: List[str] = list(map(str, cv.get("modulation", []) or []))
-                    bps: List[int] = list(map(int, cv.get("bits_per_symbol", []) or []))
-                    mer: List[float] = list(map(float, cv.get("shannon_min_mer", []) or []))
+                    freqs: FrequencySeriesHz = list(map(FrequencyHz, cv.get("frequency", []) or []))
+                    mod: List[str]          = list(map(str, cv.get("modulation", []) or []))
+                    bps: List[int]          = list(map(int, cv.get("bits_per_symbol", []) or []))
+                    mer: List[float]        = list(map(float, cv.get("shannon_min_mer", []) or []))
 
                     if not bps and mod:
                         bps = [self._derive_bits_per_symbol(m) for m in mod]
 
-                    if not freq_array and freq:
-                        freq_array = freq
+                    if not freq_array and freqs:
+                        freq_array = freqs
 
-                    n = len(freq_array) if freq_array else len(freq)
+                    n = len(freq_array) if freq_array else len(freqs)
                     if n:
                         mod = self._align_len(mod, n, fill="UNKNOWN")
                         bps = self._align_len(bps, n, fill=0)
                         mer = self._align_len(mer, n, fill=float("nan"))
 
-                    profile_models.append(ModulationProfileRptModel(profile_id=profile_id, modulation=mod, bits_per_symbol=bps, shannon_min_mer=mer))
+                    profile_models.append(ModulationProfileRptModel(
+                        profile_id      =   profile_id, 
+                        modulation      =   mod,
+                        bits_per_symbol =   bps,
+                        shannon_min_mer =   mer))
 
                 params = ModulationProfileParametersAnalysisRpt(profiles=profile_models)
 
-                model = ModulationProfileAnalysisRptModel(channel_id=channel_id, raw_x=freq_array, raw_y=[0.0], parameters=params)
+                model = ModulationProfileAnalysisRptModel(
+                    channel_id  =   channel_id,
+                    raw_x       =   freq_array,
+                    raw_y       =   [0.0],
+                    parameters  =   params)
 
                 self.register_common_analysis_model(channel_id, model)
 

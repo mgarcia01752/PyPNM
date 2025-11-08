@@ -14,7 +14,7 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.ticker import EngFormatter, FuncFormatter, ScalarFormatter
+from matplotlib.ticker import EngFormatter, FuncFormatter, ScalarFormatter, FixedLocator, FixedFormatter
 
 from pypnm.lib.code_word.cw_generator import QamModulation
 from pypnm.lib.types import ArrayLike, ComplexArray, Number
@@ -43,6 +43,10 @@ class PlotConfig:
         * x_ticks_visible=False hides ticks/labels while keeping the single range label.
     - X label prefix:
         * xlabel_prefix prepends a string to any resolved x-axis label (explicit, unit/eng, or from_to).
+    - Y tick control:
+        * y_ticks sets explicit Y tick positions.
+        * y_tick_labels optionally sets custom labels for those positions (len must match y_ticks).
+          Useful for plotting log₂(M) positions while showing labels like ["64","256","1024"].
     """
     # Data
     x: Optional[ArrayLike] = None
@@ -89,6 +93,10 @@ class PlotConfig:
     x_time_labels: Optional[Literal["none", "from_to"]] = "none"
     x_time_input_unit: Optional[Literal["s", "ms", "ns"]] = "s"
     x_time_format: Optional[str] = "%Y-%m-%d %H:%M:%S"
+
+    # Y tick control
+    y_ticks: Optional[List[Number]] = None
+    y_tick_labels: Optional[List[str]] = None
 
     def update(self, **kwargs) -> "PlotConfig":
         """Create a new PlotConfig with fields replaced by kwargs."""
@@ -188,6 +196,8 @@ class MatplotManager:
             x_time_labels       = pick(user_cfg.x_time_labels       if user_cfg else None, base.x_time_labels,     method_defaults.x_time_labels),
             x_time_input_unit   = pick(user_cfg.x_time_input_unit   if user_cfg else None, base.x_time_input_unit, method_defaults.x_time_input_unit),
             x_time_format       = pick(user_cfg.x_time_format       if user_cfg else None, base.x_time_format,     method_defaults.x_time_format),
+            y_ticks             = pick(user_cfg.y_ticks             if user_cfg else None, base.y_ticks,            method_defaults.y_ticks),
+            y_tick_labels       = pick(user_cfg.y_tick_labels       if user_cfg else None, base.y_tick_labels,      method_defaults.y_tick_labels),
         )
 
     def _theme_context(self, cfg: Optional[PlotConfig]):
@@ -208,7 +218,6 @@ class MatplotManager:
         except Exception:
             pass
 
-        # Optional single "start → end" label from epoch timestamps
         if (cfg.x_time_labels or "none") == "from_to":
             x_min, x_max = ax.get_xlim()
             unit = (cfg.x_time_input_unit or "s").lower()
@@ -283,7 +292,6 @@ class MatplotManager:
         if cfg.title:
             ax.set_title(cfg.title)
 
-        # If user supplied an explicit xlabel, prepend prefix here
         if cfg.xlabel:
             prefix = cfg.xlabel_prefix or ""
             ax.set_xlabel(f"{prefix}{cfg.xlabel}")
@@ -294,6 +302,18 @@ class MatplotManager:
             ax.set_xlim(*cfg.xlim)
         if cfg.ylim:
             ax.set_ylim(*cfg.ylim)
+
+        # Explicit Y ticks and labels (e.g., log₂(M) positions with M labels)
+        if cfg.y_ticks is not None:
+            try:
+                locs = [float(v) for v in cfg.y_ticks]
+                ax.yaxis.set_major_locator(FixedLocator(locs))
+                if cfg.y_tick_labels is not None and len(cfg.y_tick_labels) == len(locs):
+                    ax.yaxis.set_major_formatter(FixedFormatter(list(cfg.y_tick_labels)))
+                else:
+                    ax.yaxis.set_major_formatter(ScalarFormatter(useOffset=False))
+            except Exception:
+                self.logger.exception("Failed to apply custom Y ticks/labels")
 
         if cfg.grid is True:
             ax.grid(True, which="both", linestyle="--", alpha=0.4)
@@ -538,7 +558,9 @@ class MatplotManager:
                 hy = half_step(levels_q)
                 lw = 0.3
                 for xi, yi in zip(x_hard[:n], y_hard[:n]):
-                    rect = mpatches.Rectangle((xi - hx, yi - hy), 2.0 * hx, 2.0 * hy, fill=False, linewidth=lw, alpha=boundary_alpha, edgecolor="gray", zorder=0, clip_on=True)
+                    rect = mpatches.Rectangle((xi - hx, yi - hy), 2.0 * hx, 2.0 * hy,
+                                              fill=False, linewidth=lw, alpha=boundary_alpha,
+                                              edgecolor="gray", zorder=0, clip_on=True)
                     ax.add_patch(rect)
 
                 all_x = np.concatenate([x_soft, x_hard[:n]]) if x_soft.size else x_hard[:n]
