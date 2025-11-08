@@ -45,7 +45,7 @@ class RxMerMarginRouter:
                           response_model=Union[SnmpResponse])
         async def get_measurement_template(request: PnmRequest) -> Union[SnmpResponse]:
             """
-            📘 [API Guide - MER Margin Measurement Template](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/mer-margin.md#get-measurement-template)
+            📘 [API Guide - MER Margin Measurement Template](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/ds/ofdm/mer-margin.md#get-measurement-template)
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address

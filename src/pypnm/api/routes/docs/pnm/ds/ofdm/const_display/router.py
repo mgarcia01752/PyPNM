@@ -61,7 +61,7 @@ class ConstellationDisplayRouter:
             """
             Capture Downstream OFDM Constellation Display Samples And Return Analysis Results.
 
-            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/constellation-display.md)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/ds/ofdm/constellation-display.md)
 
             """
             mac: MacAddressStr = request.cable_modem.mac_address
