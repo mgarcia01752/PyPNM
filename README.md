@@ -142,9 +142,11 @@ mkdocs serve
 
 ## License
 
-[`MIT LICENSE`](./LICENSE).
+[`MIT LICENSE`](./LICENSE)
 
 ## Maintainer
 
 Maurice Garcia
-[mgarcia01752@outlook.com](mailto:mgarcia01752@outlook.com)
+
+- [Email](mailto:mgarcia01752@outlook.com)
+- [LinkedIn](https://www.linkedin.com/in/mauricemgarcia/)
