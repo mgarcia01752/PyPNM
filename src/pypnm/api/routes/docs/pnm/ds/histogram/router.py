@@ -57,7 +57,7 @@ class DsHistogramRouter:
             Capture DOCSIS Downstream Histogram and return results as JSON or archive.
 
             The endpoint triggers a histogram capture on the cable modem using SNMP,
-            [API Guide]()
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/ds/histogram.md)
             """
             mac: MacAddressStr = request.cable_modem.mac_address
             ip: InetAddressStr = request.cable_modem.ip_address
