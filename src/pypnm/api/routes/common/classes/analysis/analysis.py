@@ -259,7 +259,7 @@ class Analysis:
             self.__add_pnmType(PnmFileType.OFDM_FEC_SUMMARY)
 
         elif pnm_file_type == PnmFileType.SPECTRUM_ANALYSIS.value:
-            self.logger.debug("Processing: SPECTRUM_ANALYSIS")
+            self.logger.info("Processing: SPECTRUM_ANALYSIS")
             model = self.basic_analysis_spectrum_analyzer(measurement, analysis_para)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
@@ -1066,6 +1066,7 @@ class Analysis:
         """
         Build SpectrumAnalyzerAnalysisModel from converted PNM measurement:
         """
+        log = logging.getLogger(f"{cls.__name__}")
         # --- core params ---
         first_seg_cf  = int(measurement.get("first_segment_center_frequency", 0))
         last_seg_cf   = int(measurement.get("last_segment_center_frequency", 0))
@@ -1125,10 +1126,12 @@ class Analysis:
         # --- windowed average (same length) ---
         # TODO: Need to clean this up, need to move the DEFAULT to the Model in a better way
         if analysis_parameters:
+            log.info("Spectrum Analyzer: applying moving average with parameters: %s", analysis_parameters)
             window_points = analysis_parameters.moving_average.points
         else:
-            window_points  = DEFAULT_POINT_AVG
-        
+            log.warning("Spectrum Analyzer: applying DEFAULT moving average: %s", DEFAULT_POINT_AVG)
+            window_points = DEFAULT_POINT_AVG
+
         try:
             ma = MovingAverage(max(1, window_points), mode="reflect")
             smoothed = ma.apply(magnitudes) if magnitudes else []

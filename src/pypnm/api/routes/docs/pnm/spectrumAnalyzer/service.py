@@ -443,14 +443,16 @@ class DsScQamChannelSpectrumAnalyzer:
         self.logger = logging.getLogger(self.__class__.__name__)
         self._cm = cable_modem
         self._number_of_averages = number_of_averages
+        self._pnm_test_type = DocsPnmCmCtlTest.SPECTRUM_ANALYZER
+        self.log_prefix = f"DsScQamChannelSpectrumAnalyzer - CM {self._cm.get_mac_address}"
         self._test_mode = True
 
-    async def start(self) -> List[MessageResponse]:
+    async def start(self) -> List[Tuple[ChannelId, MessageResponse]]:
         """
         Build capture parameters for each SC-QAM channel and run captures.
         """
-        capture_parameters: List[SpecAnCapturePara] = []
-        msg_responses: List[MessageResponse] = []
+        channel_specCapture:List[Tuple[ChannelId, SpecAnCapturePara]] = []
+        out:List[Tuple[ChannelId, MessageResponse]] = []
 
         bw_by_channel: ScQamSpectrumBwLut = await self.get_scqam_spectrum_bandwidth()
 
@@ -473,18 +475,19 @@ class DsScQamChannelSpectrumAnalyzer:
                 num_averages                = number_of_averages,
                 spectrum_retrieval_type     = SpectrumRetrievalType.FILE,
             )
-            capture_parameters.append(capture_parameter)
+
+            channel_specCapture.append((chan_id, capture_parameter))
 
             if self._test_mode:
                 self.logger.warning("Test mode active: processing only first channel.")
                 break  # TEMPORARY: only process first channel for testing
 
-        for capture_parameter in capture_parameters:
+        for chan_id, capture_parameter in channel_specCapture:
             service = ScQamChanSpecAnalyzerService(self._cm)
             service.setSpectrumCaptureParameters(capture_parameter)
-            msg_responses.append(await service.set_and_go())
+            out.append((chan_id, await service.set_and_go()))
 
-        return msg_responses
+        return out
 
     async def get_scqam_spectrum_bandwidth(self) -> ScQamSpectrumBwLut:
         """
@@ -523,3 +526,42 @@ class DsScQamChannelSpectrumAnalyzer:
             out[chan_id] = (start, cfreq, end)
 
         return out
+    
+    async def getPnmMeasurementStatistics(self) -> List[MeasurementEntry]:
+        """
+        Retrieve PNM measurement entries for the currently configured `pnm_test_type`.
+
+        Returns
+        -------
+        List[MeasurementEntry]
+            A (possibly empty) list of model instances corresponding to the active
+            test type:
+
+            - SPECTRUM_ANALYZER                 → List[DocsIf3CmSpectrumAnalysisEntry]
+            - SPECTRUM_ANALYZER_SNMP_AMP_DATA   → List[DocsIf3CmSpectrumAnalysisEntry]
+
+            For other (stub/unsupported) test types, an empty list is returned.
+
+        Notes
+        -----
+        - This method performs no aggregation; it returns the raw per-entry models
+          fetched from the cable modem for the selected measurement type.
+        - For strict typing, concrete lists are cast to `List[MeasurementEntry]`
+          at return points (because `List` is invariant in the type system).
+        """
+        entries: List[MeasurementEntry] = []
+
+        if self._pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
+            self.logger.debug(f"{self.log_prefix} - Running SPECTRUM_ANALYZER")
+            concrete = await self._cm.getDocsIf3CmSpectrumAnalysisEntry()
+            return cast(List[MeasurementEntry], concrete)   
+
+        elif self._pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA:
+            self.logger.debug(f"{self.log_prefix} - Running SPECTRUM_ANALYZER_SNMP_AMP_DATA")
+            concrete = await self._cm.getDocsIf3CmSpectrumAnalysisEntry()
+            return cast(List[MeasurementEntry], concrete)            
+
+        else:
+            self.logger.warning(f"{self.log_prefix} - Unknown PNM test type: {self._pnm_test_type}")
+
+        return entries

@@ -25,7 +25,7 @@ class MacAddressFormat(Enum):
     HYPHEN  = auto()    # e.g., '00-1a-2b-3c-4d-5e'
 
 class MacAddress:
-    def __init__(self, mac_address: Union[str, bytes, bytearray, 'OctetString']) -> None: # type: ignore
+    def __init__(self, mac_address: Union[MacAddressStr, str, bytes, bytearray, 'OctetString']) -> None: # type: ignore
         """
         Initialize a MacAddress object.
 

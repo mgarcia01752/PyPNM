@@ -250,7 +250,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
         return csv_mgr_list
 
     def create_matplot(self, **kwargs: Any) -> List[MatplotManager]:
-        """Create two line plots per channel: raw spectrum and windowed average.
+        """Create Spectrum Analysis of standard and windowed average Matplots.
 
         Returns
         -------
@@ -276,7 +276,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
                 self.logger.debug(f"Creating Standard OFDM Channel ({channel_id})Spectrum Plot: %s", fname)
 
                 cfg = PlotConfig(
-                    title           =   f"Spectrum Analyzer · OFDM Channel ({channel_id}) · Standard",
+                    title           =   f"Spectrum Analysis · OFDM Channel ({channel_id}) · Standard",
                     x               =   cast(ArrayLike, sig.frequencies),  
                     y               =   cast(ArrayLike, sig.amplitude),
                     xlabel          =   None,
@@ -296,7 +296,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
                 out.append(mgr)
 
             except Exception as exc:
-                self.logger.exception("Failed to create plot for channel %s (raw): %s", channel_id, exc, exc_info=True)
+                self.logger.exception("Failed to create plot for channel %s (standard): %s", channel_id, exc, exc_info=True)
 
             # --- Moving average only ---
             try:
@@ -304,7 +304,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
                 self.logger.debug("Creating OFDM Moving Average Spectrum plot: %s", fname)
 
                 cfg = PlotConfig(
-                    title           =   f"Spectrum Analyzer · OFDM Channel ({channel_id}) · Moving Average n={sig.window.window_size}",
+                    title           =   f"Spectrum Analysis · OFDM Channel ({channel_id}) · Moving Average n={sig.window.window_size}",
                     x               =   cast(ArrayLike, sig.frequencies),  
                     y               =   cast(ArrayLike, sig.window.windows_average),
                     xlabel          =   None,

@@ -146,7 +146,7 @@ class ScQamSpecAnalyzerAnalysisReport():
         
         first_analysis = analyses[0]
 
-        return MacAddress(cast(BaseAnalysisModel,first_analysis.get_model()[0].mac_address))
+        return MacAddress(cast(BaseAnalysisModel, first_analysis.get_model()[0].mac_address))
         
     def get_archive(self) -> PathLike:
         """Return the path to the previously created archive.
@@ -185,7 +185,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
     FNAME_TAG : str
         Base tag used in output filenames to consistently label Spectrum Analyzer artifacts.
     """
-    FNAME_TAG: str = "SpectrumAnalyzerReport"
+    FNAME_TAG: str = "scqam_spec_ana_rpt"
 
     def __init__(self, analysis: Analysis):
         """Create a report instance bound to a single :class:`Analysis`.
@@ -268,11 +268,11 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
 
             # --- Raw spectrum ---
             try:
-                fname = self.create_png_fname(tags=[str(ch), self.FNAME_TAG, "raw"])
+                fname = self.create_png_fname(tags=[str(ch), self.FNAME_TAG, "standard"])
                 self.logger.debug("Creating Spectrum plot: %s", fname)
 
                 cfg = PlotConfig(
-                    title           =   f"Spectrum Analyzer · SCQAM Channel ({ch}) · Standard",
+                    title           =   f"Spectrum Analysis · SCQAM Channel ({ch}) · Standard",
                     x               =   cast(ArrayLike, sig.frequencies),  
                     y               =   cast(ArrayLike, sig.amplitude),
                     xlabel          =   None,
@@ -293,7 +293,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
                 out.append(mgr)
 
             except Exception as exc:
-                self.logger.exception("Failed to create plot for channel %s (raw): %s", ch, exc, exc_info=True)
+                self.logger.exception("Failed to create plot for channel %s (standard): %s", ch, exc, exc_info=True)
 
             # --- Moving average only ---
             try:
@@ -301,9 +301,9 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
                 self.logger.debug("Creating Spectrum plot: %s", fname)
 
                 cfg = PlotConfig(
-                    title   =   f"Spectrum Analyzer · SCQAM Channel ({ch}) · Moving Average n={sig.window.window_size}",
+                    title   =   f"Spectrum Analysis · SCQAM Channel ({ch}) · Moving Average n={sig.window.window_size}",
                     x               =   cast(ArrayLike, sig.frequencies),  
-                    y               =   cast(ArrayLike, sig.amplitude),
+                    y               =   cast(ArrayLike, sig.window.windows_average),
                     xlabel          =   None,
                     xlabel_base     =   "Frequency",
                     x_tick_mode     =   "unit",
