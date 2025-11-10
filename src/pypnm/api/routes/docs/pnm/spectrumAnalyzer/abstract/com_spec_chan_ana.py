@@ -1,3 +1,9 @@
+
+from __future__ import annotations
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 from abc import ABC, abstractmethod
 from typing import Dict, List, Tuple, Union
 import logging
