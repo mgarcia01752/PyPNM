@@ -20,12 +20,12 @@ from pypnm.docsis.cable_modem import MacAddress
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
-from pypnm.lib.types import ArrayLike, FloatSeries, FloatSeries, Path, PathLike
+from pypnm.lib.types import ArrayLike, FloatSeries, FrequencySeriesHz, Path, PathLike
 from pypnm.lib.utils import Utils
 
 
 class OfdmSpecAnalysisRptModel(BaseModel):
-    """Pydantic model for a compiled SC-QAM Spectrum Analyzer report.
+    """Pydantic model for a compiled OFDM Spectrum Analyzer report.
     """
     models:List[BaseAnalysisModel]
 
@@ -88,13 +88,17 @@ class OfdmSpecAnalyzerAnalysisReport():
             - Only the archive file path is returned; individual CSVs and plots
             remain accessible through their respective report instances.
         """
-        for a in self._get_analyses():
-            rpt = SingleOfdmSpecAnalyzerReport(a)
+        for _ in self._get_analyses():
+            rpt = __SingleOfdmSpecAnalyzerReport(_)
             rpt.build_report()
             rpt.get_all_generated_files()
             self._analysis_files.extend(rpt.get_all_generated_files())
 
         return self._build_archive()
+
+    def _get_models(self) -> List[BaseAnalysisModel]:
+        """Return the list of models sourced from the bound :class:`MultiAnalysis`."""
+        return self._multi_analysis.to_model()
 
     def _get_analyses(self) -> List[Analysis]:
         """Return the list of analyses sourced from the bound :class:`MultiAnalysis`."""
@@ -144,9 +148,9 @@ class OfdmSpecAnalyzerAnalysisReport():
         if not analyses:
             raise ValueError("No analyses available to extract MAC address.")
         
-        first_analysis = analyses[0]
+        first_analysis:Analysis = analyses[0]
 
-        return MacAddress(cast(BaseAnalysisModel,first_analysis.get_model()[0].mac_address))
+        return MacAddress(cast(BaseAnalysisModel, first_analysis.get_model()[0].mac_address))
         
     def get_archive(self) -> PathLike:
         """Return the path to the previously created archive.
@@ -172,8 +176,8 @@ class OfdmSpecAnalyzerAnalysisReport():
         return self._multi_analysis.to_dict()
 
 
-class SingleOfdmSpecAnalyzerReport(AnalysisReport):
-    """Emitter for CSV and plots from a single SC-QAM Spectrum Analyzer analysis.
+class __SingleOfdmSpecAnalyzerReport(AnalysisReport):
+    """Emitter for CSV and plots from a single OFDM Spectrum Analyzer analysis.
 
     This concrete :class:`AnalysisReport`:
       * builds a CSV (Frequency, Magnitude dBmV, Moving Average),
@@ -185,7 +189,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
     FNAME_TAG : str
         Base tag used in output filenames to consistently label Spectrum Analyzer artifacts.
     """
-    FNAME_TAG: str = "SpectrumAnalyzerReport"
+    FNAME_TAG: str = "ofdm_spec_ana_rpt"
 
     def __init__(self, analysis: Analysis):
         """Create a report instance bound to a single :class:`Analysis`.
@@ -196,7 +200,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
             The source analysis whose models/results will be rendered to artifacts.
         """
         super().__init__(analysis)
-        self.logger = logging.getLogger("SpectrumAnalyzerReport")
+        self.logger = logging.getLogger("SingleOfdmSpecAnalyzerReport")
         self._results: Dict[int, SpectrumAnalyzerAnalysisRptModel] = {}
 
     def create_csv(self, **kwargs: Any) -> List[CSVManager]:
@@ -225,7 +229,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
                 csv_mgr.set_header(["Frequency", "Magnitude(dBmV)", "MovingAverage"])
 
                 # Rows aligned by index
-                for f_hz, mag_dbmv, ma in zip(sig.frequency, sig.amplitude, sig.window.windows_average):
+                for f_hz, mag_dbmv, ma in zip(sig.frequencies, sig.amplitude, sig.window.windows_average):
                     csv_mgr.insert_row ([f_hz, mag_dbmv, ma])
 
                 csv_fname = self.create_csv_fname(tags=[str(channel_id), self.FNAME_TAG])
@@ -263,44 +267,64 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
 
         for common_model in self.get_common_analysis_model():
             m = cast(SpectrumAnalyzerAnalysisRptModel, common_model)
-            ch = m.channel_id
+            channel_id = m.channel_id
             sig = m.signal
 
             # --- Raw spectrum ---
             try:
-                fname = self.create_png_fname(tags=[str(ch), self.FNAME_TAG, "raw"])
-                self.logger.debug("Creating Spectrum plot: %s", fname)
+                fname = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, "standard"])
+                self.logger.debug(f"Creating Standard OFDM Channel ({channel_id}) Spectrum Plot: %s", fname)
 
                 cfg = PlotConfig(
-                    title   =   "Spectrum Analyzer",
-                    x = cast(ArrayLike, sig.frequency),  xlabel = "Frequency (Hz)",
-                    y = cast(ArrayLike, sig.amplitude),  ylabel = "Magnitude (dBmV)",
-                    grid    =   True, legend=False, transparent=False,)
-                
+                    title           =   f"Spectrum Analyzer - Channel ({channel_id}) Standard",
+                    x               =   cast(ArrayLike, sig.frequencies),  
+                    y               =   cast(ArrayLike, sig.amplitude),
+                    xlabel          =   None,
+                    xlabel_base     =   "Frequency",
+                    x_tick_mode     =   "unit",
+                    x_unit_from     =   "hz",
+                    x_unit_out      =   "mhz",
+                    x_tick_decimals =   0,
+                    ylabel          =   "dB",
+                    grid            =   False,
+                    legend          =   False,
+                    transparent     =   False,
+                    theme           =   self.getAnalysisRptMatplotConfig().theme,)
+
                 mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_line(filename=fname)
                 out.append(mgr)
 
             except Exception as exc:
-                self.logger.exception("Failed to create plot for channel %s (raw): %s", ch, exc, exc_info=True)
+                self.logger.exception("Failed to create plot for channel %s (raw): %s", channel_id, exc, exc_info=True)
 
             # --- Moving average only ---
             try:
-                fname = self.create_png_fname(tags=[str(ch), self.FNAME_TAG, "moving_average"])
-                self.logger.debug("Creating Spectrum plot: %s", fname)
+                fname = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, "moving_average"])
+                self.logger.debug("Creating OFDM Moving Average Spectrum plot: %s", fname)
 
                 cfg = PlotConfig(
-                    title   =   f"Spectrum Analyzer - Window Average n={sig.window.window_size}",
-                    x = cast(ArrayLike, sig.frequency),  xlabel = "Frequency (Hz)",
-                    y = cast(ArrayLike, sig.window.windows_average),  ylabel = "Magnitude (dBmV)",
-                    grid    =   True, legend=False, transparent=False,)
+                    title           =   f"Spectrum Analyzer - OFDM Channel ({channel_id}) Moving Average n={sig.window.window_size}",
+                    x               =   cast(ArrayLike, sig.frequencies),  
+                    y               =   cast(ArrayLike, sig.window.windows_average),
+                    xlabel          =   None,
+                    xlabel_base     =   "Frequency",
+                    x_tick_mode     =   "unit",
+                    x_unit_from     =   "hz",
+                    x_unit_out      =   "mhz",
+                    x_tick_decimals =   0,
+                    ylabel          =   "dB",
+                    grid            =   False,
+                    legend          =   False,
+                    transparent     =   False,
+                    theme           =   self.getAnalysisRptMatplotConfig().theme,)
                 
                 mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_line(filename=fname)
                 out.append(mgr)
 
             except Exception as exc:
-                self.logger.exception("Failed to create plot for channel %s (moving avg): %s", ch, exc, exc_info=True)
+                self.logger.exception("Failed to create plot for channel %s (moving avg): %s", channel_id, exc, exc_info=True)
 
         return out
 
@@ -318,9 +342,9 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
         for idx, _model in enumerate(models):
 
             sig_analysis = _model.signal_analysis
-            freq_hz: FloatSeries      = [int(f) for f in sig_analysis.frequencies]
-            mag_dbmv: FloatSeries   = list(sig_analysis.magnitudes)
-            ma_vals: FloatSeries    = list(sig_analysis.window_average.magnitudes)
+            freq_hz: FrequencySeriesHz  = [int(f) for f in sig_analysis.frequencies]
+            mag_dbmv: FloatSeries       = list(sig_analysis.magnitudes)
+            ma_vals: FloatSeries        = list(sig_analysis.window_average.magnitudes)
 
             # Anti-log in linear ratio (suitable for amplitude-like values)
             anti_log: FloatSeries = [10.0 ** (v / 20.0) for v in mag_dbmv]
@@ -332,7 +356,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
             )
 
             signal = SpectrumAnalyzerSignalProcessRptModel(
-                frequency   =   freq_hz,
+                frequencies =   freq_hz,
                 amplitude   =   mag_dbmv,
                 anti_log    =   anti_log,
                 window      =   window,

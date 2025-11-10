@@ -8,6 +8,7 @@ from typing import Optional, Callable, Union, List
 
 from pydantic import BaseModel
 from pypnm.lib.constants import INVALID_CHANNEL_ID, KHZ
+from pypnm.lib.types import ChannelId, FrequencyHz
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
 
@@ -20,16 +21,16 @@ class DocsIf31CmDsOfdmChanEntry(BaseModel):
     - All values are retrieved via symbolic OIDs (no compiled OIDs).
     - Presence of fields depends on device/MIB support.
     """
-    docsIf31CmDsOfdmChanChannelId:                Optional[int] = INVALID_CHANNEL_ID
+    docsIf31CmDsOfdmChanChannelId:                ChannelId = INVALID_CHANNEL_ID
     docsIf31CmDsOfdmChanChanIndicator:            Optional[int] = None
-    docsIf31CmDsOfdmChanSubcarrierZeroFreq:       Optional[int] = None
+    docsIf31CmDsOfdmChanSubcarrierZeroFreq:       Optional[FrequencyHz] = None
     docsIf31CmDsOfdmChanFirstActiveSubcarrierNum: Optional[int] = None
     docsIf31CmDsOfdmChanLastActiveSubcarrierNum:  Optional[int] = None
     docsIf31CmDsOfdmChanNumActiveSubcarriers:     Optional[int] = None
     docsIf31CmDsOfdmChanSubcarrierSpacing:        Optional[int] = None
     docsIf31CmDsOfdmChanCyclicPrefix:             Optional[int] = None
     docsIf31CmDsOfdmChanRollOffPeriod:            Optional[int] = None
-    docsIf31CmDsOfdmChanPlcFreq:                  Optional[int] = None
+    docsIf31CmDsOfdmChanPlcFreq:                  Optional[FrequencyHz] = None
     docsIf31CmDsOfdmChanNumPilots:                Optional[int] = None
     docsIf31CmDsOfdmChanTimeInterleaverDepth:     Optional[int] = None
     docsIf31CmDsOfdmChanPlcTotalCodewords:        Optional[int] = None
@@ -90,16 +91,16 @@ class DocsIf31CmDsOfdmChanChannelEntry(BaseModel):
                 return None
 
         entry = DocsIf31CmDsOfdmChanEntry(
-            docsIf31CmDsOfdmChanChannelId                 = await fetch("docsIf31CmDsOfdmChanChannelId", int),
+            docsIf31CmDsOfdmChanChannelId                 = await fetch("docsIf31CmDsOfdmChanChannelId", ChannelId),
             docsIf31CmDsOfdmChanChanIndicator             = await fetch("docsIf31CmDsOfdmChanChanIndicator", int),
-            docsIf31CmDsOfdmChanSubcarrierZeroFreq        = await fetch("docsIf31CmDsOfdmChanSubcarrierZeroFreq", int),
+            docsIf31CmDsOfdmChanSubcarrierZeroFreq        = await fetch("docsIf31CmDsOfdmChanSubcarrierZeroFreq", FrequencyHz),
             docsIf31CmDsOfdmChanFirstActiveSubcarrierNum  = await fetch("docsIf31CmDsOfdmChanFirstActiveSubcarrierNum", int),
             docsIf31CmDsOfdmChanLastActiveSubcarrierNum   = await fetch("docsIf31CmDsOfdmChanLastActiveSubcarrierNum", int),
             docsIf31CmDsOfdmChanNumActiveSubcarriers      = await fetch("docsIf31CmDsOfdmChanNumActiveSubcarriers", int),
             docsIf31CmDsOfdmChanSubcarrierSpacing         = await fetch("docsIf31CmDsOfdmChanSubcarrierSpacing", int) * KHZ,
             docsIf31CmDsOfdmChanCyclicPrefix              = await fetch("docsIf31CmDsOfdmChanCyclicPrefix", int),
             docsIf31CmDsOfdmChanRollOffPeriod             = await fetch("docsIf31CmDsOfdmChanRollOffPeriod", int),
-            docsIf31CmDsOfdmChanPlcFreq                   = await fetch("docsIf31CmDsOfdmChanPlcFreq", int),
+            docsIf31CmDsOfdmChanPlcFreq                   = await fetch("docsIf31CmDsOfdmChanPlcFreq", FrequencyHz),
             docsIf31CmDsOfdmChanNumPilots                 = await fetch("docsIf31CmDsOfdmChanNumPilots", int),
             docsIf31CmDsOfdmChanTimeInterleaverDepth      = await fetch("docsIf31CmDsOfdmChanTimeInterleaverDepth", int),
             docsIf31CmDsOfdmChanPlcTotalCodewords         = await fetch("docsIf31CmDsOfdmChanPlcTotalCodewords", int),

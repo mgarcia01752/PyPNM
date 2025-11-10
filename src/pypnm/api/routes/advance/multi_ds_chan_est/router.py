@@ -2,7 +2,11 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
-import io, os, zipfile, logging
+
+import io
+import os
+import zipfile
+import logging
 from typing import Union, Dict, Callable
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse

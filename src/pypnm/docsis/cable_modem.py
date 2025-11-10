@@ -52,7 +52,7 @@ class CableModem(CmSnmpOperation):
         Returns:
             str: The cable modem's IP address.
         """
-        return str(self._inet)
+        return InetAddressStr(self._inet.__str__())
 
     def is_ping_reachable(self) -> bool:
         """

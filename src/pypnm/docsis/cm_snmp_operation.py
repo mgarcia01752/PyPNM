@@ -29,6 +29,7 @@ from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayCons
 from pypnm.docsis.data_type.InterfaceStats import InterfaceStats
 from pypnm.docsis.data_type.OfdmProfiles import OfdmProfiles
 from pypnm.docsis.data_type.enums import MeasStatusType
+from pypnm.docsis.data_type.pnm.DocsIf3CmSpectrumAnalysisEntry import DocsIf3CmSpectrumAnalysisEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsHistEntry import DocsPnmCmDsHistEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmFecEntry import DocsPnmCmDsOfdmFecEntry
@@ -39,6 +40,7 @@ from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOf
 from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEntry
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.docsis.lib.pnm_bulk_data import DocsPnmBulkDataGroup, DocsPnmBulkFileEntry
+from pypnm.lib.constants import DEFAULT_SPECTRUM_ANALYZER_INDICES
 from pypnm.pnm.data_type.DocsEqualizerData import DocsEqualizerData
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
     DocsIf3CmSpectrumAnalysisCtrlCmd, SpectrumRetrievalType,)
@@ -466,7 +468,7 @@ class CmSnmpOperation:
 
         idx = if_indexes[0]
         resp = await self._snmp.get(f"ifPhysAddress.{idx}")
-        self.logger.info(f"getIfPhysAddress() -> {resp}")
+        self.logger.debug(f"getIfPhysAddress() -> {resp}")
         if not resp:
             raise RuntimeError(f"SNMP get failed for ifPhysAddress.{idx}")
 
@@ -1350,6 +1352,10 @@ class CmSnmpOperation:
 
         return stats
 
+    """
+    Measurement Entries
+    """
+
     async def getDocsPnmCmDsOfdmRxMerEntry(self) -> List[DocsPnmCmDsOfdmRxMerEntry]:
         """
         Retrieve RxMER (per-subcarrier) entries for all downstream OFDM channels.
@@ -1360,7 +1366,7 @@ class CmSnmpOperation:
             A list of Pydantic models with values already coerced to floats
             where appropriate (e.g., dB fields scaled by 1/100).
         """
-        self.logger.info('Entering into -> getDocsPnmCmDsOfdmRxMerEntry()')
+        self.logger.debug('Entering into -> getDocsPnmCmDsOfdmRxMerEntry()')
         entries: List[DocsPnmCmDsOfdmRxMerEntry] = []
         try:
             indices = await self.getDocsIf31CmDsOfdmChannelIdIndex()
@@ -1371,12 +1377,12 @@ class CmSnmpOperation:
 
             # De-dupe and sort for predictable iteration (optional but nice for logs)
             unique_indices = sorted(set(int(i) for i in indices))
-            self.logger.info(f"RxMER fetch: indices={unique_indices}")
+            self.logger.debug(f"RxMER fetch: indices={unique_indices}")
 
             entries = await DocsPnmCmDsOfdmRxMerEntry.get(snmp=self._snmp, indices=unique_indices)
 
             # Helpful summary log—count only; detailed per-field logs happen in the entry fetcher
-            self.logger.info("RxMER fetch complete: %d entries", len(entries))
+            self.logger.debug("RxMER fetch complete: %d entries", len(entries))
             return entries
 
         except Exception as e:
@@ -1515,7 +1521,7 @@ class CmSnmpOperation:
                 self.logger.error("No docsCableMaclayer indices found.")
                 return entries
             
-            self.logger.info(f'Found docsCableDownstream Indices: {indices}')
+            self.logger.debug(f'Found docsCableDownstream Indices: {indices}')
 
             entries = await DocsPnmCmDsHistEntry.get(snmp=self._snmp, indices=indices)
             self.logger.debug(f'Number of DocsPnmCmDsHistEntry Found: {len(entries)}')
@@ -1562,7 +1568,7 @@ class CmSnmpOperation:
         -------
         List[DocsPnmCmDsOfdmModProfEntry].
         """
-        self.logger.info('Entering into -> getDocsPnmCmDsOfdmModProfEntry()')
+        self.logger.debug('Entering into -> getDocsPnmCmDsOfdmModProfEntry()')
         entries: List[DocsPnmCmDsOfdmModProfEntry] = []
         try:
             indices = await self.getDocsIf31CmDsOfdmChannelIdIndex()
@@ -1573,18 +1579,46 @@ class CmSnmpOperation:
 
             # De-dupe and sort for predictable iteration (optional but nice for logs)
             unique_indices = sorted(set(int(i) for i in indices))
-            self.logger.info(f"ModProf fetch: indices={unique_indices}")
+            self.logger.debug(f"ModProf fetch: indices={unique_indices}")
 
             entries = await DocsPnmCmDsOfdmModProfEntry.get(snmp=self._snmp, indices=unique_indices)
 
             # Helpful summary log—count only; detailed per-field logs happen in the entry fetcher
-            self.logger.info("ModProf fetch complete: %d entries", len(entries))
+            self.logger.debug("ModProf fetch complete: %d entries", len(entries))
             return entries
 
         except Exception as e:
             # Keep the exception in logs for debugging (stacktrace included)
             self.logger.exception("Failed to retrieve DocsPnmCmDsOfdmModProfEntry entries: %s", e)
             return entries
+
+    async def getDocsIf3CmSpectrumAnalysisEntry(self, indices: List[int] = DEFAULT_SPECTRUM_ANALYZER_INDICES) -> List[DocsIf3CmSpectrumAnalysisEntry]:
+        """
+        Retrieves DOCSIS 3.0 Spectrum Analysis entries
+        Args:
+            indices: List[int] = DEFAULT_SPECTRUM_ANALYZER_INDICES
+                This method queries the SNMP agent to collect spectrum analysis data for each specified index.
+                Each returned entry corresponds to a spectrum analyzer's configuration and status.
+                Current DOCSIS 3.0 MIB only defines index 0 for downstream spectrum analysis.
+                Leaving for possible future expansion.
+
+        """
+        entries: List[DocsIf3CmSpectrumAnalysisEntry] = []
+
+        try:
+            if not indices:
+                self.logger.error("No docsCableMaclayer indices found.")
+                return entries
+            
+            self.logger.debug(f'Found docsCableDownstream Indices: {indices}')
+
+            entries = await DocsIf3CmSpectrumAnalysisEntry.get(snmp=self._snmp, indices=indices)
+            self.logger.debug(f'Number of DocsIf3CmSpectrumAnalysisEntry Found: {len(entries)}')
+
+        except Exception as e:
+            self.logger.exception(f"Failed to retrieve DocsIf3CmSpectrumAnalysisEntry entries: {e}")
+
+        return entries
 
     async def getOfdmProfiles(self) -> List[Tuple[int, OfdmProfiles]]:
         """

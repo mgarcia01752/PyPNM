@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from enum import Enum
 import json
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 
 class MessageResponseType(Enum):
@@ -90,12 +90,12 @@ class MessageResponse:
         message = payload_element.get("message", None)
         return status, message_type, message
 
-    def payload_to_dict(self, key: str = "data") -> Dict[Any, Any]:
+    def payload_to_dict(self, key: Union[int, str] = "data") -> Dict[Union[int,str], Any]:
         """
         Wraps the internal payload in a dictionary under the specified key.
 
         Args:
-            key (str): The key under which the payload will be stored. Defaults to "data".
+            key (int | str): The key under which the payload will be stored. Defaults to "data".
 
         Returns:
             Dict[Any, Any]: A dictionary containing the payload under the given key.

@@ -7,7 +7,7 @@ import logging
 import numpy as np
 
 from enum import Enum
-from typing import List, Dict, Any, Mapping, Sequence, Union, cast
+from typing import List, Dict, Any, Mapping, Optional, Sequence, Union, cast
 
 from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.echo_detector import EchoDetector, EchoDetectorReport
 from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.type import EchoDetectorType
@@ -15,6 +15,7 @@ from pypnm.api.routes.common.classes.analysis.model.chan_est_schema import ChanE
 from pypnm.api.routes.common.classes.analysis.model.mod_profile_schema import (
     CarrierItemModel, CarrierValuesListModel, CarrierValuesModel, CarrierValuesSplitModel, 
     DsModulationProfileAnalysisModel, ProfileAnalysisEntryModel)
+from pypnm.api.routes.common.classes.analysis.model.process import AnalysisProcessParameters
 from pypnm.api.routes.common.classes.analysis.model.schema import (
     BaseAnalysisModel, ConstellationDisplayAnalysisModel, DsHistogramAnalysisModel, DsRxMerAnalysisModel, EchoDatasetModel, 
     FecSummaryCodeWordModel, GrpDelayStatsModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel, 
@@ -25,7 +26,8 @@ from pypnm.api.routes.common.extended.common_messaging_service import MessageRes
 from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpecAnCapturePara
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor, Utils
-from pypnm.lib.constants import CABLE_VF, INVALID_CHANNEL_ID, INVALID_PROFILE_ID, INVALID_SCHEMA_TYPE, INVALID_START_VALUE, SPEED_OF_LIGHT, CableType
+from pypnm.lib.constants import (CABLE_VF, INVALID_CHANNEL_ID, INVALID_PROFILE_ID, 
+                                 INVALID_SCHEMA_TYPE, INVALID_START_VALUE, SPEED_OF_LIGHT, CableType)
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.log_files import LogFile
 from pypnm.lib.mac_address import MacAddress
@@ -35,7 +37,8 @@ from pypnm.lib.signal_processing.averager import MovingAverage
 from pypnm.lib.signal_processing.complex_array_ops import ComplexArrayOps
 from pypnm.lib.signal_processing.group_delay import GroupDelay
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
-from pypnm.lib.types import ArrayLike, ChannelId, ComplexArray, FloatSeries, FrequencyHz, FrequencySeriesHz, MacAddressStr
+from pypnm.lib.types import (ArrayLike, ChannelId, ComplexArray, FloatSeries, FrequencyHz, 
+                             FrequencySeriesHz, MacAddressStr, ProfileId)
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import WindowFunction
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
@@ -83,6 +86,8 @@ class AnalysisType(Enum):
     """
     BASIC               = 0
 
+
+
 class Analysis:
     """Core analysis runner.
 
@@ -107,15 +112,22 @@ class Analysis:
 
     def __init__(self, analysis_type: AnalysisType, 
                  msg_response: MessageResponse, 
-                 cable_type: CableType = CableType.RG6) -> None:
+                 cable_type: CableType = CableType.RG6,
+                 skip_automatic_process: bool = False) -> None:
+        
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self.analysis_type: "AnalysisType"      = analysis_type
         self.msg_response: "MessageResponse"    = msg_response
         self._cable_type: CableType             = cable_type
         payload: Dict[str, Any]                 = msg_response.payload_to_dict() or {}
         _raw_data                               = payload.get("data", [])
+        
         self._result_model:List[BaseAnalysisModel] = []
         self._processed_pnm_type:List[PnmFileType] = []
+        self._skip_automatic_process = skip_automatic_process
+
+        # Defining DataTypes
+        self._analysis_para:AnalysisProcessParameters = AnalysisProcessParameters()
 
         if isinstance(_raw_data, Mapping):
             self.measurement_data: List[Dict[str, Any]] = [dict(_raw_data)]
@@ -129,9 +141,14 @@ class Analysis:
         if self.logger.isEnabledFor(logging.DEBUG):
             self.save_message_response(self.msg_response)
 
-        self._process()
+        if not skip_automatic_process:
+            self._process(self._analysis_para)
 
-    def _process(self) -> None:
+    def process(self, analysis_para: AnalysisProcessParameters) -> None:
+        self._analysis_para = analysis_para
+        self._process(analysis_para)
+
+    def _process(self, analysis_para: AnalysisProcessParameters) -> None:
         """Iterate and dispatch analysis per measurement.
 
         For each normalized measurement, this method assembles the combined
@@ -162,13 +179,13 @@ class Analysis:
 
             if self.analysis_type == AnalysisType.BASIC:
                 self.logger.debug(f'Performing Basic Analysis on PNM: {pnm_file_type} on Channel: {channel_id}')
-                self._basic_analysis(pnm_file_type, measurement)
+                self._basic_analysis(pnm_file_type, measurement, analysis_para)
             
             else:
                 self.logger.error(f'Unknown AnalysisType: {self.analysis_type}')
                 raise
 
-    def _basic_analysis(self, pnm_file_type: str, measurement):
+    def _basic_analysis(self, pnm_file_type: str, measurement, analysis_para: AnalysisProcessParameters):
         """
         Route to the appropriate BASIC analysis handler.
 
@@ -243,7 +260,7 @@ class Analysis:
 
         elif pnm_file_type == PnmFileType.SPECTRUM_ANALYSIS.value:
             self.logger.debug("Processing: SPECTRUM_ANALYSIS")
-            model = self.basic_analysis_spectrum_analyzer(measurement)
+            model = self.basic_analysis_spectrum_analyzer(measurement, analysis_para)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
             self.__add_pnmType(PnmFileType.SPECTRUM_ANALYSIS)
@@ -340,6 +357,8 @@ class Analysis:
     def __add_pnmType(self, pft:PnmFileType):
         self._processed_pnm_type.append(pft)
 
+    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
     @classmethod
     def basic_analysis_rxmer(cls, measurement: Dict[str, Any]) -> DsRxMerAnalysisModel:
         """
@@ -377,10 +396,10 @@ class Analysis:
         """
         out: DsRxMerAnalysisModel
 
-        channel_id                          = measurement.get("channel_id", INVALID_CHANNEL_ID)
+        channel_id:ChannelId                = measurement.get("channel_id", INVALID_CHANNEL_ID)
         pnm_header                          = measurement.get("pnm_header",{})
         device_details                      = measurement.get("device_details",{})
-        mac_address:str                     = measurement.get("mac_address",MacAddress.null()) 
+        mac_address:MacAddressStr           = measurement.get("mac_address",MacAddress.null()) 
         subcarrier_spacing:int              = measurement.get("subcarrier_spacing",-1)           
         first_active_subcarrier_index:int   = measurement.get("first_active_subcarrier_index",-1)
         subcarrier_zero_frequency:int       = measurement.get("subcarrier_zero_frequency", -1)
@@ -449,6 +468,165 @@ class Analysis:
         )
 
         return out
+
+    @classmethod
+    def basic_analysis_ds_chan_est(cls, measurement: Dict[str, Any], cable_type: CableType = CableType.RG6) -> DsChannelEstAnalysisModel:
+        """
+        Perform downstream channel-estimation analysis.
+
+        Computes:
+        - Per-subcarrier frequency axis (Hz)
+        - Magnitude sequence (dB) from complex coefficients
+        - Group delay (µs) from phase slope across subcarriers
+        - Echo detection via IFFT of H(f) → h(t) with conservative thresholds
+
+        Expected Keys (subset) in `measurement`
+        ---------------------------------------
+        channel_id : int
+            Downstream channel ID.
+        subcarrier_spacing : int
+            Δf in Hz between subcarriers.
+        first_active_subcarrier_index : int
+            Index of the first active subcarrier relative to subcarrier 0.
+        subcarrier_zero_frequency : int
+            Frequency (Hz) of subcarrier 0.
+        occupied_channel_bandwidth : int
+            Occupied bandwidth for metadata.
+        values : ComplexArray
+            List of complex-like samples for H(f). [(re, im), ...] or [complex, ...].
+
+        Returns
+        -------
+        DsChannelEstAnalysisModel
+            Typed model with carrier values, signal statistics, and echo results.
+        """
+        log = logging.getLogger(f"{cls.__name__}")
+
+        channel_id: ChannelId                   = measurement.get("channel_id",                    INVALID_CHANNEL_ID)
+        subcarrier_spacing: int                 = measurement.get("subcarrier_spacing",            INVALID_START_VALUE)
+        first_active_subcarrier_index: int      = measurement.get("first_active_subcarrier_index", INVALID_START_VALUE)
+        subcarrier_zero_frequency: FrequencyHz  = measurement.get("subcarrier_zero_frequency",     INVALID_START_VALUE)
+        occupied_channel_bandwidth: int         = measurement.get("occupied_channel_bandwidth",    INVALID_START_VALUE)
+
+        if (first_active_subcarrier_index < 0) or (subcarrier_zero_frequency < 0) or (subcarrier_spacing <= 0):
+            raise ValueError(
+                f"Active index: {first_active_subcarrier_index} or "
+                f"zero frequency: {subcarrier_zero_frequency} or "
+                f"spacing: {subcarrier_spacing} must be non-negative"
+            )
+
+        values: ComplexArray = measurement.get("values", [])
+        if not values:
+            raise ValueError("No complex channel estimation values provided in measurement.")
+
+        # Frequency axis
+        start_freq: FrequencyHz    = cast(FrequencyHz, (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency)
+        freqs: FrequencySeriesHz   = [start_freq + (i * subcarrier_spacing) for i in range(len(values))]
+
+        # Group delay and magnitudes
+        gd = GroupDelay.from_channel_estimate(Hhat=values, df_hz=subcarrier_spacing, f0_hz=start_freq)
+        gd_results = gd.to_result()
+
+        cao = ComplexArrayOps(values)
+        magnitudes_db: FloatSeries = cao.to_list(cao.power_db())
+        signal_stats_model = SignalStatistics(magnitudes_db).compute()
+        complex_arr = np.asarray(values, dtype=complex)
+
+        group_delay_stats: GrpDelayStatsModel = GrpDelayStatsModel(
+            group_delay_unit = "microsecond",
+            magnitude        = ComplexArrayOps.to_list(gd_results.group_delay_us),
+        )
+
+        # ── IFFT Echo Detection (tightened window & stricter floor) ──
+        N = len(values)
+        n_fft = 1 << (N - 1).bit_length()
+        if n_fft < 1024:
+            n_fft = 1024
+
+        det = EchoDetector(
+            freq_data             = values,
+            subcarrier_spacing_hz = float(subcarrier_spacing),
+            n_fft                 = n_fft,
+            cable_type            = cable_type.name,
+            channel_id            = ChannelId(channel_id),
+        )
+
+        fs = float(N) * float(subcarrier_spacing)
+        # limit echoes to ~3.5 µs ⇒ ≈ 457 m one-way @ RG6 VF=0.87
+        max_delay_s = 3.5e-6
+
+        # log the window in both bins and meters so we can sanity-check field runs
+        v = SPEED_OF_LIGHT * CABLE_VF.get(cable_type.name, 0.87)
+        max_dist_m = 0.5 * v * max_delay_s
+        i_stop = int(max_delay_s * fs)
+        log.info(
+            "EchoDetector window: fs=%.3f Hz, n_fft=%d, i_stop=%d bins, max_delay=%.2fus, max_dist≈%.1f m",
+            fs, n_fft, i_stop, max_delay_s * 1e6, max_dist_m
+        )
+
+        det = EchoDetector(
+            freq_data               = values,
+            subcarrier_spacing_hz   = float(subcarrier_spacing),
+            n_fft                   = 4096,
+            cable_type              = cable_type.name,
+            channel_id              = channel_id,
+        )
+
+        # Parameters you pass to the detector (keep these as you already set them)
+        max_delay_s_used = 3.5e-6  # ← use the same value you log/print; adjust if you changed it
+        echo_report: EchoDetectorReport = det.multi_echo(
+            threshold_mode        = "db_down",
+            threshold_db_down     = 60.0,
+            normalize_power       = True,
+            guard_bins            = 16,
+            min_separation_s      = 8.0 / det.fs,
+            max_delay_s           = max_delay_s_used,
+            max_peaks             = 3,
+            include_time_response = False,
+            direct_at_zero        = True,
+            window                = "hann",
+        )
+
+        # ── INSERT TRIM HERE ───────────────────────────────────────────────────────
+        # Enforce hard edge trim near the stop index to avoid edge/alias artifacts.
+        # Compute i_stop the same way you printed/logged it:
+        i_stop     = int(np.ceil(max_delay_s_used * det.fs))
+        edge_guard = 8
+        if echo_report.echoes:
+            echo_report.echoes = [
+                e for e in echo_report.echoes
+                if (e.bin_index < (i_stop - edge_guard))
+            ]
+        # ───────────────────────────────────────────────────────────────────────────
+
+        echo_rpt = EchoDatasetModel(type=EchoDetectorType.IFFT, report=echo_report)
+
+
+        carrier_values: ChanEstCarrierModel = ChanEstCarrierModel(
+            carrier_count               = len(freqs),
+            frequency_unit              = "Hz",
+            frequency                   = freqs,
+            complex                     = values,
+            complex_dimension           = int(complex_arr.ndim),
+            magnitudes                  = magnitudes_db,
+            group_delay                 = group_delay_stats,
+            occupied_channel_bandwidth  = occupied_channel_bandwidth,
+        )
+
+        result_model: DsChannelEstAnalysisModel = DsChannelEstAnalysisModel(
+            device_details                  = measurement.get("device_details", {}),
+            pnm_header                      = measurement.get("pnm_header", {}),
+            mac_address                     = measurement.get("mac_address", ""),
+            channel_id                      = ChannelId(measurement.get("channel_id", INVALID_START_VALUE)),
+            subcarrier_spacing              = subcarrier_spacing,
+            first_active_subcarrier_index   = first_active_subcarrier_index,
+            subcarrier_zero_frequency       = subcarrier_zero_frequency,
+            carrier_values                  = carrier_values,
+            signal_statistics               = signal_stats_model,
+            echo                            = echo_rpt,
+        )
+
+        return result_model
 
     @classmethod
     def basic_analysis_ds_modulation_profile(cls, measurement: Mapping[str, Any], split_carriers: bool = True) -> DsModulationProfileAnalysisModel:
@@ -804,7 +982,7 @@ class Analysis:
 
         for idx, prof in enumerate(prof_iter):
             # Profile id + declared sets field name differs per shape.
-            profile_id = int(prof.get("profile_id", prof.get("profile", INVALID_CHANNEL_ID)))
+            profile_id = ProfileId(prof.get("profile_id", prof.get("profile", INVALID_CHANNEL_ID)))
             declared_sets = int(prof.get("number_of_sets", 0))
 
             # Choose inner block by shape:
@@ -879,12 +1057,12 @@ class Analysis:
             device_details = measurement.get("device_details", {}),
             pnm_header     = measurement.get("pnm_header", {}),
             mac_address    = measurement.get("mac_address", MacAddress.null()),
-            channel_id     = int(measurement.get("channel_id", INVALID_CHANNEL_ID)),
+            channel_id     = ChannelId(measurement.get("channel_id", INVALID_CHANNEL_ID)),
             profiles       = out_profiles,
         )
 
     @classmethod
-    def basic_analysis_spectrum_analyzer(cls, measurement: Dict[str, Any]) -> SpectrumAnalyzerAnalysisModel:
+    def basic_analysis_spectrum_analyzer(cls, measurement: Dict[str, Any], analysis_parameters: Optional[AnalysisProcessParameters]) -> SpectrumAnalyzerAnalysisModel:
         """
         Build SpectrumAnalyzerAnalysisModel from converted PNM measurement:
         """
@@ -930,11 +1108,11 @@ class Analysis:
             # start at center - span/2, align to bin center with +bin_bw/2
             seg0_start = first_seg_cf - (seg_span_hz // 2) + (bin_bw // 2)
 
-            freqs: List[int] = []
+            freqs: FrequencySeriesHz = []
             for s_idx in range(num_segments):
                 start_hz = seg0_start + s_idx * seg_step_hz
                 freqs.extend(int(start_hz + i * bin_bw) for i in range(bins_per_seg))
-            frequencies = cast(FloatSeries, freqs)
+            frequencies = freqs
 
         # --- align lengths (trim to shortest) ---
         if frequencies and magnitudes and len(frequencies) != len(magnitudes):
@@ -945,7 +1123,12 @@ class Analysis:
             frequencies, magnitudes = [], []
 
         # --- windowed average (same length) ---
-        window_points  = int(measurement.get("window_average_points", DEFAULT_POINT_AVG))
+        # TODO: Need to clean this up, need to move the DEFAULT to the Model in a better way
+        if analysis_parameters:
+            window_points = analysis_parameters.moving_average.points
+        else:
+            window_points  = DEFAULT_POINT_AVG
+        
         try:
             ma = MovingAverage(max(1, window_points), mode="reflect")
             smoothed = ma.apply(magnitudes) if magnitudes else []
@@ -966,9 +1149,9 @@ class Analysis:
         )
 
         capture_parameters: SpecAnCapturePara = SpecAnCapturePara(
-            first_segment_center_freq = first_seg_cf,
-            last_segment_center_freq  = last_seg_cf,
-            segment_freq_span         = seg_span_hz,
+            first_segment_center_freq = FrequencyHz(first_seg_cf),
+            last_segment_center_freq  = FrequencyHz(last_seg_cf),
+            segment_freq_span         = FrequencyHz(seg_span_hz),
             num_bins_per_segment      = bins_per_seg,
             noise_bw                  = noise_bw_khz,
             window_function           = wf_enum,
@@ -978,12 +1161,12 @@ class Analysis:
             device_details     = measurement.get("device_details", SystemDescriptor.empty()),
             pnm_header         = measurement.get("pnm_header", {}),
             mac_address        = measurement.get("mac_address", MacAddress.null()),
-            channel_id         = int(measurement.get("channel_id", 0)),
+            channel_id         = ChannelId(measurement.get("channel_id", 0)),
             capture_parameters = capture_parameters,
             signal_analysis    = results,
         )
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 
     @classmethod
     def basic_analysis_ds_modulation_profile_from_model(cls, model: CmDsOfdmModulationProfileModel, 
@@ -1005,8 +1188,8 @@ class Analysis:
         result = DsModulationProfileAnalysisModel(
             device_details      = {},
             pnm_header          = model.pnm_header.model_dump() if hasattr(model.pnm_header, "model_dump") else {},
-            mac_address         = str(model.mac_address),
-            channel_id          = int(model.channel_id),
+            mac_address         = model.mac_address,
+            channel_id          = model.channel_id,
             frequency_unit      = "Hz",
             shannon_min_unit    = "dB",
             profiles            = [],
@@ -1086,88 +1269,6 @@ class Analysis:
 
         return result
     
-    @classmethod
-    def basic_analysis_ds_chan_est_from_model_DEPRECATE(cls, model: CmDsOfdmChanEstimateCoefModel) -> DsChannelEstAnalysisModel:
-        """
-        Model-based variant of downstream channel estimation analysis.
-
-        Parameters
-        ----------
-        model : CmDsOfdmChanEstimateCoefModel
-            Parsed coefficients + metadata for DS OFDM channel estimation.
-
-        Returns
-        -------
-        DsChannelEstAnalysisModel
-            Typed analysis result identical in shape to the dict-based version.
-
-        Raises
-        ------
-        ValueError
-            If required parameters are invalid or values are empty.
-        """
-        subcarrier_spacing: int                 = int(getattr(model, "subcarrier_spacing", INVALID_START_VALUE))
-        first_active_subcarrier_index: int      = int(getattr(model, "first_active_subcarrier_index", INVALID_START_VALUE))
-        subcarrier_zero_frequency: FrequencyHz  = cast(FrequencyHz, int(getattr(model, "subcarrier_zero_frequency", INVALID_START_VALUE)))
-        occupied_channel_bandwidth: int         = int(getattr(model, "occupied_channel_bandwidth", 0))
-
-        if (first_active_subcarrier_index < 0) or (subcarrier_zero_frequency < 0) or (subcarrier_spacing <= 0):
-            raise ValueError(
-                f"Active index: {first_active_subcarrier_index} or "
-                f"zero frequency: {subcarrier_zero_frequency} or "
-                f"spacing: {subcarrier_spacing} must be non-negative"
-            )
-
-        values: ComplexArray = cast(ComplexArray, getattr(model, "values", []))
-        if not values:
-            raise ValueError("No complex channel estimation values provided in model.")
-
-        start_freq: int  = (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency
-        freqs: List[int] = [start_freq + (i * subcarrier_spacing) for i in range(len(values))]
-
-        gd = GroupDelay.from_channel_estimate(Hhat=values, df_hz=subcarrier_spacing, f0_hz=start_freq)
-        gd_results = gd.to_result()
-
-        # --- magnitudes (power in dB from complex coefficients) ---
-        cao = ComplexArrayOps(values)
-        magnitudes_db: FloatSeries = cao.to_list(cao.power_db())
-
-        # --- signal statistics on magnitudes ---
-        signal_stats_model = SignalStatistics(magnitudes_db).compute()
-
-        # --- complex dimensionality (metadata only) ---
-        complex_ndim: int = int(np.asarray(values, dtype=complex).ndim)
-
-        # --- nested models ---
-        group_delay_stats: GrpDelayStatsModel = GrpDelayStatsModel(
-            group_delay_unit    =   "microsecond",
-            magnitude           =   ComplexArrayOps.to_list(gd_results.group_delay_us),
-        )
-
-        carrier_values: ChanEstCarrierModel = ChanEstCarrierModel(
-            carrier_count               =   len(freqs),
-            frequency_unit              =   "Hz",
-            frequency                   =   freqs,
-            complex                     =   values,
-            complex_dimension           =   complex_ndim,
-            magnitudes                  =   magnitudes_db,
-            group_delay                 =   group_delay_stats,
-            occupied_channel_bandwidth  =   occupied_channel_bandwidth,)
-
-        # --- assemble top-level result ---
-        result_model: DsChannelEstAnalysisModel = DsChannelEstAnalysisModel(
-            device_details                  =   getattr(model, "device_details", {}),  # model may not carry device details
-            pnm_header                      =   model.pnm_header.model_dump() if hasattr(model.pnm_header, "model_dump") else {},
-            mac_address                     =   cast(MacAddressStr, getattr(model, "mac_address", "")),
-            channel_id                      =   cast(ChannelId, int(getattr(model, "channel_id", INVALID_START_VALUE))),
-            subcarrier_spacing              =   subcarrier_spacing,
-            first_active_subcarrier_index   =   first_active_subcarrier_index,
-            subcarrier_zero_frequency       =   subcarrier_zero_frequency,
-            carrier_values                  =   carrier_values,
-            signal_statistics               =   signal_stats_model,)
-
-        return result_model
-
     @classmethod
     def basic_analysis_ds_chan_est_from_model(cls, model: CmDsOfdmChanEstimateCoefModel) -> DsChannelEstAnalysisModel:
         """
@@ -1264,11 +1365,7 @@ class Analysis:
         return result_model
 
     @classmethod
-    def basic_analysis_echo_detection_ifft(
-        cls,
-        model: CmDsOfdmChanEstimateCoefModel,
-        cable_type: CableType = CableType.RG6,
-    ) -> EchoDetectorReport:
+    def basic_analysis_echo_detection_ifft(cls, model: CmDsOfdmChanEstimateCoefModel, cable_type: CableType = CableType.RG6,) -> EchoDetectorReport:
         """
         Run FFT/IFFT-based echo detection from a single Channel-Estimation snapshot.
 
@@ -1330,7 +1427,7 @@ class Analysis:
             subcarrier_spacing_hz = df_hz,
             n_fft                 = n_fft,
             cable_type            = cable_type.name,
-            channel_id            = int(channel_id),
+            channel_id            = ChannelId(channel_id),
         )
 
         log.info(
@@ -1355,165 +1452,3 @@ class Analysis:
 
         return echo_report
 
-    @classmethod
-    def basic_analysis_ds_chan_est(
-        cls,
-        measurement: Dict[str, Any],
-        cable_type: CableType = CableType.RG6
-    ) -> DsChannelEstAnalysisModel:
-        """
-        Perform downstream channel-estimation analysis.
-
-        Computes:
-        - Per-subcarrier frequency axis (Hz)
-        - Magnitude sequence (dB) from complex coefficients
-        - Group delay (µs) from phase slope across subcarriers
-        - Echo detection via IFFT of H(f) → h(t) with conservative thresholds
-
-        Expected Keys (subset) in `measurement`
-        ---------------------------------------
-        channel_id : int
-            Downstream channel ID.
-        subcarrier_spacing : int
-            Δf in Hz between subcarriers.
-        first_active_subcarrier_index : int
-            Index of the first active subcarrier relative to subcarrier 0.
-        subcarrier_zero_frequency : int
-            Frequency (Hz) of subcarrier 0.
-        occupied_channel_bandwidth : int
-            Occupied bandwidth for metadata.
-        values : ComplexArray
-            List of complex-like samples for H(f). [(re, im), ...] or [complex, ...].
-
-        Returns
-        -------
-        DsChannelEstAnalysisModel
-            Typed model with carrier values, signal statistics, and echo results.
-        """
-        log = logging.getLogger(f"{cls.__name__}")
-
-        channel_id: ChannelId                   = measurement.get("channel_id",                    INVALID_CHANNEL_ID)
-        subcarrier_spacing: int                 = measurement.get("subcarrier_spacing",            INVALID_START_VALUE)
-        first_active_subcarrier_index: int      = measurement.get("first_active_subcarrier_index", INVALID_START_VALUE)
-        subcarrier_zero_frequency: FrequencyHz  = measurement.get("subcarrier_zero_frequency",     INVALID_START_VALUE)
-        occupied_channel_bandwidth: int         = measurement.get("occupied_channel_bandwidth",    INVALID_START_VALUE)
-
-        if (first_active_subcarrier_index < 0) or (subcarrier_zero_frequency < 0) or (subcarrier_spacing <= 0):
-            raise ValueError(
-                f"Active index: {first_active_subcarrier_index} or "
-                f"zero frequency: {subcarrier_zero_frequency} or "
-                f"spacing: {subcarrier_spacing} must be non-negative"
-            )
-
-        values: ComplexArray = measurement.get("values", [])
-        if not values:
-            raise ValueError("No complex channel estimation values provided in measurement.")
-
-        # Frequency axis
-        start_freq: FrequencyHz    = cast(FrequencyHz, (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency)
-        freqs: FrequencySeriesHz   = [start_freq + (i * subcarrier_spacing) for i in range(len(values))]
-
-        # Group delay and magnitudes
-        gd = GroupDelay.from_channel_estimate(Hhat=values, df_hz=subcarrier_spacing, f0_hz=start_freq)
-        gd_results = gd.to_result()
-
-        cao = ComplexArrayOps(values)
-        magnitudes_db: FloatSeries = cao.to_list(cao.power_db())
-        signal_stats_model = SignalStatistics(magnitudes_db).compute()
-        complex_arr = np.asarray(values, dtype=complex)
-
-        group_delay_stats: GrpDelayStatsModel = GrpDelayStatsModel(
-            group_delay_unit = "microsecond",
-            magnitude        = ComplexArrayOps.to_list(gd_results.group_delay_us),
-        )
-
-        # ── IFFT Echo Detection (tightened window & stricter floor) ──
-        N = len(values)
-        n_fft = 1 << (N - 1).bit_length()
-        if n_fft < 1024:
-            n_fft = 1024
-
-        det = EchoDetector(
-            freq_data             = values,
-            subcarrier_spacing_hz = float(subcarrier_spacing),
-            n_fft                 = n_fft,
-            cable_type            = cable_type.name,
-            channel_id            = ChannelId(channel_id),
-        )
-
-        fs = float(N) * float(subcarrier_spacing)
-        # limit echoes to ~3.5 µs ⇒ ≈ 457 m one-way @ RG6 VF=0.87
-        max_delay_s = 3.5e-6
-
-        # log the window in both bins and meters so we can sanity-check field runs
-        v = SPEED_OF_LIGHT * CABLE_VF.get(cable_type.name, 0.87)
-        max_dist_m = 0.5 * v * max_delay_s
-        i_stop = int(max_delay_s * fs)
-        log.info(
-            "EchoDetector window: fs=%.3f Hz, n_fft=%d, i_stop=%d bins, max_delay=%.2fus, max_dist≈%.1f m",
-            fs, n_fft, i_stop, max_delay_s * 1e6, max_dist_m
-        )
-
-        det = EchoDetector(
-            freq_data               = values,
-            subcarrier_spacing_hz   = float(subcarrier_spacing),
-            n_fft                   = 4096,
-            cable_type              = cable_type.name,
-            channel_id              = channel_id,
-        )
-
-        # Parameters you pass to the detector (keep these as you already set them)
-        max_delay_s_used = 3.5e-6  # ← use the same value you log/print; adjust if you changed it
-        echo_report: EchoDetectorReport = det.multi_echo(
-            threshold_mode        = "db_down",
-            threshold_db_down     = 60.0,
-            normalize_power       = True,
-            guard_bins            = 16,
-            min_separation_s      = 8.0 / det.fs,
-            max_delay_s           = max_delay_s_used,
-            max_peaks             = 3,
-            include_time_response = False,
-            direct_at_zero        = True,
-            window                = "hann",
-        )
-
-        # ── INSERT TRIM HERE ───────────────────────────────────────────────────────
-        # Enforce hard edge trim near the stop index to avoid edge/alias artifacts.
-        # Compute i_stop the same way you printed/logged it:
-        i_stop     = int(np.ceil(max_delay_s_used * det.fs))
-        edge_guard = 8
-        if echo_report.echoes:
-            echo_report.echoes = [
-                e for e in echo_report.echoes
-                if (e.bin_index < (i_stop - edge_guard))
-            ]
-        # ───────────────────────────────────────────────────────────────────────────
-
-        echo_rpt = EchoDatasetModel(type=EchoDetectorType.IFFT, report=echo_report)
-
-
-        carrier_values: ChanEstCarrierModel = ChanEstCarrierModel(
-            carrier_count               = len(freqs),
-            frequency_unit              = "Hz",
-            frequency                   = freqs,
-            complex                     = values,
-            complex_dimension           = int(complex_arr.ndim),
-            magnitudes                  = magnitudes_db,
-            group_delay                 = group_delay_stats,
-            occupied_channel_bandwidth  = occupied_channel_bandwidth,
-        )
-
-        result_model: DsChannelEstAnalysisModel = DsChannelEstAnalysisModel(
-            device_details                  = measurement.get("device_details", {}),
-            pnm_header                      = measurement.get("pnm_header", {}),
-            mac_address                     = measurement.get("mac_address", ""),
-            channel_id                      = ChannelId(measurement.get("channel_id", INVALID_START_VALUE)),
-            subcarrier_spacing              = subcarrier_spacing,
-            first_active_subcarrier_index   = first_active_subcarrier_index,
-            subcarrier_zero_frequency       = subcarrier_zero_frequency,
-            carrier_values                  = carrier_values,
-            signal_statistics               = signal_stats_model,
-            echo                            = echo_rpt,
-        )
-
-        return result_model

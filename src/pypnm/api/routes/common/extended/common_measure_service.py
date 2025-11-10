@@ -1,8 +1,7 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+from __future__ import annotations
 
 import asyncio
 from enum import Enum, auto
@@ -27,9 +26,9 @@ from pypnm.api.routes.common.extended.common_messaging_service import CommonMess
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.docsis.cm_snmp_operation import (
-    DocsPnmBulkFileUploadStatus, DocsPnmCmCtlStatus, FecSummaryType)
+from pypnm.docsis.cm_snmp_operation import (DocsPnmBulkFileUploadStatus, DocsPnmCmCtlStatus, FecSummaryType)
 from pypnm.docsis.data_type.enums import MeasStatusType
+from pypnm.docsis.data_type.pnm.DocsIf3CmSpectrumAnalysisEntry import DocsIf3CmSpectrumAnalysisEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsHistEntry import DocsPnmCmDsHistEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmFecEntry import DocsPnmCmDsOfdmFecEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmModProfEntry import DocsPnmCmDsOfdmModProfEntry
@@ -61,7 +60,9 @@ MeasurementEntry: TypeAlias = Union[
     DocsPnmCmDsHistEntry,
     DocsPnmCmDsOfdmFecEntry,
     DocsPnmCmDsOfdmModProfEntry,
+    DocsIf3CmSpectrumAnalysisEntry,
 ]
+
 class CommonMeasureService(CommonMessagingService):
     """
     Base service class for executing common Proactive Network Maintenance (PNM) measurement tests.
@@ -132,6 +133,12 @@ class CommonMeasureService(CommonMessagingService):
         self.interface_parameters = self.extra_options.get("interface_parameters", None)
 
     def setSpectrumCaptureParameters(self, capture_parameter:SpecAnCapturePara):
+        """
+        Set the spectrum capture parameters for the measurement.
+
+        Args:
+            capture_parameter (SpecAnCapturePara): The spectrum capture parameters.
+        """
         self.capture_parameter = capture_parameter
 
     async def set_and_go(self, interface_parameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = None, 
@@ -302,13 +309,17 @@ class CommonMeasureService(CommonMessagingService):
         List[MeasurementEntry]
             A (possibly empty) list of model instances corresponding to the active
             test type:
-            - DS_OFDM_CHAN_EST_COEF       → List[DocsPnmCmOfdmChanEstCoefEntry]
-            - DS_CONSTELLATION_DISP       → List[DocsPnmCmDsConstDispMeasEntry]
-            - DS_OFDM_RXMER_PER_SUBCAR    → List[DocsPnmCmDsOfdmRxMerEntry]
-            - US_PRE_EQUALIZER_COEF       → List[DocsPnmCmUsPreEqEntry]
-            - DS_HISTOGRAM                → List[DocsPnmCmDsHistEntry]
-            - DS_OFDM_FEC_SUMMARY         → List[DocsPnmCmDsOfdmFecEntry]
-            - DS_OFDM_MODULATION_PROFILE  → List[DocsPnmCmDsOfdmModProfEntry]
+
+            - DS_OFDM_CHAN_EST_COEF             → List[DocsPnmCmOfdmChanEstCoefEntry]
+            - DS_CONSTELLATION_DISP             → List[DocsPnmCmDsConstDispMeasEntry]
+            - DS_OFDM_RXMER_PER_SUBCAR          → List[DocsPnmCmDsOfdmRxMerEntry]
+            - US_PRE_EQUALIZER_COEF             → List[DocsPnmCmUsPreEqEntry]
+            - DS_HISTOGRAM                      → List[DocsPnmCmDsHistEntry]
+            - DS_OFDM_FEC_SUMMARY               → List[DocsPnmCmDsOfdmFecEntry]
+            - DS_OFDM_MODULATION_PROFILE        → List[DocsPnmCmDsOfdmModProfEntry]
+            - SPECTRUM_ANALYZER                 → List[DocsIf3CmSpectrumAnalysisEntry]
+            - SPECTRUM_ANALYZER_SNMP_AMP_DATA   → List[DocsIf3CmSpectrumAnalysisEntry]
+
             For other (stub/unsupported) test types, an empty list is returned.
 
         Notes
@@ -321,10 +332,9 @@ class CommonMeasureService(CommonMessagingService):
         entries: List[MeasurementEntry] = []
 
         if self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
-            self.logger.warning(f"{self.log_prefix} - Stub handler: SPECTRUM_ANALYZER")
-
-        elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_SYMBOL_CAPTURE:
-            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_SYMBOL_CAPTURE")
+            self.logger.debug(f"{self.log_prefix} - Running SPECTRUM_ANALYZER")
+            concrete = await self.cm.getDocsIf3CmSpectrumAnalysisEntry()
+            return cast(List[MeasurementEntry], concrete)   
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF:
             self.logger.debug(f"{self.log_prefix} - Running OFDM Channel Estimation Coefficient collection")
@@ -357,15 +367,20 @@ class CommonMeasureService(CommonMessagingService):
             return cast(List[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_MODULATION_PROFILE:
-            self.logger.warning(f"{self.log_prefix} - Running DS_OFDM_MODULATION_PROFILE")
+            self.logger.debug(f"{self.log_prefix} - Running DS_OFDM_MODULATION_PROFILE")
             concrete = await self.cm.getDocsPnmCmDsOfdmModProfEntry()
             return cast(List[MeasurementEntry], concrete)
 
+        elif self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA:
+            self.logger.debug(f"{self.log_prefix} - Running SPECTRUM_ANALYZER_SNMP_AMP_DATA")
+            concrete = await self.cm.getDocsIf3CmSpectrumAnalysisEntry()
+            return cast(List[MeasurementEntry], concrete)            
+
+        elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_SYMBOL_CAPTURE:
+            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_SYMBOL_CAPTURE")
+
         elif self.pnm_test_type == DocsPnmCmCtlTest.LATENCY_REPORT:
             self.logger.warning(f"{self.log_prefix} - Stub handler: LATENCY_REPORT")
-
-        elif self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA:
-            self.logger.warning(f"{self.log_prefix} - Stub handler: SPECTRUM_ANALYZER_SNMP_AMP_DATA")
 
         else:
             self.logger.warning(f"{self.log_prefix} - Unknown PNM test type: {self.pnm_test_type}")

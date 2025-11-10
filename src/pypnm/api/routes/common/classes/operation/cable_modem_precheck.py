@@ -51,7 +51,7 @@ class CableModemServicePreCheck:
         validate_ofdm_exist: bool       = False,
         validate_ofdma_exist: bool      = False,
         validate_scqam_exist: bool      = False,
-        validate_pnm_ready_status: bool = False,
+        validate_pnm_ready_status: bool = True,
         ignore_mac_address_check: bool  = False,
     ) -> None:
         """

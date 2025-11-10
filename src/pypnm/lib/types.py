@@ -96,6 +96,7 @@ SNRln         = NewType("SNRln", float)
 # DOCSIS identifiers
 ChannelId     = NewType("ChannelId", int)
 SubcarrierId  = NewType("SubcarrierId", int)
+SubcarrierIdx = NewType("SubcarrierIdx", int)
 
 # SNMP identifiers
 OidStr        = NewType("OidStr", str)              # symbolic or dotted-decimal

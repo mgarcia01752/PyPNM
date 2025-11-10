@@ -42,6 +42,8 @@ class CableType(FloatEnum):
 
 T = TypeVar("T")
 
+DEFAULT_SPECTRUM_ANALYZER_INDICES: List[int] = [0]
+
 __all__ = [
     "HZ", "KHZ", "MHZ", "GHZ",
     "FEET_PER_METER", "SPEED_OF_LIGHT",
@@ -50,4 +52,5 @@ __all__ = [
     "INVALID_START_VALUE", "INVALID_SCHEMA_TYPE", "INVALID_CAPTURE_TIME",
     "DEFAULT_CAPTURE_TIME",
     "CableTypes", "CABLE_VF",
+    "DEFAULT_SPECTRUM_ANALYZER_INDICES"
 ]

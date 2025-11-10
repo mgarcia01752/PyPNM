@@ -3,8 +3,10 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, cast
+from typing import Any, Dict, List, Union, cast, overload
+
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, BaseAnalysisModel
+from pypnm.lib.types import ChannelId
 
 
 class MultiAnalysis:
@@ -23,20 +25,56 @@ class MultiAnalysis:
         self._models: List[BaseAnalysisModel] = []
         self._dicts: List[Dict[str, Any]] = []
 
+    @overload
     def add(self, analysis: Analysis) -> None:
+        ...
+
+    @overload
+    def add(self, channel_id: ChannelId, analysis: Analysis) -> None:
+        ...
+
+    def add(self, *args: Any, **kwargs: Any) -> None:
         """
-        Add a new `Analysis` to the collection.
+        Add a new `Analysis` to the collection, optionally binding it to a channel.
+
+        Supported call forms
+        --------------------
+        - add(analysis)
+        - add(channel_id, analysis)
 
         Parameters
         ----------
-        analysis : Analysis
-            The analysis instance to be added.
+        args :
+            Positional arguments matching one of the supported call forms.
+        kwargs :
+            Keyword arguments are not supported and will raise an error.
 
-        Notes
-        -----
-        - Extends the internal list of models and dicts with those provided by the analysis.
+        Raises
+        ------
+        TypeError
+            If the arguments do not match one of the supported call forms.
         """
+        if kwargs:
+            raise TypeError("add() does not accept keyword arguments")
+
+        channel_id: ChannelId | None
+        analysis: Analysis
+
+        if len(args) == 1 and isinstance(args[0], Analysis):
+            channel_id = None
+            analysis = args[0]
+        elif len(args) == 2 and isinstance(args[1], Analysis):
+            channel_id = cast(ChannelId, args[0])
+            analysis = cast(Analysis, args[1])
+        else:
+            raise TypeError("add() expects (analysis) or (channel_id, analysis)")
+
         models = cast(List[BaseAnalysisModel], analysis.get_model())
+
+        if channel_id is not None:
+            for model in models:
+                model.channel_id = channel_id
+
         self._models.extend(models)
 
         dicts = analysis.get_dicts()
@@ -97,6 +135,4 @@ class MultiAnalysis:
             ]
         }
         """
-        return {
-            "analyses": self._dicts if self._dicts else []
-        }
+        return {"analyses": self._dicts if self._dicts else []}
