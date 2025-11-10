@@ -103,5 +103,19 @@
         "log_level":"INFO",
         "log_dir":"logs",
         "log_filename":"pypnm.log"
+    },
+    "TestMode": {
+        "global" : {
+            "mode": {
+                "enable": true
+            }
+        },
+        "class_name" : {
+            "DsScQamChannelSpectrumAnalyzer": {
+                "mode": {
+                    "enable": true
+                }
+            }   
+        }
     }
 }

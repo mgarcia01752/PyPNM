@@ -1,13 +1,14 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-import logging
-from typing import Dict, List, Tuple, cast
+from __future__ import annotations
 
-from pypnm.api.routes.common.extended.common_measure_service import CommonMeasureService, MeasurementEntry
+import logging
+from typing import List, Tuple, cast
+
+from pypnm.api.routes.common.extended.common_measure_service import CommonMeasureService
+from pypnm.api.routes.docs.pnm.spectrumAnalyzer.abstract.com_spec_chan_ana import (
+    CommonSpectrumChannelAnalyzer, CommonSpectumBwLut, OfdmSpectrumBwLut, ScQamSpectrumBwLut)
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpecAnCapturePara
 from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
@@ -18,10 +19,7 @@ from pypnm.api.routes.common.classes.analysis.analysis import WindowFunction
 from pypnm.api.routes.common.extended.common_process_service import MessageResponse
 
 from pypnm.docsis.cm_snmp_operation import (
-    DocsIf31CmDsOfdmChanChannelEntry,
-    DocsIfDownstreamChannelEntry,
-    SpectrumRetrievalType,
-)
+    DocsIf31CmDsOfdmChanChannelEntry, DocsIfDownstreamChannelEntry, SpectrumRetrievalType,)
 
 from pypnm.lib.types import ChannelId, FrequencyHz, SubcarrierIdx
 
@@ -76,15 +74,6 @@ class CmSpectrumAnalysisService(CommonMeasureService):
             cable_modem.getWriteCommunity(),)
         
         self.setSpectrumCaptureParameters(capture_parameters)
-
-StartFrequency      = FrequencyHz
-PlcFrequency        = FrequencyHz
-EndFrequency        = FrequencyHz
-CenterFrequency     = FrequencyHz
-OfdmSpectrumBw      = Tuple[StartFrequency, PlcFrequency, EndFrequency]
-OfdmSpectrumBwLut   = Dict[ChannelId, OfdmSpectrumBw]
-ScQamSpectrumBw     = Tuple[StartFrequency, CenterFrequency, EndFrequency]
-ScQamSpectrumBwLut  = Dict[ChannelId, ScQamSpectrumBw]
 
 class OfdmChanSpecAnalyzerService(CommonMeasureService):
     """
@@ -149,7 +138,7 @@ class OfdmChanSpecAnalyzerService(CommonMeasureService):
             cable_modem.getWriteCommunity(),
         )
 
-class DsOfdmChannelSpectrumAnalyzer:
+class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
     """
     A high-level service that coordinates downstream OFDM spectrum analysis.
 
@@ -167,13 +156,13 @@ class DsOfdmChannelSpectrumAnalyzer:
         The cable modem instance whose downstream OFDM channels will be analyzed.
     """
 
-    def __init__(self, cable_modem: CableModem, number_of_averages: int = 1):
+    def __init__(self, cable_modem: CableModem, number_of_averages: int = 2):
+        super().__init__(cable_modem)
         self.logger = logging.getLogger(self.__class__.__name__)
-        self._cm:CableModem = cable_modem
         self._number_of_averages = number_of_averages
         self._pnm_test_type = DocsPnmCmCtlTest.SPECTRUM_ANALYZER
         self.log_prefix = f"DsOfdmChannelSpectrumAnalyzer - CM {self._cm.get_mac_address}"
-        
+
     async def start(self) -> List[Tuple[ChannelId, MessageResponse]]:
         """
         Build capture parameters and run spectrum captures for each OFDM channel.
@@ -202,7 +191,7 @@ class DsOfdmChannelSpectrumAnalyzer:
         out:List[Tuple[ChannelId, MessageResponse]] = []
 
         # Compute the bandwidth mapping for all OFDM channels
-        bw_by_channel: OfdmSpectrumBwLut = await self.get_ofdm_spectrum_bandwidth()
+        bw_by_channel: OfdmSpectrumBwLut = await self.calculate_spectrum_bandwidth()
 
         # Default capture settings
         num_bins_per_segment    = 256
@@ -240,10 +229,11 @@ class DsOfdmChannelSpectrumAnalyzer:
             service = OfdmChanSpecAnalyzerService(self._cm)
             service.setSpectrumCaptureParameters(capture_parameter)
             out.append((chan_id, await service.set_and_go()))
+            await self.updatePnmMeasurementStatistics(chan_id)
 
         return out
 
-    async def get_ofdm_spectrum_bandwidth(self) -> OfdmSpectrumBwLut:
+    async def calculate_spectrum_bandwidth(self) -> CommonSpectumBwLut:
         """
         Compute the start, center, and end frequencies for each downstream OFDM channel.
 
@@ -283,7 +273,7 @@ class DsOfdmChannelSpectrumAnalyzer:
           and modem configuration.
         - Start and end values define the total occupied OFDM spectrum.
         """
-        out: OfdmSpectrumBwLut = {}
+        out: CommonSpectumBwLut = {}
 
         channels: List[DocsIf31CmDsOfdmChanChannelEntry] = await self._cm.getDocsIf31CmDsOfdmChanEntry()
         if not channels:
@@ -315,7 +305,7 @@ class DsOfdmChannelSpectrumAnalyzer:
             start_freq  = zero_freq + (first_active * sub_spacing)
             end_freq    = zero_freq + ((last_active + 1) * sub_spacing)
 
-            out[chan_id] = (int(start_freq), int(plc_freq), int(end_freq))
+            out[chan_id] = (FrequencyHz(start_freq), FrequencyHz(plc_freq), FrequencyHz(end_freq))
 
             self.logger.info(
                 "Computed OFDM channel frequencies: "
@@ -324,55 +314,7 @@ class DsOfdmChannelSpectrumAnalyzer:
             )
 
         return out
-
-    async def is_snmp_ready(self) -> bool:
-        """
-        Asynchronously check if the cable modem is accessible via SNMP.
-
-        Returns:
-            bool: True if the modem responds to SNMP queries, False otherwise.
-        """
-        return await self._cm.is_snmp_reachable()
-    
-    async def getPnmMeasurementStatistics(self) -> List[MeasurementEntry]:
-        """
-        Retrieve PNM measurement entries for the currently configured `pnm_test_type`.
-
-        Returns
-        -------
-        List[MeasurementEntry]
-            A (possibly empty) list of model instances corresponding to the active
-            test type:
-
-            - SPECTRUM_ANALYZER                 → List[DocsIf3CmSpectrumAnalysisEntry]
-            - SPECTRUM_ANALYZER_SNMP_AMP_DATA   → List[DocsIf3CmSpectrumAnalysisEntry]
-
-            For other (stub/unsupported) test types, an empty list is returned.
-
-        Notes
-        -----
-        - This method performs no aggregation; it returns the raw per-entry models
-          fetched from the cable modem for the selected measurement type.
-        - For strict typing, concrete lists are cast to `List[MeasurementEntry]`
-          at return points (because `List` is invariant in the type system).
-        """
-        entries: List[MeasurementEntry] = []
-
-        if self._pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
-            self.logger.debug(f"{self.log_prefix} - Running SPECTRUM_ANALYZER")
-            concrete = await self._cm.getDocsIf3CmSpectrumAnalysisEntry()
-            return cast(List[MeasurementEntry], concrete)   
-
-        elif self._pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA:
-            self.logger.debug(f"{self.log_prefix} - Running SPECTRUM_ANALYZER_SNMP_AMP_DATA")
-            concrete = await self._cm.getDocsIf3CmSpectrumAnalysisEntry()
-            return cast(List[MeasurementEntry], concrete)            
-
-        else:
-            self.logger.warning(f"{self.log_prefix} - Unknown PNM test type: {self._pnm_test_type}")
-
-        return entries
-    
+        
 class ScQamChanSpecAnalyzerService(CommonMeasureService):
     """
     Thin wrapper around :class:`CommonMeasureService` that configures and
@@ -432,7 +374,7 @@ class ScQamChanSpecAnalyzerService(CommonMeasureService):
             tftp_path,
             cable_modem.getWriteCommunity(),)
 
-class DsScQamChannelSpectrumAnalyzer:
+class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
     """
     Service to fetch DOCSIS SC-QAM downstream channel info and compute
     per-channel spectrum bandwidth tuples (start, center, end) in Hz, then
@@ -440,12 +382,11 @@ class DsScQamChannelSpectrumAnalyzer:
     """
 
     def __init__(self, cable_modem: CableModem, number_of_averages: int = 1):
+        super().__init__(cable_modem)
         self.logger = logging.getLogger(self.__class__.__name__)
-        self._cm = cable_modem
         self._number_of_averages = number_of_averages
-        self._pnm_test_type = DocsPnmCmCtlTest.SPECTRUM_ANALYZER
         self.log_prefix = f"DsScQamChannelSpectrumAnalyzer - CM {self._cm.get_mac_address}"
-        self._test_mode = True
+        self._test_mode = False
 
     async def start(self) -> List[Tuple[ChannelId, MessageResponse]]:
         """
@@ -454,7 +395,7 @@ class DsScQamChannelSpectrumAnalyzer:
         channel_specCapture:List[Tuple[ChannelId, SpecAnCapturePara]] = []
         out:List[Tuple[ChannelId, MessageResponse]] = []
 
-        bw_by_channel: ScQamSpectrumBwLut = await self.get_scqam_spectrum_bandwidth()
+        bw_by_channel: ScQamSpectrumBwLut = await self.calculate_spectrum_bandwidth()
 
         num_bins_per_segment    = 256
         number_of_averages      = self._number_of_averages
@@ -486,10 +427,11 @@ class DsScQamChannelSpectrumAnalyzer:
             service = ScQamChanSpecAnalyzerService(self._cm)
             service.setSpectrumCaptureParameters(capture_parameter)
             out.append((chan_id, await service.set_and_go()))
+            await self.updatePnmMeasurementStatistics(chan_id)
 
         return out
 
-    async def get_scqam_spectrum_bandwidth(self) -> ScQamSpectrumBwLut:
+    async def calculate_spectrum_bandwidth(self) -> CommonSpectumBwLut:
         """
         Compute start/center/end frequencies for each SC-QAM downstream channel.
 
@@ -497,7 +439,7 @@ class DsScQamChannelSpectrumAnalyzer:
             Mapping of ChannelId -> (start_hz, center_hz, end_hz).
             Uses half-width around center: start = center - width/2, end = center + width/2.
         """
-        out: ScQamSpectrumBwLut = {}
+        out: CommonSpectumBwLut = {}
 
         channels: List[DocsIfDownstreamChannelEntry] = await self._cm.getDocsIfDownstreamChannel()
         if not channels:
@@ -527,41 +469,3 @@ class DsScQamChannelSpectrumAnalyzer:
 
         return out
     
-    async def getPnmMeasurementStatistics(self) -> List[MeasurementEntry]:
-        """
-        Retrieve PNM measurement entries for the currently configured `pnm_test_type`.
-
-        Returns
-        -------
-        List[MeasurementEntry]
-            A (possibly empty) list of model instances corresponding to the active
-            test type:
-
-            - SPECTRUM_ANALYZER                 → List[DocsIf3CmSpectrumAnalysisEntry]
-            - SPECTRUM_ANALYZER_SNMP_AMP_DATA   → List[DocsIf3CmSpectrumAnalysisEntry]
-
-            For other (stub/unsupported) test types, an empty list is returned.
-
-        Notes
-        -----
-        - This method performs no aggregation; it returns the raw per-entry models
-          fetched from the cable modem for the selected measurement type.
-        - For strict typing, concrete lists are cast to `List[MeasurementEntry]`
-          at return points (because `List` is invariant in the type system).
-        """
-        entries: List[MeasurementEntry] = []
-
-        if self._pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
-            self.logger.debug(f"{self.log_prefix} - Running SPECTRUM_ANALYZER")
-            concrete = await self._cm.getDocsIf3CmSpectrumAnalysisEntry()
-            return cast(List[MeasurementEntry], concrete)   
-
-        elif self._pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA:
-            self.logger.debug(f"{self.log_prefix} - Running SPECTRUM_ANALYZER_SNMP_AMP_DATA")
-            concrete = await self._cm.getDocsIf3CmSpectrumAnalysisEntry()
-            return cast(List[MeasurementEntry], concrete)            
-
-        else:
-            self.logger.warning(f"{self.log_prefix} - Unknown PNM test type: {self._pnm_test_type}")
-
-        return entries
