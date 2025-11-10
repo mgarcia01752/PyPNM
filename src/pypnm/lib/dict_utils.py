@@ -111,7 +111,7 @@ class DictUtils:
     # ---------------------------
     @staticmethod
     def models_to_nested_dict(
-        items: Iterable[Union["BaseModel", Mapping[str, Any]]],
+        items: Iterable[Union["BaseModel", Mapping[Union[int, str], Any]]],
         parent_key: str,
         *,
         by: Optional[str] = None,

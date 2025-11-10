@@ -381,49 +381,54 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
     trigger spectrum captures per channel.
     """
 
-    def __init__(self, cable_modem: CableModem, number_of_averages: int = 1):
+    def __init__(self, cable_modem: CableModem, number_of_averages: int = 1, test_mode: bool = False):
         super().__init__(cable_modem)
         self.logger = logging.getLogger(self.__class__.__name__)
         self._number_of_averages = number_of_averages
         self.log_prefix = f"DsScQamChannelSpectrumAnalyzer - CM {self._cm.get_mac_address}"
-        self._test_mode = False
+        self._test_mode = test_mode
 
     async def start(self) -> List[Tuple[ChannelId, MessageResponse]]:
         """
         Build capture parameters for each SC-QAM channel and run captures.
+
+        Returns
+        -------
+        List[Tuple[ChannelId, MessageResponse]]
+            A list of tuples mapping each channel identifier to the
+            corresponding MessageResponse from the capture operation.
         """
-        channel_specCapture:List[Tuple[ChannelId, SpecAnCapturePara]] = []
-        out:List[Tuple[ChannelId, MessageResponse]] = []
+        channel_spec_capture: List[Tuple[ChannelId, SpecAnCapturePara]] = []
+        out: List[Tuple[ChannelId, MessageResponse]] = []
 
         bw_by_channel: ScQamSpectrumBwLut = await self.calculate_spectrum_bandwidth()
 
-        num_bins_per_segment    = 256
-        number_of_averages      = self._number_of_averages
-        inactivity_timeout      = 10
-        noise_bw                = 150
-        segment_freq_span       = 1_000_000
+        num_bins_per_segment = 256
+        number_of_averages = self._number_of_averages
+        inactivity_timeout = 10
+        noise_bw = 150
+        segment_freq_span = 1_000_000
 
-        for chan_id, (start_hz, center_hz, end_hz) in bw_by_channel.items():
-            
+        for count, (chan_id, (start_hz, center_hz, end_hz)) in enumerate(bw_by_channel.items()):
             capture_parameter = SpecAnCapturePara(
-                inactivity_timeout          = inactivity_timeout,
-                first_segment_center_freq   = FrequencyHz(start_hz),
-                last_segment_center_freq    = FrequencyHz(end_hz),
-                segment_freq_span           = FrequencyHz(segment_freq_span),
-                num_bins_per_segment        = num_bins_per_segment,
-                noise_bw                    = noise_bw,
-                window_function             = WindowFunction.HANN,
-                num_averages                = number_of_averages,
-                spectrum_retrieval_type     = SpectrumRetrievalType.FILE,
+                inactivity_timeout        = inactivity_timeout,
+                first_segment_center_freq = FrequencyHz(start_hz),
+                last_segment_center_freq  = FrequencyHz(end_hz),
+                segment_freq_span         = FrequencyHz(segment_freq_span),
+                num_bins_per_segment      = num_bins_per_segment,
+                noise_bw                  = noise_bw,
+                window_function           = WindowFunction.HANN,
+                num_averages              = number_of_averages,
+                spectrum_retrieval_type   = SpectrumRetrievalType.FILE,
             )
 
-            channel_specCapture.append((chan_id, capture_parameter))
+            channel_spec_capture.append((chan_id, capture_parameter))
 
-            if self._test_mode:
-                self.logger.warning("Test mode active: processing only first channel.")
-                break  # TEMPORARY: only process first channel for testing
+            if self._test_mode and count > 1:
+                self.logger.warning("Test mode active: processing only first 2 channels.")
+                break
 
-        for chan_id, capture_parameter in channel_specCapture:
+        for chan_id, capture_parameter in channel_spec_capture:
             service = ScQamChanSpecAnalyzerService(self._cm)
             service.setSpectrumCaptureParameters(capture_parameter)
             out.append((chan_id, await service.set_and_go()))
@@ -435,9 +440,12 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
         """
         Compute start/center/end frequencies for each SC-QAM downstream channel.
 
-        Returns:
-            Mapping of ChannelId -> (start_hz, center_hz, end_hz).
-            Uses half-width around center: start = center - width/2, end = center + width/2.
+        Returns
+        -------
+        CommonSpectumBwLut
+            Mapping of ChannelId -> (start_hz, center_hz, end_hz) using a
+            half-width around center: start = center - width/2,
+            end = center + width/2.
         """
         out: CommonSpectumBwLut = {}
 
@@ -447,25 +455,32 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
             return out
 
         for channel in channels:
-            cfreq: FrequencyHz   = cast(FrequencyHz, channel.entry.docsIfDownChannelFrequency)
-            cwidth: FrequencyHz  = cast(FrequencyHz, channel.entry.docsIfDownChannelWidth)
-            chan_id: ChannelId   = cast(ChannelId, channel.entry.docsIfDownChannelId)
+            cfreq: FrequencyHz = cast(FrequencyHz, channel.entry.docsIfDownChannelFrequency)
+            cwidth: FrequencyHz = cast(FrequencyHz, channel.entry.docsIfDownChannelWidth)
+            chan_id: ChannelId = cast(ChannelId, channel.entry.docsIfDownChannelId)
 
             if cfreq is None or cwidth is None or chan_id is None:
                 self.logger.debug(
                     "Skipping channel with missing data: id=%s, freq=%s, width=%s",
-                    chan_id, cfreq, cwidth
+                    chan_id,
+                    cfreq,
+                    cwidth,
                 )
                 continue
 
             half_width: FrequencyHz = cast(FrequencyHz, cwidth // 2)
             start: FrequencyHz = cast(FrequencyHz, cfreq - half_width)
-            end: FrequencyHz   = cast(FrequencyHz, cfreq + half_width)
+            end: FrequencyHz = cast(FrequencyHz, cfreq + half_width)
 
-            self.logger.info(f'Calculate SC-QAM Spectrum Settings: Mac: {self._cm.get_mac_address} - '
-                             f'Channel-Settings: Ch={chan_id}, Start={start}, Center={cfreq}, End={end}')
+            self.logger.info(
+                "Calculate SC-QAM Spectrum Settings: Mac: %s - Channel-Settings: Ch=%s, Start=%s, Center=%s, End=%s",
+                self._cm.get_mac_address,
+                chan_id,
+                start,
+                cfreq,
+                end,
+            )
 
             out[chan_id] = (start, cfreq, end)
 
         return out
-    

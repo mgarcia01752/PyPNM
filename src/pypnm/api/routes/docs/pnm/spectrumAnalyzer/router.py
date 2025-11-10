@@ -211,7 +211,7 @@ class SpectrumAnalyzerRouter:
 
             measurement_stats: List[DocsIf3CmSpectrumAnalysisEntry] = cast(
                 List[DocsIf3CmSpectrumAnalysisEntry],
-                await service.getPnmMeasurementStatistics(),
+                await service.getPnmMeasurementStatisticsFlat(),
             )
 
             primative: Dict[str, Dict[Any, Any]] = {"primative": {}}
@@ -317,7 +317,7 @@ class SpectrumAnalyzerRouter:
 
             measurement_stats: List[DocsIf3CmSpectrumAnalysisEntry] = cast(
                 List[DocsIf3CmSpectrumAnalysisEntry],
-                await service.getPnmMeasurementStatistics(),
+                await service.getPnmMeasurementStatisticsFlat(),
             )
 
             primative: Dict[str, Dict[Any, Any]] = {"primative": {}}
