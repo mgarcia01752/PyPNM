@@ -141,7 +141,7 @@ class ChanEstimationReport(AnalysisReport):
                     point_size = 2.0 if npts >= 10000 else (4.0 if npts >= 3000 else 8.0)
 
                     cfg = PlotConfig(
-                        title           = f"Channel Estimation IQ - OFDM Channel: {channel_id}",
+                        title           = f"Channel Estimation · IQ · OFDM Channel: {channel_id}",
                         x               = list(i),
                         y               = list(q),
                         x_tick_decimals = 0,

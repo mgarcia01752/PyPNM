@@ -214,7 +214,7 @@ class ModulationProfileReport(AnalysisReport):
                     y_labels_M = [str(2 ** b) for b in y_ticks_bits]  # labels: "4","8","16","32",...
 
                     mod_cfg = PlotConfig(
-                        title             = f"Modulation vs Frequency — OFDM Ch {channel_id} · Profile {profile_id}",
+                        title             = f"Modulation vs Frequency · OFDM · Channel ({channel_id}) · Profile ({profile_id})",
                         x                 = cast(ArrayLike, freq),
                         y                 = cast(ArrayLike, mod_bits),
                         ylabel            = "Modulation Order (M-QAM)",

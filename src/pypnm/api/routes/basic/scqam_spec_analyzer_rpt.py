@@ -20,7 +20,7 @@ from pypnm.docsis.cable_modem import MacAddress
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
-from pypnm.lib.types import ArrayLike, FloatSeries, FloatSeries, Path, PathLike
+from pypnm.lib.types import ArrayLike, FloatSeries, FrequencySeriesHz, Path, PathLike
 from pypnm.lib.utils import Utils
 
 
@@ -225,7 +225,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
                 csv_mgr.set_header(["Frequency", "Magnitude(dBmV)", "MovingAverage"])
 
                 # Rows aligned by index
-                for f_hz, mag_dbmv, ma in zip(sig.frequency, sig.amplitude, sig.window.windows_average):
+                for f_hz, mag_dbmv, ma in zip(sig.frequencies, sig.amplitude, sig.window.windows_average):
                     csv_mgr.insert_row ([f_hz, mag_dbmv, ma])
 
                 csv_fname = self.create_csv_fname(tags=[str(channel_id), self.FNAME_TAG])
@@ -272,10 +272,21 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
                 self.logger.debug("Creating Spectrum plot: %s", fname)
 
                 cfg = PlotConfig(
-                    title   =   "Spectrum Analyzer",
-                    x = cast(ArrayLike, sig.frequency),  xlabel = "Frequency (Hz)",
-                    y = cast(ArrayLike, sig.amplitude),  ylabel = "Magnitude (dBmV)",
-                    grid    =   True, legend=False, transparent=False,)
+                    title           =   f"Spectrum Analyzer · SCQAM Channel ({ch}) · Standard",
+                    x               =   cast(ArrayLike, sig.frequencies),  
+                    y               =   cast(ArrayLike, sig.amplitude),
+                    xlabel          =   None,
+                    xlabel_base     =   "Frequency",
+                    x_tick_mode     =   "unit",
+                    x_unit_from     =   "hz",
+                    x_unit_out      =   "mhz",
+                    x_tick_decimals =   0,
+                    ylabel          =   "dB",
+                    grid            =   False,
+                    legend          =   False,
+                    transparent     =   False,
+                    theme           =   self.getAnalysisRptMatplotConfig().theme,
+                )
                 
                 mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_line(filename=fname)
@@ -290,11 +301,22 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
                 self.logger.debug("Creating Spectrum plot: %s", fname)
 
                 cfg = PlotConfig(
-                    title   =   f"Spectrum Analyzer - Window Average n={sig.window.window_size}",
-                    x = cast(ArrayLike, sig.frequency),  xlabel = "Frequency (Hz)",
-                    y = cast(ArrayLike, sig.window.windows_average),  ylabel = "Magnitude (dBmV)",
-                    grid    =   True, legend=False, transparent=False,)
-                
+                    title   =   f"Spectrum Analyzer · SCQAM Channel ({ch}) · Moving Average n={sig.window.window_size}",
+                    x               =   cast(ArrayLike, sig.frequencies),  
+                    y               =   cast(ArrayLike, sig.amplitude),
+                    xlabel          =   None,
+                    xlabel_base     =   "Frequency",
+                    x_tick_mode     =   "unit",
+                    x_unit_from     =   "hz",
+                    x_unit_out      =   "mhz",
+                    x_tick_decimals =   0,
+                    ylabel          =   "dB",
+                    grid            =   False,
+                    legend          =   False,
+                    transparent     =   False,
+                    theme           =   self.getAnalysisRptMatplotConfig().theme,
+                )
+
                 mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_line(filename=fname)
                 out.append(mgr)
@@ -317,9 +339,9 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
 
         for idx, _model in enumerate(models):
             sig_analysis = _model.signal_analysis
-            freq_hz: FloatSeries      = [int(f) for f in sig_analysis.frequencies]
-            mag_dbmv: FloatSeries   = list(sig_analysis.magnitudes)
-            ma_vals: FloatSeries    = list(sig_analysis.window_average.magnitudes)
+            freq_hz: FrequencySeriesHz  = [int(f) for f in sig_analysis.frequencies]
+            mag_dbmv: FloatSeries       = list(sig_analysis.magnitudes)
+            ma_vals: FloatSeries        = list(sig_analysis.window_average.magnitudes)
 
             # Anti-log in linear ratio (suitable for amplitude-like values)
             anti_log: FloatSeries = [10.0 ** (v / 20.0) for v in mag_dbmv]
@@ -331,7 +353,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
             )
 
             signal = SpectrumAnalyzerSignalProcessRptModel(
-                frequency   =   freq_hz,
+                frequencies =   freq_hz,
                 amplitude   =   mag_dbmv,
                 anti_log    =   anti_log,
                 window      =   window,

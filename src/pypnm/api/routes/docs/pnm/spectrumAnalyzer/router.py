@@ -10,6 +10,7 @@ from fastapi import APIRouter
 
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisRptMatplotConfig
 from pypnm.api.routes.basic.ofdm_spec_analyzer_rpt import OfdmSpecAnalyzerAnalysisReport
+from pypnm.api.routes.basic.scqam_spec_analyzer_rpt import ScQamSpecAnalyzerAnalysisReport
 from pypnm.api.routes.basic.spec_analyzer_analysis_rpt import SpectrumAnalyzerReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
 from pypnm.api.routes.common.classes.analysis.model.process import AnalysisProcessParameters
@@ -26,9 +27,11 @@ from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import (
     OfdmSpecAnaAnalysisRequest,
     OfdmSpecAnaAnalysisResponse,
+    ScQamSpecAnaAnalysisRequest,
+    ScQamSpecAnaAnalysisResponse,
     SingleCaptureSpectrumAnalyzer,
 )
-from pypnm.api.routes.docs.pnm.spectrumAnalyzer.service import CmSpectrumAnalysisService, DsOfdmChannelSpectrumAnalyzer
+from pypnm.api.routes.docs.pnm.spectrumAnalyzer.service import CmSpectrumAnalysisService, DsOfdmChannelSpectrumAnalyzer, DsScQamChannelSpectrumAnalyzer
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.pnm.DocsIf3CmSpectrumAnalysisEntry import DocsIf3CmSpectrumAnalysisEntry
 from pypnm.lib.dict_utils import DictUtils
@@ -153,7 +156,7 @@ class SpectrumAnalyzerRouter:
 
         @self.router.post(
             f"{self.base_endpoint}/getCapture/ofdm",
-            summary="Get OFDM Spectrum Analyzer Capture",
+            summary="Get OFDM Channels Spectrum Analyzer Capture",
             responses=FAST_API_RESPONSE,
         )
         async def get_ofdm_ds_channels_analysis(request: OfdmSpecAnaAnalysisRequest):
@@ -234,6 +237,61 @@ class SpectrumAnalyzerRouter:
                 status      = ServiceStatusCode.INVALID_OUTPUT_TYPE,
                 message     = f"Unsupported output type: {request.analysis.output.type}",
                 data        = {},)
+
+        @self.router.post(
+            f"{self.base_endpoint}/getCapture/scqam",
+            summary="Get SC-QAM Downstream Channels Spectrum Analysis",
+            responses=FAST_API_RESPONSE,
+        )
+        async def get_scqam_ds_channels_analysis(request: ScQamSpecAnaAnalysisRequest,):
+            mac = request.cable_modem.mac_address
+            ip = request.cable_modem.ip_address
+            cm = CableModem(MacAddress(mac), Inet(ip))
+            multi_analysis = MultiAnalysis()
+
+            # Prefer parameterized logging
+            self.logger.info("DOCSIS 3.0 SC-QAM downstream spectrum capture for MAC %s, IP %s",mac, ip)
+            status, msg = await CableModemServicePreCheck(cable_modem=cm,
+                                                          validate_scqam_exist=True,
+                                                          validate_pnm_ready_status=True).run_precheck()
+
+            if status != ServiceStatusCode.SUCCESS:
+                self.logger.error(msg)
+                return ScQamSpecAnaAnalysisResponse(
+                    mac_address=mac,
+                    status=status,
+                    message=msg,
+                    data={}
+                )
+
+            number_of_averages = request.capture_parameters.number_of_averages
+            service = DsScQamChannelSpectrumAnalyzer(cm, number_of_averages=number_of_averages)
+            msg_responses = await service.start()
+
+            for msg_rsp in msg_responses:
+                cps_msg_rsp = CommonProcessService(msg_rsp).process()
+                analysis = Analysis(AnalysisType.BASIC, cps_msg_rsp, skip_automatic_process=True,)
+                analysis.process(cast(AnalysisProcessParameters, request.analysis.spectrum_analysis))
+                multi_analysis.add(analysis)
+
+            analyzer_rpt = ScQamSpecAnalyzerAnalysisReport(multi_analysis)
+            analyzer_rpt.build_report()
+
+            if request.analysis.output.type == OutputType.JSON:
+                return ScQamSpecAnaAnalysisResponse(
+                    mac_address=mac,
+                    status=ServiceStatusCode.SUCCESS,
+                    data=analyzer_rpt.to_dict())
+
+            if request.analysis.output.type == OutputType.ARCHIVE:
+                return PnmFileService().get_file(FileType.ARCHIVE, analyzer_rpt.get_archive())
+
+            return ScQamSpecAnaAnalysisResponse(
+                mac_address=mac,
+                status=ServiceStatusCode.FAILURE,
+                message=f"Unsupported output type: {request.analysis.output.type}",
+                data={}
+            )
 
 # Required for dynamic auto-registration
 router = SpectrumAnalyzerRouter().router

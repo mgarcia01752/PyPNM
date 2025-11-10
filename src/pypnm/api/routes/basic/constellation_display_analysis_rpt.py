@@ -106,7 +106,7 @@ class ConstellationDisplayReport(AnalysisReport):
             Constellation Display - All OFDM DS Channels
             '''
             try:
-                title = f"Constellation Display - OFDM Channel: {channel_id} - Modulation: {modulation.name} - SampleSize: {sample_count}"
+                title = f"Constellation Display · OFDM Channel: {channel_id} · Modulation: {modulation.name} · SampleSize: {sample_count}"
                 cfg = PlotConfig(
                     title       =   title,
                     x           =   [0], # TODO: need to fix this, don't need to put in a dummy value

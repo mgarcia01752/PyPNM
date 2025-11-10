@@ -85,7 +85,7 @@ class SpectrumAnalyzerReport(AnalysisReport):
                 self.logger.debug("Creating Standard Spectrum Plot: %s", fname)
 
                 cfg = PlotConfig(
-                    title           =   "Spectrum Analyzer",
+                    title           =   "Spectrum Analyzer · Standard",
                     x               =   cast(ArrayLike, sig.frequencies),  
                     y               =   cast(ArrayLike, sig.amplitude),
                     xlabel          =   None,
@@ -112,7 +112,7 @@ class SpectrumAnalyzerReport(AnalysisReport):
                 self.logger.debug("Creating Window Average Spectrum Plot: %s", fname)
 
                 cfg = PlotConfig(
-                    title           =   f"Spectrum Analyzer - Moving Average n={sig.window.window_size}",
+                    title           =   f"Spectrum Analyzer · Moving Average n={sig.window.window_size}",
                     x               =   cast(ArrayLike, sig.frequencies),  
                     y               =   cast(ArrayLike, sig.window.windows_average),
                     xlabel          =   None,

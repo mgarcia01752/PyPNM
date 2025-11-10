@@ -207,7 +207,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
 
                 try:
                     cfg = PlotConfig(
-                        title               = f"FEC Summary - OFDM Channel {int(ch_id)} (Profile {profile})",
+                        title               = f"FEC Summary · OFDM · Channel {int(ch_id)} · Profile ({profile})",
                         x                   = cast(ArrayLike, ts[:n]),
                         ylabel              = "Codeword Count",
                         y_multi             = [cast(ArrayLike, tc[:n]), cast(ArrayLike, cc[:n]), cast(ArrayLike, uc[:n])],

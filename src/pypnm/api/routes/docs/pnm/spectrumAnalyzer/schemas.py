@@ -64,3 +64,16 @@ class OfdmSpecAnaAnalysisRequest(ExtendSingleCaptureSpecAnaRequest):
 
 class OfdmSpecAnaAnalysisResponse(PnmAnalysisResponse):
     pass
+
+# -------------- MAIN-SCQAM-REQUEST ------------------
+
+class ScQamSpecAna(BaseModel):
+    number_of_averages: int  = Field(default=10, description="Number of samples to calculate the average per-bin")      
+
+class ScQamSpecAnaAnalysisRequest(ExtendSingleCaptureSpecAnaRequest):
+    capture_parameters:ScQamSpecAna = Field(default=ScQamSpecAna(), description="")
+
+# -------------- MAIN-SCQAM-RESPONSE------------------
+
+class ScQamSpecAnaAnalysisResponse(PnmAnalysisResponse):
+    pass

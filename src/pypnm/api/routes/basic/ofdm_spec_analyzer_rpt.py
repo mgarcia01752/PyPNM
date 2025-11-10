@@ -89,7 +89,7 @@ class OfdmSpecAnalyzerAnalysisReport():
             remain accessible through their respective report instances.
         """
         for _ in self._get_analyses():
-            rpt = __SingleOfdmSpecAnalyzerReport(_)
+            rpt = SingleOfdmSpecAnalyzerReport(_)
             rpt.build_report()
             rpt.get_all_generated_files()
             self._analysis_files.extend(rpt.get_all_generated_files())
@@ -176,7 +176,7 @@ class OfdmSpecAnalyzerAnalysisReport():
         return self._multi_analysis.to_dict()
 
 
-class __SingleOfdmSpecAnalyzerReport(AnalysisReport):
+class SingleOfdmSpecAnalyzerReport(AnalysisReport):
     """Emitter for CSV and plots from a single OFDM Spectrum Analyzer analysis.
 
     This concrete :class:`AnalysisReport`:
@@ -273,10 +273,10 @@ class __SingleOfdmSpecAnalyzerReport(AnalysisReport):
             # --- Raw spectrum ---
             try:
                 fname = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, "standard"])
-                self.logger.debug(f"Creating Standard OFDM Channel ({channel_id}) Spectrum Plot: %s", fname)
+                self.logger.debug(f"Creating Standard OFDM Channel ({channel_id})Spectrum Plot: %s", fname)
 
                 cfg = PlotConfig(
-                    title           =   f"Spectrum Analyzer - Channel ({channel_id}) Standard",
+                    title           =   f"Spectrum Analyzer · OFDM Channel ({channel_id}) · Standard",
                     x               =   cast(ArrayLike, sig.frequencies),  
                     y               =   cast(ArrayLike, sig.amplitude),
                     xlabel          =   None,
@@ -304,7 +304,7 @@ class __SingleOfdmSpecAnalyzerReport(AnalysisReport):
                 self.logger.debug("Creating OFDM Moving Average Spectrum plot: %s", fname)
 
                 cfg = PlotConfig(
-                    title           =   f"Spectrum Analyzer - OFDM Channel ({channel_id}) Moving Average n={sig.window.window_size}",
+                    title           =   f"Spectrum Analyzer · OFDM Channel ({channel_id}) · Moving Average n={sig.window.window_size}",
                     x               =   cast(ArrayLike, sig.frequencies),  
                     y               =   cast(ArrayLike, sig.window.windows_average),
                     xlabel          =   None,

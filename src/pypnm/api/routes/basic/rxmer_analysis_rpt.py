@@ -202,7 +202,7 @@ class RxMerAnalysisReport(AnalysisReport):
                 freq, db = self._sig_cap_agg.get_series()
 
                 cfg = PlotConfig(
-                    title         = f"RxMER OFDM Channel(s): {Format.join_paren(chan_id_list)}",
+                    title         = f"RxMER · OFDM Channel(s): {Format.join_paren(chan_id_list)}",
                     x             = cast(ArrayLike, freq),
                     y             = cast(ArrayLike, db),
                     xlabel        = None,

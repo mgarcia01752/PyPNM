@@ -8,6 +8,7 @@ from typing import Optional, Callable, Union, List
 from pydantic import BaseModel
 
 from pypnm.lib.constants import INVALID_CHANNEL_ID
+from pypnm.lib.types import ChannelId, FrequencyHz
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
 
@@ -54,9 +55,9 @@ class DocsIfDownstreamEntry(BaseModel):
     docsIf3SignalQualityExtRxMER : Optional[float]
         Extended RxMER (dB), from ``docsIf3SignalQualityExtRxMER``.
     """
-    docsIfDownChannelId:int = INVALID_CHANNEL_ID
-    docsIfDownChannelFrequency: Optional[int] = None
-    docsIfDownChannelWidth: Optional[int] = None
+    docsIfDownChannelId: ChannelId = INVALID_CHANNEL_ID
+    docsIfDownChannelFrequency: Optional[FrequencyHz] = None
+    docsIfDownChannelWidth: Optional[FrequencyHz] = None
     docsIfDownChannelModulation: Optional[int] = None
     docsIfDownChannelInterleave: Optional[int] = None
     docsIfDownChannelPower: Optional[float] = None
