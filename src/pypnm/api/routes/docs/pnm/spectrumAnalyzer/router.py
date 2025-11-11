@@ -96,8 +96,7 @@ class SpectrumAnalyzerRouter:
 
             service = CmSpectrumAnalysisService(
                 cable_modem=cm,
-                capture_parameters=request.capture_parameters,
-            )
+                capture_parameters=request.capture_parameters,)
 
             msg_rsp: MessageResponse = await service.set_and_go()
 
@@ -108,17 +107,12 @@ class SpectrumAnalyzerRouter:
 
             measurement_stats: List[DocsIf3CmSpectrumAnalysisEntry] = cast(
                 List[DocsIf3CmSpectrumAnalysisEntry],
-                await service.getPnmMeasurementStatistics(),
-            )
+                await service.getPnmMeasurementStatistics(),)
 
             cps = CommonProcessService(msg_rsp)
             msg_rsp = cps.process()
 
-            analysis = Analysis(
-                AnalysisType.BASIC,
-                msg_rsp,
-                skip_automatic_process=True,
-            )
+            analysis = Analysis(AnalysisType.BASIC, msg_rsp, skip_automatic_process=True)
             analysis.process(cast(AnalysisProcessParameters, request.analysis.spectrum_analysis))
 
             if request.analysis.output.type == OutputType.JSON:

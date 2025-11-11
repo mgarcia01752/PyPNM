@@ -111,9 +111,13 @@ class CommonMeasureService(CommonMessagingService):
         self.log_prefix:str                         = f"MAC: {self.cm.get_mac_address} - INET: {self.cm.get_inet_address}"
         self.save_dir                               = PnmConfigManager.get_save_dir()
         self.pnm_local_dir                          = SystemConfigSettings.save_dir
+        self._capture_parameter:SpecAnCapturePara   = SpecAnCapturePara()
+
+        # Initialize default spectrum capture parameters
+        self._capture_parameter.spectrum_retrieval_type = SpectrumRetrievalType.UNKNOWN
 
         if self.extra_options:
-            self.logger.debug(f"{self.log_prefix} - OPTIONS: {self.extra_options}")
+            self.logger.info(f"{self.log_prefix} - OPTIONS: {self.extra_options}")
             self._preload_interface_parameters()
             
         self._precheck() 
@@ -137,10 +141,21 @@ class CommonMeasureService(CommonMessagingService):
         """
         Set the spectrum capture parameters for the measurement.
 
+        TODO: This method may be deprecated in favor of passing parameters directly during initialization.
+
         Args:
             capture_parameter (SpecAnCapturePara): The spectrum capture parameters.
         """
-        self.capture_parameter = capture_parameter
+        self._capture_parameter = capture_parameter
+
+    def getSpectrumCaptureParameters(self) -> SpecAnCapturePara:
+        """
+        Get the current spectrum capture parameters.
+
+        Returns:
+            SpecAnCapturePara: The current spectrum capture parameters.
+        """
+        return self._capture_parameter
 
     async def set_and_go(self, interface_parameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = DownstreamOfdmParameters() , 
                          max_wait_count: int = 5,) -> MessageResponse:
@@ -177,9 +192,7 @@ class CommonMeasureService(CommonMessagingService):
         #                   Spectrum Analysis SNMP Return                       #
         #########################################################################
         
-        spec_rev_type = self.extra_options.get("spectrum_retrieval_type",SpectrumRetrievalType.UNKNOWN)
-            
-        if spec_rev_type == SpectrumRetrievalType.SNMP:
+        if self.getSpectrumCaptureParameters().spectrum_retrieval_type == SpectrumRetrievalType.SNMP:
             self.logger.info(f"{self.log_prefix} - Performing Spectrum Analysis SNMP Amplitude Data")
 
             #Set Spectrum Analyzer
@@ -196,8 +209,12 @@ class CommonMeasureService(CommonMessagingService):
                 
                 amp_data: bytes = await self.cm.getSpectrumAmplitudeData()
                 
+                #################################################################################################
+                # Build binary filename and save file - START
+                # TODO: Refactor filename generation to utility function, need to figure where best place first
+                #################################################################################################
                 prefix = DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA.name.lower()
-                filename = f"{prefix}_{self.cm.get_mac_address}_{int(time.time())}.bin"
+                filename = f"{prefix}_{self.cm.get_mac_address.to_mac_format()}_{int(time.time())}.bin"
                 
                 tx_id = await PnmFileTransaction().insert(self.cm,
                     DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA, filename)
@@ -207,9 +224,14 @@ class CommonMeasureService(CommonMessagingService):
                 self.logger.debug(f'SpectrumAmplitudeData: - FNAME: {filename} - Length:{len(amp_data)} - TransactionID: {tx_id}')
                 
                 FileProcessor(fpath).write_file(amp_data)
+                #################################################################################################
+                # Build binary filename and save file - END
+                #################################################################################################
+                
                 self.build_transaction_msg(tx_id, filename)
 
             return self.build_send_msg(status)
+        
 
         #########################################################################
         # Ensure CM Inet and TFTP server address use the same IP version
@@ -533,8 +555,8 @@ class CommonMeasureService(CommonMessagingService):
         except Exception as e:
             self.logger.exception(f"{self.log_prefix} - File retrieval failed: {e}")
             return False
-            
-    async def _get_indexes_via_pnm_test_type(self, ifParameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = None
+
+    async def _get_indexes_via_pnm_test_type(self, ifParameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = DownstreamOfdmParameters()
                                              ) -> Tuple["ServiceStatusCode", Optional[List[Tuple[InterfaceIndex, ChannelId]]]]:
         """
         Determines the appropriate interface indexes and channel IDs to target for a given PNM test type.
@@ -550,8 +572,12 @@ class CommonMeasureService(CommonMessagingService):
             Tuple[ServiceStatusCode, Optional[List[Tuple[int, int]]]]: 
                 A status code indicating success or reason for failure, and a list of (index, channelId) tuples.
         """
+
+        if not ifParameters:
+            ifParameters = self.getInterfaceParameters(DocsisIfType.docsOfdmDownstream)
+
         if self.pnm_test_type in (DocsPnmCmCtlTest.DS_HISTOGRAM, DocsPnmCmCtlTest.LATENCY_REPORT):
-            idx:List[int] = await self.cm.getIfTypeIndex(DocsisIfType.docsCableMaclayer)
+            idx:List[InterfaceIndex] = await self.cm.getIfTypeIndex(DocsisIfType.docsCableMaclayer)
             return ServiceStatusCode.SUCCESS, [(idx[0], 0)]
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
@@ -1220,13 +1246,13 @@ class CommonMeasureService(CommonMessagingService):
 
         if (self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER or \
             self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA) and \
-            (not self.capture_parameter):
+            (not self.getSpectrumCaptureParameters()):
 
             self.logger.error('No Spectrum Parameters Found, did you set: setSpectrumCaptureParameters()')
 
             return  ServiceStatusCode.NO_SPECTRUM_CAPTURE_PARAMETERS, []
 
-        capture_parameter = self.capture_parameter
+        capture_parameter = self.getSpectrumCaptureParameters()
 
         if not capture_parameter:
 

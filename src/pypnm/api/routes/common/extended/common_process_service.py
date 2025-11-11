@@ -147,7 +147,7 @@ class CommonProcessService(CommonMessagingService):
             self.build_msg(ServiceStatusCode.SUCCESS, pnm_dict)
         
         elif pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA.name:
-            self.logger.debug(f"Processing {pnm_test_type} PNM data")
+            self.logger.info(f"Processing {pnm_test_type} PNM data")
             pnm_dict = self._add_device_details(CmSpectrumAnalysisSnmp(pnm_data).to_dict(include_raw=False), device_details)
             self.build_msg(ServiceStatusCode.SUCCESS, pnm_dict)
             
