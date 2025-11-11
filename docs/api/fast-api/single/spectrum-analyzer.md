@@ -280,7 +280,7 @@ DOCSIS constraints:
 * DOCSIS 3.1: up to **2** downstream OFDM channels.  
 * DOCSIS 4.0 FDD: up to **5** downstream OFDM channels.
 
-### Example Request
+### OFDM Capture Example Request
 
 ```json
 {
