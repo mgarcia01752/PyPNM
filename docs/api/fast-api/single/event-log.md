@@ -71,6 +71,57 @@ This endpoint returns the standard envelope described in [Common → Response](.
 | `docsDevEvId`        | int    | Numeric event identifier.                                                              |
 | `docsDevEvText`      | string | Human-readable message; often includes CM/CMTS MACs, profiles, versions.               |
 
+## Common Event Codes
+
+| Event ID | Description                             |
+| -------- | --------------------------------------- |
+| 67061601 | US profile assignment change.           |
+| 74010100 | CM-STATUS message sent.                 |
+| 74010200 | Ranging request sent.                   |
+| 74010300 | Ranging response received.              |
+| 74020100 | T3 timeout occurred.                    |
+| 74020200 | T4 timeout occurred.                    |
+| 74030100 | Upstream channel change completed.      |
+| 74030200 | Downstream channel change completed.    |
+| 74040100 | Ranging success.                        |
+| 74040200 | Ranging failure.                        |
+| 74040300 | Ranging aborted.                        |
+| 74050100 | Power adjustment performed.             |
+| 74060100 | Cable modem reset (power cycle).        |
+| 74060200 | Firmware download initiated.            |
+| 74060300 | Firmware download completed.            |
+
+## CM STATUS
+
+| Event Type Code | Description                                                                                              |
+| --------------- | -------------------------------------------------------------------------------------------------------- |
+| 0               | Reserved (no use)                                                                                        |
+| 1               | Secondary Channel MDD Timeout (the MDD timer on a secondary channel expired)                             |
+| 2               | QAM / FEC Lock Failure (loss of QAM or Forward Error Correction lock on downstream)                      |
+| 3               | Sequence Out-of-Range (a packet sequence number was out of the expected range)                           |
+| 4               | Secondary Channel MDD Recovery (receipt of MDD on a secondary channel)                                   |
+| 5               | QAM / FEC Lock Recovery (channel regained lock)                                                          |
+| 6               | T4 Timeout (station maintenance / broadcast failure)                                                     |
+| 7               | T3 Retries Exceeded (ranging retries maximum exceeded)                                                   |
+| 8               | Successful Ranging After T3 Retries Exceeded (ranging recovery)                                          |
+| 9               | CM Operating on Battery Backup (loss of A/C power for > 5 seconds)                                       |
+| 10              | CM Returned to A/C Power (came back from battery to A/C)                                                 |
+| 11              | MAC Removal Event (one or more MAC addresses removed, e.g., in port transition)                          |
+| 12–15           | Reserved for future use                                                                                  |
+| 16              | DS OFDM Profile Failure (FEC errors exceeded limit on a downstream OFDM profile)                         |
+| 17              | Primary Downstream Change (lost primary downstream, switched to backup)                                  |
+| 18              | DPD Mismatch (Some mismatch in DPD change count vs NCP odd/even bit)                                     |
+| 20              | NCP Profile Failure (FEC errors exceeded limit on NCP profile)                                           |
+| 21              | PLC Failure (FEC errors exceeded on PLC)                                                                 |
+| 22              | NCP Profile Recovery (FEC recovered on NCP)                                                              |
+| 23              | PLC Recovery (FEC recovery on PLC channel)                                                               |
+| 24              | OFDM Profile Recovery (FEC recovery on OFDM profile)                                                     |
+| 25              | OFDMA Profile Failure (modem unable to support a received profile)                                       |
+| 26              | MAP Storage Overflow (maps in CM overflow buffer)                                                        |
+| 27              | MAP Storage Almost Full                                                                                  |
+| 28–255          | Reserved / for vendor extensions                                                                         |
+
+
 ## Notes
 
 * Event levels follow syslog conventions: **0 (Emergency)** … **7 (Debug)**.
