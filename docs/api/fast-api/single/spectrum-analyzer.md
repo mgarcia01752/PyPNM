@@ -22,7 +22,7 @@ analysis payload or an archive (ZIP) with Matplotlib plots and CSV exports.
 `POST /docs/if31/system/diplexer`  
 
 See also:  
-[Diplexer Configuration API Guide](http://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/diplexer-configuration.md)
+[Diplexer Configuration API Guide](../../../single/diplexer-configuration.md)
 
 ## Endpoints
 
@@ -105,102 +105,102 @@ most flexible entry point and allows arbitrary sweep settings (within diplexer l
 
 ### Capture Parameters
 
-| JSON path                                      | Type | Description                                                                 |
-| ---------------------------------------------- | ---- | --------------------------------------------------------------------------- |
-| `capture_parameters.inactivity_timeout`        | int  | Timeout (seconds) before aborting idle spectrum acquisition.                |
-| `capture_parameters.first_segment_center_freq` | int  | Center frequency (Hz) of the first sweep segment.                           |
-| `capture_parameters.last_segment_center_freq`  | int  | Center frequency (Hz) of the last sweep segment.                            |
-| `capture_parameters.segment_freq_span`         | int  | Frequency span (Hz) covered by each sweep segment.                          |
-| `capture_parameters.num_bins_per_segment`      | int  | Number of FFT bins per segment.                                             |
-| `capture_parameters.noise_bw`                  | int  | Equivalent noise bandwidth for amplitude normalization.                     |
+| JSON path                                      | Type | Description                                                                  |
+| ---------------------------------------------- | ---- | ---------------------------------------------------------------------------- |
+| `capture_parameters.inactivity_timeout`        | int  | Timeout (seconds) before aborting idle spectrum acquisition.                 |
+| `capture_parameters.first_segment_center_freq` | int  | Center frequency (Hz) of the first sweep segment.                            |
+| `capture_parameters.last_segment_center_freq`  | int  | Center frequency (Hz) of the last sweep segment.                             |
+| `capture_parameters.segment_freq_span`         | int  | Frequency span (Hz) covered by each sweep segment.                           |
+| `capture_parameters.num_bins_per_segment`      | int  | Number of FFT bins per segment.                                              |
+| `capture_parameters.noise_bw`                  | int  | Equivalent noise bandwidth for amplitude normalization.                      |
 | `capture_parameters.window_function`           | int  | Window function index (implementation-specific; e.g., Hanning, Rectangular). |
-| `capture_parameters.num_averages`             | int  | Number of averages per segment for noise reduction.                         |
-| `capture_parameters.spectrum_retrieval_type`   | int  | Retrieval mode flag (e.g., 1 = capture and return both raw and float data). |
+| `capture_parameters.num_averages`              | int  | Number of averages per segment for noise reduction.                          |
+| `capture_parameters.spectrum_retrieval_type`   | int  | Retrieval mode flag (e.g., 1 = capture and return both raw and float data).  |
 
 ### Abbreviated JSON Response (Output Type `"json"`)
 
 ```json
 {
-    "mac_address": "749be8725e6a",
-    "status": 0,
-    "message": null,
-    "data": {
-        "analysis": [
-            {
-                "device_details": {
-                    "system_description": {
-                        "HW_REV": "2A",
-                        "VENDOR": "Hitron Technologies",
-                        "BOOTR": "CGM2.86C.727888.R.2304140950.F",
-                        "SW_REV": "7.3.5.3.2b2",
-                        "MODEL": "CODA"
-                    }
-                },
-                "capture_parameters": {
-                    "inactivity_timeout": 60,
-                    "first_segment_center_freq": 300000000,
-                    "last_segment_center_freq": 900000000,
-                    "segment_freq_span": 1000000,
-                    "num_bins_per_segment": 100,
-                    "noise_bw": 0,
-                    "window_function": 1,
-                    "num_averages": 1,
-                    "spectrum_retrieval_type": 1
-                },
-                "signal_analysis": {
-                    "bin_bandwidth": 10000,
-                    "segment_length": 100,
-                    "frequencies": [],
-                    "magnitudes": [],
-                    "window_average": {
-                        "points": 20,
-                        "magnitudes": []
-                    }
-                }
-            }
-        ],
-        "primative": [
-            {
-                "status": "SUCCESS",
-                "pnm_header": {
-                    "file_type": "PNN",
-                    "file_type_version": 9,
-                    "major_version": 1,
-                    "minor_version": 0,
-                    "capture_time": 1762839675
-                },
-                "mac_address": "74:9b:e8:72:5e:6a",
-                "first_segment_center_frequency": 300000000,
-                "last_segment_center_frequency": 900000000,
-                "segment_frequency_span": 1000000,
-                "num_bins_per_segment": 100,
-                "equivalent_noise_bandwidth": 110.0,
-                "window_function": 1,
-                "bin_frequency_spacing": 10000,
-                "spectrum_analysis_data_length": 120200,
-                "spectrum_analysis_data": "e570e3...40e340"
-            }
-        ],
-        "measurement_stats": [
-            {
-                "index": 0,
-                "entry": {
-                    "docsIf3CmSpectrumAnalysisCtrlCmdEnable": true,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout": 60,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency": 300000000,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency": 900000000,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan": 1000000,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment": 100,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth": 110,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction": 1,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages": 1,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdFileEnable": true,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus": "sample_ready",
-                    "docsIf3CmSpectrumAnalysisCtrlCmdFileName": "spectrum_analyzer_749be8725e6a_0_1762839621.bin"
-                }
-            }
-        ]
-    }
+  "mac_address": "aa:bb:cc:dd:ee:ff",
+  "status": 0,
+  "message": null,
+  "data": {
+    "analysis": [
+      {
+        "device_details": {
+          "system_description": {
+            "HW_REV": "1.0",
+            "VENDOR": "LANCity",
+            "BOOTR": "NONE",
+            "SW_REV": "1.0.0",
+            "MODEL": "LCPET-3"
+          }
+        },
+        "capture_parameters": {
+          "inactivity_timeout": 60,
+          "first_segment_center_freq": 300000000,
+          "last_segment_center_freq": 900000000,
+          "segment_freq_span": 1000000,
+          "num_bins_per_segment": 100,
+          "noise_bw": 0,
+          "window_function": 1,
+          "num_averages": 1,
+          "spectrum_retrieval_type": 1
+        },
+        "signal_analysis": {
+          "bin_bandwidth": 10000,
+          "segment_length": 100,
+          "frequencies": [],
+          "magnitudes": [],
+          "window_average": {
+            "points": 20,
+            "magnitudes": []
+          }
+        }
+      }
+    ],
+    "primative": [
+      {
+        "status": "SUCCESS",
+        "pnm_header": {
+          "file_type": "PNN",
+          "file_type_version": 9,
+          "major_version": 1,
+          "minor_version": 0,
+          "capture_time": 1762839675
+        },
+        "mac_address": "aa:bb:cc:dd:ee:ff",
+        "first_segment_center_frequency": 300000000,
+        "last_segment_center_frequency": 900000000,
+        "segment_frequency_span": 1000000,
+        "num_bins_per_segment": 100,
+        "equivalent_noise_bandwidth": 110.0,
+        "window_function": 1,
+        "bin_frequency_spacing": 10000,
+        "spectrum_analysis_data_length": 120200,
+        "spectrum_analysis_data": "e570e3...40e340"
+      }
+    ],
+    "measurement_stats": [
+      {
+        "index": 0,
+        "entry": {
+          "docsIf3CmSpectrumAnalysisCtrlCmdEnable": true,
+          "docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout": 60,
+          "docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency": 300000000,
+          "docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency": 900000000,
+          "docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan": 1000000,
+          "docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment": 100,
+          "docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth": 110,
+          "docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction": 1,
+          "docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages": 1,
+          "docsIf3CmSpectrumAnalysisCtrlCmdFileEnable": true,
+          "docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus": "sample_ready",
+          "docsIf3CmSpectrumAnalysisCtrlCmdFileName": "spectrum_analyzer_aabbccddeeff_0_1762839621.bin"
+        }
+      }
+    ]
+  }
 }
 ```
 
@@ -212,7 +212,7 @@ Top-level envelope:
 | ------------- | ------------- | ------------------------------------------------------------------------- |
 | `mac_address` | string        | Request echo of the modem MAC.                                            |
 | `status`      | int           | 0 on success, non-zero on error.                                          |
-| `message`     | string\|null | Optional message describing status.                                       |
+| `message`     | string\|null  | Optional message describing status.                                       |
 | `data`        | object        | Container for results (`analysis`, `primative`, `measurement_stats`).     |
 
 **Payload: `data.analysis[]`**
@@ -229,38 +229,38 @@ Top-level envelope:
 
 **Payload: `data.primative[]`**
 
-| Field                             | Type       | Description                                               |
-| --------------------------------- | ---------- | --------------------------------------------------------- |
-| status                            | string     | Result for this capture (e.g., `"SUCCESS"`).              |
-| pnm_header.*                      | object     | PNM file header (type, version, capture time).            |
-| mac_address                       | string     | MAC address.                                              |
-| first_segment_center_frequency    | int (Hz)   | Center frequency of the first sweep segment.              |
-| last_segment_center_frequency     | int (Hz)   | Center frequency of the last sweep segment.               |
-| segment_frequency_span            | int (Hz)   | Frequency span covered by each segment.                   |
-| num_bins_per_segment              | int        | Number of FFT bins per segment.                           |
-| equivalent_noise_bandwidth        | float (Hz) | Equivalent noise bandwidth used for amplitude scaling.    |
-| window_function                   | int        | Window function index.                                    |
-| bin_frequency_spacing             | float (Hz) | Frequency spacing between adjacent bins.                  |
-| spectrum_analysis_data_length     | int        | Byte length of `spectrum_analysis_data`.                  |
-| spectrum_analysis_data            | string     | Raw spectrum data encoded as hexadecimal text.            |
+| Field                          | Type       | Description                                               |
+| ------------------------------ | ---------- | --------------------------------------------------------- |
+| status                         | string     | Result for this capture (e.g., `"SUCCESS"`).              |
+| pnm_header.*                   | object     | PNM file header (type, version, capture time).            |
+| mac_address                    | string     | MAC address.                                              |
+| first_segment_center_frequency | int (Hz)   | Center frequency of the first sweep segment.              |
+| last_segment_center_frequency  | int (Hz)   | Center frequency of the last sweep segment.               |
+| segment_frequency_span         | int (Hz)   | Frequency span covered by each segment.                   |
+| num_bins_per_segment           | int        | Number of FFT bins per segment.                           |
+| equivalent_noise_bandwidth     | float (Hz) | Equivalent noise bandwidth used for amplitude scaling.    |
+| window_function                | int        | Window function index.                                    |
+| bin_frequency_spacing          | float (Hz) | Frequency spacing between adjacent bins.                  |
+| spectrum_analysis_data_length  | int        | Byte length of `spectrum_analysis_data`.                  |
+| spectrum_analysis_data         | string     | Raw spectrum data encoded as hexadecimal text.            |
 
 **Payload: `data.measurement_stats[]`**
 
 | Field                                                     | Type    | Description                                              |
 | --------------------------------------------------------- | ------- | -------------------------------------------------------- |
-| index                                                     | int     | SNMP table row index.                                    |
-| entry.docsIf3CmSpectrumAnalysisCtrlCmdEnable              | boolean | Whether capture was enabled for this measurement.        |
-| entry.docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout   | int     | Inactivity timeout (seconds) used for the capture.      |
-| entry.docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency | int (Hz) | First segment center frequency at capture time.  |
-| entry.docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency  | int (Hz) | Last segment center frequency at capture time.   |
-| entry.docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan        | int (Hz) | Segment frequency span in Hz.                   |
-| entry.docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment          | int     | Number of bins per segment.                      |
-| entry.docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth   | int     | Equivalent noise bandwidth in Hz.                |
-| entry.docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction             | int     | Window function index.                           |
-| entry.docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages           | int     | Number of averages used for this capture.        |
-| entry.docsIf3CmSpectrumAnalysisCtrlCmdFileEnable                 | boolean | Whether capture-to-file was enabled.             |
-| entry.docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus                 | string  | Measurement status (e.g., `"sample_ready"`).     |
-| entry.docsIf3CmSpectrumAnalysisCtrlCmdFileName                   | string  | Device-side filename of the captured spectrum.   |
+| index                                                               | int     | SNMP table row index.                                    |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdEnable                        | boolean | Whether capture was enabled for this measurement.        |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout             | int     | Inactivity timeout (seconds) used for the capture.       |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency   | int (Hz) | First segment center frequency at capture time.  |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency    | int (Hz) | Last segment center frequency at capture time.   |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan          | int (Hz) | Segment frequency span in Hz.                   |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment             | int     | Number of bins per segment.                      |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth      | int     | Equivalent noise bandwidth in Hz.                |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction                | int     | Window function index.                           |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages              | int     | Number of averages used for this capture.        |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdFileEnable                    | boolean | Whether capture-to-file was enabled.             |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus                    | string  | Measurement status (e.g., `"sample_ready"`).     |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdFileName                      | string  | Device-side filename of the captured spectrum.   |
 
 ---
 
@@ -317,108 +317,108 @@ DOCSIS constraints:
 
 ```json
 {
-    "mac_address": "749be8725e6a",
-    "status": 0,
-    "message": null,
-    "data": {
-        "analyses": [
-            {
-                "device_details": {
-                    "system_description": {
-                        "HW_REV": "2A",
-                        "VENDOR": "Hitron Technologies",
-                        "BOOTR": "CGM2.86C.727888.R.2304140950.F",
-                        "SW_REV": "7.3.5.3.2b2",
-                        "MODEL": "CODA"
-                    }
-                },
-                "capture_parameters": {
-                    "inactivity_timeout": 60,
-                    "first_segment_center_freq": 739000000,
-                    "last_segment_center_freq": 833000000,
-                    "segment_freq_span": 1000000,
-                    "num_bins_per_segment": 100,
-                    "noise_bw": 0,
-                    "window_function": 1,
-                    "num_averages": 1,
-                    "spectrum_retrieval_type": 1
-                },
-                "signal_analysis": {
-                    "bin_bandwidth": 10000,
-                    "segment_length": 100,
-                    "frequencies": [],
-                    "magnitudes": [],
-                    "window_average": {
-                        "points": 10,
-                        "magnitudes": []
-                    }
-                }
-            }
-        ],
-        "primative": {
-            "0": [
-                {
-                    "status": "SUCCESS",
-                    "pnm_header": {
-                        "file_type": "PNN",
-                        "file_type_version": 9,
-                        "major_version": 1,
-                        "minor_version": 0,
-                        "capture_time": 1762840213
-                    },
-                    "channel_id": 0,
-                    "mac_address": "74:9b:e8:72:5e:6a",
-                    "first_segment_center_frequency": 739000000,
-                    "last_segment_center_frequency": 833000000,
-                    "segment_frequency_span": 1000000,
-                    "num_bins_per_segment": 100,
-                    "equivalent_noise_bandwidth": 110.0,
-                    "window_function": 1,
-                    "bin_frequency_spacing": 10000,
-                    "spectrum_analysis_data_length": 19000,
-                    "spectrum_analysis_data": "",
-                    "amplitude_bin_segments_float": []
-                }
-            ],
-            "1": []
+  "mac_address": "aa:bb:cc:dd:ee:ff",
+  "status": 0,
+  "message": null,
+  "data": {
+    "analyses": [
+      {
+        "device_details": {
+          "system_description": {
+            "HW_REV": "1.0",
+            "VENDOR": "LANCity",
+            "BOOTR": "NONE",
+            "SW_REV": "1.0.0",
+            "MODEL": "LCPET-3"
+          }
         },
-        "measurement_stats": [
-            {
-                "index": 0,
-                "entry": {
-                    "docsIf3CmSpectrumAnalysisCtrlCmdEnable": true,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout": 30,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency": 739000000,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency": 833000000,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan": 1000000,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment": 100,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth": 110,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction": 1,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages": 2,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdFileEnable": true,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus": "sample_ready",
-                    "docsIf3CmSpectrumAnalysisCtrlCmdFileName": "spectrum_analyzer_749be8725e6a_0_1762840189.bin"
-                }
-            },
-            {
-                "index": 0,
-                "entry": {
-                    "docsIf3CmSpectrumAnalysisCtrlCmdEnable": true,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout": 30,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency": 619000000,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency": 737000000,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan": 1000000,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment": 100,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth": 110,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction": 1,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages": 2,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdFileEnable": true,
-                    "docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus": "sample_ready",
-                    "docsIf3CmSpectrumAnalysisCtrlCmdFileName": "spectrum_analyzer_749be8725e6a_0_1762840227.bin"
-                }
-            }
-        ]
-    }
+        "capture_parameters": {
+          "inactivity_timeout": 60,
+          "first_segment_center_freq": 739000000,
+          "last_segment_center_freq": 833000000,
+          "segment_freq_span": 1000000,
+          "num_bins_per_segment": 100,
+          "noise_bw": 0,
+          "window_function": 1,
+          "num_averages": 1,
+          "spectrum_retrieval_type": 1
+        },
+        "signal_analysis": {
+          "bin_bandwidth": 10000,
+          "segment_length": 100,
+          "frequencies": [],
+          "magnitudes": [],
+          "window_average": {
+            "points": 10,
+            "magnitudes": []
+          }
+        }
+      }
+    ],
+    "primative": {
+      "0": [
+        {
+          "status": "SUCCESS",
+          "pnm_header": {
+            "file_type": "PNN",
+            "file_type_version": 9,
+            "major_version": 1,
+            "minor_version": 0,
+            "capture_time": 1762840213
+          },
+          "channel_id": 0,
+          "mac_address": "aa:bb:cc:dd:ee:ff",
+          "first_segment_center_frequency": 739000000,
+          "last_segment_center_frequency": 833000000,
+          "segment_frequency_span": 1000000,
+          "num_bins_per_segment": 100,
+          "equivalent_noise_bandwidth": 110.0,
+          "window_function": 1,
+          "bin_frequency_spacing": 10000,
+          "spectrum_analysis_data_length": 19000,
+          "spectrum_analysis_data": "",
+          "amplitude_bin_segments_float": []
+        }
+      ],
+      "1": []
+    },
+    "measurement_stats": [
+      {
+        "index": 0,
+        "entry": {
+          "docsIf3CmSpectrumAnalysisCtrlCmdEnable": true,
+          "docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout": 30,
+          "docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency": 739000000,
+          "docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency": 833000000,
+          "docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan": 1000000,
+          "docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment": 100,
+          "docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth": 110,
+          "docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction": 1,
+          "docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages": 2,
+          "docsIf3CmSpectrumAnalysisCtrlCmdFileEnable": true,
+          "docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus": "sample_ready",
+          "docsIf3CmSpectrumAnalysisCtrlCmdFileName": "spectrum_analyzer_aabbccddeeff_0_1762840189.bin"
+        }
+      },
+      {
+        "index": 0,
+        "entry": {
+          "docsIf3CmSpectrumAnalysisCtrlCmdEnable": true,
+          "docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout": 30,
+          "docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency": 619000000,
+          "docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency": 737000000,
+          "docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan": 1000000,
+          "docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment": 100,
+          "docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth": 110,
+          "docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction": 1,
+          "docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages": 2,
+          "docsIf3CmSpectrumAnalysisCtrlCmdFileEnable": true,
+          "docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus": "sample_ready",
+          "docsIf3CmSpectrumAnalysisCtrlCmdFileName": "spectrum_analyzer_aabbccddeeff_0_1762840227.bin"
+        }
+      }
+    ]
+  }
 }
 ```
 
@@ -426,11 +426,11 @@ DOCSIS constraints:
 
 **Payload: `data.analyses[]` (OFDM)**
 
-| Field                                | Type   | Description                                                        |
-| ------------------------------------ | ------ | ------------------------------------------------------------------ |
-| `[index]`.device_details.*           | object | System descriptor captured at analysis time for that channel.      |
-| `[index]`.capture_parameters.*       | object | Effective capture parameters for that OFDM channel.                |
-| `[index]`.signal_analysis.*          | object | Per-channel spectrum analysis (frequencies, magnitudes, smoothing). |
+| Field                          | Type   | Description                                                          |
+| ------------------------------ | ------ | -------------------------------------------------------------------- |
+| `[index]`.device_details.*     | object | System descriptor captured at analysis time for that channel.        |
+| `[index]`.capture_parameters.* | object | Effective capture parameters for that OFDM channel.                  |
+| `[index]`.signal_analysis.*    | object | Per-channel spectrum analysis (frequencies, magnitudes, smoothing).  |
 
 **Payload: `data.primative` (OFDM)**
 
@@ -523,11 +523,11 @@ For all three endpoints, when `analysis.output.type = "archive"`:
 
 Examples of generated plots (file names may vary by implementation):
 
-| Standard Plot | Moving Average Plot | Description |
-| ------------- | ------------------- | ----------- |
-| [DS Full Bandwidth](images/spectrum/spec-analysis-standard.png) | [DS Full Bandwidth](images/spectrum/spec-analysis-moving-average.png) | Single-capture standard vs moving-average spectrum views.  |
-| [SCQAM](images/spectrum/scqam-2-spec-analysis-standard.png)     | [SCQAM](images/spectrum/scqam-2-spec-analysis-moving-average.png)   | Example SC-QAM channel standard and moving-average plots.  |
-| [OFDM](images/spectrum/ofdm-160-spec_analysis-rpt-standard.png) | [OFDM](images/spectrum/ofdm-160-spec-analysis-rpt-moving-average.png) | Example OFDM channel standard and moving-average plots.    |
+| Standard Plot  | Moving Average Plot  | Description |
+| -------------- | -------------------- | ----------- |
+| [DS Full Bandwidth](images/spectrum/spec-analysis-standard.png) | [DS Full Bandwidth](images/spectrum/spec-analysis-moving-average.png)    | Single-capture standard vs moving-average spectrum views.       |
+| [SCQAM](images/spectrum/scqam-2-spec-analysis-standard.png)     | [SCQAM](images/spectrum/scqam-2-spec-analysis-moving-average.png)        | Example SC-QAM channel standard and moving-average plots.       |
+| [OFDM](images/spectrum/ofdm-160-spec_analysis-rpt-standard.png) | [OFDM](images/spectrum/ofdm-160-spec-analysis-rpt-moving-average.png)    | Example OFDM channel standard and moving-average plots.         |
 
 ## Notes
 
