@@ -22,7 +22,7 @@ analysis payload or an archive (ZIP) with Matplotlib plots and CSV exports.
 `POST /docs/if31/system/diplexer`  
 
 See also:  
-[Diplexer Configuration API Guide](http://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/diplexer-configuration.md)
+[Diplexer Configuration API Guide](http://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/diplexer-configuration.md)
 
 ## Endpoints
 
