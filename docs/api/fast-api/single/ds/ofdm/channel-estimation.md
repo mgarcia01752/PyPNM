@@ -23,7 +23,7 @@ Refer to [Common → Request](../../../common/request.md).
 | `analysis.output.type`    | string   | `"json"`, `"archive"`     | `"json"`  | Output format. `"json"` returns inline under `data`; `"archive"` returns a ZIP (CSV + plots). |
 | `analysis.plot.ui.theme`  | string   | `"light"`, `"dark"`       | `"dark"`  | Plot theme hint (colors, grid, ticks). Does not affect raw metrics/CSV.                       |
 
-**Notes**
+### Notes
 
 - When `analysis.output.type = "archive"`, the HTTP response body is the file (no `data` JSON payload).
 - The `primative` section is the normalized raw payload with added metadata.
@@ -205,7 +205,7 @@ describe the structure and interpretation.
 | direct_path.amplitude               | number        | Magnitude of the direct path peak (normalized units).                                           |
 | direct_path.distance_m              | number        | Reference distance in meters (0 for direct path).                                               |
 | direct_path.distance_ft             | number        | Reference distance in feet (0 for direct path).                                                 |
-| echoes[]                            | array<object> | Detected echo peaks sorted by amplitude or delay (implementation-defined).                      |
+| echoes[]                            | array of objects | Detected echo peaks sorted by amplitude or delay (implementation-defined).                      |
 | echoes[].bin_index                  | int           | FFT bin index of the echo peak.                                                                 |
 | echoes[].time_s                     | number        | Echo peak time in seconds.                                                                      |
 | echoes[].amplitude                  | number        | Echo peak magnitude (normalized units).                                                         |
@@ -216,9 +216,9 @@ describe the structure and interpretation.
 | min_separation_s                    | number        | Minimum separation between peaks in seconds.                                                     |
 | max_delay_s                         | number/null   | Optional maximum delay search window in seconds.                                                |
 | max_peaks                           | int           | Maximum number of echoes to report.                                                             |
-| time_response                       | array|null    | Optional time-domain response samples (implementation-dependent; may be null for brevity).      |
+| time_response                       | array\|null    | Optional time-domain response samples (implementation-dependent; may be null for brevity).      |
 
-**Notes**
+### Echo Distance Calculation Notes
 
 - Distance is computed from time via `distance = time_s × prop_speed_mps`. Values are one-way estimates.
 - The `direct_path` is used as the reference for thresholding and distance zero; echoes are relative to this peak.
@@ -278,4 +278,3 @@ SNMP snapshot for each channel at capture time.
 | entry.docsPnmCmOfdmChEstCoefAmpMean                 | int      | Amplitude mean (vendor units).               |
 | entry.docsPnmCmOfdmChEstCoefGrpDelaySlope           | int      | Group delay slope (vendor units).            |
 | entry.docsPnmCmOfdmChEstCoefGrpDelayMean            | int      | Group delay mean (vendor units).             |
-

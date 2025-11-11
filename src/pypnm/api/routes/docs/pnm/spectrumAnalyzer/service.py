@@ -59,6 +59,8 @@ class CmSpectrumAnalysisService(CommonMeasureService):
         capture_parameters: SpecAnCapturePara,):
         self.logger = logging.getLogger(self.__class__.__name__)
         
+        pnmCmCtlTest = DocsPnmCmCtlTest.SPECTRUM_ANALYZER
+
         if not self.logger.handlers:
             handler = logging.StreamHandler()
             formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
@@ -66,8 +68,12 @@ class CmSpectrumAnalysisService(CommonMeasureService):
             self.logger.addHandler(handler)
             self.logger.setLevel(logging.INFO)
 
+        if capture_parameters.spectrum_retrieval_type == SpectrumRetrievalType.SNMP:
+            self.logger.info('Selecting: SPECTRUM_ANALYZER_SNMP_AMP_DATA')
+            pnmCmCtlTest = DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA
+
         super().__init__(
-            DocsPnmCmCtlTest.SPECTRUM_ANALYZER,
+            pnmCmCtlTest,
             cable_modem,
             tftp_servers,
             tftp_path,

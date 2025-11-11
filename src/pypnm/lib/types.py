@@ -99,11 +99,13 @@ SubcarrierId  = NewType("SubcarrierId", int)
 SubcarrierIdx = NewType("SubcarrierIdx", int)
 
 # SNMP identifiers
-OidStr        = NewType("OidStr", str)              # symbolic or dotted-decimal
-OidNumTuple   = NewType("OidNumTuple", Tuple[int, ...])
+OidStr          = NewType("OidStr", str)              # symbolic or dotted-decimal
+OidNumTuple     = NewType("OidNumTuple", Tuple[int, ...])
+InterfaceIndex  = NewType("InterfaceIndex", int)
+EntryIndex      = NewType("EntryIndex", int)
 
 # Network addressing (store as plain strings; validate elsewhere)
-MacAddressStr   = NewType("MacAddressStr", str)     # aa:bb:cc:dd:ee:ff
+MacAddressStr   = NewType("MacAddressStr", str)     # aa:bb:cc:dd:ee:ff | aa-bb-cc-dd-ee-ff | aabb.ccdd.eeff | aabbccddeeff | aabbcc:ddeeff |
 IPv4Str         = NewType("IPv4Str", str)           # 192.168.0.1
 IPv6Str         = NewType("IPv6Str", str)           # 2001:db8::1
 InetAddressStr  = NewType("InetAddressStr", str)    # 192.168.0.1 | 2001:db8::1
@@ -120,7 +122,7 @@ RegressionCoeffs = Tuple[float, float]              # (slope, intercept)
 RegressionStats  = Tuple[float, float, float]       # (slope, intercept, r2)
 
 # RxMER / spectrum containers
-FrequencySeriesHz: TypeAlias = List[int]
+FrequencySeriesHz: TypeAlias = List[FrequencyHz]
 MerSeriesdB: TypeAlias       = FloatSeries
 ShannonSeriesdB: TypeAlias   = FloatSeries
 MagnitudeSeries: TypeAlias   = FloatSeries
@@ -161,5 +163,5 @@ __all__ = [
     "FrequencySeriesHz", "MerSeriesdB", "ShannonSeriesdB", "MagnitudeSeries",
     # modulation/profile & misc
     "ProfileId", "BitsPerSymbol", "BitsPerSymbolSeries", "Microseconds",
-    "HttpRtnCode"
+    "HttpRtnCode", "InterfaceIndex", "EntryIndex"
 ]

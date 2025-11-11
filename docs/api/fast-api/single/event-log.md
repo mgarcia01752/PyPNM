@@ -121,7 +121,6 @@ This endpoint returns the standard envelope described in [Common → Response](.
 | 27              | MAP Storage Almost Full                                                                                  |
 | 28–255          | Reserved / for vendor extensions                                                                         |
 
-
 ## Notes
 
 * Event levels follow syslog conventions: **0 (Emergency)** … **7 (Debug)**.

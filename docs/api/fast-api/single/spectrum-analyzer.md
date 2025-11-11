@@ -55,8 +55,6 @@ These endpoints add optional `analysis` controls and a `capture_parameters` sect
 
 When `analysis.output.type = "archive"`, the HTTP response body is the file (no `data` JSON payload).
 
----
-
 ## Single Capture – `/spectrumAnalyzer/getCapture`
 
 Single downstream spectrum capture using the modem's generic spectrum engine. This is the
@@ -262,7 +260,6 @@ Top-level envelope:
 | entry.docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus                    | string  | Measurement status (e.g., `"sample_ready"`).     |
 | entry.docsIf3CmSpectrumAnalysisCtrlCmdFileName                      | string  | Device-side filename of the captured spectrum.   |
 
----
 
 ## OFDM Downstream Capture – `/spectrumAnalyzer/getCapture/ofdm`
 
@@ -442,8 +439,6 @@ DOCSIS constraints:
 
 Reuses the single-capture `measurement_stats` field definitions, repeated per OFDM channel.
 
----
-
 ## SC-QAM Downstream Capture – `/spectrumAnalyzer/getCapture/scqam`
 
 This endpoint iterates across all downstream SC-QAM channels, performing spectrum captures
@@ -509,8 +504,6 @@ Same as OFDM: each list element represents a per-channel analysis view with
 **Payload: `data.measurement_stats[]` (SC-QAM)**
 
 Reuses the single-capture `measurement_stats` field definitions, per SC-QAM channel.
-
----
 
 ## Archive Output
 

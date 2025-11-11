@@ -7,7 +7,7 @@ import asyncio
 import logging
 import time
 from enum import Enum, IntEnum
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union, cast
 
 from pysnmp.proto.rfc1902 import Gauge32, Integer32, OctetString
 from pypnm.config.pnm_config_manager import SystemConfigSettings
@@ -41,6 +41,7 @@ from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEnt
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.docsis.lib.pnm_bulk_data import DocsPnmBulkDataGroup, DocsPnmBulkFileEntry
 from pypnm.lib.constants import DEFAULT_SPECTRUM_ANALYZER_INDICES
+from pypnm.lib.types import ChannelId, EntryIndex, FrequencyHz, InterfaceIndex
 from pypnm.pnm.data_type.DocsEqualizerData import DocsEqualizerData
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
     DocsIf3CmSpectrumAnalysisCtrlCmd, SpectrumRetrievalType,)
@@ -504,7 +505,7 @@ class CmSnmpOperation:
         mac_hex = mac_bytes.hex()
         return MacAddress(mac_hex)
 
-    async def getDocsIfCmDsScQamChanChannelIdIndex(self) -> List[int]:
+    async def getDocsIfCmDsScQamChanChannelIdIndex(self) -> List[InterfaceIndex]:
         """
         Retrieve the list of DOCSIS 3.0 downstream SC-QAM channel indices.
 
@@ -518,7 +519,7 @@ class CmSnmpOperation:
             self.logger.error(f"Failed to retrieve SC-QAM Indexes: {e}")
             return []
 
-    async def getDocsIfCmUsTdmaChanChannelIdIndex(self) -> List[int]:
+    async def getDocsIfCmUsTdmaChanChannelIdIndex(self) -> List[InterfaceIndex]:
         """
         Retrieve the list of DOCSIS 3.0 upstream TDMA/ATDMA channel indices (i.e., TDMA or ATDMA).
 
@@ -587,7 +588,7 @@ class CmSnmpOperation:
             self.logger.error(f"Failed to retrieve SC-QAM channel indices from {oid_channel_id}: {e}")
             return []
 
-    async def getDocsIf31CmDsOfdmChannelIdIndex(self) -> List[int]:
+    async def getDocsIf31CmDsOfdmChannelIdIndex(self) -> List[InterfaceIndex]:
         """
         Retrieve the list of Docsis 3.1 downstream OFDM channel indices.
 
@@ -596,7 +597,7 @@ class CmSnmpOperation:
         """
         return await self.getIfTypeIndex(DocsisIfType.docsOfdmDownstream)
 
-    async def getDocsIf31CmUsOfdmaChanChannelIdIndex(self) -> List[int]:
+    async def getDocsIf31CmUsOfdmaChanChannelIdIndex(self) -> List[InterfaceIndex]:
         """
         Get the Docsis 3.1 upstream OFDMA channels.
 
@@ -605,7 +606,7 @@ class CmSnmpOperation:
         """
         return await self.getIfTypeIndex(DocsisIfType.docsOfdmaUpstream)
 
-    async def getDocsIf31CmDsOfdmChanPlcFreq(self) -> List[Tuple[int, int]]:
+    async def getDocsIf31CmDsOfdmChanPlcFreq(self) -> List[Tuple[InterfaceIndex, FrequencyHz]]:
         """
         Retrieve the PLC frequencies of DOCSIS 3.1 downstream OFDM channels.
 
@@ -627,7 +628,7 @@ class CmSnmpOperation:
             self.logger.error(f"Failed to retrieve PLC frequencies from OID {oid}: {e}")
             return []
 
-    async def getDocsPnmCmOfdmChEstCoefMeasStatus(self, ofdm_idx: int) -> int:
+    async def getDocsPnmCmOfdmChEstCoefMeasStatus(self, ofdm_idx: InterfaceIndex) -> int:
         '''
         Retrieves the measurement status of OFDM channel estimation coefficients.
 
@@ -640,7 +641,7 @@ class CmSnmpOperation:
         result = await self._snmp.get(f'{"docsPnmCmOfdmChEstCoefMeasStatus"}.{ofdm_idx}')
         return int(Snmp_v2c.snmp_get_result_value(result)[0])
 
-    async def getCmDsOfdmProfileStatsConfigChangeCt(self, ofdm_idx: int) -> dict[int,dict[int,int]]:
+    async def getCmDsOfdmProfileStatsConfigChangeCt(self, ofdm_idx: InterfaceIndex) -> dict[int,dict[int,int]]:
         """
         Retrieve the count of configuration change events for a specific OFDM profile.
 
@@ -845,7 +846,7 @@ class CmSnmpOperation:
             self.logger.exception("Failed to retrieve ATDMA upstream channel entries")
             return []
 
-    async def getEventEntryIndex(self) -> List[int]:
+    async def getEventEntryIndex(self) -> List[EntryIndex]:
         """
         Retrieves the list of index values for the docsDevEventEntry table.
 
@@ -860,7 +861,7 @@ class CmSnmpOperation:
             self.logger.warning(f"No results found for OID {oid}")
             return []
 
-        return Snmp_v2c.extract_last_oid_index(results)
+        return cast(List[EntryIndex], Snmp_v2c.extract_last_oid_index(results))
 
     async def getDocsDevEventEntry(self, to_dict: bool = False) -> Union[List['DocsDevEventEntry'], List[dict]]:
         """
@@ -1024,7 +1025,7 @@ class CmSnmpOperation:
             logging.error(f'[{test_type.name}] {result}')
             return MeasStatusType.ERROR
 
-    async def getDocsIfDownstreamChannelIdIndexStack(self) -> List[Tuple[int, int]]:
+    async def getDocsIfDownstreamChannelIdIndexStack(self) -> List[Tuple[InterfaceIndex, ChannelId]]:
         """
         Retrieve SC-QAM channel index ↔ channelId tuples for DOCSIS 3.0 downstream channels,
         ensuring we only return true SC-QAM channels ( skips OFDM / zero entries ).
@@ -1063,7 +1064,8 @@ class CmSnmpOperation:
 
         # 4) filter out non-SC-QAM and zero entries (likely OFDM)
         scqam_set = set(scqam_if_indices)
-        filtered: List[Tuple[int, int]] = []
+        filtered: List[Tuple[InterfaceIndex, ChannelId]] = []
+        
         for idx, chan_id in raw_pairs:
             if idx not in scqam_set:
                 self.logger.debug("Skipping idx %s not in SC-QAM interface list", idx)
@@ -1071,11 +1073,11 @@ class CmSnmpOperation:
             if chan_id == 0:
                 self.logger.debug("Skipping idx %s with channel_id=0 (likely OFDM)", idx)
                 continue
-            filtered.append((idx, chan_id))
+            filtered.append((InterfaceIndex(idx), ChannelId(chan_id)))
 
         return filtered
 
-    async def getDocsIf31CmDsOfdmChannelIdIndexStack(self) -> List[Tuple[int, int]]:
+    async def getDocsIf31CmDsOfdmChannelIdIndexStack(self) -> List[Tuple[InterfaceIndex, ChannelId]]:
         """
         Retrieve a list of tuples representing OFDM channel index and their associated channel IDs
         for DOCSIS 3.1 downstream OFDM channels.
@@ -1088,26 +1090,26 @@ class CmSnmpOperation:
         if not result:
             return []
 
-        idx_channelId = Snmp_v2c.snmp_get_result_last_idx_value(result)
+        idx_channelId:List[Tuple[InterfaceIndex, ChannelId]] = Snmp_v2c.snmp_get_result_last_idx_value(result)
 
         return idx_channelId or []
 
-    async def getDocsIf31CmUsOfdmaChannelIdIndexStack(self) -> List[Tuple[int, int]]:
+    async def getDocsIf31CmUsOfdmaChannelIdIndexStack(self) -> List[Tuple[InterfaceIndex, ChannelId]]:
         """
         Retrieve a list of tuples representing OFDMA channel index and their associated channel IDs
         for DOCSIS 3.1 upstream OFDMA channels.
 
         Returns:
-            List[Tuple[int, int]]: Each tuple contains (index, channelId). Returns an empty list if no data is found.
+            List[Tuple[InterfaceIndex, ChannelId]]: Each tuple contains (index, channelId). Returns an empty list if no data is found.
         """
         result = await self._snmp.walk(f'{"docsIf31CmUsOfdmaChanChannelId"}')
         
         if not result:
             return []
 
-        idx_channelId = Snmp_v2c.snmp_get_result_last_idx_value(result)
+        idx_channelIdList: List[Tuple[InterfaceIndex, ChannelId]] = Snmp_v2c.snmp_get_result_last_idx_value(result)
 
-        return idx_channelId or []        
+        return idx_channelIdList or []
 
     async def getSysUpTime(self) -> Optional[str]:
         """

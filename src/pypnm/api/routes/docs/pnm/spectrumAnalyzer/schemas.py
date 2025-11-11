@@ -24,7 +24,10 @@ class SpecAnCapturePara(BaseModel):
     noise_bw                 : int                      = Field(default=150, description="Equivalent noise bandwidth in kHz.")
     window_function          : WindowFunction           = Field(default=WindowFunction.HANN, description="FFT window function to apply. See WindowFunction enum for options.")
     num_averages             : int                      = Field(default=1, description="Number of averages per segment.")
-    spectrum_retrieval_type  : SpectrumRetrievalType    = Field(default=SpectrumRetrievalType.FILE, description="Method of spectrum data retrieval.")
+    spectrum_retrieval_type  : SpectrumRetrievalType    = Field(default=SpectrumRetrievalType.FILE,
+                                                                description=f"Method of spectrum data retrieval: " 
+                                                                            f"PNM ({SpectrumRetrievalType.FILE}) | "
+                                                                            f"SNMP({SpectrumRetrievalType.SNMP}).") 
 
 class SpectrumAnalysisExtention(BaseModel):
     moving_average:SpecAnMovingAvgParameters = Field(default=SpecAnMovingAvgParameters(), description="")
@@ -56,9 +59,12 @@ class CmSpecAnaAnalysisResponse(PnmDataResponse):
 
 class OfdmSpecAna(BaseModel):
     number_of_averages: int  = Field(default=10, description="Number of samples to calculate the average per-bin")      
-
+    spectrum_retrieval_type: SpectrumRetrievalType = Field(default=SpectrumRetrievalType.FILE,
+                                                           description=f"Method of spectrum data retrieval: " 
+                                                                       f"PNM ({SpectrumRetrievalType.FILE}) | "
+                                                                       f"SNMP({SpectrumRetrievalType.SNMP}).") 
 class OfdmSpecAnaAnalysisRequest(ExtendSingleCaptureSpecAnaRequest):
-    capture_parameters:OfdmSpecAna = Field(default=OfdmSpecAna(), description="")   
+    capture_parameters:OfdmSpecAna = Field(default=OfdmSpecAna(), description="")
 
 # -------------- MAIN-OFDM-RESPONSE------------------
 
@@ -68,7 +74,11 @@ class OfdmSpecAnaAnalysisResponse(PnmAnalysisResponse):
 # -------------- MAIN-SCQAM-REQUEST ------------------
 
 class ScQamSpecAna(BaseModel):
-    number_of_averages: int  = Field(default=10, description="Number of samples to calculate the average per-bin")      
+    number_of_averages: int  = Field(default=10, description="Number of samples to calculate the average per-bin")
+    spectrum_retrieval_type: SpectrumRetrievalType = Field(default=SpectrumRetrievalType.FILE,
+                                                           description=f"Method of spectrum data retrieval: " 
+                                                                       f"PNM ({SpectrumRetrievalType.FILE}) | "
+                                                                       f"SNMP({SpectrumRetrievalType.SNMP}).")
 
 class ScQamSpecAnaAnalysisRequest(ExtendSingleCaptureSpecAnaRequest):
     capture_parameters:ScQamSpecAna = Field(default=ScQamSpecAna(), description="")

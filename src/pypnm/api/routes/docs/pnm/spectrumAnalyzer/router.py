@@ -81,10 +81,7 @@ class SpectrumAnalyzerRouter:
 
             self.logger.info(
                 "Starting Spectrum Analyzer capture for MAC: %s, IP: %s, Output Type: %s",
-                mac,
-                ip,
-                request.analysis.output.type,
-            )
+                mac, ip, request.analysis.output.type,)
 
             cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
 

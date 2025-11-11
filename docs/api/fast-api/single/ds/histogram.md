@@ -33,7 +33,7 @@ Refer to [Common → Request](../../../common/request.md).
 | `capture_settings.sample_duration_sec` | int  | 10      | Time window for capture, in seconds.                                        |
 | `capture_settings.bin_count`           | int  | 256     | Number of equally spaced bins (often 255 or 256 depending on CM).          |
 
-**Notes**
+### Notes
 
 * The CM accumulates hits per bin across the capture window. Dwell count is typically uniform per bin for equal sampling.  
 * A clipped transmitter path often shows one‑sided truncation and a spike in an end bin.  
@@ -118,7 +118,7 @@ Standard envelope with payload under `data`.
 | ------------- | --------------- | ------------------------------------------------------------------------- |
 | `mac_address` | string          | Request echo of the modem MAC.                                            |
 | `status`      | int             | 0 on success, non‑zero on error.                                          |
-| `message`     | string \| null | Optional message describing status.                                       |
+| `message`     | string \| null | Optional message describing status.                                        |
 | `data`        | object          | Container for results (`analysis`, `primative`, `measurement_stats`).     |
 
 ### `data.analysis[]`

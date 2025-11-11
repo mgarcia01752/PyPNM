@@ -32,7 +32,7 @@ Refer to [Common → Request](../../../common/request.md).
 | ------------------------------------- | ---- | ------- | -------------------------------------------------------------------------------------------- |
 | `capture_settings.fec_summary_type`   | int  | 2       | Summary type per SNMP `docsPnmCmDsOfdmFecSumType`. **2 = 24‑hour**, **3 = 10‑minute**.      |
 
-**Notes**
+### Notes
 
 * Your project setting: **Type 2 corresponds to a 24‑hour interval**; **Type 3 corresponds to a 10‑minute interval**.  
 * The time‑series set count depends on the type (see *Return Structure* → `number_of_sets`).  

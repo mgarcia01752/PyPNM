@@ -1,7 +1,3 @@
-Added the new `measurement_stats` content and tightened the doc to match the rest of your style (MkDocs/GitHub-safe, no theme-specific bits). Grab the file or read it inline:
-
-[Download: RxMER-API.md](sandbox:/mnt/data/RxMER-API.md)
-
 # PNM Operations – Downstream OFDM RxMER
 
 Deep Visibility Into Downstream OFDM RxMER At The Subcarrier Level.
@@ -27,7 +23,7 @@ Refer to [Common → Request](../../../common/request.md).
 | `analysis.output.type`   | string | `"json"`, `"archive"`   | `"json"`  | Output format. **`json`** returns an inline body under `data` (`analysis`, `primative`, `measurement_stats`). **`archive`** returns a downloadable ZIP (CSV exports and Matplotlib PNG plots). |
 | `analysis.plot.ui.theme` | string | `"light"`, `"dark"`     | `"dark"`  | Theme hint for plot generation (colors, grid, ticks). Does not affect raw metrics/CSV.                                                                                                         |
 
-**Notes**
+## Notes
 
 * When `analysis.output.type = "archive"`, the HTTP response body is the file (no `data` JSON payload).
 * The `primative` section is a normalized representation of the raw PNM file with added statistics (e.g., mean, std, kurtosis).

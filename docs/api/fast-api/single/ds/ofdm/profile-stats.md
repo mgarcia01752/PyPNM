@@ -72,7 +72,6 @@ On success, `data` is an array of OFDM channels with per-profile counters.
 | `index`      | int  | **SNMP table index** (OID instance) for this channel’s row in the CM table. |
 | `channel_id` | int  | DOCSIS downstream OFDM channel ID (as reported by the CM/CMTS).             |
 
-
 ## Per-profile fields
 
 | Field                                                | Type | Description                            |
@@ -94,4 +93,3 @@ On success, `data` is an array of OFDM channels with per-profile counters.
 
 * See [Common → Response](../../../common/response.md) for envelope semantics and status handling.
 * Use this endpoint to assess profile utilization, FEC correction rates, and traffic segmentation across profiles.
-

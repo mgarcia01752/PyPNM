@@ -41,6 +41,7 @@ from pypnm.lib.ftp.ftp_connector import FTPConnector
 from pypnm.lib.inet import Inet
 from pypnm.lib.ssh.ssh_connector import SSHConnector, SecureTransferMode
 from pypnm.lib.tftp.tftp_connector import TFTPConnector
+from pypnm.lib.types import ChannelId, InterfaceIndex
 from pypnm.lib.utils import Utils
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
     DocsIf3CmSpectrumAnalysisCtrlCmd, SpectrumRetrievalType, WindowFunction)
@@ -141,7 +142,7 @@ class CommonMeasureService(CommonMessagingService):
         """
         self.capture_parameter = capture_parameter
 
-    async def set_and_go(self, interface_parameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = None, 
+    async def set_and_go(self, interface_parameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = DownstreamOfdmParameters() , 
                          max_wait_count: int = 5,) -> MessageResponse:
         """
         Trigger PNM file capture and retrieval based on direction-specific parameters.
@@ -243,10 +244,11 @@ class CommonMeasureService(CommonMessagingService):
         # This section is determine by the direction due to which interface and type we are accessing 
         ##############################################################################################
 
-        status_index_channelId = await self._get_indexes_via_pnm_test_type(interface_parameters)
-        if status_index_channelId[0] != ServiceStatusCode.SUCCESS:
-            self.logger.error(f'{self.log_prefix} - Unable to aquire index from ChannelID, reason: {status_index_channelId[0]}')
-            return self.build_send_msg(status_index_channelId[0])
+        if 1:
+            status_index_channelId = await self._get_indexes_via_pnm_test_type(interface_parameters)
+            if status_index_channelId[0] != ServiceStatusCode.SUCCESS:
+                self.logger.error(f'{self.log_prefix} - Unable to aquire index from ChannelID, reason: {status_index_channelId[0]}')
+                return self.build_send_msg(status_index_channelId[0])
 
         ##############################################################################################
         # This section runs through all the indexes, build PNM file, run measurement and check status
@@ -533,7 +535,7 @@ class CommonMeasureService(CommonMessagingService):
             return False
             
     async def _get_indexes_via_pnm_test_type(self, ifParameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = None
-                                             ) -> Tuple["ServiceStatusCode", Optional[List[Tuple[int, int]]]]:
+                                             ) -> Tuple["ServiceStatusCode", Optional[List[Tuple[InterfaceIndex, ChannelId]]]]:
         """
         Determines the appropriate interface indexes and channel IDs to target for a given PNM test type.
 
@@ -555,6 +557,9 @@ class CommonMeasureService(CommonMessagingService):
         elif self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
             return ServiceStatusCode.SUCCESS, [(0, 0)]
 
+        elif self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA:
+            return ServiceStatusCode.SUCCESS, [(0, 0)]
+
         elif self.pnm_test_type in (DocsPnmCmCtlTest.DS_CONSTELLATION_DISP, 
                                     DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF,
                                     DocsPnmCmCtlTest.DS_OFDM_CODEWORD_ERROR_RATE,
@@ -562,12 +567,12 @@ class CommonMeasureService(CommonMessagingService):
                                     DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR):
 
             if not ifParameters:
-                ifParameters:DownstreamOfdmParameters = self.getInterfaceParameters(DocsisIfType.docsOfdmDownstream)
+                ifParameters = self.getInterfaceParameters(DocsisIfType.docsOfdmDownstream)
         
         elif self.pnm_test_type in (DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF,):
             self.logger.info(f'{DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF} Measurement')
             if not ifParameters:
-                ifParameters:UpstreamOfdmaParameters = self.getInterfaceParameters(DocsisIfType.docsOfdmaUpstream)
+                ifParameters = self.getInterfaceParameters(DocsisIfType.docsOfdmaUpstream)
                 
         '''
         There is redundant code, but incase I may need to change due to 
@@ -608,7 +613,7 @@ class CommonMeasureService(CommonMessagingService):
 
         return ServiceStatusCode.SUCCESS, idx_channelId
        
-    async def _pnm_measure_status_and_pnm_file_transfer(self, idx_channelId:List[Tuple[int,int]], max_wait_count:int) -> ServiceStatusCode:
+    async def _pnm_measure_status_and_pnm_file_transfer(self, idx_channelId:List[Tuple[InterfaceIndex, ChannelId]], max_wait_count:int) -> ServiceStatusCode:
         """
         Set and monitor the OFDM measurement test for specified (index, PLC) tuples.
 
@@ -628,12 +633,12 @@ class CommonMeasureService(CommonMessagingService):
                 otherwise a specific error status (e.g., if the file couldn't be retrieved
                 or the measurement status did not become SAMPLE_READY).
         """
-        for idx, channel_id in idx_channelId:
+        for interface_index, channel_id in idx_channelId:
 
             #######################################################################
             # This sets the Measurement Table/Row for the specific PNM Measurement
             #######################################################################
-            status_pnmfiles:ServiceStatusCode = await self._setDocsPnmCmMeasureTest(self.pnm_test_type, idx, channel_id)
+            status_pnmfiles:ServiceStatusCode = await self._setDocsPnmCmMeasureTest(self.pnm_test_type, interface_index, channel_id)
             if status_pnmfiles[0] != ServiceStatusCode.SUCCESS:
                 return status_pnmfiles[0]
             
@@ -658,13 +663,13 @@ class CommonMeasureService(CommonMessagingService):
                 if status_pnmfiles == DocsPnmCmCtlStatus.SNMP_ERROR:
                     break
                                     
-            self.logger.debug(f"{self.log_prefix} - Checking Measurement Status for {self.pnm_test_type} @ IDX: {idx}")
+            self.logger.debug(f"{self.log_prefix} - Checking Measurement Status for {self.pnm_test_type} @ IDX: {interface_index}")
             
             wait_count = 0
             extract_idx = lambda idx: idx[0] if isinstance(idx, list) and idx else idx
             
             while wait_count < max_wait_count:
-                meas_status = await self.cm.getPnmMeasurementStatus(self.pnm_test_type, extract_idx(idx))
+                meas_status = await self.cm.getPnmMeasurementStatus(self.pnm_test_type, extract_idx(interface_index))
                 self.logger.info(f"{self.log_prefix} - MeasureStatus: {meas_status.name}")
                 if meas_status == MeasStatusType.SAMPLE_READY:
                     break

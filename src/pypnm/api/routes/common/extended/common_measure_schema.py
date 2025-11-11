@@ -9,6 +9,8 @@ from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
+from pypnm.lib.types import ChannelId
+
 
 class InterfaceParameters(BaseModel, ABC):
     """
@@ -39,7 +41,7 @@ class DownstreamOfdmParameters(InterfaceParameters):
     """
 
     type: Literal["ofdm"] = Field(default="ofdm")
-    channel_id: Optional[List[int]] = Field(default=None)
+    channel_id: Optional[List[ChannelId]] = Field(default=None)
 
 class UpstreamOfdmaParameters(InterfaceParameters):
     """
@@ -58,4 +60,4 @@ class UpstreamOfdmaParameters(InterfaceParameters):
             - Targets all available OFDMA channels (default behavior).
     """
     type: Literal["ofdma"] = Field(default="ofdma")
-    channel_id: Optional[List[int]] = Field(default=None)
+    channel_id: Optional[List[ChannelId]] = Field(default=None)
