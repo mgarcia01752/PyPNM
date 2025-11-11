@@ -73,7 +73,7 @@ class SpectrumAnalyzerRouter:
             The cable modem must be PNM-ready and the capture parameters must respect the
             diplexer configuration and platform constraints (DOCSIS 3.x and DOCSIS 4.0 FDD).
 
-            [API Guide]()
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/spectrum-analyzer.md)
 
             """
             mac: MacAddressStr = request.cable_modem.mac_address
@@ -178,7 +178,7 @@ class SpectrumAnalyzerRouter:
             the spectrum capture parameters must be valid for the underlying platform and
             diplexer configuration.
 
-            [API Guide]()
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/spectrum-analyzer.md)
 
             """
             mac: MacAddressStr = request.cable_modem.mac_address
@@ -286,7 +286,7 @@ class SpectrumAnalyzerRouter:
             the spectrum capture parameters must be valid for the underlying platform and
             diplexer configuration.
 
-            [API Guide]()
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/spectrum-analyzer.md)
 
             """
             mac: MacAddressStr = request.cable_modem.mac_address
