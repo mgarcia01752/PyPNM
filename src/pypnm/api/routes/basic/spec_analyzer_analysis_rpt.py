@@ -25,10 +25,10 @@ class SpecAnaWindowAvgRptModel(BaseModel):
 class SpectrumAnalyzerSignalProcessRptModel(BaseModel):
     """Per-point frequency, amplitude (dBmV), linear anti-log, and windowed average."""
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
-    frequencies: FrequencySeriesHz            = Field(..., description="Frequencies in Hz for each bin (all segments).")
-    amplitude: FloatSeries                  = Field(..., description="Magnitude per bin (dBmV).")
-    anti_log: FloatSeries                   = Field(..., description="Linear ratio: 10^(dBmV/20).")
-    window: SpecAnaWindowAvgRptModel        = Field(..., description="Moving-average for visualization.")
+    frequencies: FrequencySeriesHz      = Field(..., description="Frequencies in Hz for each bin (all segments).")
+    amplitude: FloatSeries              = Field(..., description="Magnitude per bin (dBmV).")
+    anti_log: FloatSeries               = Field(..., description="Linear ratio: 10^(dBmV/20).")
+    window: SpecAnaWindowAvgRptModel    = Field(..., description="Moving-average for visualization.")
 
 class SpectrumAnalyzerAnalysisRptModel(CommonAnalysis):
     """Spectrum Analyzer report model bound to a channel."""
@@ -36,7 +36,7 @@ class SpectrumAnalyzerAnalysisRptModel(CommonAnalysis):
 
 class SpectrumAnalyzerReport(AnalysisReport):
     """Builds CSV and plots from Spectrum Analyzer analysis results."""
-    FNAME_TAG: str = "SpectrumAnalyzerReport"
+    FNAME_TAG: str = "spec_analysis"
 
     def __init__(self, analysis: Analysis, 
                  analysis_matplot_config:AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(), 
@@ -85,7 +85,7 @@ class SpectrumAnalyzerReport(AnalysisReport):
                 self.logger.debug("Creating Standard Spectrum Plot: %s", fname)
 
                 cfg = PlotConfig(
-                    title           =   "Spectrum Analyzer · Standard",
+                    title           =   "Spectrum Analysis · Standard",
                     x               =   cast(ArrayLike, sig.frequencies),  
                     y               =   cast(ArrayLike, sig.amplitude),
                     xlabel          =   None,
@@ -112,7 +112,7 @@ class SpectrumAnalyzerReport(AnalysisReport):
                 self.logger.debug("Creating Window Average Spectrum Plot: %s", fname)
 
                 cfg = PlotConfig(
-                    title           =   f"Spectrum Analyzer · Moving Average n={sig.window.window_size}",
+                    title           =   f"Spectrum Analysis · Moving Average n={sig.window.window_size}",
                     x               =   cast(ArrayLike, sig.frequencies),  
                     y               =   cast(ArrayLike, sig.window.windows_average),
                     xlabel          =   None,

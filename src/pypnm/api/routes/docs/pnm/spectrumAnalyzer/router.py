@@ -72,6 +72,9 @@ class SpectrumAnalyzerRouter:
 
             The cable modem must be PNM-ready and the capture parameters must respect the
             diplexer configuration and platform constraints (DOCSIS 3.x and DOCSIS 4.0 FDD).
+
+            [API Guide]()
+
             """
             mac: MacAddressStr = request.cable_modem.mac_address
             ip: InetAddressStr = request.cable_modem.ip_address
@@ -174,6 +177,9 @@ class SpectrumAnalyzerRouter:
             The cable modem must support OFDM downstream channels and be PNM-ready, and
             the spectrum capture parameters must be valid for the underlying platform and
             diplexer configuration.
+
+            [API Guide]()
+
             """
             mac: MacAddressStr = request.cable_modem.mac_address
             ip: InetAddressStr = request.cable_modem.ip_address
@@ -279,6 +285,9 @@ class SpectrumAnalyzerRouter:
             The cable modem must support SC-QAM downstream channels and be PNM-ready, and
             the spectrum capture parameters must be valid for the underlying platform and
             diplexer configuration.
+
+            [API Guide]()
+
             """
             mac: MacAddressStr = request.cable_modem.mac_address
             ip: InetAddressStr = request.cable_modem.ip_address

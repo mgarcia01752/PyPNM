@@ -16,13 +16,10 @@ class LoggerConfigurator:
     with optional rotation and a standardized startup banner.
     """
 
-    def __init__(
-        self,
-        log_dir: str,
-        log_filename: str = 'pypnm.log',
-        level: str = 'INFO',
-        to_console: bool = False,
-        rotate: bool = False
+    def __init__(self, 
+                 log_dir: str, 
+                 log_filename: str = 'pypnm.log', 
+                 level: str = 'INFO', to_console: bool = False, rotate: bool = False
     ):
         """
         Initialize the LoggerConfigurator.

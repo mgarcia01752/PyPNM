@@ -1,42 +1,98 @@
 # PNM Operations – Spectrum Analyzer
 
-This API enables remote spectrum capture and signal inspection from a DOCSIS modem. It is designed for proactive diagnostics and RF analysis of the downstream OFDM path.
+Downstream Spectrum Capture And Per-Channel Analysis For DOCSIS 3.x/4.0 Cable Modems.
 
-📌 **Important:** You must choose a start and end frequency that lie within the modem's configured diplexer band. Use the diplexer configuration endpoint to verify allowed frequency boundaries:
+## Overview
 
-**POST:** `/docs/if31/system/diplexer`
+[`SpectrumAnalyzerRouter`](http://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/api/routes/docs/pnm/spectrumAnalyzer/router.py)
+exposes three related endpoints that drive downstream spectrum capture and analysis:
 
-👉 [API Guide – Diplexer Configuration](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/diplexer-configuration.md)
+* A single spectrum capture endpoint (`/getCapture`) for free-form frequency sweeps.
+* An OFDM-focused endpoint (`/getCapture/ofdm`) that walks all downstream OFDM channels.
+* An SC-QAM-focused endpoint (`/getCapture/scqam`) that walks all downstream SC-QAM channels.
 
-⚠️ **Notice:** A modem can only scan one direction at a time — either downstream or upstream. Attempting to scan both directions simultaneously is not supported.
+Each capture is processed through the common analysis pipeline and can return either a JSON
+analysis payload or an archive (ZIP) with Matplotlib plots and CSV exports.
 
-## 📡 Endpoint
+> The cable modem must be PNM-ready and the requested frequency range must fall within the
+> configured diplexer band. Use the diplexer configuration API to verify allowed frequency
+> boundaries.
 
-**POST** `/docs/pnm/ds/ofdm/spectrumAnalyzer/getMeasurement`
+**Diplexer Configuration Endpoint**  
+`POST /docs/if31/system/diplexer`  
 
-Performs a downstream OFDM spectrum capture from a DOCSIS cable modem. This operation converts raw spectrum amplitude data into a readable floating-point format for further signal processing, anomaly detection, and visualization.
+See also:  
+[Diplexer Configuration API Guide](http://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/diplexer-configuration.md)
 
-## 📥 Request Body (JSON)
+## Endpoints
+
+All endpoints share the same base prefix: `/docs/pnm/ds`.
+
+| Purpose                        | Method | Path                                             |
+| ------------------------------ | ------ | ------------------------------------------------ |
+| Single spectrum capture        | POST   | `/docs/pnm/ds/spectrumAnalyzer/getCapture`       |
+| All OFDM downstream channels   | POST   | `/docs/pnm/ds/spectrumAnalyzer/getCapture/ofdm`  |
+| All SC-QAM downstream channels | POST   | `/docs/pnm/ds/spectrumAnalyzer/getCapture/scqam` |
+
+Each endpoint accepts a common cable modem block and analysis controls. Capture-specific
+settings are provided under `capture_parameters`.
+
+> Note: A modem can only run either downstream or upstream spectrum at a time. The router
+> documented here is downstream (`/ds`) only.
+
+## Common Request Shape
+
+Refer to [Common → Request](../../../common/request.md).  
+These endpoints add optional `analysis` controls and a `capture_parameters` section.
+
+### Analysis Delta Table
+
+| JSON path                | Type   | Allowed values / format | Default | Description                                                                                               |
+| ------------------------ | ------ | ----------------------- | ------- | --------------------------------------------------------------------------------------------------------- |
+| `analysis.type`          | string | "basic"                 | "basic" | Selects the analysis mode used during processing.                                                         |
+| `analysis.output.type`   | string | "json", "archive"       | "json"  | Output format. **`json`** returns inline `data`; **`archive`** returns a ZIP (CSV exports and PNG plots). |
+| `analysis.plot.ui.theme` | string | "light", "dark"         | "dark"  | Theme hint for Matplotlib plots (colors, grid, ticks). Does not affect raw metrics/CSV.                   |
+
+When `analysis.output.type = "archive"`, the HTTP response body is the file (no `data` JSON payload).
+
+---
+
+## Single Capture – `/spectrumAnalyzer/getCapture`
+
+Single downstream spectrum capture using the modem's generic spectrum engine. This is the
+most flexible entry point and allows arbitrary sweep settings (within diplexer limits).
+
+### Single Capture Example Request
 
 ```json
 {
-  "mac_address": "a1:b2:c3:d4:e5:f6",
-  "ip_address": "192.168.0.1",
-  "snmp": {
-    "snmpV2C": { "community": "private" },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
+  "cable_modem": {
+    "mac_address": "aa:bb:cc:dd:ee:ff",
+    "ip_address": "192.168.0.100",
+    "pnm_parameters": {
+      "tftp": {
+        "ipv4": "192.168.0.10",
+        "ipv6": "2001:db8::10"
+      }
+    },
+    "snmp": {
+      "snmpV2C": {
+        "community": "private"
+      }
     }
   },
-  "parameters": {
-    "inactivity_timeout": 100,
-    "first_segment_center_freq": 108000000,
-    "last_segment_center_freq": 1002000000,
+  "analysis": {
+    "type": "basic",
+    "output": { "type": "json" },
+    "plot": { "ui": { "theme": "dark" } },
+    "spectrum_analysis": {
+      "moving_average": { "points": 10 }
+    }
+  },
+  "capture_parameters": {
+    "inactivity_timeout": 60,
+    "first_segment_center_freq": 300000000,
+    "last_segment_center_freq": 900000000,
     "segment_freq_span": 1000000,
     "num_bins_per_segment": 256,
     "noise_bw": 150,
@@ -47,80 +103,435 @@ Performs a downstream OFDM spectrum capture from a DOCSIS cable modem. This oper
 }
 ```
 
-### 🔑 Request Fields
+### Capture Parameters
 
-| Field                                  | Type   | Description                                                    |
-| -------------------------------------- | ------ | -------------------------------------------------------------- |
-| `mac_address`                          | string | MAC address of the cable modem                                 |
-| `ip_address`                           | string | IP address of the cable modem                                  |
-| `snmp.snmpV2C.community`               | string | SNMPv2c community string                                       |
-| `snmp.snmpV3.*`                        | string | SNMPv3 credentials and security settings                       |
-| `parameters.inactivity_timeout`        | int    | Timeout before aborting idle spectrum acquisition              |
-| `parameters.first_segment_center_freq` | int    | Start frequency (Hz) of the first spectrum segment             |
-| `parameters.last_segment_center_freq`  | int    | End frequency (Hz) of the last spectrum segment                |
-| `parameters.segment_freq_span`         | int    | Frequency span per segment (Hz)                                |
-| `parameters.num_bins_per_segment`      | int    | Number of FFT bins per segment                                 |
-| `parameters.noise_bw`                  | int    | Equivalent noise bandwidth                                     |
-| `parameters.window_function`           | int    | Window function index (e.g., Hanning, Rectangular)             |
-| `parameters.num_averages`              | int    | Number of averages per segment                                 |
-| `parameters.spectrum_retrieval_type`   | int    | Retrieval type (e.g., 1 = capture & return raw and float data) |
+| JSON path                                      | Type | Description                                                                 |
+| ---------------------------------------------- | ---- | --------------------------------------------------------------------------- |
+| `capture_parameters.inactivity_timeout`        | int  | Timeout (seconds) before aborting idle spectrum acquisition.                |
+| `capture_parameters.first_segment_center_freq` | int  | Center frequency (Hz) of the first sweep segment.                           |
+| `capture_parameters.last_segment_center_freq`  | int  | Center frequency (Hz) of the last sweep segment.                            |
+| `capture_parameters.segment_freq_span`         | int  | Frequency span (Hz) covered by each sweep segment.                          |
+| `capture_parameters.num_bins_per_segment`      | int  | Number of FFT bins per segment.                                             |
+| `capture_parameters.noise_bw`                  | int  | Equivalent noise bandwidth for amplitude normalization.                     |
+| `capture_parameters.window_function`           | int  | Window function index (implementation-specific; e.g., Hanning, Rectangular). |
+| `capture_parameters.num_averages`             | int  | Number of averages per segment for noise reduction.                         |
+| `capture_parameters.spectrum_retrieval_type`   | int  | Retrieval mode flag (e.g., 1 = capture and return both raw and float data). |
 
-## 📤 JSON Response
+### Abbreviated JSON Response (Output Type `"json"`)
 
 ```json
 {
-  "mac_address": "a1:b2:c3:d4:e5:f6",
-  "status": 0,
-  "message": null,
-  "data": {
-    "data": [
-      {
-        "status": "SUCCESS",
-        "Channel ID": 0,
-        "MAC Address": "a1:b2:c3:d4:e5:f6",
-        "First Segment Center Frequency": 300000000,
-        "Last Segment Center Frequency": 900000000,
-        "Segment Frequency Span": 1000000,
-        "Number of Bins Per Segment": 256,
-        "Equivalent Noise Bandwidth": 150,
-        "Window Function": 1,
-        "Bin Frequency Spacing": 3906.25,
-        "Spectrum Analysis Data Length": 307712,
-        "Spectrum Analysis Data": "<Spectrum-Data>:HEX", 
-        "Number of Bin Segments": 256,
-        "Amplitude Bin Segments Float": [
-          [/* Segment 1 floats */],
-          [/* Segment 2 floats */]
+    "mac_address": "749be8725e6a",
+    "status": 0,
+    "message": null,
+    "data": {
+        "analysis": [
+            {
+                "device_details": {
+                    "system_description": {
+                        "HW_REV": "2A",
+                        "VENDOR": "Hitron Technologies",
+                        "BOOTR": "CGM2.86C.727888.R.2304140950.F",
+                        "SW_REV": "7.3.5.3.2b2",
+                        "MODEL": "CODA"
+                    }
+                },
+                "capture_parameters": {
+                    "inactivity_timeout": 60,
+                    "first_segment_center_freq": 300000000,
+                    "last_segment_center_freq": 900000000,
+                    "segment_freq_span": 1000000,
+                    "num_bins_per_segment": 100,
+                    "noise_bw": 0,
+                    "window_function": 1,
+                    "num_averages": 1,
+                    "spectrum_retrieval_type": 1
+                },
+                "signal_analysis": {
+                    "bin_bandwidth": 10000,
+                    "segment_length": 100,
+                    "frequencies": [],
+                    "magnitudes": [],
+                    "window_average": {
+                        "points": 20,
+                        "magnitudes": []
+                    }
+                }
+            }
+        ],
+        "primative": [
+            {
+                "status": "SUCCESS",
+                "pnm_header": {
+                    "file_type": "PNN",
+                    "file_type_version": 9,
+                    "major_version": 1,
+                    "minor_version": 0,
+                    "capture_time": 1762839675
+                },
+                "mac_address": "74:9b:e8:72:5e:6a",
+                "first_segment_center_frequency": 300000000,
+                "last_segment_center_frequency": 900000000,
+                "segment_frequency_span": 1000000,
+                "num_bins_per_segment": 100,
+                "equivalent_noise_bandwidth": 110.0,
+                "window_function": 1,
+                "bin_frequency_spacing": 10000,
+                "spectrum_analysis_data_length": 120200,
+                "spectrum_analysis_data": "e570e3...40e340"
+            }
+        ],
+        "measurement_stats": [
+            {
+                "index": 0,
+                "entry": {
+                    "docsIf3CmSpectrumAnalysisCtrlCmdEnable": true,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout": 60,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency": 300000000,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency": 900000000,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan": 1000000,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment": 100,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth": 110,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction": 1,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages": 1,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdFileEnable": true,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus": "sample_ready",
+                    "docsIf3CmSpectrumAnalysisCtrlCmdFileName": "spectrum_analyzer_749be8725e6a_0_1762839621.bin"
+                }
+            }
         ]
+    }
+}
+```
+
+### Single-Capture Return Structure
+
+Top-level envelope:
+
+| Field         | Type          | Description                                                               |
+| ------------- | ------------- | ------------------------------------------------------------------------- |
+| `mac_address` | string        | Request echo of the modem MAC.                                            |
+| `status`      | int           | 0 on success, non-zero on error.                                          |
+| `message`     | string\|null | Optional message describing status.                                       |
+| `data`        | object        | Container for results (`analysis`, `primative`, `measurement_stats`).     |
+
+**Payload: `data.analysis[]`**
+
+| Field                            | Type   | Description                                                           |
+| -------------------------------- | ------ | --------------------------------------------------------------------- |
+| device_details.*                 | object | System descriptor captured at analysis time.                          |
+| capture_parameters.*             | object | Echo of the capture parameters effective for this run.               |
+| signal_analysis.bin_bandwidth    | int    | Effective bin bandwidth (Hz) derived from bin spacing/windowing.     |
+| signal_analysis.segment_length   | int    | Number of FFT bins per segment used in analysis.                     |
+| signal_analysis.frequencies      | array  | Frequency axis for the analyzed spectrum (per-bin center frequency). |
+| signal_analysis.magnitudes       | array  | Amplitude values aligned with `frequencies`.                         |
+| signal_analysis.window_average.* | object | Optional moving-average smoothing applied to `magnitudes`.           |
+
+**Payload: `data.primative[]`**
+
+| Field                             | Type       | Description                                               |
+| --------------------------------- | ---------- | --------------------------------------------------------- |
+| status                            | string     | Result for this capture (e.g., `"SUCCESS"`).              |
+| pnm_header.*                      | object     | PNM file header (type, version, capture time).            |
+| mac_address                       | string     | MAC address.                                              |
+| first_segment_center_frequency    | int (Hz)   | Center frequency of the first sweep segment.              |
+| last_segment_center_frequency     | int (Hz)   | Center frequency of the last sweep segment.               |
+| segment_frequency_span            | int (Hz)   | Frequency span covered by each segment.                   |
+| num_bins_per_segment              | int        | Number of FFT bins per segment.                           |
+| equivalent_noise_bandwidth        | float (Hz) | Equivalent noise bandwidth used for amplitude scaling.    |
+| window_function                   | int        | Window function index.                                    |
+| bin_frequency_spacing             | float (Hz) | Frequency spacing between adjacent bins.                  |
+| spectrum_analysis_data_length     | int        | Byte length of `spectrum_analysis_data`.                  |
+| spectrum_analysis_data            | string     | Raw spectrum data encoded as hexadecimal text.            |
+
+**Payload: `data.measurement_stats[]`**
+
+| Field                                                     | Type    | Description                                              |
+| --------------------------------------------------------- | ------- | -------------------------------------------------------- |
+| index                                                     | int     | SNMP table row index.                                    |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdEnable              | boolean | Whether capture was enabled for this measurement.        |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout   | int     | Inactivity timeout (seconds) used for the capture.      |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency | int (Hz) | First segment center frequency at capture time.  |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency  | int (Hz) | Last segment center frequency at capture time.   |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan        | int (Hz) | Segment frequency span in Hz.                   |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment          | int     | Number of bins per segment.                      |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth   | int     | Equivalent noise bandwidth in Hz.                |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction             | int     | Window function index.                           |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages           | int     | Number of averages used for this capture.        |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdFileEnable                 | boolean | Whether capture-to-file was enabled.             |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus                 | string  | Measurement status (e.g., `"sample_ready"`).     |
+| entry.docsIf3CmSpectrumAnalysisCtrlCmdFileName                   | string  | Device-side filename of the captured spectrum.   |
+
+---
+
+## OFDM Downstream Capture – `/spectrumAnalyzer/getCapture/ofdm`
+
+This endpoint iterates across all downstream OFDM channels on the modem, performing a
+spectrum capture per channel and aggregating the results into a multi-analysis structure.
+
+Each per-channel capture is processed like the single capture. Results are returned as:
+
+* `data.analyses[]` – list of per-channel analysis views (one entry per capture).
+* `data.primative` – dictionary of raw capture payloads indexed by channel position.
+* `data.measurement_stats[]` – flattened SNMP spectrum-analysis entries.
+
+DOCSIS constraints:
+
+* DOCSIS 3.1: up to **2** downstream OFDM channels.  
+* DOCSIS 4.0 FDD: up to **5** downstream OFDM channels.
+
+### Example Request
+
+```json
+{
+  "cable_modem": {
+    "mac_address": "aa:bb:cc:dd:ee:ff",
+    "ip_address": "192.168.0.100",
+    "pnm_parameters": {
+      "tftp": {
+        "ipv4": "192.168.0.10",
+        "ipv6": "2001:db8::10"
       }
-    ]
+    },
+    "snmp": {
+      "snmpV2C": {
+        "community": "private"
+      }
+    }
+  },
+  "analysis": {
+    "type": "basic",
+    "output": { "type": "json" },
+    "plot": { "ui": { "theme": "dark" } },
+    "spectrum_analysis": {
+      "moving_average": { "points": 10 }
+    }
+  },
+  "capture_parameters": {
+    "number_of_averages": 10
   }
 }
 ```
 
-## 📊 Response Field Breakdown
+### Abbreviated JSON Response (OFDM View)
 
-| Field                            | Type   | Description                                         |
-| -------------------------------- | ------ | --------------------------------------------------- |
-| `status`                         | string | Status of the operation (e.g., SUCCESS, ERROR)      |
-| `Channel ID`                     | int    | Channel ID of the OFDM measurement                  |
-| `MAC Address`                    | string | MAC address of the modem                            |
-| `First Segment Center Frequency` | int    | Center frequency (Hz) of the first spectrum segment |
-| `Last Segment Center Frequency`  | int    | Center frequency (Hz) of the last spectrum segment  |
-| `Segment Frequency Span`         | int    | Frequency range (Hz) per spectrum segment           |
-| `Number of Bins Per Segment`     | int    | Number of frequency bins used in each segment       |
-| `Equivalent Noise Bandwidth`     | int    | Filter bandwidth used during FFT measurement        |
-| `Window Function`                | int    | FFT window type identifier (e.g., 1 = Hanning)      |
-| `Bin Frequency Spacing`          | float  | Frequency spacing between each FFT bin (Hz)         |
-| `Spectrum Analysis Data Length`  | int    | Total byte length of the raw spectrum data          |
-| `Spectrum Analysis Data`         | string | Raw spectrum amplitude data in hexadecimal format   |
-| `Number of Bin Segments`         | int    | Number of segments included in the spectrum capture |
-| `Amplitude Bin Segments Float`   | array  | List of floating-point amplitude values per segment |
+```json
+{
+    "mac_address": "749be8725e6a",
+    "status": 0,
+    "message": null,
+    "data": {
+        "analyses": [
+            {
+                "device_details": {
+                    "system_description": {
+                        "HW_REV": "2A",
+                        "VENDOR": "Hitron Technologies",
+                        "BOOTR": "CGM2.86C.727888.R.2304140950.F",
+                        "SW_REV": "7.3.5.3.2b2",
+                        "MODEL": "CODA"
+                    }
+                },
+                "capture_parameters": {
+                    "inactivity_timeout": 60,
+                    "first_segment_center_freq": 739000000,
+                    "last_segment_center_freq": 833000000,
+                    "segment_freq_span": 1000000,
+                    "num_bins_per_segment": 100,
+                    "noise_bw": 0,
+                    "window_function": 1,
+                    "num_averages": 1,
+                    "spectrum_retrieval_type": 1
+                },
+                "signal_analysis": {
+                    "bin_bandwidth": 10000,
+                    "segment_length": 100,
+                    "frequencies": [],
+                    "magnitudes": [],
+                    "window_average": {
+                        "points": 10,
+                        "magnitudes": []
+                    }
+                }
+            }
+        ],
+        "primative": {
+            "0": [
+                {
+                    "status": "SUCCESS",
+                    "pnm_header": {
+                        "file_type": "PNN",
+                        "file_type_version": 9,
+                        "major_version": 1,
+                        "minor_version": 0,
+                        "capture_time": 1762840213
+                    },
+                    "channel_id": 0,
+                    "mac_address": "74:9b:e8:72:5e:6a",
+                    "first_segment_center_frequency": 739000000,
+                    "last_segment_center_frequency": 833000000,
+                    "segment_frequency_span": 1000000,
+                    "num_bins_per_segment": 100,
+                    "equivalent_noise_bandwidth": 110.0,
+                    "window_function": 1,
+                    "bin_frequency_spacing": 10000,
+                    "spectrum_analysis_data_length": 19000,
+                    "spectrum_analysis_data": "",
+                    "amplitude_bin_segments_float": []
+                }
+            ],
+            "1": []
+        },
+        "measurement_stats": [
+            {
+                "index": 0,
+                "entry": {
+                    "docsIf3CmSpectrumAnalysisCtrlCmdEnable": true,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout": 30,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency": 739000000,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency": 833000000,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan": 1000000,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment": 100,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth": 110,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction": 1,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages": 2,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdFileEnable": true,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus": "sample_ready",
+                    "docsIf3CmSpectrumAnalysisCtrlCmdFileName": "spectrum_analyzer_749be8725e6a_0_1762840189.bin"
+                }
+            },
+            {
+                "index": 0,
+                "entry": {
+                    "docsIf3CmSpectrumAnalysisCtrlCmdEnable": true,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout": 30,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency": 619000000,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency": 737000000,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan": 1000000,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment": 100,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth": 110,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction": 1,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages": 2,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdFileEnable": true,
+                    "docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus": "sample_ready",
+                    "docsIf3CmSpectrumAnalysisCtrlCmdFileName": "spectrum_analyzer_749be8725e6a_0_1762840227.bin"
+                }
+            }
+        ]
+    }
+}
+```
 
-## 📝 Notes
+### OFDM Multi-Channel Return Structure
 
-* Raw spectrum data is preserved in `Spectrum Analysis Data` for future decoding.
-* `Amplitude Bin Segments Float` is pre-processed for visualization and signal quality inspection.
-* This data can be used to detect notches, roll-off, ingress noise, and other RF anomalies.
-* Make sure the requested frequency range is within the modem’s diplexer capability using `/docs/if31/system/diplexer`.
-* Modems cannot perform both upstream and downstream spectrum scans simultaneously.
+**Payload: `data.analyses[]` (OFDM)**
+
+| Field                                | Type   | Description                                                        |
+| ------------------------------------ | ------ | ------------------------------------------------------------------ |
+| `[index]`.device_details.*           | object | System descriptor captured at analysis time for that channel.      |
+| `[index]`.capture_parameters.*       | object | Effective capture parameters for that OFDM channel.                |
+| `[index]`.signal_analysis.*          | object | Per-channel spectrum analysis (frequencies, magnitudes, smoothing). |
+
+**Payload: `data.primative` (OFDM)**
+
+| Field           | Type  | Description                                                             |
+| --------------- | ----- | ----------------------------------------------------------------------- |
+| `"0"`, `"1"`, … | array | Raw per-channel capture payloads for each OFDM channel position.       |
+
+**Payload: `data.measurement_stats[]` (OFDM)**
+
+Reuses the single-capture `measurement_stats` field definitions, repeated per OFDM channel.
+
+---
+
+## SC-QAM Downstream Capture – `/spectrumAnalyzer/getCapture/scqam`
+
+This endpoint iterates across all downstream SC-QAM channels, performing spectrum captures
+per channel and aggregating the results into a multi-analysis view similar to the OFDM
+endpoint.
+
+DOCSIS constraints:
+
+* DOCSIS 3.1 and DOCSIS 4.0 support up to **32** downstream SC-QAM channels (implementation-dependent).
+
+The response shape for SC-QAM captures mirrors the OFDM multi-channel layout:
+
+* `data.analyses[]` – list of per-channel analysis views.
+* `data.primative` – dictionary of raw capture payloads indexed by channel position.
+* `data.measurement_stats[]` – flattened SNMP statistics per captured channel.
+
+### Example Request
+
+```json
+{
+  "cable_modem": {
+    "mac_address": "aa:bb:cc:dd:ee:ff",
+    "ip_address": "192.168.0.100",
+    "pnm_parameters": {
+      "tftp": {
+        "ipv4": "192.168.0.10",
+        "ipv6": "2001:db8::10"
+      }
+    },
+    "snmp": {
+      "snmpV2C": {
+        "community": "private"
+      }
+    }
+  },
+  "analysis": {
+    "type": "basic",
+    "output": { "type": "json" },
+    "plot": { "ui": { "theme": "dark" } },
+    "spectrum_analysis": {
+      "moving_average": { "points": 10 }
+    }
+  },
+  "capture_parameters": {
+    "number_of_averages": 10
+  }
+}
+```
+
+### SC-QAM Multi-Channel Return Structure
+
+**Payload: `data.analyses[]` (SC-QAM)**
+
+Same as OFDM: each list element represents a per-channel analysis view with
+`device_details`, `capture_parameters`, and `signal_analysis`.
+
+**Payload: `data.primative` (SC-QAM)**
+
+| Field           | Type  | Description                                                             |
+| --------------- | ----- | ----------------------------------------------------------------------- |
+| `"0"`, `"1"`, … | array | Raw per-channel capture payloads for each SC-QAM channel position.     |
+
+**Payload: `data.measurement_stats[]` (SC-QAM)**
+
+Reuses the single-capture `measurement_stats` field definitions, per SC-QAM channel.
+
+---
+
+## Archive Output
+
+For all three endpoints, when `analysis.output.type = "archive"`:
+
+* The response body is a ZIP file (no JSON `data` envelope).
+* Contents typically include:
+  * CSV exports of amplitude vs frequency.
+  * Matplotlib PNG plots per channel and aggregate views.
+
+Examples of generated plots (file names may vary by implementation):
+
+| Standard Plot | Moving Average Plot | Description |
+| ------------- | ------------------- | ----------- |
+| [DS Full Bandwidth](images/spectrum/spec-analysis-standard.png) | [DS Full Bandwidth](images/spectrum/spec-analysis-moving-average.png) | Single-capture standard vs moving-average spectrum views.  |
+| [SCQAM](images/spectrum/scqam-2-spec-analysis-standard.png)     | [SCQAM](images/spectrum/scqam-2-spec-analysis-moving-average.png)   | Example SC-QAM channel standard and moving-average plots.  |
+| [OFDM](images/spectrum/ofdm-160-spec_analysis-rpt-standard.png) | [OFDM](images/spectrum/ofdm-160-spec-analysis-rpt-moving-average.png) | Example OFDM channel standard and moving-average plots.    |
+
+## Notes
+
+* Always validate requested frequency ranges against the modem diplexer configuration.  
+* Spectrum captures can be long-running operations depending on span and averaging.  
+* Only one spectrum direction (downstream or upstream) can run at a time; this router
+  covers downstream (`/ds`) only.
