@@ -15,7 +15,7 @@ TFTP parameters are not required.
 
 This endpoint returns the standard envelope described in [Common → Response](../../../common/response.md) (`mac_address`, `status`, `message`, `data`).
 
-### Abbreviated Example (Real Data, Masked MAC)
+### Abbreviated Example
 
 ```json
 {

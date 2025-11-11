@@ -405,11 +405,16 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
 
         num_bins_per_segment = 256
         number_of_averages = self._number_of_averages
-        inactivity_timeout = 10
+        inactivity_timeout = 60
         noise_bw = 150
         segment_freq_span = 1_000_000
 
         for count, (chan_id, (start_hz, center_hz, end_hz)) in enumerate(bw_by_channel.items()):
+
+            if self._test_mode and count > 1:
+                self.logger.warning("Test mode active: processing only first 2 channels.")
+                break
+
             capture_parameter = SpecAnCapturePara(
                 inactivity_timeout        = inactivity_timeout,
                 first_segment_center_freq = FrequencyHz(start_hz),
@@ -423,10 +428,6 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
             )
 
             channel_spec_capture.append((chan_id, capture_parameter))
-
-            if self._test_mode and count > 1:
-                self.logger.warning("Test mode active: processing only first 2 channels.")
-                break
 
         for chan_id, capture_parameter in channel_spec_capture:
             service = ScQamChanSpecAnalyzerService(self._cm)

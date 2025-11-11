@@ -17,7 +17,7 @@ This endpoint returns the standard envelope described in [Common → Response](.
 
 `data` is an **array** of downstream OFDM channels. Each item contains the SNMP table `index`, the `channel_id`, and an `entry` with DS-OFDM configuration and statistics.
 
-### Abbreviated Example (Masked MAC)
+### Abbreviated Example
 
 ```json
 {

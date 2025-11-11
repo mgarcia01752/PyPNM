@@ -17,7 +17,7 @@ This endpoint returns the standard envelope described in [Common → Response](.
 
 `data` is an **array** of capability sets. Each item contains a capability `index` and an `entry` with the upstream upper, downstream lower, and downstream upper diplexer band-edge frequencies (in MHz).
 
-### Abbreviated Example (Masked MAC)
+### Abbreviated Example
 
 ```json
 {

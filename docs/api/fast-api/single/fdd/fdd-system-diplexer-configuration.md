@@ -17,7 +17,7 @@ This endpoint returns the standard envelope described in [Common → Response](.
 
 `data` is an **object** with the SNMP `index` and an `entry` containing the configured band-edge frequencies (MHz).
 
-### Abbreviated Example (Masked MAC)
+### Abbreviated Example
 
 ```json
 {

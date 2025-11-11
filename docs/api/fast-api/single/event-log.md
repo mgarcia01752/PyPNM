@@ -17,7 +17,7 @@ This endpoint returns the standard envelope described in [Common → Response](.
 
 `data.logs` is an array of log entries reported by the device.
 
-### Abbreviated Example (Real Data, Masked MAC)
+### Abbreviated Example
 
 ```json
 {
