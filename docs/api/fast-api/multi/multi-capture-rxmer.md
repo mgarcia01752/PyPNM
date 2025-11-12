@@ -23,8 +23,6 @@ early termination, and post‑capture analysis.
   * [Download ZIP](#download-zip)
   * [Analysis (JSON)](#analysis-json)
 * [Compatibility Matrix](#compatibility-matrix)
-* [Conventions](#conventions)
-* [References](#references)
 
 ## At a Glance
 
@@ -73,7 +71,7 @@ Starts a background RxMER capture with a fixed duration and sample interval.
       "sample_interval": 10
     }
   },
-  "measure": { "mode": 0 }
+  "measure": { "mode": 1 }
 }
 ```
 
@@ -82,7 +80,7 @@ Starts a background RxMER capture with a fixed duration and sample interval.
 | Measure Mode        | Suited Analyses                                                |
 | ------------------- | -------------------------------------------------------------- |
 |      `0`            | `min-avg-max`, `rxmer-heat-map`                                |
-|      `1`   | `ofdm-profile-performance-1`, `min-avg-max`, `rxmer-heat-map`  |
+|      `1`            | `ofdm-profile-performance-1`, `min-avg-max`, `rxmer-heat-map`  |
 
 > Use `mode=1` when you specifically want OFDM performance context; otherwise `mode=0` is recommended for continuous monitoring.
 
@@ -138,7 +136,7 @@ ds_ofdm_rxmer_per_subcar_aabbccddeeff_194_1751762613.bin
 
 **Request** `DELETE /advance/multiRxMer/stop/{operation_id}`
 
-#### Response (MultiRxMerStatusResponse)
+#### Stop Response (MultiRxMerStatusResponse)
 
 ```json
 {
