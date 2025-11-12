@@ -123,7 +123,7 @@ class OperationManager:
         return self.operation_id
 
     @classmethod
-    def get_capture_group(cls, operation_id: str, db_path: Optional[Path] = None) -> GroupId:
+    def get_capture_group(cls, operation_id: OperationId, db_path: Optional[Path] = None) -> GroupId:
         """
         Retrieve the capture_group_id for a given operation_id.
 

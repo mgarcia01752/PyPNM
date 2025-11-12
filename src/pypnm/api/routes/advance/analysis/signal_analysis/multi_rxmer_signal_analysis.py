@@ -543,19 +543,29 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
             data  = cast(MinAvgMaxMap, model.data)
 
             for channel_id, ch_model in data.items():
-                # Frequency (Hz) → kHz to match label
                 freq_hz  = cast(ArrayLike, ch_model.frequency)
-                freq_khz = cast(ArrayLike,[float(f) / 1_000.0 for f in cast(List[float], freq_hz)])
+                freq_khz = cast(ArrayLike,freq_hz)
 
                 mn  = cast(ArrayLike, ch_model.min)
                 av  = cast(ArrayLike, ch_model.avg)
                 mx  = cast(ArrayLike, ch_model.max)
 
                 cfg = PlotConfig(
-                    title=f"Min-Avg-Max RxMER Channel: {channel_id}",
-                    x=freq_khz,              xlabel="Frequency (kHz)",
-                    y_multi=[mn, av, mx],    y_multi_label=["Min", "Avg", "Max"],
-                    grid=True, legend=True,  transparent=False, theme="dark",)
+                    title           =   f"Min-Avg-Max RxMER Channel: {channel_id}",
+                    x               =   cast(ArrayLike, freq_khz),
+                    y_multi         =   [mn, av, mx],
+                    y_multi_label   =   ["Min", "Avg", "Max"],
+                    x_tick_mode     =   "unit",
+                    x_unit_from     =   "hz",
+                    x_unit_out      =   "mhz",
+                    x_tick_decimals =   0,
+                    xlabel_base     =   "Frequency",
+                    ylabel          =   "dB",
+                    grid            =   True, 
+                    legend          =   True, 
+                    transparent     =   False, 
+                    theme           =   "dark",
+                )
 
                 multi = self.create_png_fname(tags=[str(channel_id), "rxmer_min_avg_max"])
                 self.logger.debug("Creating MatPlot: %s for channel: %s", multi, channel_id)
@@ -566,73 +576,101 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 out.append(mat_mgr)
 
         elif self.analysis_type == MultiRxMerAnalysisType.RXMER_HEAT_MAP:
-            data = cast(HeatMapMap, model.data)
+            data  = cast(HeatMapMap, model.data)
 
             for ch_id, ch_model in data.items():
                 ch_model = cast(ChannelHeatMapModel, ch_model)
 
-                # Prepare configuration for the heatmap
+                Z = np.asarray(ch_model.values, dtype=float)
+                if Z.size == 0:
+                    self.logger.warning("RXMER_HEAT_MAP: empty matrix for channel %s; skipping.", ch_id)
+                    continue
+
+                # Build axes: X = absolute frequency (Hz), Y = capture indices
+                x_hz = cast(ArrayLike, ch_model.frequency)
+                y_ix = np.arange(Z.shape[0], dtype=float)
+
+                try:
+                    vmin = float(np.nanmin(Z))
+                    vmax = float(np.nanmax(Z))
+                except Exception:
+                    self.logger.warning("RXMER_HEAT_MAP: unable to compute vmin/vmax for channel %s; using None.", ch_id)
+                    vmin = None
+                    vmax = None
+
                 cfg = PlotConfig(
-                    title   =   f"HeatMap RxMER Channel: {ch_id}",
-                    x       =   [f / 1_000.0 for f in ch_model.frequency],  # Hz → kHz
-                    xlabel  =   "Frequency (kHz)",
-                    ylabel  =   "Capture Index",
-                    grid    =   False, transparent=False,
-                    theme   =   "dark",)
+                    title           =   f"HeatMap RxMER Channel: {ch_id}",
+                    x               =   x_hz,
+                    x_tick_mode     =   "unit",
+                    x_unit_from     =   "hz",
+                    x_unit_out      =   "mhz",
+                    x_tick_decimals =   0,
+                    xlabel_base     =   "Frequency",
+                    ylabel          =   "Capture Index",
+                    grid            =   False,
+                    legend          =   False,
+                    transparent     =   False,
+                    theme           =   "dark",
+                )
 
-                # Convert values to a 2D NumPy array for plotting
-                Z = np.array(ch_model.values, dtype=float)
-
-                # Filename for this channel's heatmap image
                 png_name = self.create_png_fname(tags=[str(ch_id), "rxmer_heat_map"])
 
-                # Create and save the heatmap using MatplotManager
                 mat_mgr = MatplotManager(default_cfg=cfg)
-                mat_mgr.heatmap2d(Z.tolist(), png_name, add_colorbar=True)
+                mat_mgr.heatmap2d(
+                    Z.tolist(),
+                    png_name,
+                    x            = x_hz,
+                    y            = y_ix,
+                    add_colorbar = True,
+                    vmin         = vmin,
+                    vmax         = vmax,
+                )
 
                 out.append(mat_mgr)
 
         elif self.analysis_type == MultiRxMerAnalysisType.OFDM_PROFILE_PERFORMANCE_1:
-            data = cast(OfdmProfilePerf01Map, model.data)
+            data  = cast(OfdmProfilePerf01Map, model.data)
 
             for ch_id, ch_model in data.items():
                 ch_model = cast(ChannelOfdmProfilePerf01Model, ch_model)
 
+                if not ch_model.profiles:
+                    self.logger.warning("OFDM_PROFILE_PERFORMANCE_1: no profiles for channel %s; skipping.", ch_id)
+                    continue
+
+                freq_hz  = cast(ArrayLike, ch_model.frequency)
+                avg_mer  = cast(ArrayLike, ch_model.avg_mer)
+
                 for profile_model in ch_model.profiles:
-                    pid   = profile_model.profile_id
-                    fec_e = profile_model.fec_summary.summary[0] if profile_model.fec_summary.summary else None
-                    total = fec_e.summary.total_codewords if fec_e else 0
-                    corr  = fec_e.summary.corrected if fec_e else 0
-                    uncor = fec_e.summary.uncorrectable if fec_e else 0
-
-                    # Combine FEC info inline with legend text
-                    fec_label = f"FEC(Total={total}, Corr={corr}, Uncorr={uncor})"
-
-                    # Frequency axis in kHz for readability
-                    freq_khz = [f / 1_000.0 for f in ch_model.frequency]
-
-                    # Only AvgMER and ProfileMin are plotted
-                    series = [
-                        (freq_khz, ch_model.avg_mer,              f"AvgMER (dB) {fec_label}"),
-                        (freq_khz, profile_model.profile_min_mer, "ProfileMin (dB)"),
-                    ]
+                    pid    = profile_model.profile_id
+                    pmin   = cast(ArrayLike, profile_model.profile_min_mer)
+                    fec_e  = profile_model.fec_summary.summary[0] if profile_model.fec_summary.summary else None
+                    total  = getattr(fec_e.summary, "total_codewords", 0) if fec_e else 0
+                    corr   = getattr(fec_e.summary, "corrected", 0)       if fec_e else 0
+                    uncor  = getattr(fec_e.summary, "uncorrectable", 0)   if fec_e else 0
+                    fec_l  = f"FEC(Total={total}, Corr={corr}, Uncorr={uncor})"
 
                     cfg = PlotConfig(
-                        title   = f"OFDM PROFILE PERFORMANCE 1 - Ch {ch_id} Profile {pid}",
-                        xlabel  = "Frequency (kHz)",
-                        ylabel  = "Average MER (dB)",
-                        grid    = True, legend  = True,
-                        transparent = False, theme   = "dark",)
+                        title           =   f"OFDM PROFILE PERFORMANCE 1 =  ·  Ch {ch_id}  ·  Profile {pid}",
+                        x               =   freq_hz,
+                        y_multi         =   [avg_mer, pmin],
+                        y_multi_label   =   [f"AvgMER (dB) {fec_l}", "ProfileMin (dB)"],
+                        x_tick_mode     =   "unit",
+                        x_unit_from     =   "hz",
+                        x_unit_out      =   "mhz",
+                        x_tick_decimals =   0,
+                        xlabel_base     =   "Frequency",
+                        ylabel          =   "Average MER (dB)",
+                        grid            =   True,
+                        legend          =   True,
+                        transparent     =   False,
+                        theme           =   "dark",
+                    )
 
-                    fname = self.create_png_fname(tags=[f"{ch_id}", f"profile_{pid}", "ofdm_profile_perf_1"])
-
-                    plot_mgr = MatplotManager()
-                    plot_mgr.plot_multi_line(
-                        filename    =   fname,
-                        series      =   [(x, y, lbl) for (x, y, lbl) in series],
-                        linewidth   =   1.6, marker = None, cfg=cfg,)
-                    
-                    out.append(plot_mgr)
+                    fname   = self.create_png_fname(tags=[f"{ch_id}", f"profile_{pid}", "ofdm_profile_perf_1"])
+                    plotmgr = MatplotManager(default_cfg=cfg)
+                    plotmgr.plot_multi_line(filename=fname)
+                    out.append(plotmgr)
 
         return out
 

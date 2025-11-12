@@ -22,8 +22,8 @@ OfdmSpectrumBw      = Tuple[StartFrequency, PlcFrequency, EndFrequency]
 OfdmSpectrumBwLut   = Dict[ChannelId, OfdmSpectrumBw]
 ScQamSpectrumBw     = Tuple[StartFrequency, CenterFrequency, EndFrequency]
 ScQamSpectrumBwLut  = Dict[ChannelId, ScQamSpectrumBw]
-CommonSpectumBwLut  = Dict[ChannelId, Tuple[StartFrequency, Union[CenterFrequency, PlcFrequency], EndFrequency]]
-
+CommonChannelSpectumBwLut  = Dict[ChannelId, Tuple[StartFrequency, Union[CenterFrequency, PlcFrequency], EndFrequency]]
+CommonSpectrumBw    = Tuple[StartFrequency, CenterFrequency, EndFrequency]
 
 class CommonSpectrumChannelAnalyzer(ABC):
     def __init__(self, cm: CableModem) -> None:
@@ -35,9 +35,14 @@ class CommonSpectrumChannelAnalyzer(ABC):
         self._measurement_stat: Dict[ChannelId, List[DocsIf3CmSpectrumAnalysisEntry]] = {}
 
     @abstractmethod
-    async def start(self) -> List[Tuple[ChannelId, MessageResponse]]:
+    async def start(self, capture_per_channel: bool = False) -> List[Tuple[ChannelId, MessageResponse]]:
         """
         Start the spectrum analyzer measurement on the cable modem.
+        Parameters
+        ----------
+        capture_per_channel : bool, optional
+            If True, perform individual captures per channel; otherwise,
+            perform a single capture covering all channels. Default is False.
 
         Returns
         -------
@@ -129,7 +134,7 @@ class CommonSpectrumChannelAnalyzer(ABC):
         return await self._cm.is_snmp_reachable()
 
     @abstractmethod
-    async def calculate_spectrum_bandwidth(self) -> CommonSpectumBwLut:
+    async def calculate_channel_spectrum_bandwidth(self) -> CommonChannelSpectumBwLut:
         """
         Compute start/center/end frequencies for each downstream channel.
 
@@ -144,3 +149,15 @@ class CommonSpectrumChannelAnalyzer(ABC):
           according to the modulation type (OFDM or SC-QAM).
         """
         pass
+
+    @abstractmethod
+    async def calculate_spectrum_bandwidth(self) -> CommonSpectrumBw:
+        """
+        Retrieve the precomputed spectrum bandwidth mapping.
+
+        Returns
+        -------
+        CommonSpectumBwLut
+            Mapping of ChannelId -> (start_hz, center_or_plc_hz, end_hz).
+        """
+        pass  

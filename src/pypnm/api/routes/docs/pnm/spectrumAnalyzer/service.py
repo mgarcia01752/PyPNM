@@ -8,7 +8,7 @@ from typing import List, Tuple, cast
 
 from pypnm.api.routes.common.extended.common_measure_service import CommonMeasureService
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.abstract.com_spec_chan_ana import (
-    CommonSpectrumChannelAnalyzer, CommonSpectumBwLut, OfdmSpectrumBwLut, ScQamSpectrumBwLut)
+    CommonSpectrumBw, CommonSpectrumChannelAnalyzer, CommonChannelSpectumBwLut, OfdmSpectrumBwLut, ScQamSpectrumBwLut)
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpecAnCapturePara
 from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
@@ -26,30 +26,33 @@ from pypnm.lib.types import ChannelId, FrequencyHz, SubcarrierIdx
 
 class CmSpectrumAnalysisService(CommonMeasureService):
     """
-    Service class for managing CM Spectrum Analysis operations.
+    Service For Cable Modem Spectrum Analysis (Single Run)
 
-    This service runs the spectrum analyzer test on a specified cable modem,
-    handling all relevant SNMP and TFTP parameters with sensible defaults.
+    Purpose
+    -------
+    Orchestrates a single spectrum analyzer measurement on a target cable modem,
+    applying the provided capture parameters and the PNM TFTP/SNMP configuration.
+    Selects the correct `DocsPnmCmCtlTest` based on the retrieval type (FILE vs SNMP).
 
-    Parameters:
-        cable_modem (CableModem): The target cable modem instance on which to run the test.
-        tftp_servers (Tuple[Inet, Inet], optional): Tuple of IP addresses of the TFTP servers used for storing/retrieving result files.
-            Defaults to the configured TFTP servers via `PnmConfigManager.get_tftp_servers()`.
-        tftp_path (str, optional): Directory path on the TFTP server where output files are stored.
-            Defaults to the configured path via `PnmConfigManager.get_tftp_path()`.
-        spec_analyzer_para (SpectrumAnalyzerParameters): 
-            Schema object containing all spectrum-analyzer-specific parameters:
-                - inactivity_timeout (int): Timeout in seconds to wait before the spectrum analysis operation is considered failed due to inactivity (default: 100).
-                - first_segment_center_freq (int): Frequency in Hz of the first segment center (default: 108_000_000).
-                - last_segment_center_freq (int): Frequency in Hz of the last segment center (default: 1_002_000_000).
-                - segment_freq_span (int): Frequency span in Hz of each segment (default: 1_000_000).
-                - num_bins_per_segment (int): Number of FFT bins per segment (default: 256).
-                - noise_bw (int): Equivalent noise bandwidth in kHz (default: 150).
-                - window_function (WindowFunction): FFT window function applied during analysis (default: WindowFunction.HANN).
-                - num_averages (int): Number of averages performed per segment (default: 1).
-                - spectrum_retrieval_type (SpectrumRetrievalType): Specifies how spectrum data is retrieved (default: SpectrumRetrievalType.FILE).
-        snmp_write_community (str, optional): SNMP community string with write access, obtained from the cable modem.
-            Passed internally; not typically set manually.
+    Parameters
+    ----------
+    cable_modem : CableModem
+        Target cable modem on which to run the measurement.
+    tftp_servers : tuple[Inet, Inet], optional
+        Primary/secondary TFTP server addresses used for result file storage.
+        Defaults to values from :func:`PnmConfigManager.get_tftp_servers`.
+    tftp_path : str, optional
+        Remote TFTP directory where result files are written.
+        Defaults to :func:`PnmConfigManager.get_tftp_path`.
+    capture_parameters : SpecAnCapturePara
+        Fully specified capture configuration (timeouts, segment layout,
+        binning, ENBW, windowing, averaging, retrieval type).
+
+    Notes
+    -----
+    - If ``capture_parameters.spectrum_retrieval_type == SpectrumRetrievalType.SNMP``,
+      the service switches to ``DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA``.
+    - After construction, call :meth:`set_and_go` (via ``CommonMeasureService``) to execute.
     """
 
     def __init__(self,
@@ -83,50 +86,29 @@ class CmSpectrumAnalysisService(CommonMeasureService):
 
 class OfdmChanSpecAnalyzerService(CommonMeasureService):
     """
-    A specialized service for configuring and launching DOCSIS OFDM spectrum analyzer captures.
+    Helper Service For OFDM Spectrum Analyzer Runs
 
-    This is a thin wrapper over :class:`CommonMeasureService` that preconfigures
-    parameters for spectrum analyzer testing of a specific cable modem.
+    Purpose
+    -------
+    Thin wrapper over :class:`CommonMeasureService` that preconfigures the PNM
+    Spectrum Analyzer test for a downstream OFDM capture on a single modem.
 
     Parameters
     ----------
     cable_modem : CableModem
-        The cable modem instance to be tested.
-
+        Target cable modem instance.
     tftp_servers : tuple[Inet, Inet], optional
-        A tuple containing the primary and secondary TFTP servers used for capture
-        file transfer.
-        Defaults to values from :func:`PnmConfigManager.get_tftp_servers`.
-
+        Primary/secondary TFTP servers used for capture file transfer.
+        Defaults to :func:`PnmConfigManager.get_tftp_servers`.
     tftp_path : str, optional
-        The remote TFTP directory/path where capture files will be written.
+        Remote TFTP directory where capture files are written.
         Defaults to :func:`PnmConfigManager.get_tftp_path`.
 
-    Notes
+    Usage
     -----
-    - This class is intended to simplify Spectrum Analyzer test setup by using
-      standard PNM TFTP configuration.
-    - After initialization, you must still call
-      :meth:`setSpectrumCaptureParameters` to define the specific capture
-      behavior.
-    - Once configured, execute the capture using :meth:`set_and_go`.
-
-    Example
-    -------
-    >>> opts = SpecAnCapturePara(
-    ...     inactivity_timeout=10,
-    ...     first_segment_center_freq=579_000_000,
-    ...     last_segment_center_freq=579_000_000,
-    ...     segment_freq_span=6_000_000,
-    ...     num_bins_per_segment=1024,
-    ...     noise_bw=150,
-    ...     window_function=WindowFunction.HANN,
-    ...     num_averages=10,
-    ...     spectrum_retrieval_type=SpectrumRetrievalType.FILE
-    ... )
-    >>> service = OfdmChanSpecAnalyzerService(cm)
-    >>> service.setSpectrumCaptureParameters(opts)
-    >>> response = await service.set_and_go()
+    1) Construct the service.  
+    2) Call :meth:`setSpectrumCaptureParameters` with a :class:`SpecAnCapturePara`.  
+    3) Execute :meth:`set_and_go` to run the test.
     """
 
     def __init__(
@@ -146,20 +128,23 @@ class OfdmChanSpecAnalyzerService(CommonMeasureService):
 
 class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
     """
-    A high-level service that coordinates downstream OFDM spectrum analysis.
+    Downstream OFDM Channel Spectrum Analyzer Orchestrator
 
-    This class is responsible for:
-
-    1. Retrieving downstream OFDM channel information from the cable modem.
-    2. Computing per-channel spectrum bandwidth tuples
-       (start, center, end frequencies).
-    3. Building spectrum capture parameter objects and executing captures
-       for each channel through :class:`OfdmChanSpecAnalyzerService`.
+    Responsibilities
+    ----------------
+    1) Query the cable modem for DS OFDM channel configuration.  
+    2) Compute per-channel spectrum bandwidth tuples: (start_hz, plc_hz, end_hz).  
+    3) Build :class:`SpecAnCapturePara` for each channel and invoke
+       :class:`OfdmChanSpecAnalyzerService` to capture.
 
     Parameters
     ----------
     cable_modem : CableModem
-        The cable modem instance whose downstream OFDM channels will be analyzed.
+        Cable modem whose downstream OFDM channels will be analyzed.
+    number_of_averages : int, default 2
+        Number of averages to request per segment in the capture.
+    spectrum_retrieval_type : SpectrumRetrievalType, default SpectrumRetrievalType.FILE
+        Data retrieval mechanism (file-based or SNMP amplitude data).
     """
 
     def __init__(self, cable_modem: CableModem, 
@@ -172,35 +157,47 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
         self._pnm_test_type = DocsPnmCmCtlTest.SPECTRUM_ANALYZER
         self.log_prefix = f"DsOfdmChannelSpectrumAnalyzer - CM {self._cm.get_mac_address}"
 
-    async def start(self) -> List[Tuple[ChannelId, MessageResponse]]:
+    async def start(self, capture_per_channel: bool = False) -> List[Tuple[ChannelId, MessageResponse]]:
         """
-        Build capture parameters and run spectrum captures for each OFDM channel.
+        Run Spectrum Captures Across All OFDM Channels
 
-        This method iterates over the downstream OFDM channels,
-        builds the capture configuration, and triggers spectrum analyzer
-        captures for each channel.
+        Behavior
+        --------
+        - Retrieves per-channel (start/plc/end) frequency tuples via
+          :meth:`calculate_channel_spectrum_bandwidth`.
+        - Builds a :class:`SpecAnCapturePara` for each channel using:
+            * first_segment_center_freq = start_hz
+            * last_segment_center_freq  = end_hz
+            * segment_freq_span         = 1_000_000 Hz (default here)
+            * num_bins_per_segment      = 256 (default here)
+            * window_function           = HANN
+            * num_averages              = instance default
+            * spectrum_retrieval_type   = instance default
+        - Executes :meth:`set_and_go` for each channel via
+          :class:`OfdmChanSpecAnalyzerService`.
+
+        Parameters
+        ----------
+        capture_per_channel : bool, optional
+            Reserved flag for future modes; current implementation always
+            iterates all channels. Default False.
 
         Returns
         -------
-        list[MessageResponse]
-            A list of responses from each spectrum analyzer capture run.
+        list[tuple[ChannelId, MessageResponse]]
+            Per-channel results from the spectrum analyzer run.
 
         Notes
         -----
-        - By default, this method sets conservative capture parameters
-          such as 256 bins per segment and a 30-second inactivity timeout.
-        - The segment frequency span is automatically derived from the
-          difference between the start and end frequencies of each channel.
-        - A temporary early `break` is present after the first channel
-          for testing purposes. Remove this once multi-channel capture
-          is ready to be run in production.
+        - The notion of "center" from this analyzer is not used to configure the
+          capture here; the capture aligns to the *first* and *last* frequencies
+          (start/end) as provided by the OFDM channel range.
         """
-
         channel_specCapture:List[Tuple[ChannelId, SpecAnCapturePara]] = []
         out:List[Tuple[ChannelId, MessageResponse]] = []
 
         # Compute the bandwidth mapping for all OFDM channels
-        bw_by_channel: OfdmSpectrumBwLut = await self.calculate_spectrum_bandwidth()
+        bw_by_channel: OfdmSpectrumBwLut = await self.calculate_channel_spectrum_bandwidth()
 
         # Default capture settings
         num_bins_per_segment    = 256
@@ -243,47 +240,26 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
 
         return out
 
-    async def calculate_spectrum_bandwidth(self) -> CommonSpectumBwLut:
+    async def calculate_channel_spectrum_bandwidth(self) -> CommonChannelSpectumBwLut:
         """
-        Compute the start, center, and end frequencies for each downstream OFDM channel.
-
-        This method queries the cable modem to retrieve OFDM channel information
-        and calculates the usable spectrum for each channel.
+        Calculate Per-Channel OFDM Spectrum Tuples
 
         Returns
         -------
-        OfdmSpectrumBwLut
-            A dictionary mapping each channel ID to a tuple of
-            ``(start_frequency_hz, plc_frequency_hz, end_frequency_hz)``.
-
-        Method
-        ------
-        - Uses the following DOCSIS 3.1 OFDM channel fields:
-            * ``SubcarrierZeroFreq``
-            * ``FirstActiveSubcarrierNum``
-            * ``LastActiveSubcarrierNum``
-            * ``SubcarrierSpacing``
-            * ``PlcFreq``
-
-        - Start Frequency Calculation:
-
-            ``start = zero_freq + (first_active * subcarrier_spacing)``
-
-        - End Frequency Calculation:
-
-            ``end = zero_freq + ((last_active + 1) * subcarrier_spacing)``
-
-        - Center frequency is simply the PLC frequency:
-
-            ``center = plc_freq``
+        CommonChannelSpectumBwLut
+            Mapping of ``ChannelId → (start_hz, plc_hz, end_hz)`` where:
+            - ``start_hz = zero_freq + first_active * subcarrier_spacing``
+            - ``end_hz   = zero_freq + (last_active + 1) * subcarrier_spacing``
+            - ``plc_hz`` is the PLC frequency reported by the modem.
 
         Notes
         -----
-        - The first active subcarrier index may vary depending on the CMTS
-          and modem configuration.
-        - Start and end values define the total occupied OFDM spectrum.
+        - Uses DOCSIS 3.1 fields from ``DocsIf31CmDsOfdmChanEntry``:
+          SubcarrierZeroFreq, FirstActiveSubcarrierNum, LastActiveSubcarrierNum,
+          SubcarrierSpacing, PlcFreq.
+        - Start/End reflect the occupied OFDM spectrum range for each channel.
         """
-        out: CommonSpectumBwLut = {}
+        out: CommonChannelSpectumBwLut = {}
 
         channels: List[DocsIf31CmDsOfdmChanChannelEntry] = await self._cm.getDocsIf31CmDsOfdmChanEntry()
         if not channels:
@@ -324,11 +300,50 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
             )
 
         return out
-        
+
+    async def calculate_spectrum_bandwidth(self) -> CommonSpectrumBw:
+        """
+        Retrieve The Precomputed Spectrum Bandwidth Mapping (Placeholder)
+
+        Returns
+        -------
+        CommonSpectrumBw
+            Placeholder tuple ``(0, 0, 0)``. This method is intentionally a stub
+            in this class; see the SC-QAM variant for a complete implementation.
+
+        Notes
+        -----
+        - Intentional placeholder to keep interface symmetry with
+          :class:`DsScQamChannelSpectrumAnalyzer`. The OFDM flow typically
+          uses per-channel tuples directly.
+        """
+        return (FrequencyHz(0), FrequencyHz(0), FrequencyHz(0))  # Placeholder implementation
+
 class ScQamChanSpecAnalyzerService(CommonMeasureService):
     """
-    Thin wrapper around :class:`CommonMeasureService` that configures and
-    launches DOCSIS SC-QAM spectrum-analyzer captures for a given cable modem.
+    Helper Service For SC-QAM Spectrum Analyzer Runs
+
+    Purpose
+    -------
+    Thin wrapper around :class:`CommonMeasureService` that configures a
+    single spectrum analyzer capture for a downstream SC-QAM channel set.
+
+    Parameters
+    ----------
+    cable_modem : CableModem
+        Target cable modem instance.
+    tftp_servers : tuple[Inet, Inet], optional
+        Primary/secondary TFTP servers for capture file transfer.
+        Defaults to :func:`PnmConfigManager.get_tftp_servers`.
+    tftp_path : str, optional
+        Remote TFTP directory for capture output.
+        Defaults to :func:`PnmConfigManager.get_tftp_path`.
+
+    Usage
+    -----
+    1) Construct the service.  
+    2) Call :meth:`setSpectrumCaptureParameters` with :class:`SpecAnCapturePara`.  
+    3) Execute :meth:`set_and_go` to run the test.
     """
 
     def __init__(
@@ -338,43 +353,12 @@ class ScQamChanSpecAnalyzerService(CommonMeasureService):
         tftp_path: str = PnmConfigManager.get_tftp_path(),
     ):
         """
-        Initialize the SC-QAM spectrum analyzer service.
+        Initialize The SC-QAM Spectrum Analyzer Service
 
-        Args:
-            cable_modem (CableModem): Target cable modem instance.
-            *spectrum_capture_parameters (object): Extra positional options that are
-                forwarded **verbatim** to ``CommonMeasureService.__init__``. In the
-                common case this is a single :class:`SpecAnCapturePara` instance, but
-                additional positional options are supported if your underlying
-                ``CommonMeasureService`` accepts them.
-            tftp_servers (Tuple[Inet, Inet], optional): (primary, secondary) TFTP servers
-                used for capture file transfer. Defaults to
-                ``PnmConfigManager.get_tftp_servers()``.
-            tftp_path (str, optional): Remote TFTP directory/path where capture files
-                are written. Defaults to ``PnmConfigManager.get_tftp_path()``.
-
-        Notes:
-            - This constructor **does not** interpret or validate the contents of
-              ``*spectrum_capture_parameters``; they are passed through unchanged.
-            - Typical usage passes one ``SpecAnCapturePara`` object:
-              ``ScQamChanSpecAnalyzerService(cm, SpecAnCapturePara(...))``.
-
-        Examples:
-            Basic usage with one options object:
-
-            >>> opts = SpecAnCapturePara(
-            ...     inactivity_timeout=10,
-            ...     first_segment_center_freq=579000000,
-            ...     last_segment_center_freq=579000000,
-            ...     segment_freq_span=6000000,
-            ...     num_bins_per_segment=1024,
-            ...     noise_bw=150,
-            ...     window_function=WindowFunction.HANN,
-            ...     num_averages=10,
-            ...     spectrum_retrieval_type=SpectrumRetrievalType.FILE
-            ... )
-            >>> service = ScQamChanSpecAnalyzerService(cm, opts)
-            >>> resp = await service.set_and_go()
+        Notes
+        -----
+        - This constructor does not validate parameter contents; they are passed
+          unchanged to :class:`CommonMeasureService`.
         """
         self.logger = logging.getLogger(self.__class__.__name__)
         super().__init__(
@@ -386,9 +370,24 @@ class ScQamChanSpecAnalyzerService(CommonMeasureService):
 
 class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
     """
-    Service to fetch DOCSIS SC-QAM downstream channel info and compute
-    per-channel spectrum bandwidth tuples (start, center, end) in Hz, then
-    trigger spectrum captures per channel.
+    Downstream SC-QAM Channel Spectrum Analyzer Orchestrator
+
+    Responsibilities
+    ----------------
+    1) Fetch downstream SC-QAM channel list from the cable modem.  
+    2) Compute per-channel tuples (start_hz, center_hz, end_hz) using
+       the reported center frequency and channel width.  
+    3) Build :class:`SpecAnCapturePara` and run captures per channel via
+       :class:`ScQamChanSpecAnalyzerService`.
+
+    Parameters
+    ----------
+    cable_modem : CableModem
+        Cable modem to analyze.
+    number_of_averages : int, default 1
+        Number of averages per segment to request.
+    spectrum_retrieval_type : SpectrumRetrievalType, default SpectrumRetrievalType.FILE
+        Data retrieval mechanism for captures.
     """
 
     def __init__(self, cable_modem: CableModem, 
@@ -402,20 +401,39 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
         self.log_prefix = f"DsScQamChannelSpectrumAnalyzer - CM {self._cm.get_mac_address}"
         self._test_mode = False
 
-    async def start(self) -> List[Tuple[ChannelId, MessageResponse]]:
+    async def start(self, capture_per_channel: bool = False) -> List[Tuple[ChannelId, MessageResponse]]:
         """
-        Build capture parameters for each SC-QAM channel and run captures.
+        Run Spectrum Captures Across All SC-QAM Channels
+
+        Behavior
+        --------
+        - Computes per-channel (start/center/end) tuples via
+          :meth:`calculate_channel_spectrum_bandwidth`.
+        - Configures :class:`SpecAnCapturePara` per channel using:
+            * first_segment_center_freq = start_hz
+            * last_segment_center_freq  = end_hz
+            * segment_freq_span         = 1_000_000 Hz (default here)
+            * num_bins_per_segment      = 256 (default here)
+            * window_function           = HANN
+            * num_averages              = instance default
+            * spectrum_retrieval_type   = instance default
+        - Executes :meth:`set_and_go` for each channel.
+
+        Parameters
+        ----------
+        capture_per_channel : bool, optional
+            Reserved for future modes; current implementation iterates all
+            channels. Default False.
 
         Returns
         -------
-        List[Tuple[ChannelId, MessageResponse]]
-            A list of tuples mapping each channel identifier to the
-            corresponding MessageResponse from the capture operation.
+        list[tuple[ChannelId, MessageResponse]]
+            Per-channel results from the spectrum analyzer run.
         """
         channel_spec_capture: List[Tuple[ChannelId, SpecAnCapturePara]] = []
         out: List[Tuple[ChannelId, MessageResponse]] = []
 
-        bw_by_channel: ScQamSpectrumBwLut = await self.calculate_spectrum_bandwidth()
+        bw_by_channel: ScQamSpectrumBwLut = await self.calculate_channel_spectrum_bandwidth()
 
         num_bins_per_segment = 256
         number_of_averages = self._number_of_averages
@@ -452,18 +470,28 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
 
         return out
 
-    async def calculate_spectrum_bandwidth(self) -> CommonSpectumBwLut:
+    async def calculate_channel_spectrum_bandwidth(self) -> CommonChannelSpectumBwLut:
         """
-        Compute start/center/end frequencies for each SC-QAM downstream channel.
+        Calculate Per-Channel SC-QAM Spectrum Tuples
+
+        Method
+        ------
+        For each SC-QAM channel, computes:
+            start = center - width/2  
+            end   = center + width/2
 
         Returns
         -------
-        CommonSpectumBwLut
-            Mapping of ChannelId -> (start_hz, center_hz, end_hz) using a
-            half-width around center: start = center - width/2,
-            end = center + width/2.
+        CommonChannelSpectumBwLut
+            Mapping of ``ChannelId → (start_hz, center_hz, end_hz)``.
+
+        Notes
+        -----
+        - Pulls channel center frequency and width from
+          :class:`DocsIfDownstreamChannelEntry` via the modem.
+        - Channels with missing data are skipped and logged.
         """
-        out: CommonSpectumBwLut = {}
+        out: CommonChannelSpectumBwLut = {}
 
         channels: List[DocsIfDownstreamChannelEntry] = await self._cm.getDocsIfDownstreamChannel()
         if not channels:
@@ -496,3 +524,58 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
             out[chan_id] = (start, cfreq, end)
 
         return out
+
+    async def calculate_spectrum_bandwidth(self) -> CommonSpectrumBw:
+        """
+        Compute Overall SC-QAM Spectrum Bounds
+
+        Purpose
+        -------
+        Folds all per-channel tuples into a single band by selecting the lowest
+        start frequency and highest end frequency among channels, and computes a
+        *nominal* midpoint as ``center = (start_global + end_global) // 2``.
+
+        Returns
+        -------
+        CommonSpectrumBw
+            Tuple ``(start_hz_global, center_hz_global, end_hz_global)``.
+
+        Notes
+        -----
+        - The returned "center" is a nominal midpoint only. When configuring
+          captures you typically prefer explicit first/last frequencies.
+        - Logs incremental accumulation for traceability.
+        """
+        channels: CommonChannelSpectumBwLut = await self.calculate_channel_spectrum_bandwidth()
+        if not channels:
+            self.logger.warning("SC-QAM: no channels available to compute overall bandwidth.")
+            return (FrequencyHz(0), FrequencyHz(0), FrequencyHz(0))
+
+        # Initialize using the first entry
+        iterator = iter(channels.items())
+        first_key, (start_hz, _, end_hz) = next(iterator)
+        start_hz_global: FrequencyHz = FrequencyHz(start_hz)
+        end_hz_global: FrequencyHz = FrequencyHz(end_hz)
+
+        # Fold the rest
+        for channel_id, (ch_start, _ch_center, ch_end) in iterator:
+            s = FrequencyHz(ch_start)
+            e = FrequencyHz(ch_end)
+            if s < start_hz_global:
+                start_hz_global = s
+            if e > end_hz_global:
+                end_hz_global = e
+
+            self.logger.debug(
+                "SC-QAM accumulate: ch=%s, start=%d, end=%d → global=(%d, %d)",
+                channel_id, s, e, start_hz_global, end_hz_global
+            )
+
+        center_hz_global: FrequencyHz = FrequencyHz((start_hz_global + end_hz_global) // 2)
+
+        self.logger.info(
+            "SC-QAM overall bandwidth: start=%d Hz, end=%d Hz (width=%d Hz); nominal center=%d Hz",
+            start_hz_global, end_hz_global, end_hz_global - start_hz_global, center_hz_global
+        )
+
+        return (start_hz_global, center_hz_global, end_hz_global)

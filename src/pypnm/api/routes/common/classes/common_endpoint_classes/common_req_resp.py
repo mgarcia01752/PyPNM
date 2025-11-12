@@ -92,7 +92,7 @@ class CommonSingleCaptureAnalysisRequest(BaseModel):
 
 
 class CommonResponse(BaseModel):
-    mac_address: MacAddressStr                                      = Field(default=default_mac, description="MAC address of the cable modem")
+    mac_address: MacAddressStr                                      = Field(description="MAC address of the cable modem")
     status: Optional[Union[ServiceStatusCode, OperationState, str]] = Field(default="success", description="Operation status code or state")
     message: Optional[str]                                          = Field(default=None, description="Additional information or error details")
 

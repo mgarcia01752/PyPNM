@@ -195,14 +195,14 @@ Starts a background RxMER capture with a fixed duration and sample interval.
 | ---: | -------------------------- | ---------------------------------- | ------------- |
 |  `0` | `MIN_AVG_MAX`              | Min/avg/max RxMER across samples   | `0`           |
 |  `1` | `RXMER_HEAT_MAP`           | Time×frequency heatmap grid        | `0`           |
-|  `2` | `OFDM_PROFILE_PERFORMANCE` | Per‑subcarrier performance metrics | `0` or `1`    |
+|  `2` | `OFDM_PROFILE_PERFORMANCE_1` | Per‑subcarrier performance metrics | `0` or `1`    |
 
 **Output Types** (`output.type`)
 
 | Code | Name      | Description                              | Media Type         |
 | ---: | --------- | ---------------------------------------- | ------------------ |
-|  `0` | `JSON`    | Structured JSON body                     | `application/json` |
-|  `4` | `ARCHIVE` | ZIP containing multiple output artifacts | `application/zip`  |
+|  `json`     | `JSON`    | Structured JSON body                     | `application/json` |
+|  `archive`  | `ARCHIVE` | ZIP containing multiple output artifacts | `application/zip`  |
 
 **Response** (`MultiRxMerAnalysisResponse`):
 

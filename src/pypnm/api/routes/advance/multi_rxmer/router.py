@@ -22,6 +22,7 @@ from pypnm.api.routes.advance.multi_rxmer.schemas import (
     MeasureModes, MultiRxMerAnalysisRequest, MultiRxMerAnalysisResponse, MultiRxMerRequest, 
     MultiRxMerResponseStatus, MultiRxMerStartResponse, MultiRxMerStatusResponse)
 from pypnm.api.routes.advance.multi_rxmer.service import MultiRxMer_Ofdm_Performance_1_Service, MultiRxMerService
+from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
 from pypnm.api.routes.common.classes.file_capture.types import GroupId
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
@@ -29,6 +30,7 @@ from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.files.service import FileType, PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
+from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import MacAddressStr
@@ -56,7 +58,7 @@ class MultiRxMerRouter(AbstractService):
         @self.router.post("/start",
             response_model=Union[MultiRxMerStartResponse, SnmpResponse],
             summary="Start a Multi RxMER capture",)
-        async def start_multi_rxmer(request: MultiRxMerRequest) -> Union[MultiRxMerStartResponse, SnmpResponse]:
+        async def start_multi_rxmer(request: MultiRxMerRequest):
             """
             **Start Multi-RxMER Capture**
 
@@ -160,7 +162,7 @@ class MultiRxMerRouter(AbstractService):
             self.logger.debug(f'OpId: {operation_id} - Status: {status}')
             
             return MultiRxMerStatusResponse(
-                mac_address =   cast(MacAddressStr, service.cm.get_mac_address),
+                mac_address =   service.cm.get_mac_address.mac_address,
                 status      =   "success",
                 message     =   None,
                 operation   =   MultiRxMerResponseStatus(
@@ -174,13 +176,8 @@ class MultiRxMerRouter(AbstractService):
 
         @self.router.get("/results/{operation_id}",
             summary="Download a ZIP archive of all RxMER capture files",
-            responses={
-                200: {
-                    "content": {"application/zip": {}},
-                    "description": "ZIP archive of capture files",
-                }
-            },)
-        def download_measurements_zip(operation_id: str) -> StreamingResponse:
+            responses=FAST_API_RESPONSE,)
+        def download_measurements_zip(operation_id: OperationId) -> StreamingResponse:
             """
             **Download Captured RxMER Measurements (ZIP)**
 
@@ -193,11 +190,11 @@ class MultiRxMerRouter(AbstractService):
             ---
             Returns a `StreamingResponse` with `Content-Type: application/zip`.
             """
-            svc:MultiRxMerService = self.getService(operation_id) # type: ignore
+            svc:MultiRxMerService = cast(MultiRxMerService, self.getService(operation_id))
             samples = svc.results(operation_id)
 
             save_dir = SystemConfigSettings.save_dir
-            mac = str(svc.cm.get_mac_address).replace(":", "")
+            mac = svc.cm.get_mac_address.mac_address
             
             buf = io.BytesIO()
             with zipfile.ZipFile(buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zipf:
@@ -219,7 +216,7 @@ class MultiRxMerRouter(AbstractService):
         @self.router.delete("/stop/{operation_id}",
             response_model=MultiRxMerStatusResponse,
             summary="Stop a running Multi-RxMER capture early",)
-        def stop_capture(operation_id: str) -> MultiRxMerStatusResponse:
+        def stop_capture(operation_id: OperationId) -> MultiRxMerStatusResponse:
             """
             **Stop a Multi-RxMER Capture Operation**
 
@@ -231,7 +228,7 @@ class MultiRxMerRouter(AbstractService):
             
             """
             try:
-                service:MultiRxMerService = self.getService(operation_id) # type: ignore
+                service:MultiRxMerService = cast(MultiRxMerService, self.getService(operation_id))
             except KeyError:
                 raise HTTPException(status_code=404, detail="Operation not found")
 
@@ -239,15 +236,15 @@ class MultiRxMerRouter(AbstractService):
             status = service.status(operation_id)
 
             return MultiRxMerStatusResponse(
-                mac_address=str(service.cm.get_mac_address),
+                mac_address=service.cm.get_mac_address.mac_address,
                 status=OperationState.STOPPED,
                 message=None,
                 operation=MultiRxMerResponseStatus(
-                    operation_id=operation_id,
-                    state=status["state"],
-                    collected=status["collected"],
-                    time_remaining=status["time_remaining"],
-                    message=None,
+                    operation_id    =   operation_id,
+                    state           =   status["state"],
+                    collected       =   status["collected"],
+                    time_remaining  =   status["time_remaining"],
+                    message         =   None,
                 ),
             )
 
@@ -340,7 +337,7 @@ class MultiRxMerRouter(AbstractService):
             message = f"Analysis {analysis_name} completed for group {capture_group_id}"
 
             try:
-                output_type = FileType(request.output.type)
+                output_type = request.output.type
             except ValueError:
                 msg = f'Invalid Output Type Selected: ({request.output.type})'
                 return MultiRxMerAnalysisResponse(
@@ -351,7 +348,7 @@ class MultiRxMerRouter(AbstractService):
             
             mac_address = multi_analysis.mac_address
 
-            if output_type == FileType.JSON:
+            if output_type == OutputType.JSON:
                 data = multi_analysis.model_dump().get("data", {})
                 return MultiRxMerAnalysisResponse(
                     mac_address =   mac_address,
@@ -359,7 +356,7 @@ class MultiRxMerRouter(AbstractService):
                     message     =   message,
                     data        =   data,)
 
-            elif output_type == FileType.ARCHIVE:
+            elif output_type == OutputType.ARCHIVE:
                 rpt = engine.build_report()
                 return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)
             

@@ -514,17 +514,15 @@ For all three endpoints, when `analysis.output.type = "archive"`:
   * CSV exports of amplitude vs frequency.
   * Matplotlib PNG plots per channel and aggregate views.
 
-Examples of generated plots (file names may vary by implementation):
+Examples of generated plots:
 
 | Standard Plot  | Moving Average Plot  | Description |
 | -------------- | -------------------- | ----------- |
 | [DS Full Bandwidth](images/spectrum/spec-analysis-standard.png) | [DS Full Bandwidth](images/spectrum/spec-analysis-moving-average.png)    | Single-capture standard vs moving-average spectrum views.       |
 | [SCQAM](images/spectrum/scqam-2-spec-analysis-standard.png)     | [SCQAM](images/spectrum/scqam-2-spec-analysis-moving-average.png)        | Example SC-QAM channel standard and moving-average plots.       |
-| [OFDM](images/spectrum/ofdm-160-spec_analysis-rpt-standard.png) | [OFDM](images/spectrum/ofdm-160-spec-analysis-rpt-moving-average.png)    | Example OFDM channel standard and moving-average plots.         |
+| [OFDM](images/spectrum/ofdm-34-spec-analysis-standard.png)      | [OFDM](images/spectrum/ofdm-34-spec-analysis-moving-average.png)         | Example OFDM channel standard and moving-average plots.         |
 
 ## Notes
 
 * Always validate requested frequency ranges against the modem diplexer configuration.  
 * Spectrum captures can be long-running operations depending on span and averaging.  
-* Only one spectrum direction (downstream or upstream) can run at a time; this router
-  covers downstream (`/ds`) only.
