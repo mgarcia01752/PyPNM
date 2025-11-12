@@ -220,7 +220,7 @@ ds_ofdm_rxmer_per_subcar_aabbccddeeff_194_1751762613.bin
 
 | Plot | Description | Note |
 | ---- | ----------- | ---- |
-| [RxMER Heat Map](./images/multi-rxmer/160_rxmer_heat_map.png) | Time × Frequency heatmap grid. | Constant dark Line indicating low RxMER |
+| [Heat-Map](./images/multi-rxmer/160_rxmer_heat_map.png) | Time × Frequency heatmap grid. | Constant dark Line indicating low RxMER |
 
 ### OFDM Profile Performance 1 Overlay
 
