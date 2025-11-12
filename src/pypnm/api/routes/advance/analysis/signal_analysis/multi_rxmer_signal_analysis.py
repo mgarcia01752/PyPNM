@@ -337,7 +337,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
             for mod_analysis in mod_analysis_list:
                 # Each DsModulationProfileAnalysisModel corresponds to a snapshot
-                capture_time = getattr(mod_analysis, "capture_time", start)
+                capture_time = CaptureTime(getattr(mod_analysis, "capture_time", start))
                 for profile_entry in mod_analysis.profiles:
                     pid = profile_entry.profile_id
                     shannon_min = profile_entry.carrier_values.shannon_min_mer
@@ -367,7 +367,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 channel_id          = ch_id,
                 frequency           = frequencies,
                 avg_mer             = mam.avg,
-                mer_shannon_limits  = shannon_model.snr_db_min,
+                mer_shannon_limits  = cast(FloatSeries, shannon_model.snr_db_min),
                 profiles            = profile_entries,)
 
         return models
