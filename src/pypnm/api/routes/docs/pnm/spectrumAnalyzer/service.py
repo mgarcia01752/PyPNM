@@ -162,10 +162,13 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
         The cable modem instance whose downstream OFDM channels will be analyzed.
     """
 
-    def __init__(self, cable_modem: CableModem, number_of_averages: int = 2):
+    def __init__(self, cable_modem: CableModem, 
+                 number_of_averages: int = 2, 
+                 spectrum_retrieval_type:SpectrumRetrievalType = SpectrumRetrievalType.FILE,):
         super().__init__(cable_modem)
         self.logger = logging.getLogger(self.__class__.__name__)
         self._number_of_averages = number_of_averages
+        self._spectrum_retrieval_type = spectrum_retrieval_type
         self._pnm_test_type = DocsPnmCmCtlTest.SPECTRUM_ANALYZER
         self.log_prefix = f"DsOfdmChannelSpectrumAnalyzer - CM {self._cm.get_mac_address}"
 
@@ -202,6 +205,7 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
         # Default capture settings
         num_bins_per_segment    = 256
         number_of_averages      = self._number_of_averages
+        spectrum_retrieval_type = self._spectrum_retrieval_type
         inactivity_timeout      = 30
         noise_bw                = 150
         segment_freq_span       = 1_000_000
@@ -221,7 +225,7 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
                 noise_bw                    = noise_bw,
                 window_function             = WindowFunction.HANN,
                 num_averages                = number_of_averages,
-                spectrum_retrieval_type     = SpectrumRetrievalType.FILE,
+                spectrum_retrieval_type     = spectrum_retrieval_type,
             )
 
             self.logger.info(
@@ -387,12 +391,16 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
     trigger spectrum captures per channel.
     """
 
-    def __init__(self, cable_modem: CableModem, number_of_averages: int = 1, test_mode: bool = False):
+    def __init__(self, cable_modem: CableModem, 
+                 number_of_averages: int = 1, 
+                 spectrum_retrieval_type:SpectrumRetrievalType = SpectrumRetrievalType.FILE,):
         super().__init__(cable_modem)
         self.logger = logging.getLogger(self.__class__.__name__)
         self._number_of_averages = number_of_averages
+        self._spectrum_retrieval_type = spectrum_retrieval_type
+        
         self.log_prefix = f"DsScQamChannelSpectrumAnalyzer - CM {self._cm.get_mac_address}"
-        self._test_mode = test_mode
+        self._test_mode = False
 
     async def start(self) -> List[Tuple[ChannelId, MessageResponse]]:
         """
@@ -411,6 +419,7 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
 
         num_bins_per_segment = 256
         number_of_averages = self._number_of_averages
+        spectrum_retrieval_type = self._spectrum_retrieval_type
         inactivity_timeout = 60
         noise_bw = 150
         segment_freq_span = 1_000_000
@@ -430,7 +439,7 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
                 noise_bw                  = noise_bw,
                 window_function           = WindowFunction.HANN,
                 num_averages              = number_of_averages,
-                spectrum_retrieval_type   = SpectrumRetrievalType.FILE,
+                spectrum_retrieval_type   = spectrum_retrieval_type,
             )
 
             channel_spec_capture.append((chan_id, capture_parameter))
@@ -481,11 +490,7 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
 
             self.logger.info(
                 "Calculate SC-QAM Spectrum Settings: Mac: %s - Channel-Settings: Ch=%s, Start=%s, Center=%s, End=%s",
-                self._cm.get_mac_address,
-                chan_id,
-                start,
-                cfreq,
-                end,
+                self._cm.get_mac_address, chan_id, start, cfreq, end,
             )
 
             out[chan_id] = (start, cfreq, end)
