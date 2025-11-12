@@ -31,6 +31,9 @@ class PnmFileType(Enum):
     OFDM_MODULATION_PROFILE                         = "PNN10"
     LATENCY_REPORT                                  = "LLD01"
 
+    # (Not in Spec)Placeholder for SNMP-based spectrum analysis
+    CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA              = "PXX9"    
+
     def __init__(self, pnm_cann: str):
         """
         Initialize the enum member with its PNM CANN code.

@@ -31,9 +31,12 @@ class LogFile:
 
         if isinstance(data, BaseModel):
             fp.write_file(data.model_dump_json(indent=2))
+
         elif isinstance(data, dict):
             from json import dumps
             fp.write_file(dumps(data, indent=2))
+        
         else:
             fp.write_file(data)
+        
         fp.close()

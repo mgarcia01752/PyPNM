@@ -138,7 +138,8 @@ class SpectrumAnalyzerReport(AnalysisReport):
 
     def _process(self) -> None:
         """Convert SpectrumAnalyzerAnalysisModel → SpectrumAnalyzerAnalysisRptModel per channel."""
-        models: List[SpectrumAnalyzerAnalysisModel] = cast(List[SpectrumAnalyzerAnalysisModel], self.get_analysis_model())
+        models: List[SpectrumAnalyzerAnalysisModel] = \
+            cast(List[SpectrumAnalyzerAnalysisModel], self.get_analysis_model())
 
         for idx, _model in enumerate(models):
 

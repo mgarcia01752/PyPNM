@@ -87,7 +87,6 @@ class AnalysisType(Enum):
     BASIC               = 0
 
 
-
 class Analysis:
     """Core analysis runner.
 
@@ -163,6 +162,16 @@ class Analysis:
         
         for idx, measurement in enumerate(self.measurement_data):
 
+            if "pnm_file_type" in measurement and PnmFileType.CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA.name in measurement["pnm_file_type"]:
+                self.logger.debug('Processing SNMP Spectrum Analysis Data')
+
+                pnm_file_type = PnmFileType.CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA.value
+                if self.analysis_type == AnalysisType.BASIC:
+                    self.logger.debug('Performing Basic Analysis on SNMP Spectrum Analysis Data')
+                    self._basic_analysis(pnm_file_type, measurement, analysis_para)
+                
+                continue
+
             pnm_header: Dict[str, Any] = measurement.get("pnm_header") or {}
             channel_id: int =  measurement.get("channel_id", INVALID_CHANNEL_ID)
 
@@ -174,7 +183,7 @@ class Analysis:
 
             if not pnm_file_type:
                 self.logger.error('PNM FileType not Found')
-                LogFile.write(fname=f'rxmer-analysis-measurment-{Utils.time_stamp()}.dict' , data=measurement)
+                LogFile.write(fname=f'unknown-pnm-filetype-{Utils.time_stamp()}.dict' , data=measurement)
                 pass
 
             if self.analysis_type == AnalysisType.BASIC:
@@ -276,6 +285,13 @@ class Analysis:
             self.logger.warning("Stub: Processing: LATENCY_REPORT")
             self.__add_pnmType(PnmFileType.LATENCY_REPORT) 
             pass
+
+        elif pnm_file_type == PnmFileType.CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA.value:
+            self.logger.info("Processing: Basic Analysis -> CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA")
+            model = self.basic_analysis_spectrum_analyzer_snmp(measurement, analysis_para)
+            self.__update_result_model(model)
+            self.__update_result_dict(model.model_dump())
+            self.__add_pnmType(PnmFileType.CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA)
 
         else:
             self.logger.error(f"Unknown PNM file type: ({pnm_file_type})")
@@ -1158,6 +1174,84 @@ class Analysis:
             num_bins_per_segment      = bins_per_seg,
             noise_bw                  = noise_bw_khz,
             window_function           = wf_enum,
+        )
+
+        return SpectrumAnalyzerAnalysisModel(
+            device_details     = measurement.get("device_details", SystemDescriptor.empty()),
+            pnm_header         = measurement.get("pnm_header", {}),
+            mac_address        = measurement.get("mac_address", MacAddress.null()),
+            channel_id         = ChannelId(measurement.get("channel_id", 0)),
+            capture_parameters = capture_parameters,
+            signal_analysis    = results,
+        )
+
+    @classmethod
+    def basic_analysis_spectrum_analyzer_snmp(cls, measurement: Dict[str, Any], analysis_parameters: Optional[AnalysisProcessParameters] = None,) -> SpectrumAnalyzerAnalysisModel:
+        log = logging.getLogger(f"{cls.__name__}")
+
+        freqs: FrequencySeriesHz = list(measurement.get("frequency", []) or [])
+        mags:  MagnitudeSeries   = [float(x) for x in (measurement.get("amplitude", []) or [])]
+
+        if not freqs or not mags:
+            raise ValueError("Spectrum Analyzer (SNMP): 'frequency' and 'amplitude' must be non-empty.")
+        if len(freqs) != len(mags):
+            n = min(len(freqs), len(mags))
+            log.warning("Spectrum Analyzer (SNMP): len mismatch freq=%d amp=%d; truncating to %d", len(freqs), len(mags), n)
+            freqs, mags = freqs[:n], mags[:n]
+
+        # Infer bin bandwidth from median positive Δf (robust to occasional glitches)
+        try:
+            if len(freqs) >= 2:
+                diffs = np.diff(np.asarray(freqs, dtype=np.int64))
+                pos_diffs = diffs[diffs > 0]
+                bin_bw = int(np.median(pos_diffs)) if pos_diffs.size else int(diffs[0])
+            else:
+                bin_bw = 0
+        except Exception:
+            bin_bw = 0
+
+        first_hz: int = int(freqs[0])
+        last_hz:  int = int(freqs[-1])
+        span_hz:  int = abs(last_hz - first_hz)
+        bins:     int = len(freqs)
+
+        # Moving-average (windowed) smoothing
+        if analysis_parameters:
+            window_points = int(max(1, analysis_parameters.moving_average.points))
+        else:
+            window_points = int(max(1, DEFAULT_POINT_AVG))
+
+        try:
+            ma = MovingAverage(window_points, mode="reflect")
+            smoothed = ma.apply(mags) if mags else []
+        except Exception:
+            smoothed = list(mags)
+
+        if len(smoothed) != len(freqs):
+            smoothed = smoothed[:len(freqs)]
+
+        window_avg = WindowAverage(points=window_points, magnitudes=smoothed)
+
+        # Build results (single-sweep flattened to one "segment")
+        results = SpecAnaAnalysisResults(
+            bin_bandwidth  = bin_bw,
+            segment_length = bins,
+            frequencies    = freqs,
+            magnitudes     = mags,
+            window_average = window_avg,
+        )
+
+        # Endpoints only; no center calculation
+        enbw_hz = float(measurement.get("equivalent_noise_bandwidth", 0.0))
+        noise_bw_khz = int(round(enbw_hz / 1_000.0)) if enbw_hz > 0.0 else 0
+
+        capture_parameters: SpecAnCapturePara = SpecAnCapturePara(
+            first_segment_center_freq = FrequencyHz(first_hz),
+            last_segment_center_freq  = FrequencyHz(last_hz),
+            segment_freq_span         = FrequencyHz(span_hz),
+            num_bins_per_segment      = bins,
+            noise_bw                  = noise_bw_khz,
+            window_function           = WindowFunction.HANN,
         )
 
         return SpectrumAnalyzerAnalysisModel(

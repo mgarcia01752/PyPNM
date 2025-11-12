@@ -61,6 +61,7 @@ class PnmFileTransaction:
     PNM_TEST_TYPE = "pnm_test_type"
     FILE_NAME = "filename"
     DEVICE_DETAILS = "device_details"
+    MAC_ADDRESS = "mac_address"
 
     def __init__(self):
         self.transaction_db_path = Path(SystemConfigSettings.transaction_db)

@@ -193,7 +193,7 @@ class CommonMeasureService(CommonMessagingService):
         #########################################################################
         
         if self.getSpectrumCaptureParameters().spectrum_retrieval_type == SpectrumRetrievalType.SNMP:
-            self.logger.info(f"{self.log_prefix} - Performing Spectrum Analysis SNMP Amplitude Data")
+            self.logger.debug(f"{self.log_prefix} - Performing Spectrum Analysis SNMP Amplitude Data")
 
             #Set Spectrum Analyzer
             __status = await self._generic_spectrum_analyzer_operation()

@@ -12,6 +12,7 @@ from pypnm.api.routes.common.extended.common_messaging_service import (
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.file_processor import FileProcessor
+from pypnm.lib.types import MacAddressStr
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 from pypnm.pnm.process.CmDsConstDispMeas import CmDsConstDispMeas
 from pypnm.pnm.process.CmDsHist import CmDsHist
@@ -103,7 +104,7 @@ class CommonProcessService(CommonMessagingService):
             self.logger.error("Filename is missing in the transaction record.")
             return ServiceStatusCode.MISSING_PNM_FILENAME
 
-        # Check to make sure taht pnm_test_type is in the DocsPnmCmCtlTest enum
+        # Check to make sure the pnm_test_type is in the DocsPnmCmCtlTest enum
         if pnm_test_type not in DocsPnmCmCtlTest.__members__:
             self.logger.error(f"Unsupported PNM test type: {pnm_test_type}")
             return ServiceStatusCode.UNSUPPORTED_TEST_TYPE
@@ -148,7 +149,8 @@ class CommonProcessService(CommonMessagingService):
         
         elif pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA.name:
             self.logger.info(f"Processing {pnm_test_type} PNM data")
-            pnm_dict = self._add_device_details(CmSpectrumAnalysisSnmp(pnm_data).to_dict(include_raw=False), device_details)
+            pnm_dict = self._add_device_details(CmSpectrumAnalysisSnmp(pnm_data).to_dict(), device_details)
+            pnm_dict['mac_address'] = MacAddressStr(transaction_record[PnmFileTransaction.MAC_ADDRESS])
             self.build_msg(ServiceStatusCode.SUCCESS, pnm_dict)
             
         else:

@@ -86,9 +86,7 @@ class SpectrumAnalyzerRouter:
             cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
 
             status, msg = await CableModemServicePreCheck(
-                cable_modem=cm,
-                validate_pnm_ready_status=True,
-            ).run_precheck()
+                cable_modem=cm, validate_pnm_ready_status=True,).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)

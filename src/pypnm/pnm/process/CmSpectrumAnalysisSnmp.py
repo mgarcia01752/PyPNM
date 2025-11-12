@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
@@ -6,168 +5,196 @@ from __future__ import annotations
 
 import logging
 import struct
-from typing import Any, Dict, List
+from typing import Any, Dict, Final, List
+
+from pydantic import BaseModel, Field, ConfigDict
+from pydantic.functional_serializers import field_serializer
+
+from pypnm.lib.types import FloatSeries, FrequencyHz, FrequencySeriesHz
+from pypnm.pnm.process.pnm_file_type import PnmFileType
+
+
+class SpecAnalysisSnmpConfigModel(BaseModel):
+    """
+    Parsed spectrum configuration header from the SNMP AmplitudeData payload.
+
+    This captures the effective frequency range, bin structure, and resolution
+    parameters derived from the first successfully parsed spectrum group.
+    """
+
+    model_config                         = ConfigDict(extra="ignore", populate_by_name=True)
+    start_frequency: FrequencyHz         = Field(..., ge=0, description="Lower frequency edge of the parsed spectrum in Hz.")
+    end_frequency: FrequencyHz           = Field(..., ge=0, description="Upper frequency edge of the parsed spectrum in Hz.")
+    frequency_span: FrequencyHz          = Field(..., ge=0, description="Total covered spectrum span in Hz (end - start).")
+    total_bins: int                      = Field(..., ge=0, description="Number of bins in the first parsed spectrum group.")
+    bin_spacing: FrequencyHz             = Field(..., ge=0, description="Frequency spacing between adjacent bins in Hz.")
+    resolution_bandwidth: FrequencyHz    = Field(..., ge=0, description="Resolution bandwidth used for the spectrum measurement in Hz.")
+
+
+class CmSpectrumAnalysisSnmpModel(BaseModel):
+    """
+    Canonical payload for SNMP-based CM Spectrum Analysis amplitude results.
+
+    This model aggregates the flattened frequency and amplitude vectors across
+    all parsed spectrum groups along with the associated configuration header
+    and the raw amplitude bytes.
+    """
+
+    model_config = ConfigDict(extra="ignore", populate_by_name=True, ser_json_bytes="base64")
+    spectrum_config: SpecAnalysisSnmpConfigModel = Field(..., description="Spectrum configuration header derived from the first parsed spectrum group.")
+    pnm_file_type: str              = Field(default=PnmFileType.CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA.name, description="(Special Case) PNM file type identifier.")
+    total_samples: int              = Field(..., ge=0, description="Total number of amplitude samples parsed across all spectrum groups.")
+    frequency: FrequencySeriesHz    = Field(..., description="Flattened frequency bin values in Hz across all spectrum groups.")
+    amplitude: FloatSeries          = Field(..., description="Flattened amplitude values in dBmV corresponding to each frequency bin.")
+    amplitude_bytes: bytes          = Field(..., description="Raw concatenated amplitude bytes across all parsed spectrum groups.")
+
+    @field_serializer("amplitude_bytes")
+    def _ser_amplitude_bytes(self, value: bytes, _info) -> str:
+        return value.hex()
+
 
 class CmSpectrumAnalysisSnmp:
     """
     DOCSIS SNMP Spectrum Analysis AmplitudeData parser.
 
-    This class decodes the `docsIf3CmSpectrumAnalysisMeasAmplitudeData` byte stream returned by SNMP
-    into a usable structure containing frequency and amplitude pairs, according to the
-    DOCSIS AmplitudeData textual convention.
+    This class decodes the `docsIf3CmSpectrumAnalysisMeasAmplitudeData` byte stream
+    returned by SNMP into a validated `CmSpectrumAnalysisSnmpModel`, containing
+    frequency and amplitude vectors and a spectrum configuration header, as defined
+    by the DOCSIS AmplitudeData textual convention.
     """
+
+    HEADER_FIELD_COUNT: Final[int] = 5
+    BYTES_PER_UINT32: Final[int] = 4
+    BYTES_PER_AMPLITUDE: Final[int] = 2
+    AMPLITUDE_SCALE_DBMV: Final[float] = 100.0
 
     def __init__(self, byte_stream: bytes):
         """
-        Initialize the class by parsing the byte stream into frequency and amplitude data.
+        Initialize the parser and immediately decode the SNMP amplitude payload.
 
         Args:
-            byte_stream (bytes): Raw bytes as returned by SNMP for the amplitude data.
+            byte_stream (bytes): Raw bytes as returned by SNMP for the
+                docsIf3CmSpectrumAnalysisMeasAmplitudeData object.
         """
-        self.logger = logging.getLogger(__name__)
-        self.data = self._parse_amplitude_data(byte_stream)
+        self.logger = logging.getLogger(f"{self.__class__.__name__}")
+        self.data: CmSpectrumAnalysisSnmpModel = self._parse_amplitude_data(byte_stream)
 
-    def _parse_amplitude_data(self, byte_stream: bytes) -> Dict[str, Any]:
+    def _parse_amplitude_data(self, byte_stream: bytes) -> CmSpectrumAnalysisSnmpModel:
         """
-        Parses amplitude data based on the SNMP AmplitudeData textual convention.
-
-        Structure of each spectrum group in the byte stream:
-            - 4 bytes: Channel Center Frequency (Hz)
-            - 4 bytes: Frequency Span (Hz)
-            - 4 bytes: Number of Bins
-            - 4 bytes: Bin Spacing (Hz)
-            - 4 bytes: Resolution Bandwidth (Hz)
-            - N x 2 bytes: Amplitudes in 0.01 dB units (signed 16-bit integers)
-
-        Frequency bins are calculated from:
-            freq_start = ch_center_freq - (freq_span // 2)
-            freqs = [freq_start + i * bin_spacing for i in range(num_bins)]
-
-        Amplitudes are 16-bit signed ints, scaled by 1/100 to dBmV.
-
-        Args:
-            byte_stream (bytes): The raw SNMP byte stream.
-
-        Returns:
-            Dict[str, Any]: Parsed data with:
-                - header: metadata from the first spectrum group
-                - total_samples: sum of bins across all groups
-                - frequency: list of all frequency values
-                - amplitude: list of all amplitude values (in dBmV)
-                - amplitude_bytes: all raw amplitude bytes as one hex string
+        Parse the SNMP AmplitudeData payload into frequency and amplitude arrays.
         """
         offset = 0
+        stream_len = len(byte_stream)
+        header_len = self.HEADER_FIELD_COUNT * self.BYTES_PER_UINT32
 
-        all_freqs: List[int] = []
-        all_amplitudes: List[float] = []
-        all_amplitudes_bytes: List[bytes] = []
+        all_freqs: FrequencySeriesHz = []
+        all_amplitudes: FloatSeries = []
+        amplitude_chunks: List[bytes] = []
 
         total_bins_count = 0
-        parsed_header: Dict[str, Any] = {}
+        first_group_total_bins: int = 0
+        first_group_bin_spacing: FrequencyHz = FrequencyHz(0)
+        first_group_res_bw: FrequencyHz = FrequencyHz(0)
 
-        spectrum_group_idx = 1
-        amp_data_header_len = 20  # 5 × 4-byte fields
-        amp_data_bytes_len = 2    # each amplitude is a 16-bit (2-byte) signed int
-
-        while offset + amp_data_header_len <= len(byte_stream):
-            header = byte_stream[offset : offset + amp_data_header_len]
+        while offset + header_len <= stream_len:
+            header = byte_stream[offset : offset + header_len]
             try:
-                ch_center_freq, freq_span, num_bins, bin_spacing, res_bw = struct.unpack(">5I", header)
-            except struct.error as e:
-                self.logger.warning(f"Failed to unpack header at offset {offset}: {e}")
+                ch_center_freq, freq_span, num_bins, bin_spacing, res_bw = struct.unpack(
+                    f">{self.HEADER_FIELD_COUNT}I", header)
+            except struct.error as exc:
+                self.logger.warning(f"Failed to unpack amplitude header at offset {offset}: {exc}")
                 break
 
-            amp_len = num_bins * amp_data_bytes_len
-            group_end = offset + amp_data_header_len + amp_len
-            if group_end > len(byte_stream):
-                self.logger.debug(
-                    f"[WARN] Spec-Group {spectrum_group_idx} incomplete "
-                    f"(expected {amp_len} bytes), skipping."
+            if num_bins == 0:
+                self.logger.warning("Encountered spectrum group with zero bins; stopping parse.")
+                break
+
+            amp_len = num_bins * self.BYTES_PER_AMPLITUDE
+            group_end = offset + header_len + amp_len
+            if group_end > stream_len:
+                self.logger.warning(
+                    "Incomplete spectrum group encountered; expected "
+                    f"{amp_len} amplitude bytes but payload ended early."
                 )
                 break
 
-            amp_bytes = byte_stream[offset + amp_data_header_len : group_end]
+            amp_bytes = byte_stream[offset + header_len : group_end]
             try:
                 amplitudes = struct.unpack(f">{num_bins}h", amp_bytes)
-            except struct.error as e:
-                self.logger.warning(f"Failed to unpack amplitudes at offset {offset}: {e}")
+            except struct.error as exc:
+                self.logger.warning(f"Failed to unpack amplitudes at offset {offset}: {exc}")
                 break
 
-            amplitudes_dbmv: List[float] = [a / 100.0 for a in amplitudes]
-            freq_start: int = ch_center_freq - (freq_span // 2)
-            freqs: List[int] = [freq_start + i * bin_spacing for i in range(num_bins)]
+            amplitudes_dbmv: List[float] = [a / self.AMPLITUDE_SCALE_DBMV for a in amplitudes]
+            freq_start_hz = float(ch_center_freq - (freq_span // 2))
+            freqs: List[float] = [freq_start_hz + float(i * bin_spacing) for i in range(num_bins)]
 
             all_freqs.extend(freqs)
             all_amplitudes.extend(amplitudes_dbmv)
-            all_amplitudes_bytes.append(amp_bytes)
+            amplitude_chunks.append(amp_bytes)
 
             total_bins_count += num_bins
 
-            if spectrum_group_idx == 1:
-                parsed_header = {
-                    "start_frequency": 0,
-                    "end_frequency": 0,
-                    "frequency_span": 0,
-                    "total_bins": num_bins,
-                    "bin_spacing": bin_spacing,
-                    "resolution_bandwidth": res_bw,
-                }
+            if first_group_total_bins == 0:
+                first_group_total_bins = num_bins
+                first_group_bin_spacing = bin_spacing
+                first_group_res_bw = res_bw
 
-            self.logger.debug(f"[SPEC-GROUP {spectrum_group_idx}] Parsed {num_bins} bins")
             offset = group_end
-            spectrum_group_idx += 1
 
-        if total_bins_count == 0:
-            self.logger.warning("No spectrum groups parsed; returning empty data.")
+        amplitude_bytes = b"".join(amplitude_chunks)
+
+        if total_bins_count == 0 or not all_freqs:
+            self.logger.warning("No valid spectrum groups parsed from SNMP AmplitudeData payload.")
+            start_frequency_hz: FrequencyHz     = FrequencyHz(0)
+            end_frequency_hz: FrequencyHz       = FrequencyHz(0)
+            frequency_span_hz: FrequencyHz      = FrequencyHz(0)
+            total_bins_header: int              = 0
+            bin_spacing_header: FrequencyHz     = FrequencyHz(0)
+            resolution_bw_header: FrequencyHz   = FrequencyHz(0)
         else:
-            self.logger.debug(
-                f"Parsed total of {total_bins_count} bins across {spectrum_group_idx - 1} groups."
-            )
+            start_frequency_hz      = FrequencyHz(all_freqs[0])
+            end_frequency_hz        = FrequencyHz(all_freqs[-1])
+            frequency_span_hz       = FrequencyHz(end_frequency_hz - start_frequency_hz)
+            total_bins_header       = first_group_total_bins if first_group_total_bins > 0 else total_bins_count
+            bin_spacing_header      = FrequencyHz(first_group_bin_spacing)
+            resolution_bw_header    = FrequencyHz(first_group_res_bw)
 
-        amplitude_bytes_hex = b"".join(all_amplitudes_bytes).hex()
+        spectrum_config = SpecAnalysisSnmpConfigModel(
+            start_frequency         =   start_frequency_hz,
+            end_frequency           =   end_frequency_hz,
+            frequency_span          =   frequency_span_hz,
+            total_bins              =   total_bins_header,
+            bin_spacing             =   bin_spacing_header,
+            resolution_bandwidth    =   resolution_bw_header,
+        )
 
-        parsed_header.update({
-            "start_frequency": all_freqs[0],
-            "end_frequency": all_freqs[-1],
-            "frequency_span": (all_freqs[-1] - all_freqs[0]),
-        })
-        
-        return {
-            "spectrum_config": parsed_header,
-            "total_samples": total_bins_count,
-            "frequency": all_freqs,
-            "amplitude": all_amplitudes,
-            "amplitude_bytes": amplitude_bytes_hex,
-        }
+        model = CmSpectrumAnalysisSnmpModel(
+            spectrum_config         =   spectrum_config,
+            total_samples           =   total_bins_count,
+            frequency               =   all_freqs,
+            amplitude               =   all_amplitudes,
+            amplitude_bytes         =   amplitude_bytes,
+        )
+        return model
 
-    def to_dict(self, include_raw: bool = True, include_processed: bool = True) -> Dict[str, Any]:
+    def to_model(self) -> CmSpectrumAnalysisSnmpModel:
         """
-        Serialize the spectrum analysis data to a dictionary, optionally
-        omitting raw bytes or the processed frequency/amplitude arrays.
+        Return the validated `CmSpectrumAnalysisSnmpModel` representation.
 
-        Args:
-            include_raw (bool): 
-                If True, include the raw amplitude byte stream under the key
-                `"amplitude_bytes"`. If False, that key will be omitted.
-            include_processed (bool): 
-                If True, include the processed `"frequency"` and `"amplitude"`
-                lists. If False, those keys will be omitted.
+        This is the primary entry point for downstream processing, providing
+        typed access to the spectrum configuration, flattened frequency and
+        amplitude vectors, and the raw amplitude bytes.
+        """
+        return self.data
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Serialize the SNMP spectrum analysis results to a dictionary.
 
         Returns:
-            Dict[str, Any]: A new dict containing all metadata fields (e.g.
-            `"start_frequency"`, `"end_frequency"`, etc.) plus whichever of:
-                - `"amplitude_bytes"`
-                - `"frequency"` and `"amplitude"`
+            dict: Dictionary representation of the `CmSpectrumAnalysisSnmpModel`,
+            including the spectrum configuration, frequency and amplitude
+            arrays, and raw amplitude bytes (hex-encoded).
         """
-
-        result = self.data.copy()
-
-        if not include_raw:
-            result.pop("amplitude_bytes", None)
-
-        if not include_processed:
-            result.pop("frequency", None)
-            result.pop("amplitude", None)
-
-        return result
-
+        return self.data.model_dump()
