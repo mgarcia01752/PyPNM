@@ -19,7 +19,7 @@ class MeasureModes(IntEnum):
     OFDM_PERFORMANCE_1  = 1
     
 class MeasureParameters(BaseModel):
-    mode:MeasureModes
+    mode:MeasureModes = Field(default=MeasureModes.OFDM_PERFORMANCE_1, description="Measurement mode: 0 for continuous, 1 for OFDM performance context")
 
 class MultiRxMerRequest(MultiCaptureRequest):
     measure:MeasureParameters

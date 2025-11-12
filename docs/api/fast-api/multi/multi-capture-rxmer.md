@@ -1,33 +1,42 @@
 # Multi‑RxMER Capture & Analysis API
 
-A concise, implementation‑ready reference for orchestrating downstream OFDM RxMER captures, status polling, result retrieval, early termination, and post‑capture analysis.
+A concise, implementation‑ready reference for orchestrating downstream OFDM RxMER captures, status polling, result retrieval,
+early termination, and post‑capture analysis.
 
-## 📚 Contents
+## Contents
 
 * [At a Glance](#at-a-glance)
 * [Workflow](#workflow)
 * [Endpoints](#endpoints)
-
   * [1) Start Capture](#1-start-capture)
   * [2) Status Check](#2-status-check)
   * [3) Download Results](#3-download-results)
   * [4) Stop Capture Early](#4-stop-capture-early)
   * [5) Analysis](#5-analysis)
 * [Timing & Polling](#timing--polling)
+* [Plot Examples](#plot-examples)
+  * [Min‑Avg‑Max Line Plot](#min‑avg‑max-line-plot)
+  * [RxMER Heat Map](#rxmer-heat-map)
+  * [OFDM Profile Performance 1 Overlay](#ofdm-profile-performance-1-overlay)
+* [Response Field Reference](#response-field-reference)
+  * [Start / Status / Stop](#start--status--stop)
+  * [Download ZIP](#download-zip)
+  * [Analysis (JSON)](#analysis-json)
 * [Compatibility Matrix](#compatibility-matrix)
 * [Conventions](#conventions)
+* [References](#references)
 
 ## At a Glance
 
-| Step | HTTP   | Path                                           | Purpose                                  |
-| ---: | :----- | :--------------------------------------------- | :--------------------------------------- |
-|    1 | POST   | `/advance/multiRxMer/start`                    | Begin a background capture               |
-|    2 | GET    | `/advance/multiRxMer/status/{operation_id}`    | Poll capture progress                    |
-|    3 | GET    | `/advance/multiRxMer/results/{operation_id}`   | Download a ZIP of captured PNM files     |
-|    4 | DELETE | `/advance/multiRxMer/stop/{operation_id}`      | Stop the capture after current iteration |
-|    5 | POST   | `/advance/multiRxMer/analysis`                 | Run post‑capture analytics               |
+| Step | HTTP   | Path                                         | Purpose                                  |
+| ---: | :----- | :------------------------------------------- | :--------------------------------------- |
+|    1 | POST   | `/advance/multiRxMer/start`                  | Begin a background capture               |
+|    2 | GET    | `/advance/multiRxMer/status/{operation_id}`  | Poll capture progress                    |
+|    3 | GET    | `/advance/multiRxMer/results/{operation_id}` | Download a ZIP of captured PNM files     |
+|    4 | DELETE | `/advance/multiRxMer/stop/{operation_id}`    | Stop the capture after current iteration |
+|    5 | POST   | `/advance/multiRxMer/analysis`               | Run post‑capture analytics               |
 
-**Identifiers**
+### Identifiers
 
 * `group_id`: Logical grouping for related operations.
 * `operation_id`: Unique handle for one capture session. Use it for status, stop, results, and analysis.
@@ -46,7 +55,7 @@ A concise, implementation‑ready reference for orchestrating downstream OFDM Rx
 
 Starts a background RxMER capture with a fixed duration and sample interval.
 
-**Request** `POST /advance/multiRxMer/start`
+**Request** `POST /advance/multiRxMer/start`  
 **Body** (`MultiRxMerRequest`):
 
 ```json
@@ -56,15 +65,7 @@ Starts a background RxMER capture with a fixed duration and sample interval.
     "ip_address": "192.168.0.100"
   },
   "snmp": {
-    "snmpV2C": { "community": "public" },
-    "snmpV3": {
-      "username": "user",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "password",
-      "privProtocol": "DES",
-      "privPassword": "password"
-    }
+    "snmpV2C": { "community": "public" }
   },
   "capture": {
     "parameters": {
@@ -76,34 +77,32 @@ Starts a background RxMER capture with a fixed duration and sample interval.
 }
 ```
 
-**Fields**
+#### Compatibility Matrix
 
-* `cable_modem.mac_address` *(string)* – CM MAC.
-* `cable_modem.ip_address` *(string)* – IPv4/IPv6 address.
-* `snmp` *(object)* – Either `snmpV2C` **or** `snmpV3`.
-* `capture.parameters.measurement_duration` *(int, s)* – Total runtime.
-* `capture.parameters.sample_interval` *(int, s)* – Interval between samples.
-* `measure.mode` *(int)* – `0` = continuous sampling; `1` = OFDM performance.
+| Measure Mode        | Suited Analyses                                                |
+| ------------------- | -------------------------------------------------------------- |
+|      `0`            | `min-avg-max`, `rxmer-heat-map`                                |
+|      `1`   | `ofdm-profile-performance-1`, `min-avg-max`, `rxmer-heat-map`  |
 
-**Response** (`MultiRxMerStartResponse`):
+> Use `mode=1` when you specifically want OFDM performance context; otherwise `mode=0` is recommended for continuous monitoring.
+
+#### Response (MultiRxMerStartResponse)
 
 ```json
 {
   "mac_address": "aa:bb:cc:dd:ee:ff",
   "status": "running",
-  "message": null,
+  "message": "Starting Multi-RxMER capture for MAC=aa:bb:cc:dd:ee:ff",
   "group_id": "3bd6f7c107ad465b",
   "operation_id": "4aca137c1e9d4eb6"
 }
 ```
 
-* `status` is `"running"` immediately after start.
-
 ### 2) Status Check
 
-**Request** `GET /advance/multiRxMer/status/4aca137c1e9d4eb6`
+**Request** `GET /advance/multiRxMer/status/{operation_id}`
 
-**Response** (`MultiRxMerStatusResponse`):
+#### Response (MultiRxMerStatusResponse)
 
 ```json
 {
@@ -120,39 +119,26 @@ Starts a background RxMER capture with a fixed duration and sample interval.
 }
 ```
 
-**Operation Fields**
-
-* `state` ∈ `running | completed | stopped`
-* `collected` *(int)* – number of samples captured so far
-* `time_remaining` *(int, s)* – rough remaining seconds
-* `message` *(string|null)* – optional details
-
 ### 3) Download Results
 
-**Request** `GET /advance/multiRxMer/results/4aca137c1e9d4eb6`
+**Request** `GET /advance/multiRxMer/results/{operation_id}`
 
-**Response**
+#### Response
 
 * `Content-Type: application/zip`
-* Zip name: `multiRxMer_<mac>_4aca137c1e9d4eb6.zip`
+* ZIP name: `multiRxMer_<mac>_<operation_id>.zip`
 * Contains PNM files like:
 
-  ```text
-  ds_ofdm_rxmer_per_subcar_aabbccddeeff_193_1751762613.bin
-  ds_ofdm_rxmer_per_subcar_aabbccddeeff_194_1751762613.bin
-  ...
-  ```
-
-**Notes**
-
-* Each file = one snapshot at `sample_interval` cadence.
-* File count == `operation.collected`.
+```text
+ds_ofdm_rxmer_per_subcar_aabbccddeeff_193_1751762613.bin
+ds_ofdm_rxmer_per_subcar_aabbccddeeff_194_1751762613.bin
+```
 
 ### 4) Stop Capture Early
 
-**Request** `DELETE /advance/multiRxMer/stop/4aca137c1e9d4eb6`
+**Request** `DELETE /advance/multiRxMer/stop/{operation_id}`
 
-**Response** (`MultiRxMerStatusResponse`):
+#### Response (MultiRxMerStatusResponse)
 
 ```json
 {
@@ -169,99 +155,124 @@ Starts a background RxMER capture with a fixed duration and sample interval.
 }
 ```
 
-* `status` is `"stopped"` when accepted.
-* Expect up to one `sample_interval` for the stop to take effect.
-
 ### 5) Analysis
 
-**Request** `POST /advance/multiRxMer/analysis`
-**Body** (`MultiRxMerAnalysisRequest`):
+**Request** `POST /advance/multiRxMer/analysis`  
+**Body** (`MultiRxMerAnalysisRequest` – preferred string enums):
 
 ```json
 {
   "analysis": {
-    "type": 0
+    "type": "min-avg-max",
+    "output": { "type": "json" }
   },
-  "output": {
-    "type": 4
-  },
-  "operation_id": "hash-like-string"
+  "operation_id": "4aca137c1e9d4eb6"
 }
 ```
 
 **Analysis Types** (`analysis.type`)
 
-| Code | Name                       | Description                        | Requires Mode |
-| ---: | -------------------------- | ---------------------------------- | ------------- |
-|  `0` | `MIN_AVG_MAX`              | Min/avg/max RxMER across samples   | `0`           |
-|  `1` | `RXMER_HEAT_MAP`           | Time×frequency heatmap grid        | `0`           |
-|  `2` | `OFDM_PROFILE_PERFORMANCE_1` | Per‑subcarrier performance metrics | `0` or `1`    |
+| Type                         | Description                          | `measure.mode` |
+| ---------------------------- | ------------------------------------ | ------------- |
+| `min-avg-max`                | Min/avg/max RxMER across samples     | `0`           |
+| `rxmer-heat-map`             | Time × Frequency heatmap grid        | `0`           |
+| `ofdm-profile-performance-1` | Per‑subcarrier performance metrics   | `0` or `1`    |
 
-**Output Types** (`output.type`)
+**Output Types** (`analysis.output.type`)
 
-| Code | Name      | Description                              | Media Type         |
-| ---: | --------- | ---------------------------------------- | ------------------ |
-|  `json`     | `JSON`    | Structured JSON body                     | `application/json` |
-|  `archive`  | `ARCHIVE` | ZIP containing multiple output artifacts | `application/zip`  |
-
-**Response** (`MultiRxMerAnalysisResponse`):
-
-```json
-{
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "status": 0,
-  "message": "Analysis MIN_AVG_MAX completed for group 3bd6f7c107ad465b",
-  "data": { "min": 28.5, "avg": 31.2, "max": 33.8 }
-}
-```
-
-* `status` `0` = success; non‑zero indicates error (see `message`).
-* `data` varies by analysis type:
-
-  * **MIN_AVG_MAX** → `{ "min": 28.5, "avg": 31.2, "max": 33.8 }`
-  * **RXMER_HEAT_MAP** → `{ "timestamps": [1697040000], "frequencies": [193000000, 194000000], "heatmap": [[30.1, 29.8]] }`
-  * **OFDM_PROFILE_PERFORMANCE** → `{ "193": { "rxmer": 31.5, "snr": 34.1 }, "194": { "rxmer": 30.9, "snr": 33.7 } }`
-
-> Use canonical schemas in `api/routes/advance/multi_rxmer/schemas.py` for exact field names and enums.
+| Value      | Name      | Description                              | Media Type         |
+| :--------- | :-------- | :--------------------------------------- | :----------------- |
+| `"json"`   | `JSON`    | Structured JSON body                     | `application/json` |
+| `"archive"`| `ARCHIVE` | ZIP containing multiple artifacts        | `application/zip`  |
 
 ## Timing & Polling
 
 ### Capture Timing
 
-* `measurement_duration` *(s)* → total run length.
-  Example: `60` means a one‑minute capture.
-* `sample_interval` *(s)* → period between samples.
-  Example: `10` over `60` seconds → **6** samples.
+* `measurement_duration` *(s)* → total run length. Example: `60` means one minute.
+* `sample_interval` *(s)* → period between samples. Example: `10` over `60` seconds → **6** samples.
 
 ### Polling Strategy
 
 * Poll **no more than once per** `sample_interval`.
-* `time_remaining == 0` **and** `state == "completed"` → stop polling.
+* Stop polling when `time_remaining == 0` **and** `state == "completed"`.
 
 ### Results Availability
 
-* When `state ∈ ["completed","stopped"]`, ZIP is immediately available.
+* When `state ∈ ["completed","stopped"]`, the ZIP is immediately available.
 * Files are produced at sampling time; the archive is just a bundle step.
 
 ### Stop Semantics
 
-1. Current iteration finishes.
-2. Final PNM for that iteration is written.
+1. Current iteration finishes.  
+2. Final PNM for that iteration is written.  
 3. `state → "stopped"` (remaining time may be > 0 if mid‑interval).
 
-## Compatibility Matrix
+## Plot Examples
 
-| Measure Mode | Suited Analyses                                             |
-| :----------: | ----------------------------------------------------------- |
-|      `0`     | `MIN_AVG_MAX`, `RXMER_HEAT_MAP`, `OFDM_PROFILE_PERFORMANCE` |
-|      `1`     | `OFDM_PROFILE_PERFORMANCE`, `MIN_AVG_MAX`, `RXMER_HEAT_MAP` |
+### Min‑Avg‑Max Line Plot
 
-> Choose `mode=1` when you specifically want OFDM performance context; otherwise `mode=0` is recommended for continuous monitoring.
+| Plot | Description | Note |
+| ---- | ----------- | ---- |
+| [Min‑Avg‑Max](./images/multi-rxmer/160_rxmer_min_avg_max.png) | Min/Avg/Max RxMER across samples. | Constant line indicates low RxMER @ 750MHz |
 
-## Conventions
+### RxMER Heat Map
 
-* Use generic addresses in examples:
-  `mac_address = "aa:bb:cc:dd:ee:ff"`, `ip_address = "192.168.0.100"`.
-* Zip name format: `multiRxMer_<mac>_4aca137c1e9d4eb6.zip`.
-* PNM file name format: `ds_ofdm_rxmer_per_subcar_<mac>_<channel_id>_<epoch>.bin`.
-* Status codes: prefer 2xx on success; include concise error text in `message` for failures.
+| Plot | Description | Note |
+| ---- | ----------- | ---- |
+| [RxMER Heat Map](./images/multi-rxmer/160_rxmer_heat_map.png) | Time × Frequency heatmap grid. | Constant dark Line indicating low RxMER |
+
+### OFDM Profile Performance 1 Overlay
+
+| Plot | Profile | Description |
+| ---- | :-----: | ----------- |
+| [256‑QAM](./images/multi-rxmer/160_profile_0_ofdm_profile_perf_1.png) | `0` | Avg‑RxMER with modulation profile overlay and FEC summary across sample time. |
+| [1K‑QAM](./images/multi-rxmer/160_profile_1_ofdm_profile_perf_1.png)  | `1` | Avg‑RxMER with modulation profile overlay and FEC summary across sample time. |
+| [2K‑QAM](./images/multi-rxmer/160_profile_2_ofdm_profile_perf_1.png)  | `2` | Avg‑RxMER with modulation profile overlay and FEC summary across sample time. |
+| [4K‑QAM](./images/multi-rxmer/160_profile_3_ofdm_profile_perf_1.png)  | `3` | Avg‑RxMER with modulation profile overlay and FEC summary across sample time. |
+
+## Response Field Reference
+
+### Start / Status / Stop
+
+| Field                       | Type    | Description                                                                 |
+| -------------------------- | ------- | --------------------------------------------------------------------------- |
+| `mac_address`              | string  | Cable modem MAC address.                                                    |
+| `status`                   | string  | Start: `"running"`; Status/Stop: high‑level status string.                |
+| `message`                  | string  | Optional detail text.                                                       |
+| `group_id`                 | string  | Logical grouping for related operations (Start only).                       |
+| `operation_id`             | string  | Unique capture handle used with status/results/stop/analysis.               |
+| `operation.state`          | string  | Current state: `running`, `completed`, or `stopped`.                        |
+| `operation.collected`      | integer | Number of captured samples.                                                 |
+| `operation.time_remaining` | integer | Estimated seconds left.                                                     |
+
+### Download ZIP
+
+| Aspect                | Value / Format                                           |
+| -------------------- | --------------------------------------------------------- |
+| `Content-Type`       | `application/zip`                                         |
+| ZIP name             | `multiRxMer_<mac>_<operation_id>.zip`                     |
+| PNM file name format | `ds_ofdm_rxmer_per_subcar_<mac>_<channel_id>_<epoch>.bin` |
+
+### Analysis (JSON)
+
+These keys appear under the `data` object of `MultiRxMerAnalysisResponse`. Per‑type models differ, but common fields include:
+
+| Field/Path                                       | Type/Example             | Meaning                                                                              |
+| ------------------------------------------------ | ------------------------ | ------------------------------------------------------------------------------------ |
+| `<channel_id>`                                   | string/int key           | Map key representing a single OFDM channel’s results.                                |
+| `channel_id`                                     | int                      | Channel identifier repeated in the model.                                            |
+| `frequency`                                      | array[int] (Hz)          | Per‑subcarrier center frequency.                                                     |
+| `min` / `avg` / `max`                            | array[float] (dB)        | Min/avg/max RxMER per subcarrier (MIN_AVG_MAX).                                      |
+| `timestamps`                                     | array[int] (epoch sec)   | Capture timestamps for heat map rows (RXMER_HEAT_MAP).                               |
+| `values`                                         | array[array[float]] (dB) | Heat map matrix rows aligned to `timestamps` (RXMER_HEAT_MAP).                       |
+| `avg_mer`                                        | array[float] (dB)        | Average MER across captures per subcarrier (OFDM_PROFILE_PERFORMANCE_1).             |
+| `mer_shannon_limits`                             | array[float] (dB)        | Derived MER (min SNR) per subcarrier (OFDM_PROFILE_PERFORMANCE_1).                   |
+| `profiles[].profile_id`                          | int                      | Modulation profile index.                                                            |
+| `profiles[].profile_min_mer`                     | array[float] (dB)        | Minimum MER allowed by the profile per subcarrier.                                   |
+| `profiles[].capacity_delta`                      | array[float] (dB)        | `avg_mer - profile_min_mer` per subcarrier.                                          |
+| `profiles[].fec_summary.start/end`               | int (epoch sec)          | FEC observation window boundaries.                                                   |
+| `profiles[].fec_summary.summary[].summary.total_codewords` | int            | Total FEC codewords counted.                                                         |
+| `profiles[].fec_summary.summary[].summary.corrected`       | int            | FEC corrected codewords.                                                             |
+| `profiles[].fec_summary.summary[].summary.uncorrectable`   | int            | Uncorrectable codewords.                                                             |
+

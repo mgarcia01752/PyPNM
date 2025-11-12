@@ -33,7 +33,6 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import MacAddressStr
 
 class MultiRxMerRouter(AbstractService):
     """
@@ -57,7 +56,7 @@ class MultiRxMerRouter(AbstractService):
     def _add_routes(self) -> None:
         @self.router.post("/start",
             response_model=Union[MultiRxMerStartResponse, SnmpResponse],
-            summary="Start a Multi RxMER capture",)
+            summary="Start a Multi-RxMER capture",)
         async def start_multi_rxmer(request: MultiRxMerRequest):
             """
             **Start Multi-RxMER Capture**
@@ -139,7 +138,7 @@ class MultiRxMerRouter(AbstractService):
 
         @self.router.get("/status/{operation_id}",
             response_model=MultiRxMerStatusResponse,
-            summary="Get status of a multi-sample RxMER capture",)
+            summary="Get status of a Multi-RxMER capture",)
         def get_status(operation_id: OperationId) -> MultiRxMerStatusResponse:
             """
             **Check Multi-RxMER Capture Status**
@@ -250,7 +249,7 @@ class MultiRxMerRouter(AbstractService):
 
         @self.router.post("/analysis",
             response_model=MultiRxMerAnalysisResponse,
-            summary="Perform signal analysis on a previously executed Multi-RxMER",)
+            summary="Perform signal analysis on a previously executed Multi-RxMER captures",)
         def analysis(request: MultiRxMerAnalysisRequest) -> Union[MultiRxMerAnalysisResponse, FileResponse]:
             """
             **Multi-RxMER Analysis Endpoint**
