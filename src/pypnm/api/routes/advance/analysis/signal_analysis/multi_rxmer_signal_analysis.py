@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-from enum import Enum
 import logging
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
@@ -21,18 +20,18 @@ from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.shan.series import ShannonSeries
 from pypnm.lib.types import (ArrayLike, CaptureTime, ChannelId, FloatSeries, 
-                             FrequencySeriesHz, MacAddressStr, MagnitudeSeries, TimeStamp, 
+                             FrequencySeriesHz, MacAddressStr, MagnitudeSeries, StringEnum, TimeStamp, 
                              TimestampSec)
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
 from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
 from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ProfileId
 from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer, CmDsOfdmRxMerModel
 
-class MultiRxMerAnalysisType(Enum):
-    MIN_AVG_MAX                = 0
-    RXMER_HEAT_MAP             = 1
-    OFDM_PROFILE_PERFORMANCE_1 = 2
 
+class MultiRxMerAnalysisType(StringEnum):
+    MIN_AVG_MAX                = "min-avg-max"
+    RXMER_HEAT_MAP             = "rxmer-heat-map"
+    OFDM_PROFILE_PERFORMANCE_1 = "ofdm-profile-performance-1"
 
 class MultiRxMerAnalysisBaseModel(BaseModel):
     channel_id: ChannelId = Field(..., description="OFDM channel identifier for this result set.")
@@ -551,7 +550,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 mx  = cast(ArrayLike, ch_model.max)
 
                 cfg = PlotConfig(
-                    title           =   f"Min-Avg-Max RxMER Channel: {channel_id}",
+                    title           =   f"Min-Avg-Max RxMER · Channel: {channel_id}",
                     x               =   cast(ArrayLike, freq_khz),
                     y_multi         =   [mn, av, mx],
                     y_multi_label   =   ["Min", "Avg", "Max"],
@@ -563,7 +562,8 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                     ylabel          =   "dB",
                     grid            =   True, 
                     legend          =   True, 
-                    transparent     =   False, 
+                    transparent     =   False,
+                    line_colors     =   ["#FF5733",  "#3357FF", "#33FF57",], 
                     theme           =   "dark",
                 )
 
@@ -586,20 +586,18 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                     self.logger.warning("RXMER_HEAT_MAP: empty matrix for channel %s; skipping.", ch_id)
                     continue
 
-                # Build axes: X = absolute frequency (Hz), Y = capture indices
                 x_hz = cast(ArrayLike, ch_model.frequency)
-                y_ix = np.arange(Z.shape[0], dtype=float)
+                y_ix = cast(ArrayLike, np.arange(Z.shape[0], dtype=float))
 
                 try:
                     vmin = float(np.nanmin(Z))
                     vmax = float(np.nanmax(Z))
                 except Exception:
-                    self.logger.warning("RXMER_HEAT_MAP: unable to compute vmin/vmax for channel %s; using None.", ch_id)
                     vmin = None
                     vmax = None
 
                 cfg = PlotConfig(
-                    title           =   f"HeatMap RxMER Channel: {ch_id}",
+                    title           =   f"HeatMap RxMER · Channel: {ch_id}",
                     x               =   x_hz,
                     x_tick_mode     =   "unit",
                     x_unit_from     =   "hz",
@@ -607,6 +605,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                     x_tick_decimals =   0,
                     xlabel_base     =   "Frequency",
                     ylabel          =   "Capture Index",
+                    zlabel          =   "MER (dB)",
                     grid            =   False,
                     legend          =   False,
                     transparent     =   False,
@@ -651,7 +650,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                     fec_l  = f"FEC(Total={total}, Corr={corr}, Uncorr={uncor})"
 
                     cfg = PlotConfig(
-                        title           =   f"OFDM PROFILE PERFORMANCE 1 =  ·  Ch {ch_id}  ·  Profile {pid}",
+                        title           =   f"OFDM PROFILE PERFORMANCE 1 · Channel: {ch_id} · Profile: {pid}",
                         x               =   freq_hz,
                         y_multi         =   [avg_mer, pmin],
                         y_multi_label   =   [f"AvgMER (dB) {fec_l}", "ProfileMin (dB)"],
@@ -664,6 +663,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                         grid            =   True,
                         legend          =   True,
                         transparent     =   False,
+                        line_colors     =   ["#3357FF", "#33FF57"],
                         theme           =   "dark",
                     )
 

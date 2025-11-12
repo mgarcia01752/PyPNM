@@ -21,6 +21,8 @@ default_ip: InetAddressStr = SystemConfigSettings.default_ip_address
 default_tftp_ipv4: IPv4Str = SystemConfigSettings.bulk_tftp_ip_v4
 default_tftp_ipv6: IPv6Str = SystemConfigSettings.bulk_tftp_ip_v6
 
+class CommonOutput(BaseModel):
+    type: OutputType = Field(default=OutputType.JSON, description="Desired output type for analysis results")
 
 class TftpConfig(BaseModel):
     ipv4: Optional[IPv4Str] = Field(default=default_tftp_ipv4, description="TFTP server IPv4 address")
@@ -64,11 +66,6 @@ class CommonRequest(BaseModel):
 class CommonAnalysisType(BaseModel):
     type: int = Field(description="Analysis type to perform, implementation-specific integer value")
 
-
-class CommonOutput(BaseModel):
-    type: OutputType = Field(default=OutputType.JSON, description="Desired output type for analysis results")
-
-
 class CommonMultiAnalysisRequest(BaseModel):
     cable_modem: CableModemPnmConfig = Field(description="Cable modem configuration")
     analysis: CommonAnalysisType     = Field(description="Analysis type to perform")
@@ -92,7 +89,7 @@ class CommonSingleCaptureAnalysisRequest(BaseModel):
 
 
 class CommonResponse(BaseModel):
-    mac_address: MacAddressStr                                      = Field(description="MAC address of the cable modem")
+    mac_address: MacAddressStr                                      = Field(default=default_mac, description="MAC address of the cable modem")
     status: Optional[Union[ServiceStatusCode, OperationState, str]] = Field(default="success", description="Operation status code or state")
     message: Optional[str]                                          = Field(default=None, description="Additional information or error details")
 

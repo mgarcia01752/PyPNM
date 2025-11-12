@@ -857,6 +857,11 @@ class MatplotManager:
             im = ax.imshow(Z, origin=origin, interpolation=interpolation,
                            vmin=vmin, vmax=vmax, extent=extent, aspect="auto")
             if add_colorbar:
-                fig.colorbar(im, ax=ax)
+                cbar = fig.colorbar(im, ax=ax)
+                try:
+                    if cfg and getattr(cfg, "zlabel", None):
+                        cbar.set_label(str(cfg.zlabel))
+                except Exception:
+                    pass
             self._apply_x_ticks(ax, cfg)
             return self._finish(fig, ax, self._resolve_path(filename), cfg)

@@ -4,11 +4,11 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from pypnm.lib.types import _StrEnum
+from pypnm.lib.types import StringEnum
 
-class OutputType(_StrEnum):
+class OutputType(StringEnum):
     JSON    =   'json'
     ARCHIVE =   'archive'
     
-class AnalysisType(_StrEnum):
+class AnalysisType(StringEnum):
     BASIC   =   'basic'

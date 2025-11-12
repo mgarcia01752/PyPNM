@@ -259,17 +259,6 @@ class MultiRxMerRouter(AbstractService):
 
             [API Guide - Multi-RxMER Analysis](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#5-analysis)
 
-            ### Analysis Types
-
-            - **0 - Min/Avg/Max**  
-            [View Spec](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/rest/multi-rxmer-min-avg-max.md)
-
-            - **1 - RxMER Heat Map**  
-            *(Documentation link pending)*
-
-            - **2 - OFDM Profile Performance 1**  
-            *(Documentation link pending)*
-
             """
             try:
                 capture_group_id:GroupId = OperationManager.get_capture_group(request.operation_id)
@@ -337,9 +326,9 @@ class MultiRxMerRouter(AbstractService):
             message = f"Analysis {analysis_name} completed for group {capture_group_id}"
 
             try:
-                output_type = request.output.type
+                output_type = request.analysis.output.type
             except ValueError:
-                msg = f'Invalid Output Type Selected: ({request.output.type})'
+                msg = f'Invalid Output Type Selected: ({request.analysis.output.type})'
                 return MultiRxMerAnalysisResponse(
                     mac_address =   MacAddress.null(),
                     status      =   ServiceStatusCode.INVALID_OUTPUT_TYPE,

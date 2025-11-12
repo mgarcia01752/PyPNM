@@ -11,7 +11,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 # Enum String Type
-class _StrEnum(str, Enum):
+class StringEnum(str, Enum):
     """Py3.10-compatible StrEnum shim."""
     pass
 
