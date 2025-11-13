@@ -125,7 +125,7 @@ Starts a background RxMER capture with a fixed duration and sample interval.
 
 * `Content-Type: application/zip`
 * ZIP name: `<mac>_<model>_<ephoc>.zip`
-* Contains PNM files like:
+* Contains files like:
 
 ```text
 ds_ofdm_rxmer_per_subcar_aabbccddeeff_160_1751762613.bin
