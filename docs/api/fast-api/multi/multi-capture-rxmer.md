@@ -77,10 +77,10 @@ Starts a background RxMER capture with a fixed duration and sample interval.
 
 #### Compatibility Matrix
 
-| Measure Mode        | Suited Analyses                                                |
-| ------------------- | -------------------------------------------------------------- |
-|      `0`            | `min-avg-max`, `rxmer-heat-map`                                |
-|      `1`            | `ofdm-profile-performance-1`, `min-avg-max`, `rxmer-heat-map`  |
+| Measure Mode        | Suited Analyses                                                | Processes                  |
+| ------------------- | -------------------------------------------------------------- | ---------------------------|
+|      `0`            | `min-avg-max`, `rxmer-heat-map`                                | RxMER                      |
+|      `1`            | `ofdm-profile-performance-1`, `min-avg-max`, `rxmer-heat-map`  | RxMER + OFDM + FEC Summary |
 
 > Use `mode=1` when you specifically want OFDM performance context; otherwise `mode=0` is recommended for continuous monitoring.
 
