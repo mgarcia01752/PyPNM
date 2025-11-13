@@ -36,14 +36,27 @@ from pypnm.lib.mac_address import MacAddress
 
 class MultiRxMerRouter(AbstractService):
     """
-    Router for handling Multi-RxMER operations:
-      - start a periodic RxMER capture
-      - query status (# samples, state)
-      - fetch all collected samples
-      - stop the capture early
+    Router For Multi-RxMER Capture And Analysis
 
-    Inherits:
-        AbstractService: provides load_service and get_service helpers.
+    Overview
+    --------
+    Exposes endpoints to:
+      • Start a background, periodic RxMER capture on a DOCSIS cable modem  
+      • Poll capture status (state, collected sample count, time remaining)  
+      • Download all collected raw RxMER files as a ZIP archive  
+      • Stop an active capture early  
+      • Run post-capture analysis on the collected dataset
+
+    Execution Model
+    ---------------
+    Each capture runs asynchronously under a managed operation. The returned `operation_id`
+    is used to query status, fetch results, or trigger analysis. Pre-checks verify PNM-ready
+    state and the presence of downstream OFDM.
+
+    Inherits
+    --------
+    AbstractService
+        Provides `loadService(...)` and `getService(...)` for service lifecycle and operation lookup.
     """
     def __init__(self) -> None:
         super().__init__()
@@ -59,23 +72,25 @@ class MultiRxMerRouter(AbstractService):
             summary="Start a Multi-RxMER capture",)
         async def start_multi_rxmer(request: MultiRxMerRequest):
             """
-            **Start Multi-RxMER Capture**
+            Start Multi-RxMER Capture
 
-            Initiates a threaded background RxMER capture session from a DOCSIS cable modem.
+            Description
+            -----------
+            Starts an asynchronous RxMER capture on the target cable modem. Sampling cadence is
+            controlled by `capture.parameters.measurement_duration` and `capture.parameters.sample_interval`.
 
-            **This API supports:**
-            - Continuous sampling for statistical analysis
-            - Performance-specific modes for OFDM channel insight
-            - Asynchronous operation with polling and raw data download
+            Modes
+            -----
+            • `MeasureModes.CONTINUOUS` – Continuous sampling for min/avg/max and heat-map workflows  
+            • `MeasureModes.OFDM_PERFORMANCE_1` – Performance study pairing RxMER with modulation-profile
+              and FEC summary collection
 
-            **Once started, clients can:**
-            - Monitor status
-            - Download raw PNM `.bin` files
-            - Stop the session early
-            - Run post-capture analysis
+            Returns
+            -------
+            • `MultiRxMerStartResponse` with `group_id` and `operation_id` on success  
+            • `SnmpResponse` when modem pre-checks fail (e.g., not PNM-ready or OFDM missing)
 
-            [API Guide - Multi-RxMER Capture](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#1-start-capture)
-
+            [API Guide - Results](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/multi/multi-capture-rxmer.md#3-download-measurements)
             """
             duration = request.capture.parameters.measurement_duration
             interval = request.capture.parameters.sample_interval
@@ -141,14 +156,28 @@ class MultiRxMerRouter(AbstractService):
             summary="Get status of a Multi-RxMER capture",)
         def get_status(operation_id: OperationId) -> MultiRxMerStatusResponse:
             """
-            **Check Multi-RxMER Capture Status**
+            Check Multi-RxMER Capture Status
 
-            Poll the status of an ongoing or completed Multi-RxMER capture session using the provided `operation_id`.
+            Description
+            -----------
+            Returns the current state of the capture, number of samples collected, and estimated
+            time remaining for the given `operation_id`.
 
-            This endpoint returns current state, collected sample count, and time remaining.
+            Path Parameters
+            ---------------
+            operation_id : OperationId
+                Identifier returned by `/start`.
 
-            [Check Status Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#2-status-check)
+            Returns
+            -------
+            `MultiRxMerStatusResponse` populated with `operation.state`, `operation.collected`,
+            and `operation.time_remaining`.
 
+            Errors
+            ------
+            404 — Operation not found.
+
+            [API Guide - Results](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/multi/multi-capture-rxmer.md#3-download-measurements)
             """
             try:
                 service:MultiRxMerService = cast(MultiRxMerService, self.getService(operation_id))
@@ -178,16 +207,28 @@ class MultiRxMerRouter(AbstractService):
             responses=FAST_API_RESPONSE,)
         def download_measurements_zip(operation_id: OperationId) -> StreamingResponse:
             """
-            **Download Captured RxMER Measurements (ZIP)**
+            Download Captured RxMER Measurements (ZIP)
 
-            Streams a ZIP archive containing all RxMER `.bin` files collected during the specified capture session (`operation_id`).
+            Description
+            -----------
+            Streams a ZIP archive containing all RxMER `.bin` files associated with the specified
+            `operation_id`. Useful for offline analysis or archival.
 
-            Useful for offline analysis or archival of raw measurement data.
+            Content
+            -------
+            • Media Type: `application/zip`  
+            • Disposition: `attachment; filename=multiRxMer_<mac>_<operation_id>.zip`
 
-            [Download Measurement Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#3-download-measurements)
+            Path Parameters
+            ---------------
+            operation_id : OperationId
+                Identifier returned by `/start`.
 
-            ---
-            Returns a `StreamingResponse` with `Content-Type: application/zip`.
+            Returns
+            -------
+            `StreamingResponse` — Streamed ZIP of all capture files found. Missing files are logged and skipped.
+
+            [API Guide - Results](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/multi/multi-capture-rxmer.md#3-download-measurements)
             """
             svc:MultiRxMerService = cast(MultiRxMerService, self.getService(operation_id))
             samples = svc.results(operation_id)
@@ -217,14 +258,27 @@ class MultiRxMerRouter(AbstractService):
             summary="Stop a running Multi-RxMER capture early",)
         def stop_capture(operation_id: OperationId) -> MultiRxMerStatusResponse:
             """
-            **Stop a Multi-RxMER Capture Operation**
+            Stop Multi-RxMER Capture
 
-            Gracefully ends an ongoing Multi-RxMER background capture session for the specified `operation_id`.
+            Description
+            -----------
+            Signals the background worker to stop sampling after the current iteration for the
+            specified `operation_id`.
 
-            This request signals the capture process to stop after the current sampling iteration completes.
+            Path Parameters
+            ---------------
+            operation_id : OperationId
+                Identifier returned by `/start`.
 
-            [Stop Capture Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#4-stop-capture-early)
-            
+            Returns
+            -------
+            `MultiRxMerStatusResponse` — Finalized state and counters at stop time.
+
+            Errors
+            ------
+            404 — Operation not found.
+
+            [API Guide - Results](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/multi/multi-capture-rxmer.md#3-download-measurements)
             """
             try:
                 service:MultiRxMerService = cast(MultiRxMerService, self.getService(operation_id))
@@ -252,12 +306,37 @@ class MultiRxMerRouter(AbstractService):
             summary="Perform signal analysis on a previously executed Multi-RxMER captures",)
         def analysis(request: MultiRxMerAnalysisRequest) -> Union[MultiRxMerAnalysisResponse, FileResponse]:
             """
-            **Multi-RxMER Analysis Endpoint**
+            Multi-RxMER Analysis
 
-            This endpoint performs post-capture analysis on collected RxMER data.
+            Description
+            -----------
+            Runs post-capture analysis for the dataset associated with `request.operation_id`.
+            The capture group is derived internally from the operation.
 
-            [API Guide - Multi-RxMER Analysis](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/multi/multi-capture-rxmer.md#5-analysis)
+            Analysis Types
+            --------------
+            • `MIN_AVG_MAX` — Per-subcarrier min/avg/max over the series  
+            • `RXMER_HEAT_MAP` — Heat-map oriented dataset for visualization  
+            • `OFDM_PROFILE_PERFORMANCE_1` — Averages RxMER, compares to modulation profiles,
+              and aggregates FEC statistics over time
 
+            Output
+            ------
+            Controlled by `request.analysis.output.type`:
+            • `OutputType.JSON` — Typed JSON payload for UI consumption  
+            • `OutputType.ARCHIVE` — Generated ZIP report via `PnmFileService`
+
+            Returns
+            -------
+            • `MultiRxMerAnalysisResponse` (JSON output)  
+            • `FileResponse` (archive report)
+
+            Errors
+            ------
+            • Capture group not found for the supplied operation  
+            • Invalid analysis type or invalid output type
+
+            [API Guide - Results](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/multi/multi-capture-rxmer.md#3-download-measurements)
             """
             try:
                 capture_group_id:GroupId = OperationManager.get_capture_group(request.operation_id)
