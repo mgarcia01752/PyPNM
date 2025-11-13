@@ -124,12 +124,19 @@ Starts a background RxMER capture with a fixed duration and sample interval.
 #### Response
 
 * `Content-Type: application/zip`
-* ZIP name: `multiRxMer_<mac>_<operation_id>.zip`
+* ZIP name: `<mac>_<model>_<ephoc>.zip`
 * Contains PNM files like:
 
 ```text
-ds_ofdm_rxmer_per_subcar_aabbccddeeff_193_1751762613.bin
-ds_ofdm_rxmer_per_subcar_aabbccddeeff_194_1751762613.bin
+ds_ofdm_rxmer_per_subcar_aabbccddeeff_160_1751762613.bin
+ds_ofdm_modulation_profile_aabbccddeeff_160_1762980708
+ds_ofdm_codeword_error_rate_aabbccddeeff_160_1762980674.bin
+aabbccddeeff_lpet3_1762980743_rxmer_min_avg_max_160.csv
+aabbccddeeff_lpet3_1762981896_ofdm_profile_perf_1_ch160_pid0.csv
+aabbccddeeff_lpet3_1762981556_rxmer_ofdm_heat_map_160.csv
+aabbccddeeff_lpet3_1763007607_160_profile_0_ofdm_profile_perf_1.png
+aabbccddeeff_lpet3_1763007680_160_rxmer_min_avg_max.png
+aabbccddeeff_lpet3_1763007737_160_rxmer_heat_map.png 
 ```
 
 ### 4) Stop Capture Early
