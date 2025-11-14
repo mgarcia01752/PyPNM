@@ -18,11 +18,12 @@ analysis payload or an archive (ZIP) with Matplotlib plots and CSV exports.
 > configured diplexer band. Use the diplexer configuration API to verify allowed frequency
 > boundaries.
 
-**Diplexer Configuration Endpoint**  
-`POST /docs/if31/system/diplexer`  
+### Diplexer Configuration Endpoint
 
-See also:  
-[Diplexer Configuration API Guide](../../../single/diplexer-configuration.md)
+| DOCSIS | Endpoint | Description |
+|-------|----------|-------------|
+| [DOCSIS 3.1](diplexer-configuration.md)                | `POST /docs/if31/system/diplexer`              | Retrieve the diplexer for spectrum capture. |
+| [DOCSIS 4.0](fdd/fdd-system-diplexer-configuration.md) | `POST /docs/fdd/system/diplexer/configuration` | Retrieve the diplexer for spectrum capture. |
 
 ## Endpoints
 
