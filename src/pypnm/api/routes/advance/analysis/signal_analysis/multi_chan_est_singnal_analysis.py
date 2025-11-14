@@ -24,6 +24,7 @@ from pypnm.lib.types import (
     ComplexSeries, MacAddressStr, Sequence, StringEnum,)
 from pypnm.lib.utils import TimeUnit, Utils
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
+from pypnm.pnm.lib.min_avg_max_complex import MinAvgMaxComplex
 from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 
 
@@ -336,29 +337,39 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         return plots
     
     def _analyze_min_avg_max(self) -> List[MinAvgMaxModel]:
-        amplitudes: ChannelAmplitudeMap = {}
+        channel_data: ChannelComplexMap = {}
         freqs: ChannelFrequencyMap = {}
 
         for tcm in self._trans_collect.getTransactionCollectionModel():
-            
             try:
-                model = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
+                model  = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
                 result = Analysis.basic_analysis_ds_chan_est_from_model(model)
-                ch = ChannelId(result.channel_id)
-                if result.carrier_values.magnitudes:
-                    amplitudes.setdefault(ch, []).append(result.carrier_values.magnitudes)
+                ch     = ChannelId(result.channel_id)
+
+                if result.carrier_values.complex:
+                    channel_data.setdefault(ch, []).append(result.carrier_values.complex)
+
                 freqs[ch] = result.carrier_values.frequency
-            
+
             except Exception as e:
                 self.logger.error(f"[file={tcm.filename}] MIN_AVG_MAX parse failed: {e}")
-        
-        return [
 
-            MinAvgMaxModel(channel_id   =   ch,
-                           frequency    =   freqs.get(ch, []),
-                           **MinAvgMax(amps).to_dict())
+        out: List[MinAvgMaxModel] = []
 
-            for ch, amps in amplitudes.items()]
+        for ch, cplx in channel_data.items():
+            stats = MinAvgMaxComplex(cplx, precision=4)
+
+            out.append(
+                MinAvgMaxModel(
+                    channel_id   =   ch,
+                    frequency    =   freqs.get(ch, []),
+                    min          =   stats.min_mag,
+                    avg          =   stats.avg_mag,
+                    max          =   stats.max_mag,
+                )
+            )
+
+        return out
 
     def _analyze_group_delay(self) -> List[GroupDelayAnalysisModel]:
         """

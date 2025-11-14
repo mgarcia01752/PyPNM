@@ -52,36 +52,75 @@ class MinAvgMaxComplex:
 
     Each input vector must have equal length.
 
+    Accepted input layouts
+    ----------------------
+    - 1D complex vector: (K,)
+    - 2D complex matrix: (M, K)
+    - 2D real/imag pairs: (K, 2)      → single snapshot, (re, im)
+    - 3D real/imag pairs: (M, K, 2)   → M snapshots, (re, im)
+
     Parameters
     ----------
     complex_values : ComplexMatrix
-        List of complex-valued 1D arrays (must be same shape).
+        Complex-valued data in one of the supported layouts.
     precision : int, optional
-        Rounding precision for outputs (default = 2).
+        Rounding precision for outputs (default = 4).
 
     Raises
     ------
     ValueError
-        If input matrix is empty or shape is invalid.
+        If input is empty or cannot be interpreted as a non-empty (MxN) complex matrix.
     """
 
-    def __init__(self, complex_values: ComplexMatrix, precision: PrecisionInt = 2) -> None:
-        arr = np.array(complex_values, dtype=np.complex128)
+    def __init__(self, complex_values: ComplexMatrix, precision: PrecisionInt = 4) -> None:
+        arr = np.array(complex_values)
 
-        if arr.ndim != 2 or arr.shape[0] == 0 or arr.shape[1] == 0:
-            raise ValueError("Input must be a 2D complex matrix of shape (M×N)")
+        if arr.size == 0:
+            raise ValueError("Input must contain at least one complex sample.")
+
+        # Normalize to a 2D complex matrix of shape (M, N).
+        if arr.ndim == 1:
+            arr_complex = np.asarray(arr, dtype=np.complex128).reshape(1, -1)
+
+        elif arr.ndim == 2:
+            if arr.shape[1] == 2 and not np.iscomplexobj(arr):
+                re = arr[:, 0].astype(np.float64)
+                im = arr[:, 1].astype(np.float64)
+                arr_complex = (re + 1j * im).reshape(1, -1)
+            else:
+                arr_complex = np.asarray(arr, dtype=np.complex128)
+
+        elif arr.ndim == 3 and arr.shape[2] == 2 and not np.iscomplexobj(arr):
+            re = arr[..., 0].astype(np.float64)
+            im = arr[..., 1].astype(np.float64)
+            arr_complex = re + 1j * im
+
+        else:
+            raise ValueError("Input must be complex (K,), (M×K), (K×2) or (M×K×2) real/imag array.")
+
+        if arr_complex.ndim != 2 or arr_complex.shape[0] == 0 or arr_complex.shape[1] == 0:
+            raise ValueError("Input must resolve to a non-empty complex matrix of shape (M×N).")
 
         self.precision: PrecisionInt = precision
-        self.real: NDArrayF64 = np.real(arr)
-        self.imag: NDArrayF64 = np.imag(arr)
+        self.real: NDArrayF64 = np.real(arr_complex)
+        self.imag: NDArrayF64 = np.imag(arr_complex)
 
-        self.min_real = [round(float(v), precision) for v in self.real.min(axis=0)]
-        self.avg_real = [round(float(v), precision) for v in self.real.mean(axis=0)]
-        self.max_real = [round(float(v), precision) for v in self.real.max(axis=0)]
+        self.min_real: FloatSeries = [round(float(v), precision) for v in self.real.min(axis=0)]
+        self.avg_real: FloatSeries = [round(float(v), precision) for v in self.real.mean(axis=0)]
+        self.max_real: FloatSeries = [round(float(v), precision) for v in self.real.max(axis=0)]
 
-        self.min_imag = [round(float(v), precision) for v in self.imag.min(axis=0)]
-        self.avg_imag = [round(float(v), precision) for v in self.imag.mean(axis=0)]
-        self.max_imag = [round(float(v), precision) for v in self.imag.max(axis=0)]
+        self.min_imag: FloatSeries = [round(float(v), precision) for v in self.imag.min(axis=0)]
+        self.avg_imag: FloatSeries = [round(float(v), precision) for v in self.imag.mean(axis=0)]
+        self.max_imag: FloatSeries = [round(float(v), precision) for v in self.imag.max(axis=0)]
+
+        # Magnitude-based stats (for MinAvgMaxModel)
+        mag: NDArrayF64 = np.abs(arr_complex)
+        avg_complex = arr_complex.mean(axis=0)
+
+        # Min/max over |H_m[k]|, avg as |mean_m H_m[k]| (coherent average then magnitude)
+        self.min_mag: FloatSeries = [round(float(v), precision) for v in mag.min(axis=0)]
+        self.max_mag: FloatSeries = [round(float(v), precision) for v in mag.max(axis=0)]
+        self.avg_mag: FloatSeries = [round(float(v), precision) for v in np.abs(avg_complex)]
 
     def length(self) -> int:
         """Number of subcarriers in each vector."""
