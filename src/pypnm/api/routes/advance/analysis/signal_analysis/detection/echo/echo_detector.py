@@ -110,7 +110,7 @@ class EchoDetector:
 
         H, snapshots = self._coerce_freq_data(freq_data)
         N = int(H.shape[0])
-        self.logger.info("Input normalized: N=%d, snapshots=%d", N, snapshots)
+        self.logger.debug("Input normalized: N=%d, snapshots=%d", N, snapshots)
 
         if n_fft is None:
             n_fft = max(MIN_NFFT, 1 << ceil(log2(max(1, N))))
@@ -128,7 +128,7 @@ class EchoDetector:
         self._v: float = SPEED_OF_LIGHT * self._vf
         self._channel_id: int = int(channel_id)
 
-        self.logger.info(
+        self.logger.debug(
             "Parameters: n_fft=%d, Δf=%.3f Hz, fs=%.6f MHz, cable=%s, vf=%.3f, v=%.3f Mm/s",
             self._n_fft, self._df, self._fs / 1e6, self._cable_type, self._vf, self._v / 1e6
         )
@@ -178,7 +178,7 @@ class EchoDetector:
         TimeResponse
             n_fft, time axis in seconds, and |h(t)| magnitude (linear).
         """
-        self.logger.info(
+        self.logger.debug(
             "time_response: window=%s, direct_at_zero=%s, normalize=%s, fs_time=%s",
             window, direct_at_zero, normalize_power, "None" if fs_time_hz is None else f"{fs_time_hz:.3f}"
         )
@@ -188,7 +188,7 @@ class EchoDetector:
         fs_time = float(fs_time_hz) if fs_time_hz and fs_time_hz > 0 else self._fs
         time_axis = np.arange(n_fft, dtype=float) / fs_time
 
-        self.logger.info("time_response: i0=%d, n_fft=%d, fs_time=%.6f MHz", i0, n_fft, fs_time / 1e6)
+        self.logger.debug("time_response: i0=%d, n_fft=%d, fs_time=%.6f MHz", i0, n_fft, fs_time / 1e6)
         return TimeResponse(n_fft=n_fft, time_axis_s=time_axis.tolist(), time_response=mag.astype(float).tolist())
 
     # ───────────────────────────────────────────────────────────────────────
@@ -255,7 +255,7 @@ class EchoDetector:
         fs = self._fs
         fs_time = float(fs_time_hz) if fs_time_hz and fs_time_hz > 0 else fs
 
-        self.logger.info(
+        self.logger.debug(
             "multi_echo: mode=%s, thr_frac=%.3f, thr_db=%s, guard=%d, min_sep_s=%.3e, "
             "max_delay_s=%s, max_peaks=%d, edge_guard=%d, window=%s, normalize=%s, "
             "direct_at_zero=%s, fs_time=%.6f MHz, min_detect_ft=%s",
@@ -266,7 +266,7 @@ class EchoDetector:
 
         # Compute |h(t)| once (shared by selection and optional export)
         mag, i0_unrolled = self._compute_mag_time(window=window, direct_at_zero=direct_at_zero, normalize_power=normalize_power)
-        self.logger.info("IFFT computed; magnitude prepared; direct_at_zero=%s, i0=%d", direct_at_zero, i0_unrolled)
+        self.logger.debug("IFFT computed; magnitude prepared; direct_at_zero=%s, i0=%d", direct_at_zero, i0_unrolled)
 
         # When rolled, direct path is bin 0; otherwise retain original i0
         i0 = 0 if direct_at_zero else int(i0_unrolled)
@@ -295,7 +295,7 @@ class EchoDetector:
         else:
             i_stop = min(n_fft, int(np.ceil(max_delay_s * fs)))
 
-        self.logger.info(
+        self.logger.debug(
             "Search window: start=%d, stop=%d (exclusive), min_sep_bins=%d, thr_frac=%.6f, "
             "guard_bins=%d (user=%d, dist=%d @ %.2f ft)",
             start_idx, i_stop, min_sep_bins, thr_frac_resolved,
@@ -313,7 +313,7 @@ class EchoDetector:
                 idx_range = idx_range[idx_range < (i_stop - edge_guard_bins)]
             idx_range = idx_range[idx_range != i0]  # keep direct path out even if guard==0
             candidates = [int(i) for i in idx_range if mag[i] >= thr]
-        self.logger.info("Candidates above threshold: %d", len(candidates))
+        self.logger.debug("Candidates above threshold: %d", len(candidates))
 
         # Greedy enforce spacing by amplitude
         candidates.sort(key=lambda i: float(mag[i]), reverse=True)
@@ -324,7 +324,7 @@ class EchoDetector:
             if all(abs(i - s) >= max(MIN_SEPARATION_BINS_FLOOR, min_sep_bins) for s in selected):
                 selected.append(i)
         selected.sort()
-        self.logger.info("Selected peaks: %s", selected)
+        self.logger.debug("Selected peaks: %s", selected)
 
         # Reporting conversions (time/distance) — may use fs_time override
         time_axis = np.arange(n_fft, dtype=float) / fs_time
@@ -342,12 +342,12 @@ class EchoDetector:
         for i in selected:
             i_, t, a, dm, df = _mk_path(i, float(mag[i]))
             echoes.append(EchoPath(bin_index=i_, time_s=t, amplitude=a, distance_m=dm, distance_ft=df))
-        self.logger.info("Echo count: %d", len(echoes))
+        self.logger.debug("Echo count: %d", len(echoes))
 
         tr: Optional[TimeResponse] = None
         if include_time_response:
             tr = TimeResponse(n_fft=n_fft, time_axis_s=time_axis.tolist(), time_response=mag.astype(float).tolist())
-            self.logger.info("Time response included in report")
+            self.logger.debug("Time response included in report")
 
         dataset = EchoDataset(
             subcarriers=self._N, snapshots=self._snapshots,
@@ -369,7 +369,7 @@ class EchoDetector:
             max_peaks       =   max_peaks,
             time_response   =   tr,
         )
-        self.logger.info("Report ready: channel_id=%d, direct_bin=%d, echoes=%d",
+        self.logger.debug("Report ready: channel_id=%d, direct_bin=%d, echoes=%d",
                  report.channel_id, report.direct_path.bin_index, len(report.echoes))
         return report
 
@@ -395,7 +395,7 @@ class EchoDetector:
         rep = self.multi_echo(max_peaks=1, **kwargs)
         if not rep.echoes:
             raise ValueError("No echo peaks found under current settings.")
-        self.logger.info("first_echo: bin=%d, amp=%.3f", rep.echoes[0].bin_index, rep.echoes[0].amplitude)
+        self.logger.debug("first_echo: bin=%d, amp=%.3f", rep.echoes[0].bin_index, rep.echoes[0].amplitude)
         return rep.echoes[0]
 
     # ───────────────────────────────────────────────────────────────────────
@@ -409,10 +409,10 @@ class EchoDetector:
     ) -> Tuple[NDArrayF64, int]:
         """Compute |h(t)| magnitude and return (mag, direct_index_before_roll_or_zero)."""
         Hw = self._apply_window(self._H_in, window)
-        self.logger.info("Window applied: mode=%s", window)
+        self.logger.debug("Window applied: mode=%s", window)
 
         Hn = self._pad_or_crop(Hw, self._n_fft)
-        self.logger.info("Length adjusted: input=%d → n_fft=%d", Hw.size, self._n_fft)
+        self.logger.debug("Length adjusted: input=%d → n_fft=%d", Hw.size, self._n_fft)
 
         h_time = np.fft.ifft(Hn, n=self._n_fft)
         mag = np.abs(h_time)
@@ -421,13 +421,13 @@ class EchoDetector:
         if direct_at_zero:
             mag = np.abs(np.roll(h_time, -i0))
             i0 = 0
-            self.logger.info("Direct-path rolled to zero")
+            self.logger.debug("Direct-path rolled to zero")
         else:
-            self.logger.info("Direct-path at bin=%d (no roll)", i0)
+            self.logger.debug("Direct-path at bin=%d (no roll)", i0)
 
         if normalize_power and float(mag[i0]) > 0.0:
             mag = mag / float(mag[i0])
-            self.logger.info("Power normalized to direct-path amplitude=1.0")
+            self.logger.debug("Power normalized to direct-path amplitude=1.0")
 
         return mag.astype(np.float64, copy=False), i0
 
