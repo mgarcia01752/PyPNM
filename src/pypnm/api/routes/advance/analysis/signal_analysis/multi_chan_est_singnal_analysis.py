@@ -4,40 +4,24 @@
 from __future__ import annotations
 
 import logging
-from enum import Enum
 from typing import List, Optional, Union, Dict, cast
 
-from numpy.typing import ArrayLike
+
 from pydantic import BaseModel, Field
 
-from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.ifft import (
-    IfftEchoDetector,
-    IfftMultiEchoDetectionModel,
-)
-from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.phase_slope import (
-    PhaseSlopeEchoDetector,
-)
-from pypnm.api.routes.advance.analysis.signal_analysis.detection.lte.phase_slope_lte_detection import (
-    GroupDelayAnomalyDetector,
-)
-from pypnm.api.routes.advance.analysis.signal_analysis.group_delay_calculator import (
-    GroupDelayCalculator,
-)
-from pypnm.api.routes.advance.analysis.signal_analysis.multi_rxmer_signal_analysis import (
-    MultiAnalysisRpt,
-)
+from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.ifft import IfftEchoDetector, IfftMultiEchoDetectionModel
+from pypnm.api.routes.advance.analysis.signal_analysis.detection.lte.phase_slope_lte_detection import GroupDelayAnomalyDetector
+from pypnm.api.routes.advance.analysis.signal_analysis.group_delay_calculator import GroupDelayCalculator
+from pypnm.api.routes.advance.analysis.signal_analysis.multi_rxmer_signal_analysis import MultiAnalysisRpt
 from pypnm.api.routes.advance.common.capture_data_aggregator import CaptureDataAggregator
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
+from pypnm.api.routes.common.classes.analysis.model.chan_est_schema import DsChannelEstAnalysisModel
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.log_files import LogFile
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.types import (
-    ChannelId,
-    FloatSeries,
-    FrequencySeriesHz,
-    ComplexArray,
-    ComplexSeries,
-)
+    ArrayLike, ChannelId, FloatSeries, FrequencyHz, FrequencySeriesHz, ComplexArray, 
+    ComplexSeries, MacAddressStr, Sequence, StringEnum,)
 from pypnm.lib.utils import TimeUnit, Utils
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
 from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
@@ -46,47 +30,47 @@ from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 # ──────────────────────────────────────────────────────────────
 # Aliases
 # ──────────────────────────────────────────────────────────────
-ChannelAmplitudeMap = Dict[ChannelId, List[FloatSeries]]
-ChannelFrequencyMap = Dict[ChannelId, FrequencySeriesHz]
-ChannelComplexMap = Dict[ChannelId, List[ComplexArray]]
-ChannelObwMap = Dict[ChannelId, float]
-ChannelComplexSeriesMap = Dict[ChannelId, List[ComplexSeries]]
+ChannelAmplitudeMap         = Dict[ChannelId, List[FloatSeries]]
+ChannelFrequencyMap         = Dict[ChannelId, FrequencySeriesHz]
+ChannelComplexMap           = Dict[ChannelId, List[ComplexArray]]
+ChannelOccupiedBwMap        = Dict[ChannelId, FrequencyHz]
+ChannelComplexSeriesMap     = Dict[ChannelId, List[ComplexSeries]]
 
 
 # ──────────────────────────────────────────────────────────────
 # Models
 # ──────────────────────────────────────────────────────────────
 class MinAvgMaxModel(BaseModel):
-    channel_id: ChannelId = Field(..., description="OFDM downstream channel ID")
-    frequency: FrequencySeriesHz = Field(..., description="Subcarrier frequency bins (Hz)")
-    min: FloatSeries = Field(..., description="Minimum amplitude (dB) per subcarrier")
-    avg: FloatSeries = Field(..., description="Average amplitude (dB) per subcarrier")
-    max: FloatSeries = Field(..., description="Maximum amplitude (dB) per subcarrier")
+    channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
+    frequency: FrequencySeriesHz    = Field(..., description="Subcarrier frequency bins (Hz)")
+    min: FloatSeries                = Field(..., description="Minimum amplitude (dB) per subcarrier")
+    avg: FloatSeries                = Field(..., description="Average amplitude (dB) per subcarrier")
+    max: FloatSeries                = Field(..., description="Maximum amplitude (dB) per subcarrier")
 
 
 class GroupDelayAnalysisModel(BaseModel):
-    channel_id: ChannelId = Field(..., description="OFDM downstream channel ID")
-    frequency: FrequencySeriesHz = Field(..., description="Subcarrier frequency bins (Hz)")
-    group_delay_us: FloatSeries = Field(..., description="Per-subcarrier group delay (µs)")
+    channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
+    frequency: FrequencySeriesHz    = Field(..., description="Subcarrier frequency bins (Hz)")
+    group_delay_us: FloatSeries     = Field(..., description="Per-subcarrier group delay (µs)")
 
 
 class LteDetectionModel(BaseModel):
-    channel_id: ChannelId = Field(..., description="OFDM downstream channel ID")
-    anomalies: FloatSeries = Field(..., description="Detected LTE interference magnitudes/indices")
-    threshold: float = Field(..., description="Group-delay ripple threshold")
-    bin_widths: FloatSeries = Field(..., description="Bin widths used for segmentation (Hz)")
+    channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
+    anomalies: FloatSeries          = Field(..., description="Detected LTE interference magnitudes/indices")
+    threshold: float                = Field(..., description="Group-delay ripple threshold")
+    bin_widths: FloatSeries         = Field(..., description="Bin widths used for segmentation (Hz)")
 
 
 class EchoDetectionPhaseSlopeModel(BaseModel):
-    channel_id: ChannelId = Field(..., description="OFDM downstream channel ID")
-    slope_profile: FloatSeries = Field(..., description="Phase-slope values (radians/Hz)")
-    frequency: FrequencySeriesHz = Field(..., description="Subcarrier frequency bins (Hz)")
+    channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
+    slope_profile: FloatSeries      = Field(..., description="Phase-slope values (radians/Hz)")
+    frequency: FrequencySeriesHz    = Field(..., description="Subcarrier frequency bins (Hz)")
 
 
 class EchoDetectionIfftModel(BaseModel):
-    channel_id: ChannelId = Field(..., description="OFDM downstream channel ID")
-    impulse_response: FloatSeries = Field(..., description="Impulse-response magnitude vs delay")
-    sample_rate: float = Field(..., description="Sample rate used for IFFT (Hz)")
+    channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
+    impulse_response: FloatSeries   = Field(..., description="Impulse-response magnitude vs delay")
+    sample_rate: float              = Field(..., description="Sample rate used for IFFT (Hz)")
 
 
 class MultiChanEstimationResult(BaseModel):
@@ -96,9 +80,8 @@ class MultiChanEstimationResult(BaseModel):
             MinAvgMaxModel,
             GroupDelayAnalysisModel,
             LteDetectionModel,
-            EchoDetectionPhaseSlopeModel,
             EchoDetectionIfftModel,
-            IfftMultiEchoDetectionModel,  # NEW
+            IfftMultiEchoDetectionModel,
         ]
     ] = Field(default_factory=list, description="List of per-channel analysis results")
     error: Optional[str] = Field(default=None, description="Error message if analysis failed")
@@ -106,16 +89,14 @@ class MultiChanEstimationResult(BaseModel):
     def to_json(self, indent: int = 2) -> str:
         return self.model_dump_json(indent=indent)
 
-
 # ──────────────────────────────────────────────────────────────
 # Enum
 # ──────────────────────────────────────────────────────────────
-class MultiChanEstimationAnalysisType(Enum):
-    MIN_AVG_MAX = 0
-    GROUP_DELAY = 1
-    LTE_DETECTION_PHASE_SLOPE = 2
-    ECHO_DETECTION_PHASE_SLOPE = 3
-    ECHO_DETECTION_IFFT = 4
+class MultiChanEstAnalysisType(StringEnum):
+    MIN_AVG_MAX                 = "min-avg-max"
+    GROUP_DELAY                 = "group-delay"
+    ECHO_DETECTION_IFFT         = "echo-detection-ifft"
+    LTE_DETECTION_PHASE_SLOPE   = "lte-detection-phase-slope"
 
 
 # ──────────────────────────────────────────────────────────────
@@ -124,7 +105,7 @@ class MultiChanEstimationAnalysisType(Enum):
 class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
     """Performs signal-quality analyses on grouped Multi-ChannelEstimation captures."""
 
-    def __init__(self, capt_data_agg: CaptureDataAggregator, analysis_type: MultiChanEstimationAnalysisType) -> None:
+    def __init__(self, capt_data_agg: CaptureDataAggregator, analysis_type: MultiChanEstAnalysisType) -> None:
         super().__init__(capt_data_agg)
         self.logger = logging.getLogger(self.__class__.__name__)
         self._analysis_type = analysis_type
@@ -133,7 +114,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
     # ──────────────────────────────────────────────────────────
     # Internals
     # ──────────────────────────────────────────────────────────
-    def _log_result(self, tag: str, mac: str, data: List[BaseModel]) -> None:
+    def _log_result(self, tag: str, mac: MacAddressStr, data: List[BaseModel]) -> None:
         fname = f"{tag}_{mac}_{Utils.time_stamp(TimeUnit.NANOSECONDS)}.dict"
         for r in data:
             LogFile().write(fname, r)
@@ -147,15 +128,13 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         self.logger.info(f"[_process] {self._analysis_type.name} for MAC={mac}")
 
         match self._analysis_type:
-            case MultiChanEstimationAnalysisType.MIN_AVG_MAX:
+            case MultiChanEstAnalysisType.MIN_AVG_MAX:
                 data = self._analyze_min_avg_max()
-            case MultiChanEstimationAnalysisType.GROUP_DELAY:
+            case MultiChanEstAnalysisType.GROUP_DELAY:
                 data = self._analyze_group_delay()
-            case MultiChanEstimationAnalysisType.LTE_DETECTION_PHASE_SLOPE:
+            case MultiChanEstAnalysisType.LTE_DETECTION_PHASE_SLOPE:
                 data = self._analyze_lte_detection()
-            case MultiChanEstimationAnalysisType.ECHO_DETECTION_PHASE_SLOPE:
-                data = self._analyze_echo_detection_phase_slope()
-            case MultiChanEstimationAnalysisType.ECHO_DETECTION_IFFT:
+            case MultiChanEstAnalysisType.ECHO_DETECTION_IFFT:
                 data = self._analyze_echo_detection_ifft()
             case _:
                 raise ValueError(f"Unsupported analysis type: {self._analysis_type}")
@@ -168,9 +147,9 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                 self._results = self.__process()
             except Exception as e:
                 return MultiChanEstimationResult(
-                    analysis_type=self._analysis_type.name,
-                    results=[],
-                    error=str(e),
+                    analysis_type   =   self._analysis_type.name,
+                    results         =   [],
+                    error           =   str(e),
                 )
         return self._results
 
@@ -185,7 +164,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
             csv = CSVManager()
 
             match self._analysis_type:
-                case MultiChanEstimationAnalysisType.MIN_AVG_MAX:
+                case MultiChanEstAnalysisType.MIN_AVG_MAX:
                     if not isinstance(r, MinAvgMaxModel):
                         continue
                     csv.set_header(["Frequency (Hz)", "Min (dB)", "Avg (dB)", "Max (dB)"])
@@ -195,7 +174,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                     csv.write()
                     csvs.append(csv)
 
-                case MultiChanEstimationAnalysisType.GROUP_DELAY:
+                case MultiChanEstAnalysisType.GROUP_DELAY:
                     if not isinstance(r, GroupDelayAnalysisModel):
                         continue
                     csv.set_header(["Frequency (Hz)", "Group Delay (µs)"])
@@ -205,7 +184,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                     csv.write()
                     csvs.append(csv)
 
-                case MultiChanEstimationAnalysisType.LTE_DETECTION_PHASE_SLOPE:
+                case MultiChanEstAnalysisType.LTE_DETECTION_PHASE_SLOPE:
                     if not isinstance(r, LteDetectionModel):
                         continue
                     csv.set_header(["Bin Width (Hz)", "Anomaly Magnitude"])
@@ -216,29 +195,19 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                     csv.write()
                     csvs.append(csv)
 
-                case MultiChanEstimationAnalysisType.ECHO_DETECTION_PHASE_SLOPE:
-                    if not isinstance(r, EchoDetectionPhaseSlopeModel):
-                        continue
-                    csv.set_header(["Frequency (Hz)", "Phase Slope (rad/Hz)"])
-                    for f, s in zip(r.frequency, r.slope_profile):
-                        csv.insert_row([f, s])
-                    csv.set_path_fname(self.create_csv_fname(tags=[f"ch{r.channel_id}", "echo-slope"]))
-                    csv.write()
-                    csvs.append(csv)
-
-                case MultiChanEstimationAnalysisType.ECHO_DETECTION_IFFT:
-                    # Legacy: simple impulse response CSV
+                case MultiChanEstAnalysisType.ECHO_DETECTION_IFFT:
                     if isinstance(r, EchoDetectionIfftModel):
                         csv.set_header(["Sample Index", "Amplitude"])
+
                         for i, amp in enumerate(r.impulse_response):
                             csv.insert_row([i, amp])
+
                         csv.insert_row(["Sample Rate (Hz)", r.sample_rate])
                         csv.set_path_fname(self.create_csv_fname(tags=[f"ch{r.channel_id}", "echo-ifft"]))
                         csv.write()
                         csvs.append(csv)
                         continue
 
-                    # NEW: multi-echo with distances
                     if isinstance(r, IfftMultiEchoDetectionModel):
                         csv.set_header(["Type", "Bin", "Time (s)", "Amplitude", "Distance (m)", "Distance (ft)"])
 
@@ -248,117 +217,98 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                         for e in r.echoes:
                             csv.insert_row(["echo", e.bin_index, e.time_s, e.amplitude, e.distance_m, e.distance_ft])
 
-                        # Parameters for traceability
-                        csv.insert_row(["sample_rate_hz", r.sample_rate_hz, "", "", "", ""])
-                        csv.insert_row(["cable_type", r.cable_type, "", "", "", ""])
-                        csv.insert_row(["velocity_factor", r.velocity_factor, "", "", "", ""])
-                        csv.insert_row(["threshold_frac", r.threshold_frac, "", "", "", ""])
-                        csv.insert_row(["guard_bins", r.guard_bins, "", "", "", ""])
+                        csv.insert_row(["sample_rate_hz",   r.sample_rate_hz, "", "", "", ""])
+                        csv.insert_row(["cable_type",       r.cable_type, "", "", "", ""])
+                        csv.insert_row(["velocity_factor",  r.velocity_factor, "", "", "", ""])
+                        csv.insert_row(["threshold_frac",   r.threshold_frac, "", "", "", ""])
+                        csv.insert_row(["guard_bins",       r.guard_bins, "", "", "", ""])
+                        csv.insert_row(["min_separation_s", r.min_separation_s, "", "", "", ""])
+
                         if r.max_delay_s is not None:
                             csv.insert_row(["max_delay_s", r.max_delay_s, "", "", "", ""])
+                        
                         csv.insert_row(["max_peaks", r.max_peaks, "", "", "", ""])
 
                         csv.set_path_fname(self.create_csv_fname(tags=[f"ch{r.channel_id}", "echo-ifft-multi"]))
                         csv.write()
                         csvs.append(csv)
-
         return csvs
 
     # ──────────────────────────────────────────────────────────
     # Matplot
     # ──────────────────────────────────────────────────────────
+
     def create_matplot(self, **kwargs) -> List[MatplotManager]:
         plots: List[MatplotManager] = []
         model = self.to_model()
 
         match self._analysis_type:
-            case MultiChanEstimationAnalysisType.MIN_AVG_MAX:
+
+            case MultiChanEstAnalysisType.MIN_AVG_MAX:
                 for r in model.results:
                     if not isinstance(r, MinAvgMaxModel):
                         continue
                     cfg = PlotConfig(
-                        title=f"Channel {r.channel_id} — Min/Average/Max Amplitude",
-                        x=cast(ArrayLike, r.frequency),
-                        xlabel="Subcarrier Frequency (Hz)",
-                        y_multi=[r.min, r.avg, r.max],
-                        y_multi_label=["Min", "Avg", "Max"],
-                        ylabel="Amplitude (dB)",
-                        grid=True,
-                        legend=True,
-                        theme="dark",
+                        title           =   f"Channel Estimation · Channel: {r.channel_id} · Min-Avg-Max",
+                        x               =   cast(ArrayLike, r.frequency),
+                        y_multi         =   [cast(ArrayLike, r.min), cast(ArrayLike, r.avg), cast(ArrayLike, r.max)],
+                        y_multi_label   =   ["Min", "Avg", "Max"],
+                        x_tick_mode     =   "unit",
+                        x_unit_from     =   "hz",
+                        x_unit_out      =   "mhz",
+                        x_tick_decimals =   0,
+                        xlabel_base     =   "Frequency",
+                        ylabel          =   "dB",
+                        grid            =   False, 
+                        legend          =   True, 
+                        transparent     =   False,
+                        line_colors     =   ["#FF5733",  "#3357FF", "#33FF57",], 
+                        theme           =   "dark",
                     )
+
                     mp = MatplotManager(default_cfg=cfg)
                     mp.plot_multi_line(self.create_png_fname(tags=[f"ch{r.channel_id}", "minavgmax"]))
                     plots.append(mp)
 
-            case MultiChanEstimationAnalysisType.GROUP_DELAY:
+            case MultiChanEstAnalysisType.GROUP_DELAY:
                 for r in model.results:
                     if not isinstance(r, GroupDelayAnalysisModel):
                         continue
                     cfg = PlotConfig(
-                        x=r.frequency,
-                        y=r.group_delay_us,
-                        xlabel="Subcarrier Frequency (Hz)",
-                        ylabel="Group Delay (µs)",
-                        title=f"Channel {r.channel_id} — Group Delay",
-                        grid=True,
-                        legend=False,
-                        theme="dark",
+                        title           = f"Channel Estimation · Channel: {r.channel_id} · GroupDelay",
+                        x               = cast(ArrayLike, r.frequency),
+                        y               = cast(ArrayLike, r.group_delay_us),
+                        xlabel          = None,
+                        xlabel_base     = "Frequency",
+                        x_tick_mode     = "unit",
+                        x_unit_from     = "hz",
+                        x_unit_out      = "mhz",
+                        x_tick_decimals = 0,
+                        ylabel          = "Group Delay (µs)",
+                        grid            = False,
+                        legend          = False,
+                        transparent     = False,
+                        theme           = "dark",
                     )
+
                     mp = MatplotManager(default_cfg=cfg)
                     mp.plot_line(self.create_png_fname(tags=[f"ch{r.channel_id}", "groupdelay"]))
                     plots.append(mp)
 
-            case MultiChanEstimationAnalysisType.LTE_DETECTION_PHASE_SLOPE:
+            case MultiChanEstAnalysisType.ECHO_DETECTION_IFFT:                
                 for r in model.results:
-                    if not isinstance(r, LteDetectionModel):
-                        continue
-                    cfg = PlotConfig(
-                        x=r.bin_widths,
-                        y=r.anomalies,
-                        xlabel="Frequency Bin Width (Hz)",
-                        ylabel="Anomaly Magnitude",
-                        title=f"Channel {r.channel_id} — LTE Detection (Threshold={r.threshold:.2e})",
-                        grid=True,
-                        legend=False,
-                        theme="dark",
-                    )
-                    mp = MatplotManager(default_cfg=cfg)
-                    mp.plot_bar(r.bin_widths, r.anomalies, self.create_png_fname(tags=[f"ch{r.channel_id}", "lte-detect"]))
-                    plots.append(mp)
-
-            case MultiChanEstimationAnalysisType.ECHO_DETECTION_PHASE_SLOPE:
-                for r in model.results:
-                    if not isinstance(r, EchoDetectionPhaseSlopeModel):
-                        continue
-                    cfg = PlotConfig(
-                        x=r.frequency,
-                        y=r.slope_profile,
-                        xlabel="Subcarrier Frequency (Hz)",
-                        ylabel="Phase Slope (rad/Hz)",
-                        title=f"Channel {r.channel_id} — Echo Detection (Phase Slope)",
-                        grid=True,
-                        legend=False,
-                        theme="dark",
-                    )
-                    mp = MatplotManager(default_cfg=cfg)
-                    mp.plot_line(self.create_png_fname(tags=[f"ch{r.channel_id}", "echo-slope"]))
-                    plots.append(mp)
-
-            case MultiChanEstimationAnalysisType.ECHO_DETECTION_IFFT:
-                for r in model.results:
-                    # Legacy: simple impulse-response plot
                     if isinstance(r, EchoDetectionIfftModel):
                         cfg = PlotConfig(
-                            x=list(range(len(r.impulse_response))),
-                            y=r.impulse_response,
-                            xlabel="Sample Index",
-                            ylabel="Amplitude (Linear Units)",
-                            title=f"Channel {r.channel_id} — Echo Detection (IFFT Impulse Response)",
-                            grid=True,
-                            legend=False,
-                            theme="dark",
+                            title   =   f"Channel Estimation · Channel {r.channel_id} · Echo Detection (IFFT Impulse Response)",
+                            x       =   list(range(len(r.impulse_response))),
+                            y       =   cast(ArrayLike, r.impulse_response),
+                            xlabel  =   "Sample Index",
+                            ylabel  =   "Amplitude (Linear Units)",
+                            grid    =   True,
+                            legend  =   False,
+                            theme   =   "dark",
                         )
+
                         mp = MatplotManager(default_cfg=cfg)
                         mp.plot_line(self.create_png_fname(tags=[f"ch{r.channel_id}", "echo-ifft"]))
                         plots.append(mp)
@@ -366,31 +316,31 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
 
                     # NEW: multi-echo model — plot |h(t)| if present
                     if isinstance(r, IfftMultiEchoDetectionModel) and r.time_response is not None:
-                        tr = r.time_response
-                        ir_mag = [(re * re + im * im) ** 0.5 for (re, im) in tr.time_response]
+                        tr      = r.time_response
+                        ir_mag  = [(re * re + im * im) ** 0.5 for (re, im) in tr.time_response]
+                        time_us = [t * 1e6 for t in tr.time_axis_s]
                         cfg = PlotConfig(
-                            x=cast(ArrayLike, tr.time_axis_s),
-                            y=ir_mag,
-                            xlabel="Time (s)",
-                            ylabel="|h(t)| (linear)",
-                            title=f"Channel {r.channel_id} — Echo Detection (IFFT, {r.cable_type}, VF={r.velocity_factor:.2f})",
-                            grid=True,
-                            legend=False,
-                            theme="dark",
+                            title   =   f"Channel Estimation · Channel {r.channel_id} · Echo Detection (IFFT, {r.cable_type}, VF={r.velocity_factor:.2f})",
+                            x       =   cast(ArrayLike, time_us),
+                            y       =   ir_mag,
+                            xlabel  =   "Time (µs)",
+                            ylabel  =   "|h(t)| (linear)",
+                            grid    =   True,
+                            legend  =   False,
+                            theme   =   "dark",
                         )
                         mp = MatplotManager(default_cfg=cfg)
                         mp.plot_line(self.create_png_fname(tags=[f"ch{r.channel_id}", "echo-ifft-multi"]))
                         plots.append(mp)
 
         return plots
-
-    # ──────────────────────────────────────────────────────────
-    # Analysis Methods
-    # ──────────────────────────────────────────────────────────
+    
     def _analyze_min_avg_max(self) -> List[MinAvgMaxModel]:
         amplitudes: ChannelAmplitudeMap = {}
         freqs: ChannelFrequencyMap = {}
+
         for tcm in self._trans_collect.getTransactionCollectionModel():
+            
             try:
                 model = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
                 result = Analysis.basic_analysis_ds_chan_est_from_model(model)
@@ -398,35 +348,104 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                 if result.carrier_values.magnitudes:
                     amplitudes.setdefault(ch, []).append(result.carrier_values.magnitudes)
                 freqs[ch] = result.carrier_values.frequency
+            
             except Exception as e:
                 self.logger.error(f"[file={tcm.filename}] MIN_AVG_MAX parse failed: {e}")
+        
         return [
-            MinAvgMaxModel(channel_id=ch, frequency=freqs.get(ch, []), **MinAvgMax(amps).to_dict())
-            for ch, amps in amplitudes.items()
-        ]
+
+            MinAvgMaxModel(channel_id   =   ch,
+                           frequency    =   freqs.get(ch, []),
+                           **MinAvgMax(amps).to_dict())
+
+            for ch, amps in amplitudes.items()]
 
     def _analyze_group_delay(self) -> List[GroupDelayAnalysisModel]:
+        """
+        Analyze group delay for each channel.
+        Process:
+        1. Aggregate complex carrier values per channel from all captures.
+        2. For each channel, compute group delay using GroupDelayCalculator.
+            2.a Input: List of complex carrier values and frequency bins.
+            2.b Calulate the Avg phase response across captures.
+            2.c Compute group delay as the negative derivative of phase w.r.t frequency.
+        3. Return list of GroupDelayAnalysisModel with results.
+
+        """
         channel_data: ChannelComplexMap = {}
-        freqs: ChannelFrequencyMap = {}
+        chan_freqs_map: ChannelFrequencyMap = {}
+        
         for tcm in self._trans_collect.getTransactionCollectionModel():
+        
             try:
+                # Build model from capture data
                 model = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
-                result = Analysis.basic_analysis_ds_chan_est_from_model(model)
+                
+                # Perform basic analysis to extract complex carrier values
+                result:DsChannelEstAnalysisModel = Analysis.basic_analysis_ds_chan_est_from_model(model)
+
                 ch = ChannelId(result.channel_id)
                 channel_data.setdefault(ch, []).append(result.carrier_values.complex)
-                freqs[ch] = result.carrier_values.frequency
+                
+                # Map channel to frequency bins
+                chan_freqs_map[ch] = result.carrier_values.frequency
+        
             except Exception as e:
                 self.logger.error(f"[file={tcm.filename}] GROUP_DELAY parse failed: {e}")
+        
         out: List[GroupDelayAnalysisModel] = []
+        
         for ch, cplx in channel_data.items():
-            gd = GroupDelayCalculator(cplx, freqs[ch]).to_dict()
+
+            gd = GroupDelayCalculator(cast(Sequence[Sequence[complex]], cplx), 
+                                      chan_freqs_map[ch]).to_model().group_delay_full
+
             out.append(
                 GroupDelayAnalysisModel(
-                    channel_id=ch,
-                    frequency=gd.get("freqs", []),
-                    group_delay_us=gd.get("tau_us", []),
+                    channel_id      =   ch,
+                    frequency       =   gd.freqs,
+                    group_delay_us  =   gd.tau_g,
                 )
             )
+
+        return out
+
+    def _analyze_echo_detection_ifft(self) -> List[Union[EchoDetectionIfftModel, IfftMultiEchoDetectionModel]]:
+        """Build echo-detection results using IFFT (multi-echo by default)."""
+        channel_data: ChannelComplexMap = {}
+        obw: ChannelOccupiedBwMap = {}
+        for tcm in self._trans_collect.getTransactionCollectionModel():
+            try:
+                model   = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
+                result  = Analysis.basic_analysis_ds_chan_est_from_model(model)
+                ch      = ChannelId(result.channel_id)
+                obw[ch] = result.carrier_values.occupied_channel_bandwidth
+                channel_data.setdefault(ch, []).append(result.carrier_values.complex)
+            except Exception as e:
+                self.logger.error(f"[file={tcm.filename}] ECHO_DETECTION_IFFT parse failed: {e}")
+
+        out: List[Union[EchoDetectionIfftModel, IfftMultiEchoDetectionModel]] = []
+        for ch, cplx in channel_data.items():
+            bw = obw.get(ch, 0.0)
+            if not bw:
+                continue
+
+            # Use the multi-echo detector; include time response for plotting
+            det_model = IfftEchoDetector(cplx, sample_rate=float(bw)).detect_multiple_reflections(
+                cable_type              =   "RG6",
+                threshold_frac          =   0.5,
+                guard_bins              =   1,
+                min_separation_s        =   0.0,
+                max_delay_s             =   None,
+                max_peaks               =   10,
+                n_fft                   =   None,
+                include_time_response   =   True,
+            )
+
+            # Stamp the channel id so filenames are per-channel
+            det_model = det_model.model_copy(update={"channel_id": ch})
+            out.append(det_model)
+
         return out
 
     def _analyze_lte_detection(self) -> List[LteDetectionModel]:
@@ -448,72 +467,10 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
             res = GroupDelayAnomalyDetector(cplx, freqs[ch]).run(bin_widths=bin_widths, threshold=threshold)
             out.append(
                 LteDetectionModel(
-                    channel_id=ch,
-                    anomalies=res.get("anomalies", []),
-                    threshold=threshold,
-                    bin_widths=bin_widths,
+                    channel_id      =   ch,
+                    anomalies       =   res.get("anomalies", []),
+                    threshold       =   threshold,
+                    bin_widths      =   bin_widths,
                 )
             )
-        return out
-
-    def _analyze_echo_detection_phase_slope(self) -> List[EchoDetectionPhaseSlopeModel]:
-        channel_data: ChannelComplexMap = {}
-        freqs: ChannelFrequencyMap = {}
-        for tcm in self._trans_collect.getTransactionCollectionModel():
-            try:
-                model = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
-                result = Analysis.basic_analysis_ds_chan_est_from_model(model)
-                ch = ChannelId(result.channel_id)
-                channel_data.setdefault(ch, []).append(result.carrier_values.complex)
-                freqs[ch] = result.carrier_values.frequency
-            except Exception as e:
-                self.logger.error(f"[file={tcm.filename}] ECHO_DETECTION_PHASE_SLOPE parse failed: {e}")
-        out: List[EchoDetectionPhaseSlopeModel] = []
-        for ch, cplx in channel_data.items():
-            slope = PhaseSlopeEchoDetector(cplx, freqs[ch]).to_dict()
-            out.append(
-                EchoDetectionPhaseSlopeModel(
-                    channel_id=ch,
-                    slope_profile=slope.get("slope_profile", []),
-                    frequency=slope.get("frequency", []),
-                )
-            )
-        return out
-
-    def _analyze_echo_detection_ifft(self) -> List[Union[EchoDetectionIfftModel, IfftMultiEchoDetectionModel]]:
-        """Build echo-detection results using IFFT (multi-echo by default)."""
-        channel_data: ChannelComplexMap = {}
-        obw: ChannelObwMap = {}
-        for tcm in self._trans_collect.getTransactionCollectionModel():
-            try:
-                model = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
-                result = Analysis.basic_analysis_ds_chan_est_from_model(model)
-                ch = ChannelId(result.channel_id)
-                channel_data.setdefault(ch, []).append(result.carrier_values.complex)
-                obw[ch] = result.carrier_values.occupied_channel_bandwidth
-            except Exception as e:
-                self.logger.error(f"[file={tcm.filename}] ECHO_DETECTION_IFFT parse failed: {e}")
-
-        out: List[Union[EchoDetectionIfftModel, IfftMultiEchoDetectionModel]] = []
-        for ch, cplx in channel_data.items():
-            bw = obw.get(ch, 0.0)
-            if not bw:
-                continue
-
-            # Use the multi-echo detector; include time response for plotting
-            det_model = IfftEchoDetector(cplx, sample_rate=float(bw)).detect_multiple_reflections(
-                cable_type="RG6",
-                threshold_frac=0.2,
-                guard_bins=1,
-                min_separation_s=0.0,
-                max_delay_s=None,
-                max_peaks=5,
-                n_fft=None,
-                include_time_response=True,
-            )
-
-            # Stamp the channel id so filenames are per-channel
-            det_model = det_model.model_copy(update={"channel_id": ch})
-            out.append(det_model)
-
         return out

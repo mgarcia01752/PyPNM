@@ -14,15 +14,21 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp imp
 
 from enum import IntEnum
 
-class MeasureModes(IntEnum):
+class MultiRxMerMeasureModes(IntEnum):
     CONTINUOUS          = 0   
     OFDM_PERFORMANCE_1  = 1
-    
-class MeasureParameters(BaseModel):
-    mode:MeasureModes = Field(default=MeasureModes.OFDM_PERFORMANCE_1, description="Measurement mode: 0 for continuous, 1 for OFDM performance context")
+
+class MultiChanEstModes(IntEnum):
+    STANDARD            = 0   
+
+class ChanEstMeasureParameters(BaseModel):
+    mode:MultiChanEstModes = Field(default=MultiChanEstModes.STANDARD, description="Measurement mode: 0 for standard channel estimation capture")
+
+class RxMerMeasureParameters(BaseModel):
+    mode:MultiRxMerMeasureModes = Field(default=MultiRxMerMeasureModes.OFDM_PERFORMANCE_1, description="Measurement mode: 0 for continuous, 1 for OFDM performance context")
 
 class MultiRxMerRequest(MultiCaptureRequest):
-    measure:MeasureParameters
+    measure:RxMerMeasureParameters
 
 class MultiRxMerResponseStatus(BaseModel):
     """
@@ -153,9 +159,7 @@ class MultiRxMerAnalysisResponse(CommonAnalysisResponse):
         ...,
         description=(
             "Mapping from channel_id to its analysis results "
-            "(frequency, min, avg, max lists)."
-        )
-    )
+            "(frequency, min, avg, max lists)."))
 
 class MultiRxMerAnalysisConfig(BaseModel):
     type: MultiRxMerAnalysisType    = Field(default=MultiRxMerAnalysisType.MIN_AVG_MAX, description="Analysis type to perform, implementation-specific integer value")
@@ -163,8 +167,8 @@ class MultiRxMerAnalysisConfig(BaseModel):
     plot: CommonMatPlotConfigRequest = Field(description="Plot configuration for multi-RxMER analysis")
 
 __all__ = [
-    "MeasureModes",
-    "MeasureParameters",
+    "MultiRxMerMeasureModes",
+    "RxMerMeasureParameters",
     "MultiRxMerRequest",
     "MultiRxMerResponseStatus",
     "MultiRxMerResponse",

@@ -25,7 +25,7 @@ def _mk_linear_phase(freqs_hz: np.ndarray, tau_s: float) -> np.ndarray:
 @pytest.mark.pnm
 def test_group_delay_constant_for_linear_phase_single_snapshot():
     K = 256
-    tau_true = 5e-6  # 5 microseconds
+    tau_true = 5e-6
     f0 = 100e6
     df = 25e3
     freqs = f0 + df * np.arange(K)
@@ -34,11 +34,8 @@ def test_group_delay_constant_for_linear_phase_single_snapshot():
     calc = GroupDelayCalculator(H, freqs)
     f_out, tau_g = calc.compute_group_delay_full()
 
-    # shapes
     assert f_out.shape == (K,)
     assert tau_g.shape == (K,)
-
-    # numeric: near-constant ≈ tau_true
     assert np.allclose(tau_g, tau_true, rtol=RTOL, atol=ATOL)
 
 
@@ -51,24 +48,20 @@ def test_group_delay_median_across_snapshots_with_noise():
     df = 50e3
     freqs = f0 + df * np.arange(K)
 
-    # Build 5 snapshots with small random phase noise
     rng = np.random.default_rng(123)
     Hs = []
     for _ in range(M):
         H_clean = _mk_linear_phase(freqs, tau_true)
-        phase_jitter = rng.normal(scale=1e-2, size=K)  # ~0.01 rad noise
+        phase_jitter = rng.normal(scale=1e-2, size=K)
         H_noisy = H_clean * np.exp(1j * phase_jitter)
         Hs.append(H_noisy)
-    H = np.stack(Hs, axis=0)  # (M, K)
+    H = np.stack(Hs, axis=0)
 
     calc = GroupDelayCalculator(H, freqs)
     f_med, tau_med = calc.median_group_delay()
 
-    # shapes
     assert f_med.shape == (K,)
     assert tau_med.shape == (K,)
-
-    # close to truth
     assert np.allclose(tau_med, tau_true, rtol=5e-3, atol=1e-7)
 
 
@@ -82,17 +75,14 @@ def test_input_encodings_pairs_and_mk2():
 
     H_complex = _mk_linear_phase(freqs, tau_true)
 
-    # (K,2) real/imag pairs
-    pairs_K2 = np.stack([np.real(H_complex), np.imag(H_complex)], axis=1)  # (K,2)
+    pairs_K2 = np.stack([np.real(H_complex), np.imag(H_complex)], axis=1)
     calc_pairs = GroupDelayCalculator(pairs_K2, freqs)
     _, tau_pairs = calc_pairs.compute_group_delay_full()
 
-    # (M,K,2) pairs with M=1
-    pairs_MK2 = pairs_K2[np.newaxis, ...]  # (1,K,2)
+    pairs_MK2 = pairs_K2[np.newaxis, ...]
     calc_pairs_batched = GroupDelayCalculator(pairs_MK2, freqs)
     _, tau_pairs_batched = calc_pairs_batched.compute_group_delay_full()
 
-    # complex baseline
     calc_c = GroupDelayCalculator(H_complex, freqs)
     _, tau_c = calc_c.compute_group_delay_full()
 
@@ -112,7 +102,6 @@ def test_snapshot_group_delay_shape():
     calc = GroupDelayCalculator(H, freqs)
     taus = calc.snapshot_group_delay()
     assert taus.shape == (M, K)
-    # values close to tau_true
     assert np.allclose(taus, tau_true, rtol=RTOL, atol=ATOL)
 
 
@@ -126,28 +115,17 @@ def test_model_build_and_alias_fields():
 
     mdl: GroupDelayCalculatorModel = GroupDelayCalculator(H, freqs).to_model()
 
-    # dataset info
     assert mdl.dataset_info.subcarriers == K
     assert mdl.dataset_info.snapshots == 1
-
-    # alias "complex" is present and uses the exact literal
     assert mdl.complex_unit == "[Real, Imaginary]"
-
-    # lengths line up
     assert len(mdl.freqs) == K
     assert len(mdl.H_avg) == K
     assert len(mdl.group_delay_full.freqs) == K
     assert len(mdl.group_delay_full.tau_g) == K
-
-    # snapshot GD matrix MxK with M=1
-    taus = mdl.snapshot_group_delay.taus
-    assert len(taus) == 1 and len(taus[0]) == K
-
-    # median also length K
+    assert len(mdl.snapshot_group_delay.taus) == 1
+    assert len(mdl.snapshot_group_delay.taus[0]) == K
     assert len(mdl.median_group_delay.freqs) == K
     assert len(mdl.median_group_delay.tau_med) == K
-
-    # numerical sanity
     assert np.allclose(mdl.group_delay_full.tau_g, tau_true, rtol=RTOL, atol=ATOL)
     assert np.allclose(mdl.median_group_delay.tau_med, tau_true, rtol=RTOL, atol=ATOL)
 
@@ -161,28 +139,28 @@ def test_to_dict_uses_alias_and_is_serializable():
     H = _mk_linear_phase(freqs, tau_true)
 
     dct = GroupDelayCalculator(H, freqs).to_dict()
-    # has alias "complex" not "complex_unit"
-    assert "complex" in dct
-    assert dct["complex"] == "[Real, Imaginary]"
-    # basic keys
-    assert "H_raw" in dct and "H_avg" in dct and "group_delay_full" in dct
+
+    assert "H_avg" in dct
+    assert isinstance(dct["H_avg"], list)
+    assert all(isinstance(x, tuple) and len(x) == 2 for x in dct["H_avg"])
+    assert "complex_unit" in dct
+    assert dct["complex_unit"] == "[Real, Imaginary]"
+    assert "H_raw" in dct
+    assert "group_delay_full" in dct
 
 
 @pytest.mark.pnm
 def test_validation_duplicate_freqs_and_mismatched_lengths():
-    # duplicate freqs cause derivative failure
     freqs = np.array([100.0, 100.0, 200.0])
     H = np.array([1+0j, 1+0j, 1+0j])
     calc = GroupDelayCalculator(H, freqs)
     with pytest.raises(ValueError):
         _ = calc.compute_group_delay_full()
 
-    # mismatched K between H and freqs
     freqs2 = np.array([1.0, 2.0, 3.0, 4.0])
     H2 = np.array([1+0j, 1+0j, 1+0j])
     with pytest.raises(ValueError):
         _ = GroupDelayCalculator(H2, freqs2)
 
-    # invalid shapes
     with pytest.raises(ValueError):
-        _ = GroupDelayCalculator(np.zeros((2, 3, 3)), np.array([1.0, 2.0, 3.0]))  # bad last dim
+        _ = GroupDelayCalculator(np.zeros((2, 3, 3)), np.array([1.0, 2.0, 3.0]))

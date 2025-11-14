@@ -48,11 +48,11 @@ class CableModemPnmConfig(BaseModel):
 
 
 class CommonMatPlotUiConfig(BaseModel):
-    theme: ThemeType = Field(description="Matplotlib theme selection for plot rendering")
+    theme: ThemeType = Field(default="dark", description="Matplotlib theme selection for plot rendering")
 
 
 class CommonMatPlotConfigRequest(BaseModel):
-    ui: CommonMatPlotUiConfig = Field(description="Matplotlib UI configuration for plot generation")
+    ui: CommonMatPlotUiConfig = Field(default=CommonMatPlotUiConfig(), description="Matplotlib UI configuration for plot generation")
 
 
 class CommonFileRequest(BaseModel):

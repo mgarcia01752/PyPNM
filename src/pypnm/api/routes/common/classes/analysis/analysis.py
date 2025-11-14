@@ -118,7 +118,7 @@ class Analysis:
         self.analysis_type: "AnalysisType"      = analysis_type
         self.msg_response: "MessageResponse"    = msg_response
         self._cable_type: CableType             = cable_type
-        payload: Dict[str, Any]                 = msg_response.payload_to_dict() or {}
+        payload: Dict[Union[int, str], Any]     = msg_response.payload_to_dict() or {}
         _raw_data                               = payload.get("data", [])
         
         self._result_model:List[BaseAnalysisModel] = []
@@ -1543,8 +1543,7 @@ class Analysis:
             include_time_response = False,        # keep payload small by default
             direct_at_zero        = True,         # recenter direct path to t=0
             window                = "hann",       # reduce sidelobes before IFFT
-            auto_fallback         = True,         # try stricter fallback if none found
-            fallback_db_down      = 80.0,         # fallback threshold
+
         )
 
         return echo_report

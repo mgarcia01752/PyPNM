@@ -19,7 +19,7 @@ from pypnm.api.routes.advance.common.capture_service import OperationId
 from pypnm.api.routes.advance.common.operation_manager import OperationManager
 from pypnm.api.routes.advance.common.operation_state import OperationState
 from pypnm.api.routes.advance.multi_rxmer.schemas import (
-    MeasureModes, MultiRxMerAnalysisRequest, MultiRxMerAnalysisResponse, MultiRxMerRequest, 
+    MultiRxMerMeasureModes, MultiRxMerAnalysisRequest, MultiRxMerAnalysisResponse, MultiRxMerRequest, 
     MultiRxMerResponseStatus, MultiRxMerStartResponse, MultiRxMerStatusResponse)
 from pypnm.api.routes.advance.multi_rxmer.service import MultiRxMer_Ofdm_Performance_1_Service, MultiRxMerService
 from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
@@ -115,7 +115,7 @@ class MultiRxMerRouter(AbstractService):
                     mac_address=str(request.cable_modem.mac_address),
                     status=status, message=msg)   
 
-            if measure_modes == MeasureModes.CONTINUOUS:
+            if measure_modes == MultiRxMerMeasureModes.CONTINUOUS:
                 msg=f'Starting Multi-RxMER capture for MAC={request.cable_modem.mac_address}'
                 self.logger.info(f'{msg}')
                 group_id, operation_id = await self.loadService(
@@ -124,7 +124,7 @@ class MultiRxMerRouter(AbstractService):
                     duration=duration,
                     interval=interval,)
                 
-            elif measure_modes == MeasureModes.OFDM_PERFORMANCE_1:
+            elif measure_modes == MultiRxMerMeasureModes.OFDM_PERFORMANCE_1:
                 msg=f'Starting Multi-RxMER-OFDM-Performance-1 capture for MAC={request.cable_modem.mac_address}'
                 self.logger.info(f'{msg}')
                 group_id, operation_id = await self.loadService(

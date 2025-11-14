@@ -40,7 +40,7 @@ class ComplexDataCarrierModel(BaseModel):
     complex_dimension         : int                 = Field(..., description="Dimensionality of the complex array (should be 1 for per-carrier sequence).")
     magnitudes                : FloatSeries         = Field(..., description="Per-subcarrier magnitude response in linear scale.")
     group_delay               : GrpDelayStatsModel  = Field(..., description="Group delay analysis results for the channel estimate.")
-    occupied_channel_bandwidth: int                 = Field(..., description="Occupied channel bandwidth in Hertz.")
+    occupied_channel_bandwidth: FrequencyHz         = Field(..., description="Occupied channel bandwidth in Hertz.")
 
 
 class ComplexDataAnalysisModel(BaseAnalysisModel):

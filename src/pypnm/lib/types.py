@@ -53,6 +53,7 @@ FloatSequence: TypeAlias    = Sequence[float]
 Complex                  = Tuple[float, float]  # (re, im)
 ComplexArray: TypeAlias  = List[Complex]        # K × (re, im)
 ComplexSeries: TypeAlias = List[complex]        # Python complex list (internal use)
+ComplexMatrix: TypeAlias = list[ComplexArray]
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Modulation profile identifiers
