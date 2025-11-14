@@ -232,7 +232,7 @@ class Analysis:
             self.__add_pnmType(PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY) 
 
         elif pnm_file_type == PnmFileType.RECEIVE_MODULATION_ERROR_RATIO.value:
-            self.logger.info("Processing: RECEIVE_MODULATION_ERROR_RATIO")
+            self.logger.debug("Processing: RECEIVE_MODULATION_ERROR_RATIO")
             model:DsRxMerAnalysisModel = self.basic_analysis_rxmer(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
@@ -268,7 +268,7 @@ class Analysis:
             self.__add_pnmType(PnmFileType.OFDM_FEC_SUMMARY)
 
         elif pnm_file_type == PnmFileType.SPECTRUM_ANALYSIS.value:
-            self.logger.info("Processing: SPECTRUM_ANALYSIS")
+            self.logger.debug("Processing: SPECTRUM_ANALYSIS")
             model = self.basic_analysis_spectrum_analyzer(measurement, analysis_para)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
@@ -287,7 +287,7 @@ class Analysis:
             pass
 
         elif pnm_file_type == PnmFileType.CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA.value:
-            self.logger.info("Processing: Basic Analysis -> CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA")
+            self.logger.debug("Processing: Basic Analysis -> CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA")
             model = self.basic_analysis_spectrum_analyzer_snmp(measurement, analysis_para)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
@@ -575,7 +575,7 @@ class Analysis:
         v = SPEED_OF_LIGHT * CABLE_VF.get(cable_type.name, 0.87)
         max_dist_m = 0.5 * v * max_delay_s
         i_stop = int(max_delay_s * fs)
-        log.info(
+        log.debug(
             "EchoDetector window: fs=%.3f Hz, n_fft=%d, i_stop=%d bins, max_delay=%.2fus, max_dist≈%.1f m",
             fs, n_fft, i_stop, max_delay_s * 1e6, max_dist_m
         )
@@ -1142,7 +1142,7 @@ class Analysis:
         # --- windowed average (same length) ---
         # TODO: Need to clean this up, need to move the DEFAULT to the Model in a better way
         if analysis_parameters:
-            log.info("Spectrum Analyzer: applying moving average with parameters: %s", analysis_parameters)
+            log.debug("Spectrum Analyzer: applying moving average with parameters: %s", analysis_parameters)
             window_points = analysis_parameters.moving_average.points
         else:
             log.warning("Spectrum Analyzer: applying DEFAULT moving average: %s", DEFAULT_POINT_AVG)
@@ -1527,7 +1527,7 @@ class Analysis:
             channel_id            = ChannelId(channel_id),
         )
 
-        log.info(
+        log.debug(
             "Init EchoDetector: N=%d, Δf=%.3f Hz, fs=%.3f Hz, n_fft=%d, cable=%s, chan=%s",
             N, df_hz, N * df_hz, n_fft, cable_type.name, str(channel_id),
         )
