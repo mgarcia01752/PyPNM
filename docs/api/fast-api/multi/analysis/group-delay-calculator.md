@@ -1,136 +1,181 @@
 # Group Delay Calculator Guide
 
-This guide explains the mathematical foundation and usage of the `GroupDelayCalculator` class for computing group delay from per-subcarrier complex channel estimates, supporting multi-snapshot coherent averaging and comprehensive output via `to_dict()`.
-
+This document describes the mathematical basis for computing **group delay** from per-subcarrier complex channel estimates, including coherent averaging across multiple snapshots and robust statistics such as the median group delay.
 
 ## 1. Group Delay: Continuous Definition
 
-For a frequency response $H(f)$, the **group delay** is defined as:
+For a complex frequency response \(H(f)\), the **group delay** is defined as the negative derivative of the phase with respect to angular frequency \(\omega\):
 
-$$
+\[
 \tau_g(f) = -\frac{d}{d\omega} \arg\bigl(H(f)\bigr),
-$$
+\]
 
-where $\omega = 2\pi f$ and $\arg(H(f))$ is the phase of $H(f)$.
+where
 
+\[
+\omega = 2\pi f,
+\]
+and \(\arg(H(f))\) is the phase of \(H(f)\) in radians.
 
-## 2. Discrete Approximation
+Using the chain rule,
 
-Given $K$ subcarriers at frequencies $f_k$ with unwrapped phases
+\[
+\frac{d}{d\omega} = \frac{1}{2\pi} \frac{d}{df},
+\]
 
-$$
+so the group delay can also be written as
+
+\[
+\tau_g(f) = -\frac{1}{2\pi}\frac{d}{df}\arg\bigl(H(f)\bigr).
+\]
+
+Thus, group delay measures how rapidly the phase of the channel response changes with frequency.
+
+## 2. Discrete Approximation on Subcarriers
+
+Consider a set of \(K\) subcarriers at frequencies \(f_k\) with corresponding complex responses \(H[k]\). The **unwrapped** phase at each subcarrier is
+
+\[
 \phi_k = \mathrm{unwrap}\bigl(\angle H[k]\bigr),
-$$
+\]
 
-the discrete group delay per subcarrier is approximated by finite differences:
+where \(\angle H[k]\) is the principal value of the phase and \(\mathrm{unwrap}(\cdot)\) removes \(2\pi\) discontinuities.
 
-* **Forward difference** at $k=0$:
+A discrete approximation of the group delay at each subcarrier is obtained by finite differences of the phase with respect to frequency:
 
-  $$
-  \tau_g[0] = -\frac{\phi_1 - \phi_0}{2\pi(f_1 - f_0)}
-  $$
+- **Forward difference** at the lower edge \(k = 0\):
 
-* **Central difference** for $1 \le k \le K-2$:
+  \[
+  \tau_g[0] = -\frac{\phi_1 - \phi_0}{2\pi(f_1 - f_0)}.
+  \]
 
-  $$
-  \tau_g[k] = -\frac{\phi_{k+1} - \phi_{k-1}}{2\pi(f_{k+1} - f_{k-1})}
-  $$
+- **Central difference** for interior subcarriers \(1 \le k \le K-2\):
 
-* **Backward difference** at $k=K-1$:
+  \[
+  \tau_g[k] = -\frac{\phi_{k+1} - \phi_{k-1}}{2\pi(f_{k+1} - f_{k-1})}.
+  \]
 
-  $$
-  \tau_g[K-1] = -\frac{\phi_{K-1} - \phi_{K-2}}{2\pi(f_{K-1} - f_{K-2})}
-  $$
+- **Backward difference** at the upper edge \(k = K-1\):
 
+  \[
+  \tau_g[K-1] = -\frac{\phi_{K-1} - \phi_{K-2}}{2\pi(f_{K-1} - f_{K-2})}.
+  \]
+
+These formulas assume that the frequency samples \(f_k\) are known and that no two adjacent frequencies are identical, so that the denominators are non-zero.
 
 ## 3. Multi-Snapshot Coherent Averaging
 
-To reduce noise, average $M$ snapshots of channel estimates $H^{(m)}[k]$ coherently:
+Often, multiple snapshots of the channel are available. Let \(H^{(m)}[k]\) denote the complex channel estimate for snapshot \(m \in \{0,\dots,M-1\}\) and subcarrier \(k \in \{0,\dots,K-1\}\).
 
-$$
-\overline{H}[k] = \frac{1}{M} \sum_{m=1}^{M} H^{(m)}[k].
-$$
+### 3.1 Coherent Average Channel
 
-Compute group delay on $\overline{H}[k]$ using the discrete formulas above. Alternatively, compute $\tau_g^{(m)}[k]$ per snapshot and take the median:
+A **coherent complex average** across snapshots is formed as
 
-$$
-\tau_{g,\mathrm{med}}[k] = \mathrm{median}\bigl\{\tau_g^{(1)}[k],\dots,\tau_g^{(M)}[k]\bigr\}.
-$$
+\[
+H_{\text{avg}}[k] = \frac{1}{M} \sum_{m=0}^{M-1} H^{(m)}[k],
+\]
 
+which averages both real and imaginary parts:
 
-## 4. Class API
+\[
+H_{\text{avg}}[k] = \frac{1}{M} \sum_{m=0}^{M-1} 
+\Bigl( \Re\{H^{(m)}[k]\} + j\,\Im\{H^{(m)}[k]\} \Bigr).
+\]
 
-```python
-from pypnm import GroupDelayCalculator
+This suppresses uncorrelated noise while preserving the underlying channel structure (e.g., echoes, dispersion).
 
-# H: array of shape (M, K) or (K,) for single snapshot
-# freqs: array of length K with subcarrier frequencies in Hz
-calc = GroupDelayCalculator(H, freqs)
-```
+The unwrapped phase of the averaged channel is
 
-* **`compute_group_delay_full() -> (freqs, tau_g)`**
-  Compute group delay for each subcarrier:
+\[
+\phi_{\text{avg}}[k] = \mathrm{unwrap}\bigl(\angle H_{\text{avg}}[k]\bigr),
+\]
 
-  * `freqs`: $K$-length array of frequencies.
-  * `tau_g`: $K$-length array of delays in seconds.
+and the corresponding **full group delay** on the averaged channel is obtained by applying the finite-difference formulas from Section 2 to \(\phi_{\text{avg}}[k]\):
 
-* **`snapshot_group_delay() -> np.ndarray`**
-  Returns an $(M, K)$ array of group delays per snapshot.
+\[
+\tau_{g,\text{full}}[k] \approx -\frac{1}{2\pi}\frac{\Delta \phi_{\text{avg}}}{\Delta f}.
+\]
 
-* **`median_group_delay() -> (freqs, tau_med)`**
-  Compute the median group delay across snapshots:
+### 3.2 Per-Snapshot Group Delay
 
-  * `freqs`: $K$-length array.
-  * `tau_med`: $K$-length median delays.
+Alternatively, the group delay can be computed **separately for each snapshot**. For each \(m\), define
 
-* **`dataset_info() -> dict`**
-  Returns metadata:
+\[
+\phi^{(m)}_k = \mathrm{unwrap}\bigl(\angle H^{(m)}[k]\bigr),
+\]
 
-  ```json
-  {"subcarriers": K, "snapshots": M}
-  ```
+and compute
 
-* **`to_dict() -> dict`**
-  Returns a dictionary containing:
+\[
+\tau_g^{(m)}[k] \approx -\frac{1}{2\pi}\frac{\Delta \phi^{(m)}}{\Delta f},
+\]
 
-  * `dataset_info`
-  * `freqs`, `H_raw`, `H_avg`
-  * `group_delay_full`: `{ "freqs": [...], "tau_g": [...] }`
-  * `snapshot_group_delay`: `[[...], ...]`
-  * `median_group_delay`: `{ "freqs": [...], "tau_med": [...] }`
+again using forward / central / backward finite differences over \(k\) for each snapshot independently. This produces a group delay matrix
 
+\[
+\tau_g^{(m)}[k], \quad m = 0,\dots,M-1,\ \ k = 0,\dots,K-1,
+\]
 
-## 5. Usage Example
+which captures the variation of group delay over time (snapshot index).
 
-```python
-import numpy as np
-from pypnm import GroupDelayCalculator
+### 3.3 Median Group Delay Across Snapshots
 
-# Simulate two snapshots of a two-tap channel
-K = 6
-freqs = np.linspace(5e6, 6e6, K)
-tau_true = 1e-7
-H1 = 1 + 0.5*np.exp(-1j*2*np.pi*freqs*tau_true)
-H2 = 1 + 0.6*np.exp(-1j*2*np.pi*freqs*(tau_true+1e-9))
-Hs = np.vstack([H1, H2])  # shape (2, K)
+To obtain a **robust statistic** that is less sensitive to outliers, one can take the median of per-snapshot group delays across the snapshot dimension:
 
-calc = GroupDelayCalculator(Hs, freqs)
+\[
+\tau_{g,\mathrm{med}}[k] = \mathrm{median}\bigl\{\tau_g^{(0)}[k],\tau_g^{(1)}[k],\dots,\tau_g^{(M-1)}[k]\bigr\}.
+\]
 
-# Full group delay per subcarrier
-freqs_full, tau_full = calc.compute_group_delay_full()
+This yields a single group delay curve \(\tau_{g,\mathrm{med}}[k]\) across subcarriers that is robust against occasional corrupted snapshots or impulsive noise.
 
-# Per-snapshot delays
-taus = calc.snapshot_group_delay()
+## 4. Requirements on the Frequency Axis
 
-# Median group delay
-freqs_med, tau_med = calc.median_group_delay()
+The frequency samples \(\{f_k\}_{k=0}^{K-1}\) used in the finite-difference approximations must satisfy:
 
-# Dataset info and all data
-data = calc.to_dict()
+1. **One-dimensionality**:
+   \[
+   f_k \in \mathbb{R}, \quad k = 0,\dots,K-1.
+   \]
 
-print("Full delays:", tau_full)
-print("Median delays:", tau_med)
-print("Dataset info:", data['dataset_info'])
-```
+2. **At least two points**:
+   \[
+   K \ge 2.
+   \]
 
-The `to_dict()` output can be serialized to JSON for logging or API responses.
+3. **Non-duplicate spacing**:
+   \[
+   f_{k+1} \neq f_k \quad \text{for all } k,
+   \]
+   so that the denominators in the finite differences are non-zero.
+
+4. **Monotonicity** (typically):
+   \[
+   f_{k+1} > f_k \quad \text{for all } k,
+   \]
+   which ensures a well-behaved mapping from subcarrier index to frequency.
+
+In many OFDM systems, \(f_k\) is uniformly spaced:
+
+\[
+f_k = f_0 + k\,\Delta f,
+\]
+
+where \(f_0\) is the starting frequency and \(\Delta f\) is the subcarrier spacing. In this case, the denominators simplify to constant steps such as \(2\pi\Delta f\) or \(2\pi(2\Delta f)\), but the general finite-difference formulas remain valid.
+
+## 5. Physical Interpretation
+
+Group delay \(\tau_g(f)\) is closely related to the **propagation time** of signals through the channel. Large deviations or sharp variations in \(\tau_g(f)\) can indicate:
+
+- Dispersive behavior of the medium.
+- Echoes or multipath reflections.
+- Distortions caused by filters, amplifiers, or other network elements.
+
+For a dominant echo at delay \(\tau_{\text{echo}}\), characteristic structure can appear in the group delay and phase responses. With knowledge of the propagation speed \(v\) in the medium (e.g., coax velocity factor), the delay can be translated into an approximate path length
+
+\[
+d \approx v \,\tau_{\text{echo}},
+\]
+
+providing insight into where in the plant an echo or reflection might originate.
+
+Coherent averaging and median aggregation across snapshots, as described above, help stabilize \(\tau_g(f)\) against noise, making it a more reliable feature for diagnostics and echo detection.

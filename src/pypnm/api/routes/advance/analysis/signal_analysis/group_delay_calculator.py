@@ -131,7 +131,7 @@ class GroupDelayCalculatorModel(BaseModel):
     dataset_info:         GroupDelayCalculatorDatasetInfo   = Field(..., description="Dataset shape metadata")
     freqs:                List[FrequencyHz]                 = Field(..., description="K-length frequency axis (Hz)")
     complex_unit:         Literal["[Real, Imaginary]"]      = Field("[Real, Imaginary]", description="Complex encoding")
-    H_raw:                List[ComplexArray]                = Field(..., description="M×K complex channel estimates as (re, im)")
+    H_raw:                List[ComplexArray]                = Field(..., description="MxK complex channel estimates as (re, im)")
     H_avg:                ComplexArray                      = Field(..., description="K complex average across snapshots as (re, im)")
     group_delay_full:     GroupDelayCalculatorFullModel     = Field(..., description="Per-subcarrier group delay for averaged channel")
     snapshot_group_delay: GroupDelayCalculatorSnapshotModel = Field(..., description="Per-snapshot group delay matrix")
@@ -234,10 +234,10 @@ class GroupDelayCalculator:
         ----------
         H :
             Channel-estimation data in one of the supported layouts:
-            - 1D complex (K,)                  → single snapshot
-            - 2D complex (M, K)               → M snapshots of length K
-            - Real/imag pairs shaped (K, 2)   → single snapshot as (re, im)
-            - Real/imag pairs shaped (M, K,2) → M snapshots as (re, im)
+            - 1D complex (K,)                   → single snapshot
+            - 2D complex (M, K)                 → M snapshots of length K
+            - Real/imag pairs shaped (K, 2)     → single snapshot as (re, im)
+            - Real/imag pairs shaped (M, K, 2)  → M snapshots as (re, im)
         freqs : Sequence[float]
             Monotonic 1D frequency axis in Hz of length K.
 
