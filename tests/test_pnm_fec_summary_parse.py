@@ -9,7 +9,6 @@ from pathlib import Path
 import pytest
 
 from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary, CmDsOfdmFecSummaryModel
-from pypnm.pnm.process.pnm_file_type import PnmFileType
 
 DATA_DIR = Path(__file__).parent / "_data"
 FEC_PATH = DATA_DIR / "fec_summary.bin"
