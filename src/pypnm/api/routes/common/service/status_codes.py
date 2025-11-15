@@ -38,6 +38,8 @@ class ServiceStatusCode(IntEnum):
     NO_ATDMA_CHAN_ID_INDEX_FOUND            = 23
     MISSING_PNM_TEST_TYPE                   = 24
     CM_MAC_DOES_MATCH_MATCH                 = 25
+
+    INVALID_CAPTURE_PARAMETERS              = 90
     
     SCP_PNM_FILE_FETCH_ERROR                = 100
     TFTP_PNM_FILE_FETCH_ERROR               = 101

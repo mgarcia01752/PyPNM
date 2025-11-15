@@ -54,11 +54,11 @@ class DsScQamChannelRouter:
             
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(mac_address=str(mac), status=status, message=msg)              
+                return SnmpResponse(mac_address=mac, status=status, message=msg)
             
             service = DsScQamChannelService(mac_address=mac, ip_address=ip)
-            
             data = await service.get_scqam_chan_entries()
+            
             return SnmpResponse(
                 mac_address =   mac,
                 status      =   ServiceStatusCode.SUCCESS,
