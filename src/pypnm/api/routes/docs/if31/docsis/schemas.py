@@ -6,8 +6,6 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
-
 class DocsisBaseCapability(BaseModel):
-    docsis_version:str
-    clabs_docsis_version:int
+    docsis_version:str = Field()
+    clabs_docsis_version:int = Field()

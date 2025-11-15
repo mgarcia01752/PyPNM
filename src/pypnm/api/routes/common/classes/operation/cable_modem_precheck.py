@@ -47,10 +47,11 @@ class CableModemServicePreCheck:
         cable_modem: Optional[CableModem] = None,
         mac_address: Optional[MacAddressStr] = None,
         ip_address: Optional[InetAddressStr] = None,
-        check_docsis_version: Optional[List[ClabsDocsisVersion]] = None,
+        check_docsis_version: List[ClabsDocsisVersion] = [],
         validate_ofdm_exist: bool       = False,
         validate_ofdma_exist: bool      = False,
         validate_scqam_exist: bool      = False,
+        validate_atdma_exist: bool      = False,
         validate_pnm_ready_status: bool = True,
         ignore_mac_address_check: bool  = False,
     ) -> None:
@@ -81,15 +82,19 @@ class CableModemServicePreCheck:
             raise ValueError("Must provide either `cable_modem` or both `mac_address` and `ip_address`.")
 
         if check_docsis_version:
-            if not isinstance(check_docsis_version, Iterable) or isinstance(check_docsis_version, (str, bytes)):
-                check_docsis_version = [check_docsis_version]
-            self.check_docsis_version = list(check_docsis_version)
+            if isinstance(check_docsis_version, ClabsDocsisVersion):
+                self.check_docsis_version = [check_docsis_version]
+            elif isinstance(check_docsis_version, Iterable):
+                self.check_docsis_version = list(check_docsis_version)
+            else:
+                self.check_docsis_version = [check_docsis_version]
         else:
             self.check_docsis_version = []
             
         self._validate_ofdma_exist      = validate_ofdma_exist
         self._validate_ofdm_exist       = validate_ofdm_exist
         self._validate_scqam_exist      = validate_scqam_exist
+        self._validate_atdma_exist      = validate_atdma_exist
         self._validate_pnm_ready_stat   = validate_pnm_ready_status
         self._ignore_mac_address_check  = ignore_mac_address_check
 
@@ -151,6 +156,11 @@ class CableModemServicePreCheck:
             status, msg = await self.validate_scqam_channel_exist()
             if status != ServiceStatusCode.SUCCESS:
                 return status, msg            
+
+        if self._validate_atdma_exist:
+            status, msg = await self.validate_atdma_channel_exist()
+            if status != ServiceStatusCode.SUCCESS:
+                return status, msg
 
         if self._validate_pnm_ready_stat:
             status, msg = await self.validate_pnm_ready_status()
@@ -305,7 +315,27 @@ class CableModemServicePreCheck:
             return ServiceStatusCode.NO_SCQAM_CHAN_ID_INDEX_FOUND, msg
 
         return ServiceStatusCode.SUCCESS, "SC-QAM downstream channels detected."
-    
+
+    async def validate_atdma_channel_exist(self) -> Tuple[ServiceStatusCode, str]:
+        """
+        Checks whether any ATDMA upstream channels are present on the cable modem.
+
+        This method queries the cable modem for the DOCSIS 3.0 ATDMA upstream channel
+        index stack. If no indices are found, it returns a failure status.
+
+        Returns:
+            Tuple[ServiceStatusCode, str]: A tuple containing the status code and an explanatory message.
+                - ServiceStatusCode.SUCCESS if channels are found
+                - ServiceStatusCode.NO_ATDMA_CHAN_ID_INDEX_FOUND if no channels are detected
+        """
+        atdma_idx_list = await self.cm.getIfTypeIndex(DocsisIfType.docsCableUpstream)
+
+        if not atdma_idx_list:
+            msg = "No ATDMA channels found on the cable modem."
+            return ServiceStatusCode.NO_ATDMA_CHAN_ID_INDEX_FOUND, msg
+
+        return ServiceStatusCode.SUCCESS, "ATDMA upstream channels detected."
+
     async def validate_pnm_ready_status(self) -> PreCheckStatus:
 
         out:PreCheckStatus = (ServiceStatusCode.SUCCESS, DocsPnmCmCtlStatus.READY.name)

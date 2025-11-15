@@ -28,7 +28,8 @@ class BaseCapabilityRouter:
 
     def _register_routes(self) -> None:
         
-        @self.router.post("/baseCapability", response_model=SnmpResponse)
+        @self.router.post("/baseCapability", 
+                          response_model=SnmpResponse)
         async def base_capability(request: SnmpRequest) -> SnmpResponse:
             """
             **DOCSIS 3.1 Base Capability**
@@ -39,7 +40,7 @@ class BaseCapabilityRouter:
 
             This attribute supersedes `docsIfDocsisBaseCapability` as defined in RFC 4546.
 
-            📘 [API Guide - DOCSIS 3.1 Base Capability](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/docsis-base-configuration.md)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/docsis-base-configuration.md)
             """
 
             mac = request.cable_modem.mac_address
@@ -52,15 +53,15 @@ class BaseCapabilityRouter:
 
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
-                    return SnmpResponse(mac_address=str(mac), status=status, message=msg)
+                    return SnmpResponse(mac_address=mac, status=status, message=msg)
 
                 result = await DocsisBaseCapabilityService.fetch_docsis_base_capabilty(mac_address=mac, ip_address=ip)
 
                 return SnmpResponse(
-                    mac_address=str(mac),
-                    status=ServiceStatusCode.SUCCESS,
-                    message="DOCSIS Base Capability retrieved successfully.",
-                    results=result.model_dump())
+                    mac_address =   mac,
+                    status      =   ServiceStatusCode.SUCCESS,
+                    message     =   "DOCSIS Base Capability retrieved successfully.",
+                    results     =   result.model_dump())
 
             except HTTPException:
                 raise

@@ -6,15 +6,15 @@ from __future__ import annotations
 
 import logging
 from typing import Dict, List
-from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.cable_modem import CableModem, InetAddressStr
 from pypnm.docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanEntry
 from pypnm.lib.inet import Inet
-from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.mac_address import MacAddress, MacAddressStr
 
 class DsOfdmChannelService:
 
-    def __init__(self, mac_address: str, ip_address: str):
-        self.cm = CableModem(mac_address=MacAddress(mac_address), inet=Inet(ip_address))
+    def __init__(self, mac_address: MacAddressStr, ip_address: InetAddressStr):
+        self.cm = CableModem(MacAddress(mac_address), Inet(ip_address))
         self.logger = logging.getLogger("DsOfdmChannelService")
 
     async def get_ofdm_chan_entries(self) -> List[Dict]:

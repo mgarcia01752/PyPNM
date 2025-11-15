@@ -1287,7 +1287,7 @@ class CmSnmpOperation:
         self.logger.warning(f"Filename '{filename}' not found in BulkDataFile table.")
         return DocsPnmBulkFileUploadStatus.ERROR
 
-    async def getDocsisBaseCapability(self) -> Optional[ClabsDocsisVersion]:
+    async def getDocsisBaseCapability(self) -> ClabsDocsisVersion:
         """
         Retrieve the DOCSIS version capability reported by the device.
 

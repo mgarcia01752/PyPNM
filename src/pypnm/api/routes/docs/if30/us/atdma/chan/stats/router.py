@@ -48,7 +48,8 @@ class UsScQamChannelRouter:
             self.logger.info(f"Retrieving DOCSIS 3.0 ATDMA upstream channel stats for MAC: {mac}, IP: {ip}")
             
             # Pre-check cable modem connectivity and status
-            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
+            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip,
+                                                          validate_atdma_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)                  
@@ -83,7 +84,8 @@ class UsScQamChannelRouter:
             ip = request.cable_modem.ip_address
             self.logger.info(f"Retrieving DOCSIS 3.0 ATDMA upstream pre-equalization for MAC: {mac}, IP: {ip}")
 
-            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
+            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip, 
+                                                          validate_atdma_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
