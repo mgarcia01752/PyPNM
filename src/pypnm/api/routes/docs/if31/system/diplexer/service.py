@@ -8,9 +8,10 @@ import logging
 
 from pypnm.api.routes.docs.if31.system.diplexer.schemas import DiplexerConfigResult
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.docsis.data_type import DocsIf31CmSystemCfgState
+from pypnm.docsis.data_type.DocsIf31CmSystemCfgState import DocsIf31CmSystemCfgDiplexState
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import InetAddressStr, MacAddressStr
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class DiplexerConfigService:
     MHZ: int = 1_000_000
 
     @staticmethod
-    async def fetch_diplexer_config(mac_address: str, ip_address: str) -> DiplexerConfigResult:
+    async def fetch_diplexer_config(mac_address: MacAddressStr, ip_address: InetAddressStr) -> DiplexerConfigResult:
         """
         Fetch the DOCSIS 3.1 diplexer configuration.
 
@@ -54,7 +55,8 @@ class DiplexerConfigService:
             mac_address=MacAddress(mac_address),
             inet=Inet(ip_address))
         
-        state: DocsIf31CmSystemCfgState = await cm.getDocsIf31CmSystemCfgDiplexState()
+        state: DocsIf31CmSystemCfgDiplexState = await cm.getDocsIf31CmSystemCfgDiplexState()
+
         if state is None:
             logger.error("Diplexer configuration returned None")
             raise RuntimeError("Failed to retrieve diplexer configuration")

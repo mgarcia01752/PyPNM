@@ -26,8 +26,8 @@ class DiplexerConfigResult:
         self._register_routes()
 
     def _register_routes(self) -> None:
-        @self.router.post("/diplexer", response_model=Union[DiplexerResponse, SnmpResponse])
-        async def diplexer_config(request: SnmpRequest) -> Union[DiplexerResponse, SnmpResponse]:
+        @self.router.post("/diplexer", response_model=SnmpResponse)
+        async def diplexer_config(request: SnmpRequest):
             """
             **DOCSIS 3.1 System Diplexer Configuration**
 
@@ -39,7 +39,7 @@ class DiplexerConfigResult:
             - Diplexer capability codes
             - Configured and supported downstream frequency ranges
 
-            [API Guide - System Diplexer Configuration](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/diplexer-configuration.md)
+            [API Guide - System Diplexer Configuration](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/diplexer-configuration.md)
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
@@ -53,13 +53,13 @@ class DiplexerConfigResult:
                                                               check_docsis_version=[ClabsDocsisVersion.DOCSIS_31]).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
-                    return SnmpResponse(mac_address=str(mac), status=status, message=msg)  
+                    return SnmpResponse(mac_address=mac, status=status, message=msg)  
 
                 config = await DiplexerConfigService.fetch_diplexer_config(mac_address=mac, ip_address=ip)
 
-                response = DiplexerResponse(mac_address=mac,
-                                            status=ServiceStatusCode.SUCCESS,
-                                            results=config)
+                response = SnmpResponse(mac_address =   mac,
+                                        status      =   ServiceStatusCode.SUCCESS,
+                                        results     =   config)
                 return response
 
             except HTTPException:

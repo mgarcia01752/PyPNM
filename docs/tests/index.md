@@ -61,6 +61,7 @@ pytest -m "net and not slow"
 ## Async Tests
 
 We use `pytest-asyncio` (mode=auto). You can write async tests as usual:
+
 ```python
 import pytest
 
@@ -68,9 +69,9 @@ import pytest
 async def test_async_thing():
     ...
 ```
+
 You can also run sync wrappers around async calls using `asyncio.run(...)` as needed.
 
----
 
 ## Logging & Debugging
 
@@ -88,8 +89,6 @@ We also silence some upstream deprecation warnings from `pysmi/pysnmp` via `filt
 pytest -W default
 ```
 
----
-
 ## Coverage
 
 We ship `pytest-cov` for coverage reporting:
@@ -98,8 +97,6 @@ We ship `pytest-cov` for coverage reporting:
 pytest --cov=pypnm --cov-report=term-missing
 pytest --cov=pypnm --cov-report=html  # writes htmlcov/index.html
 ```
-
----
 
 ## Real-Gear (SNMP) Integration Tests
 
@@ -119,15 +116,16 @@ Environment setup (examples):
 - **SNMP** – community string, port, and timeouts should be configured either in env (`.env`) or test fixtures.
 
 If you consistently see timeouts in CI but not locally, consider:
+
 - Increasing SNMP timeouts/retries in the fixture.
 - Ensuring the test network path is reachable from your runner.
 - Skipping with `-m "not net"` for CI workflows that lack device access.
 
----
 
 ## PNM Parser Tests
 
 PNM parsers are tested against sample files under `tests/_data/`. Typical checks include:
+
 - Header parsing (`PnmHeader`)
 - Model shape/fields for each parser
 - Numeric ranges & monotonic sequences (e.g., frequencies, amplitudes)
@@ -145,8 +143,6 @@ Example: focus only on RxMER tests:
 pytest -k rxmer -m pnm -vv
 ```
 
----
-
 ## Test Selection Cheatsheet
 
 ```bash
@@ -154,8 +150,6 @@ pytest -k "spectrum and not json"          # include/exclude by name
 pytest tests/test_pnm_histogram_parse.py   # by file
 pytest path/to/test_file.py::test_case     # single test
 ```
-
----
 
 ## Useful Options
 
@@ -172,38 +166,44 @@ pytest path/to/test_file.py::test_case     # single test
 ## CI Hints
 
 - Skip network‑dependent tests unless runners have access:
+
   ```bash
   pytest -m "not net"
   ```
+
 - Generate coverage:
+
   ```bash
   pytest --cov=pypnm --cov-report=xml
   ```
+
 - Cache your `.pytest_cache/` between runs (optional).
 
----
 
 ## Troubleshooting
 
 **Marker not found**
+
 ```
 Failed: 'pnm' not found in `markers` configuration option
 ```
+
 → Add `pnm` to `pyproject.toml` under `[tool.pytest.ini_options].markers`.
 
 **ImportError / ModuleNotFoundError**
+
 - Ensure `src/` is on the path (it is by default via `pyproject.toml`).
 - Use `pip install -e .` (editable) to keep imports working during dev.
 
 **Asyncio timeouts**
+
 - Use `pytest -vv -o log_cli=true` to see where it hangs.
 - Wrap awaits with `asyncio.wait_for(..., timeout=SECONDS)` in tests when appropriate.
 
 **Deprecation warnings from pysmi/pysnmp**
+
 - We’ve migrated to the newer API where possible.
 - In tests, `filterwarnings` suppresses the known deprecations (see `pyproject.toml`).
-
----
 
 ## Reference: Our PyTest Config (excerpt)
 
@@ -227,11 +227,8 @@ filterwarnings = [
   "ignore:.*addSearchers.*:DeprecationWarning:pysnmp.smi.compiler",
   "ignore:.*addBorrowers.*:DeprecationWarning:pysnmp.smi.compiler",
 ]
-```
 
----
-
-## See Also
+## See Also 
 
 - [pytest docs](https://docs.pytest.org/)
 - [pytest-cov](https://pytest-cov.readthedocs.io/)
