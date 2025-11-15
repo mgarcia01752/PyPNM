@@ -44,7 +44,7 @@ class DsScQamChannelRouter:
             This endpoint is used for monitoring downstream health and identifying RF impairments
             such high uncorrectable error rates.
 
-            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/ds/scqam/stats.md)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/ds/scqam/channel-stats.md)
 
             """
             mac = request.cable_modem.mac_address
