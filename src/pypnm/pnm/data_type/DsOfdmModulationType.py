@@ -25,7 +25,8 @@ class DsOfdmModulationType(IntEnum):
     @classmethod
     def from_value(cls, value: int) -> "DsOfdmModulationType":
         """Convert integer to corresponding DsOfdmModulationType enum member."""
-        return cls._value2member_map_.get(value, cls.UNKNOWN)
+        member = cls._value2member_map_.get(value, cls.UNKNOWN)
+        return member  # type: ignore[return-value]
     
     @classmethod
     def get_name(cls, value: int) -> str:

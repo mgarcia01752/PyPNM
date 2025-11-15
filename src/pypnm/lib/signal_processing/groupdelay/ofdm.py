@@ -219,10 +219,12 @@ class OFDMGroupDelay(BaseModel):
             if mask[i] != 1 or not math.isfinite(series_s[i]):
                 continue
             lo = max(0, i - half); hi = min(n, i + half + 1)
-            acc = 0.0; cnt = 0
+            acc = 0.0 
+            cnt = 0
             for j in range(lo, hi):
                 if mask[j] == 1 and math.isfinite(series_s[j]):
-                    acc += series_s[j]; cnt += 1
+                    acc += series_s[j]; 
+                    cnt += 1
             if cnt > 0:
                 out[i] = acc / cnt
         return out
@@ -257,7 +259,7 @@ class OFDMGroupDelay(BaseModel):
 
         # Frequency axis (Hz) stored as integers by design
         f0 = int(self.axis.f0_hz)
-        self._freq_hz = [int(round(f0 + k * df_hz)) for k in range(n_bins)]
+        self._freq_hz = [FrequencyHz(int(round(f0 + k * df_hz))) for k in range(n_bins)]
 
         # Valid where both the complex sample is finite and bin is active
         finite_mask: IntSeries = [1 if (math.isfinite(h.real) and math.isfinite(h.imag)) else 0 for h in H_vals]

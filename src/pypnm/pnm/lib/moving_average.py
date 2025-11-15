@@ -14,7 +14,7 @@ class MovingAverage:
     Class for calculating a moving average of a list of numerical values.
     """
 
-    def __init__(self, data: FloatSeries = None, exclude_value: float = None):
+    def __init__(self, data: Optional[FloatSeries] = None, exclude_value: Optional[float] = None):
         """
         Initialize the MovingAverage object.
 
