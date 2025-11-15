@@ -114,7 +114,11 @@ most flexible entry point and allows arbitrary sweep settings (within diplexer l
 | `capture_parameters.noise_bw`                  | int  | Equivalent noise bandwidth for amplitude normalization.                      |
 | `capture_parameters.window_function`           | int  | Window function index (implementation-specific; e.g., Hanning, Rectangular). |
 | `capture_parameters.num_averages`              | int  | Number of averages per segment for noise reduction.                          |
-| `capture_parameters.spectrum_retrieval_type`   | int  | Retrieval mode flag (e.g., 1 = capture and return both raw and float data).  |
+| `capture_parameters.spectrum_retrieval_type`   | int  | Retrieval mode flag: PNM_FILE(1) or SNMP(2).  |
+
+#### Note
+
+> `spectrum_retrieval_type` Use 1 (PNM_FILE) is preferred for most use cases. Use `2` (SNMP) when PNM file transfer is not available.
 
 ### Abbreviated JSON Response (Output Type `"json"`)
 
@@ -261,7 +265,6 @@ Top-level envelope:
 | entry.docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus                    | string  | Measurement status (e.g., `"sample_ready"`).     |
 | entry.docsIf3CmSpectrumAnalysisCtrlCmdFileName                      | string  | Device-side filename of the captured spectrum.   |
 
-
 ## OFDM Downstream Capture – `/spectrumAnalyzer/getCapture/ofdm`
 
 This endpoint iterates across all downstream OFDM channels on the modem, performing a
@@ -276,7 +279,7 @@ Each per-channel capture is processed like the single capture. Results are retur
 DOCSIS constraints:
 
 * DOCSIS 3.1: up to **2** downstream OFDM channels.  
-* DOCSIS 4.0 FDD: up to **5** downstream OFDM channels.
+* DOCSIS 4.0 FDD/FDX: up to **5** downstream OFDM channels.
 
 ### OFDM Capture Example Request
 
