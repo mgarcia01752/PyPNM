@@ -14,14 +14,14 @@ from pypnm.api.routes.docs.if30.us.atdma.chan.stats.service import UsScQamChanne
 
 class UsScQamChannelRouter:
     """
-    Router class to handle DOCSIS 3.0 Upstream ATDMA SC-QAM Channel Statistics endpoints.
+    Router class to handle DOCSIS 3.0 Upstream ATDMA Channel Statistics endpoints.
     """
 
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.router = APIRouter(
             prefix="/docs/if30/us/atdma/chan",
-            tags=["DOCSIS 3.0 Upstream ATDMA Channel Stats"])
+            tags=["DOCSIS 3.0 Upstream ATDMA Channel Statistics"])
         
         self._add_routes()
 
@@ -32,20 +32,20 @@ class UsScQamChannelRouter:
             """
             **DOCSIS 3.0 Upstream ATDMA Channel Stats**
 
-            Retrieves DOCSIS 3.0 Upstream SC-QAM (ATDMA) channel configuration and operational statistics.
+            Retrieves DOCSIS 3.0 Upstream ATDMA channel configuration and operational statistics.
 
             **The response includes modulation settings:**
             - Frequency parameters
             - Pre-equalization status
             - Transmit power
             - Ranging behavior
-            
-            [API Guide - Upstream ATDMA Channel Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/stats.md)
+
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/us/atdma/chan/stats.md)
 
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
-            self.logger.info(f"Retrieving DOCSIS 3.0 SC-QAM upstream channel stats for MAC: {mac}, IP: {ip}")
+            self.logger.info(f"Retrieving DOCSIS 3.0 ATDMA upstream channel stats for MAC: {mac}, IP: {ip}")
             
             # Pre-check cable modem connectivity and status
             status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
@@ -59,7 +59,7 @@ class UsScQamChannelRouter:
             return SnmpResponse(
                 mac_address =   mac,
                 status      =   ServiceStatusCode.SUCCESS,
-                message     =   "Successfully retrieved upstream ATDMA channel stats",
+                message     =   "Successfully retrieved upstream ATDMA channel statistics",
                 results     =   data)
         
         @self.router.post("/preEqualization", response_model=SnmpResponse)
@@ -67,7 +67,7 @@ class UsScQamChannelRouter:
             """
             **DOCSIS 3.0 Upstream Pre-Equalization Coefficients**
 
-            Retrieves forward and reverse pre-equalization tap coefficients from a DOCSIS 3.0 SC-QAM upstream channel.
+            Retrieves forward and reverse pre-equalization tap coefficients from a DOCSIS 3.0 ATDMA upstream channel.
 
             **The output includes:**
             - Main tap location
@@ -76,12 +76,12 @@ class UsScQamChannelRouter:
 
             Used to analyze echo cancellation behavior and upstream plant quality.
 
-            [API Guide - Upstream Pre-Equalization Coefficients](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/us/scqam/chan/pre-equalization.md)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/us/atdma/chan/pre-equalization.md)
 
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
-            self.logger.info(f"Retrieving DOCSIS 3.0 SC-QAM upstream pre-equalization for MAC: {mac}, IP: {ip}")
+            self.logger.info(f"Retrieving DOCSIS 3.0 ATDMA upstream pre-equalization for MAC: {mac}, IP: {ip}")
 
             status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
