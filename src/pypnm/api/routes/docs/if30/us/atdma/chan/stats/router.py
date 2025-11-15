@@ -6,11 +6,8 @@ from __future__ import annotations
 
 import logging
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
-from typing import List
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmChannelEntryResponse
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.if30.us.atdma.chan.stats.service import UsScQamChannelService
@@ -23,13 +20,13 @@ class UsScQamChannelRouter:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.router = APIRouter(
-            prefix="/docs/if30/us/scqam/chan",
+            prefix="/docs/if30/us/atdma/chan",
             tags=["DOCSIS 3.0 Upstream ATDMA Channel Stats"])
         
         self._add_routes()
 
     def _add_routes(self):
-        @self.router.post("/stats", response_model=List[PnmChannelEntryResponse],
+        @self.router.post("/stats",
                           summary="Get DOCSIS 3.0 Upstream ATDMA Channel Stats")
         async def get_us_scqam_upstream_channels(request: SnmpRequest):
             """
@@ -54,15 +51,19 @@ class UsScQamChannelRouter:
             status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return PnmChannelEntryResponse(mac_address=str(mac), status=status, message=msg)                  
+                return SnmpResponse(mac_address=mac, status=status, message=msg)                  
             
             service = UsScQamChannelService(mac_address=mac, ip_address=ip)
-            
             data = await service.get_upstream_entries()
-            return JSONResponse(content=data)
+            
+            return SnmpResponse(
+                mac_address =   mac,
+                status      =   ServiceStatusCode.SUCCESS,
+                message     =   "Successfully retrieved upstream ATDMA channel stats",
+                results     =   data)
         
-        @self.router.post("/preEqualization", response_model=List[PnmChannelEntryResponse])
-        async def get_us_scqam_pre_equalizations(request: SnmpRequest)  -> PnmChannelEntryResponse:
+        @self.router.post("/preEqualization", response_model=SnmpResponse)
+        async def get_us_scqam_pre_equalizations(request: SnmpRequest):
             """
             **DOCSIS 3.0 Upstream Pre-Equalization Coefficients**
 
@@ -75,7 +76,7 @@ class UsScQamChannelRouter:
 
             Used to analyze echo cancellation behavior and upstream plant quality.
 
-            [API Guide - Upstream Pre-Equalization Coefficients](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/us/scqam/chan/pre-equalization.md)
+            [API Guide - Upstream Pre-Equalization Coefficients](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/us/scqam/chan/pre-equalization.md)
 
             """
             mac = request.cable_modem.mac_address
@@ -85,12 +86,15 @@ class UsScQamChannelRouter:
             status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return PnmChannelEntryResponse(mac_address=str(mac), status=status, message=msg)
+                return SnmpResponse(mac_address=mac, status=status, message=msg)
                                   
             service = UsScQamChannelService(mac_address=mac, ip_address=ip)
             data = await service.get_upstream_pre_equalizations()
-            
-            return JSONResponse(content=data)        
+
+            return SnmpResponse(mac_address =   mac, 
+                                status      =   ServiceStatusCode.SUCCESS, 
+                                message     =   "Successfully retrieved upstream pre-equalization coefficients", 
+                                results     =   data)
 
 # Required for dynamic auto-registration
 router = UsScQamChannelRouter().router

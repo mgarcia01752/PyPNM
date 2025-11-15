@@ -4,7 +4,7 @@ Provides Access To DOCSIS 3.0 Upstream SC-QAM (ATDMA) Pre-Equalization Tap Data 
 
 ## Endpoint
 
-**POST** `/docs/if30/us/scqam/chan/preEqualization`
+**POST** `/docs/if30/us/atdma/chan/preEqualization`
 
 ## Request
 
