@@ -45,30 +45,12 @@ class SNMPv3(BaseModel):
         privProtocol (Optional[Literal["DES","AES"]]): Privacy protocol.
         privPassword (Optional[str]): Privacy password.
     """
-    username: Optional[str] = Field(
-        default=None,
-        description="Username; if omitted, system default is used"
-    )
-    securityLevel: Literal["noAuthNoPriv","authNoPriv","authPriv"] = Field(
-        ...,
-        description="SNMPv3 security level"
-    )
-    authProtocol: Optional[Literal["MD5","SHA"]] = Field(
-        default=None,
-        description="Authentication protocol"
-    )
-    authPassword: Optional[str] = Field(
-        default=None,
-        description="Authentication password"
-    )
-    privProtocol: Optional[Literal["DES","AES"]] = Field(
-        default=None,
-        description="Privacy protocol"
-    )
-    privPassword: Optional[str] = Field(
-        default=None,
-        description="Privacy password"
-    )
+    username: Optional[str]                     = Field(default=None, description="Username; if omitted, system default is used")
+    securityLevel: Literal["noAuthNoPriv","authNoPriv","authPriv"] = Field(..., description="SNMPv3 security level")
+    authProtocol: Optional[Literal["MD5","SHA"]]    = Field(default=None, description="Authentication protocol")
+    authPassword: Optional[str]                     = Field(default=None, description="Authentication password")
+    privProtocol: Optional[Literal["DES","AES"]]    = Field(default=None, description="Privacy protocol")
+    privPassword: Optional[str]                     = Field(default=None, description="Privacy password")
 
     @model_validator(mode="after") # type: ignore
     def check_v3_fields(cls, model: "SNMPv3") -> "SNMPv3":
@@ -87,27 +69,10 @@ class SNMPv3(BaseModel):
 
 class SNMPConfig(BaseModel):
     """
-    Composite SNMP configuration model containing both v2c and v3 settings.
-
-    Usage:
-        ```python
-        SNMPConfig(
-            snmp_v2c={"community": "public"},
-            snmp_v3={
-                "username": "user",
-                "securityLevel": "authPriv",
-                "authProtocol": "SHA",
-                "authPassword": "pass",
-                "privProtocol": "AES",
-                "privPassword": "privpass"
-            }
-        )
-        ```
+    SNMP configuration model supporting both v2c and optional v3 settings.
     """
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     snmp_v2c: SNMPv2c   = Field(..., description="SNMP v2c settings")
 
     if SCSC.snmp_v3_enable:
         snmp_v3: SNMPv3     = Field(..., description="SNMP v3 settings")
-
-    

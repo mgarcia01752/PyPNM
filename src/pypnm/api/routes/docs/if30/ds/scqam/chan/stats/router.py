@@ -31,8 +31,9 @@ class DsScQamChannelRouter:
 
     def _add_routes(self):
 
-        @self.router.post("/stats", response_model=Union[List[PnmChannelEntryResponse], SnmpResponse])
-        async def get_scqam_ds_channels(request: SnmpRequest) -> Union[List[PnmChannelEntryResponse], SnmpResponse]:
+        @self.router.post("/stats", 
+                          response_model=SnmpResponse)
+        async def get_scqam_ds_channels(request: SnmpRequest) -> SnmpResponse:
             """
             **DOCSIS 3.0 Downstream SC-QAM Channel Stats**
 
@@ -43,7 +44,7 @@ class DsScQamChannelRouter:
             This endpoint is used for monitoring downstream health and identifying RF impairments
             such high uncorrectable error rates.
 
-            [API Guide - Downstream SC-QAM Channel Stats](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/scqam/stats.md)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/ds/scqam/stats.md)
 
             """
             mac = request.cable_modem.mac_address
@@ -58,36 +59,47 @@ class DsScQamChannelRouter:
             service = DsScQamChannelService(mac_address=mac, ip_address=ip)
             
             data = await service.get_scqam_chan_entries()
-            return JSONResponse(content=data)  # type: ignore
+            return SnmpResponse(
+                mac_address =   mac,
+                status      =   ServiceStatusCode.SUCCESS,
+                message     =   "Successfully retrieved downstream SC-QAM channel stats",
+                results     =   data)
 
-        @self.router.post("/codewordErrorRate", response_model=Union[List[PnmChannelEntryResponse], SnmpResponse])
-        async def get_scqam_ds_channels_codeword_error_rate(request: CodewordErrorRateRequest) -> Union[List[PnmChannelEntryResponse], SnmpResponse]:
+        @self.router.post("/codewordErrorRate", 
+                          response_model=SnmpResponse)
+        async def get_scqam_ds_channels_codeword_error_rate(request: CodewordErrorRateRequest) -> SnmpResponse:
             """
             **Compute per-channel DOCSIS 3.0 SC-QAM codeword error rates over a sampling interval.**
 
-            [API Guide - Downstream SC-QAM Channel Codeword Error Rate](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/scqam/cw-error-rate.md)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/ds/scqam/cw-error-rate.md)
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
-            time_elapse = float(request.sample_time_elapsed)
 
             self.logger.info(f"Retrieving DOCSIS 3.0 SC-QAM downstream channel codeword error rate for MAC: {mac}, IP: {ip}")
 
-            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip,
-                                                          validate_scqam_exist = True).run_precheck()
-            
+            status, msg = await CableModemServicePreCheck(mac_address   =   mac,
+                                                          ip_address    =   ip,
+                                                          validate_scqam_exist=True).run_precheck()
+
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(mac_address=str(mac), status=status, message=msg)              
+                return SnmpResponse(mac_address=mac, status=status, message=msg)              
             
             service = DsScQamChannelService(mac_address=mac, ip_address=ip)
-            cw_error_rate = await service.get_scqam_chan_codeword_error_rate(time_elapse)
+            sample_time_elapsed = float(request.capture_parameters.sample_time_elapsed)
+            if sample_time_elapsed <= 0:
+                error_msg = "Sample time elapsed must be a positive number."
+                self.logger.error(error_msg)
+                return SnmpResponse(mac_address=mac, status=ServiceStatusCode.INVALID_CAPTURE_PARAMETERS, message=error_msg)
+               
+            cw_error_rate = await service.get_scqam_chan_codeword_error_rate(float(request.capture_parameters.sample_time_elapsed))
             
             return SnmpResponse(
-                mac_address=str(mac),
-                status=ServiceStatusCode.SUCCESS,
-                message="Successfully retrieved codeword error rate",
-                results=cw_error_rate)
+                mac_address =   mac,
+                status      =   ServiceStatusCode.SUCCESS,
+                message     =   "Successfully retrieved codeword error rate",
+                results     =   cw_error_rate)
 
 # Required for dynamic auto-registration
 router = DsScQamChannelRouter().router
