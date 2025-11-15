@@ -16,7 +16,7 @@ DATA_DIR = Path(__file__).parent / "_data"
 HIST_PATH = DATA_DIR / "histogram.bin"
 NON_HIST_PATH = DATA_DIR / "rxmer.bin"  # valid PNM but wrong type -> negative test
 
-MAC_RE = re.compile(r"^(?:[0-9A-F]{2}:){5}[0-9A-F]{2}$")
+MAC_RE = re.compile(r"^(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
 
 
 @pytest.fixture(scope="session")
@@ -31,7 +31,7 @@ def test_hist_parses_and_model_shape(hist_bytes):
     # Header present
     assert m.pnm_header is not None
 
-    # MAC format from parser is uppercase with colons
+    # MAC format from parser is hex with colons
     assert isinstance(m.mac_address, str) and MAC_RE.match(m.mac_address)
 
     # Symmetry is a single byte -> int
@@ -49,6 +49,7 @@ def test_hist_parses_and_model_shape(hist_bytes):
     # Values are non-negative integers (stored as 32-bit big-endian)
     assert all(isinstance(v, (int, float)) and v >= 0 for v in m.dwell_count_values)
     assert all(isinstance(v, (int, float)) and v >= 0 for v in m.hit_count_values)
+
 
 @pytest.mark.pnm
 def test_hist_serialization_roundtrip(hist_bytes):
