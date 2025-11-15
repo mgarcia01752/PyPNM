@@ -6,16 +6,17 @@ from __future__ import annotations
 
 import logging
 from struct import unpack, calcsize
-from typing import Optional, Dict
+from typing import Optional, Dict, Tuple, cast
 
 from pydantic import Field
 
 from pypnm.lib.constants import KHZ
-from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder
+from pypnm.lib.mac_address import MacAddress, MacAddressFormat
+from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder, FractionalBits, IntegerBits
 from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
-from pypnm.lib.types import ComplexArray
+from pypnm.lib.types import ChannelId, ComplexArray, FrequencyHz, MacAddressStr
 
 class CmDsConstDispMeasModel(PnmBaseModel):
     """
@@ -43,12 +44,12 @@ class CmDsConstDispMeas(PnmHeader):
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
 
-        self._channel_id: int
-        self._mac_address: str
-        self._subcarrier_zero_frequency: int
+        self._channel_id: ChannelId
+        self._mac_address: MacAddressStr
+        self._subcarrier_zero_frequency: FrequencyHz
         self._actual_modulation_order: int
         self._num_sample_symbols: int
-        self._subcarrier_spacing: int
+        self._subcarrier_spacing: FrequencyHz
         self._display_data_length: int
         self._constellation_display_data: bytes
         self._parsed_constellation_data: ComplexArray
@@ -73,18 +74,20 @@ class CmDsConstDispMeas(PnmHeader):
         
         if self.get_pnm_file_type() != PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY:
             cann = PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY.get_pnm_cann()
-            raise ValueError(f"PNM File Stream is not RxMER file type: {cann}, Error: {self.get_pnm_file_type().get_pnm_cann()}")
+            current_type = self.get_pnm_file_type()
+            error_cann = current_type.get_pnm_cann() if current_type is not None else "Unknown"
+            raise ValueError(f"PNM File Stream is not RxMER file type: {cann}, Error: {error_cann}")
         
         const_disp_meas_format = '>B6sIHHBI'
         const_disp_meas_size = calcsize(const_disp_meas_format)
         unpacked_data = unpack(const_disp_meas_format, self.pnm_data[:const_disp_meas_size])
 
-        self._channel_id                 = unpacked_data[0]
-        self._mac_address                = unpacked_data[1].hex(':')
-        self._subcarrier_zero_frequency  = unpacked_data[2]
+        self._channel_id                 = ChannelId(unpacked_data[0])
+        self._mac_address                = MacAddress(unpacked_data[1]).to_mac_format(MacAddressFormat.COLON)
+        self._subcarrier_zero_frequency  = FrequencyHz(unpacked_data[2])
         self._actual_modulation_order    = unpacked_data[3]
         self._num_sample_symbols         = unpacked_data[4]
-        self._subcarrier_spacing         = unpacked_data[5] * KHZ
+        self._subcarrier_spacing         = FrequencyHz(unpacked_data[5] * KHZ)
         self._display_data_length        = unpacked_data[6]
         self._constellation_display_data = self.pnm_data[const_disp_meas_size:]
 
@@ -114,7 +117,7 @@ class CmDsConstDispMeas(PnmHeader):
         decode_list = []
 
         while offset + self.CONST_DISPLAY_DATA_COMPLEX_LENGTH <= len(raw):
-            decoded = FixedPointDecoder.decode_complex_data(raw[offset:offset + 4], (2, 13))
+            decoded = FixedPointDecoder.decode_complex_data(raw[offset:offset + 4], cast(Tuple[IntegerBits, FractionalBits], (2, 13)))
             
             for pt in decoded:
                 decode_list.append([float(pt.real), float(pt.imag)])

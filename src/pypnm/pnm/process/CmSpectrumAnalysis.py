@@ -8,6 +8,7 @@ from typing import List, Dict
 
 from pydantic import BaseModel, Field, ConfigDict
 from pydantic.functional_serializers import field_serializer
+from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.types import ChannelId, FloatSeries, FrequencyHz, MacAddressStr
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader, PnmHeaderParameters
@@ -82,15 +83,17 @@ class CmSpectrumAnalysis(PnmHeader):
         """
         if self.get_pnm_file_type() != PnmFileType.SPECTRUM_ANALYSIS:
             cann = PnmFileType.SPECTRUM_ANALYSIS.get_pnm_cann()
+            actual_type = self.get_pnm_file_type()
+            error_cann = actual_type.get_pnm_cann() if actual_type else "Unknown"
             raise ValueError(f"PNM File Stream is not RxMER file type: {cann}, "
-                             f"Error: {self.get_pnm_file_type().get_pnm_cann()}")
+                             f"Error: {error_cann}")
 
         spectrum_analysis_format = '>B6sIIIHHHI'
         spectrum_analysis_size = calcsize(spectrum_analysis_format)
         unpacked_data = unpack(spectrum_analysis_format, self.pnm_data[:spectrum_analysis_size])
 
         self._channel_id                     = unpacked_data[0]
-        self._mac_address                    = unpacked_data[1].hex(':')
+        self._mac_address                    = MacAddress(unpacked_data[1]).to_mac_format(MacAddressFormat.COLON)
         self._first_segment_center_frequency = unpacked_data[2]
         self._last_segment_center_frequency  = unpacked_data[3]
         self._segment_frequency_span         = unpacked_data[4]

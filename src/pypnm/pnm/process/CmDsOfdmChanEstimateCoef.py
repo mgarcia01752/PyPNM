@@ -10,7 +10,7 @@ from typing import Dict, Optional, Tuple, overload, Literal, Union
 from pydantic import Field
 
 from pypnm.api.routes.docs.pnm.files.service import MacAddress
-from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_SUB_CARRIER_ZERO_FREQ, KHZ
+from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_SUB_CARRIER_ZERO_FREQ, KHZ, ZERO_FREQUENCY, cast
 from pypnm.lib.mac_address import MacAddressFormat
 from pypnm.lib.types import ChannelId, ComplexArray, ComplexSeries, FrequencyHz, MacAddressStr
 from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder, FractionalBits, IntegerBits
@@ -31,7 +31,7 @@ class CmDsOfdmChanEstimateCoefModel(PnmBaseModel):
     - `occupied_channel_bandwidth` = (#points) * subcarrier_spacing (Hz).
     """
     data_length: int                        = Field(..., ge=0, description="Coefficient payload length (bytes)")
-    occupied_channel_bandwidth: int         = Field(..., ge=0, description="OFDM Occupied Bandwidth (Hz)")
+    occupied_channel_bandwidth: FrequencyHz = Field(..., ge=0, description="OFDM Occupied Bandwidth (Hz)")
     value_units: str                        = Field(default="complex", description="Non-mutable")
     values: ComplexArray                    = Field(..., description="Per-subcarrier [real, imag] pairs")
 
@@ -74,7 +74,7 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
         self._mac_address: MacAddressStr             = MacAddress.null()
         self._subcarrier_zero_frequency: FrequencyHz = INVALID_SUB_CARRIER_ZERO_FREQ
         self._first_active_subcarrier_index: int     = -1
-        self._subcarrier_spacing: int                = -1
+        self._subcarrier_spacing: FrequencyHz       = ZERO_FREQUENCY
         self._coefficient_data_length: int           = -1
 
         # Raw complex values and rounded pairs (types corrected)
@@ -102,9 +102,11 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
             mac_raw,
             self._subcarrier_zero_frequency,
             self._first_active_subcarrier_index,
-            spacing_khz,
+            self._subcarrier_spacing,
             self._coefficient_data_length,
         ) = unpack(header_format, self.pnm_data[:header_size])
+
+        self._subcarrier_spacing = cast(FrequencyHz, self._subcarrier_spacing * KHZ)
 
         if self._coefficient_data_length % 4 != 0:
             raise ValueError("Coefficient data length must be a multiple of 4 bytes (2 bytes real + 2 bytes imag).")
@@ -118,16 +120,15 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
         self._coefficient_data = FixedPointDecoder.decode_complex_data(complex_bytes, self._q_format)
 
         self._mac_address = MacAddress(mac_raw).to_mac_format(MacAddressFormat.COLON)
-        self._subcarrier_spacing = int(spacing_khz) * KHZ
 
-        obw = len(self._coefficient_data) * self._subcarrier_spacing
+        obw = FrequencyHz(len(self._coefficient_data) * self._subcarrier_spacing)
 
         # Rounded view (if requested)
         if self._round_precision is not None:
             rp = int(self._round_precision)
-            self._coeff_values_rounded = [[round(c.real, rp), round(c.imag, rp)] for c in self._coefficient_data]   # type: ignore
+            self._coeff_values_rounded = cast(ComplexArray, [[round(c.real, rp), round(c.imag, rp)] for c in self._coefficient_data])
         else:
-            self._coeff_values_rounded = [[c.real, c.imag] for c in self._coefficient_data]                         # type: ignore
+            self._coeff_values_rounded = cast(ComplexArray, [[c.real, c.imag] for c in self._coefficient_data])
 
         self._model = CmDsOfdmChanEstimateCoefModel(
             pnm_header                      =   self.getPnmHeaderParameterModel(),

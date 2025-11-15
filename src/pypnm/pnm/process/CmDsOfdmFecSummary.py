@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validat
 
 from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.qam.types import CodeWordArray
-from pypnm.lib.types import CaptureTime, ChannelId, MacAddressStr, TimeStamp
+from pypnm.lib.types import CaptureTime, ChannelId, MacAddressStr, ProfileId, TimeStamp
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader, PnmHeaderParameters
 from pypnm.lib.mac_address import MacAddress
@@ -56,7 +56,7 @@ class OfdmFecSumDataModel(BaseModel):
     """
     FEC summary dataset for a single OFDM modulation profile.
     """
-    profile_id: int                                = Field(..., description="OFDM modulation profile identifier")
+    profile_id: ProfileId                          = Field(..., description="OFDM modulation profile identifier")
     number_of_sets: int                            = Field(..., description="Number of time-ordered codeword statistic sets")
     codeword_entries: OfdmFecSumCodeWordEntryModel = Field(..., description="Per-interval codeword stats (parallel arrays)")
 
@@ -195,7 +195,8 @@ class CmDsOfdmFecSummary(PnmHeader):
         """
         if self.get_pnm_file_type() != PnmFileType.OFDM_FEC_SUMMARY:
             expected = PnmFileType.OFDM_FEC_SUMMARY.get_pnm_cann()
-            got = self.get_pnm_file_type().get_pnm_cann()
+            file_type = self.get_pnm_file_type()
+            got = file_type.get_pnm_cann() if file_type is not None else "None"
             raise ValueError(f"PNM file stream is not OFDM FEC Summary type: expected {expected}, got {got}")
 
         mv = memoryview(self.pnm_data)
@@ -273,7 +274,7 @@ class CmDsOfdmFecSummary(PnmHeader):
             )
 
             profile_entry = OfdmFecSumDataModel(
-                profile_id       = int(profile_id),
+                profile_id       = ProfileId(profile_id),
                 number_of_sets   = int(number_of_sets),
                 codeword_entries = cwe_model,
             )

@@ -5,11 +5,11 @@ from __future__ import annotations
 
 import logging
 import struct
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 from pydantic.fields import Field
 
-from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_SUB_CARRIER_ZERO_FREQ, KHZ
+from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_SUB_CARRIER_ZERO_FREQ, KHZ, ZERO_FREQUENCY
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.signal_processing.shan.series import ShannonSeries
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
@@ -20,7 +20,7 @@ from pypnm.lib.types import ChannelId, FloatSeries, FrequencyHz, FrequencySeries
 
 class CmDsOfdmRxMerModel(PnmBaseModel):
     data_length: int                        = Field(..., ge=0, description="Number of RxMER points (subcarriers)")
-    occupied_channel_bandwidth: int         = Field(..., ge=0, description="OFDM Occupied Bandwidth (Hz)")
+    occupied_channel_bandwidth: FrequencyHz = Field(..., ge=0, description="OFDM Occupied Bandwidth (Hz)")
     value_units:str                         = Field(default="dB", description="Non-mutable")
     values:FloatSeries                      = Field(..., description="RxMER values per active subcarrier (dB)")
     signal_statistics:SignalStatisticsModel = Field(..., description="Aggregate statistics computed from values")
@@ -41,7 +41,7 @@ class CmDsOfdmRxMer(PnmHeader):
         self._mac_address: MacAddressStr                = MacAddress.null()
         self._subcarrier_zero_frequency: FrequencyHz    = INVALID_SUB_CARRIER_ZERO_FREQ
         self._first_active_subcarrier_index: int        = 0
-        self._subcarrier_spacing: int                   = 0
+        self._subcarrier_spacing: FrequencyHz           = ZERO_FREQUENCY
         self._rxmer_data_length: int                    = 0
         self._rxmer_data: bytes
         self._rx_mer_float_data: FloatSeries      = []
@@ -101,7 +101,7 @@ class CmDsOfdmRxMer(PnmHeader):
             first_active_subcarrier_index   = self._first_active_subcarrier_index,
             subcarrier_spacing              = self._subcarrier_spacing,
             data_length                     = self._rxmer_data_length,
-            occupied_channel_bandwidth      = self._rxmer_data_length * self._subcarrier_spacing,
+            occupied_channel_bandwidth      = FrequencyHz(self._rxmer_data_length * self._subcarrier_spacing),
             values                          = values,
             signal_statistics               = SignalStatistics(values).compute(),
             modulation_statistics           = ShannonSeries(values).to_dict(),
@@ -133,7 +133,7 @@ class CmDsOfdmRxMer(PnmHeader):
             return []
 
         start = f_zero + spacing * first_idx
-        return [start + i * spacing for i in range(n)]
+        return cast(FrequencySeriesHz,[start + i * spacing for i in range(n)])
 
     def to_model(self) -> CmDsOfdmRxMerModel:
         return self._rxmer_model

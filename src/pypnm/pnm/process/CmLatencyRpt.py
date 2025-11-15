@@ -19,8 +19,10 @@ class CmLatencyRpt(PnmHeader):
         Number of LatencySummaryData objects (n)    1 byte
         Latency Data                                n*LatencySummaryData
         '''
-        if self.get_pnm_file_type() != PnmFileType.LATENCY_REPORT:
+        file_type = self.get_pnm_file_type()
+        if file_type != PnmFileType.LATENCY_REPORT:
             cann = PnmFileType.LATENCY_REPORT.get_pnm_cann()
-            raise ValueError(f"PNM File Stream is not RxMER file type: {cann}, Error: {self.get_pnm_file_type().get_pnm_cann()}")
+            actual_cann = file_type.get_pnm_cann() if file_type else "Unknown"
+            raise ValueError(f"PNM File Stream is not RxMER file type: {cann}, Error: {actual_cann}")
  
         return None

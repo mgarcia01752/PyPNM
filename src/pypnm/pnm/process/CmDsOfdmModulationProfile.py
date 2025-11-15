@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 from enum import IntEnum
 from struct import calcsize, unpack
-from typing import Any, Dict, List, Union, Annotated
+from typing import Any, Dict, List, Union, Annotated, cast
 from typing_extensions import Literal
 
 from pydantic import BaseModel, Field, ConfigDict
@@ -108,9 +108,10 @@ class CmDsOfdmModulationProfile(PnmHeader):
 
     def __process(self) -> None:
         # Validate file type
-        if self.get_pnm_file_type() != PnmFileType.OFDM_MODULATION_PROFILE:
+        pnm_file_type = self.get_pnm_file_type()
+        if pnm_file_type != PnmFileType.OFDM_MODULATION_PROFILE:
             want = PnmFileType.OFDM_MODULATION_PROFILE.get_pnm_cann()
-            got  = self.get_pnm_file_type().get_pnm_cann()
+            got = pnm_file_type.get_pnm_cann() if pnm_file_type else "None"
             raise ValueError(f"PNM stream type mismatch: expected {want}, got {got}")
 
         # Local header (after the common PNM header already handled by PnmHeader)
@@ -263,7 +264,7 @@ class CmDsOfdmModulationProfile(PnmHeader):
             return []
 
         start = f_zero + spacing * first_idx
-        freqs: FrequencySeriesHz = [start + i * spacing for i in range(n)]
+        freqs: FrequencySeriesHz = cast(FrequencySeriesHz, [start + i * spacing for i in range(n)])
         return freqs
 
     def to_model(self) -> CmDsOfdmModulationProfileModel:

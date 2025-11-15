@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 from pydantic import ConfigDict, Field
-from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_SUB_CARRIER_ZERO_FREQ
+
+from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_SUB_CARRIER_ZERO_FREQ, ZERO_FREQUENCY
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import ChannelId, FrequencyHz, MacAddressStr
 from pypnm.pnm.process.pnm_header import PnmHeaderModel, PnmHeaderParameters
@@ -39,5 +40,5 @@ class PnmBaseModel(PnmHeaderModel):
     mac_address: MacAddressStr              = Field(default = MacAddress.null(), description="Device MAC address")
     subcarrier_zero_frequency: FrequencyHz  = Field(default = INVALID_SUB_CARRIER_ZERO_FREQ, description="Frequency of subcarrier 0 (Hz)")
     first_active_subcarrier_index: int      = Field(default = -1, description="Index of the first active subcarrier")
-    subcarrier_spacing: int                 = Field(default = -1, description="Subcarrier spacing (Hz)")
+    subcarrier_spacing: FrequencyHz         = Field(default = ZERO_FREQUENCY, description="Subcarrier spacing (Hz)")
 

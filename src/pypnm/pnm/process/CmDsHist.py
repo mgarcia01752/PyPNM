@@ -9,16 +9,16 @@ from struct import calcsize, unpack
 
 from typing import cast
 from pydantic import BaseModel, Field
-from pypnm.lib.types import FloatSeries, IntSeries
+from pypnm.lib.types import IntSeries, MacAddressStr
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader, PnmHeaderParameters
-from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 
 class CmDsHistModel(BaseModel):
     """
     """
     pnm_header:PnmHeaderParameters  = Field(..., description="")
-    mac_address:str                 = Field(default=MacAddress.null(), description="Device MAC address")
+    mac_address:MacAddressStr       = Field(default=MacAddress.null(), description="Device MAC address")
     symmetry: int                   = Field(..., description="Histogram symmetry indicator (device-specific meaning).")
     dwell_count_values_length: int  = Field(..., description="Number of dwell count entries reported.")
     dwell_count_values: IntSeries   = Field(..., description="Dwell count values per bin.")
@@ -48,7 +48,7 @@ class CmDsHist(PnmHeader):
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
 
-        self._mac_address: str
+        self._mac_address: MacAddressStr
         self._symmetry: int
         self._dwell_count_values_length: int
         self._dwell_count_values: IntSeries
@@ -62,14 +62,16 @@ class CmDsHist(PnmHeader):
         
         if self.get_pnm_file_type() != PnmFileType.DOWNSTREAM_HISTOGRAM:
             cann = PnmFileType.DOWNSTREAM_HISTOGRAM.get_pnm_cann()
-            raise ValueError(f"PNM File Stream is not RxMER file type: {cann}, Error: {self.get_pnm_file_type().get_pnm_cann()}")
+            actual_type = self.get_pnm_file_type()
+            actual_cann = actual_type.get_pnm_cann() if actual_type else "Unknown"
+            raise ValueError(f"PNM File Stream is not RxMER file type: {cann}, Error: {actual_cann}")
                 
         mac_sym_format = '>6sB'
         mac_sym_header_size = calcsize(mac_sym_format)
 
         try:
             unpacked = unpack(mac_sym_format, self.pnm_data[:mac_sym_header_size])
-            self._mac_address = ':'.join(f'{b:02X}' for b in unpacked[0])
+            self._mac_address = MacAddress(unpacked[0]).to_mac_format(MacAddressFormat.COLON)
             self._symmetry = unpacked[1]
         except Exception as e:
             raise ValueError(f"Failed to unpack header: {e}")

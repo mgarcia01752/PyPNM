@@ -7,15 +7,17 @@ from typing import Dict, List, Literal, TypeVar, cast
 from typing_extensions import Final, TypeAlias
 from pypnm.lib.types import CaptureTime, ChannelId, FloatEnum, FrequencyHz, Number, ProfileId
 
-HZ:  int = 1
-KHZ: int = 1_000
-MHZ: int = 1_000_000
-GHZ: int = 1_000_000_000
+HZ:  Final[int] = 1
+KHZ: Final[int] = 1_000
+MHZ: Final[int] = 1_000_000
+GHZ: Final[int] = 1_000_000_000
 
 FEET_PER_METER: Final[float] = 3.280839895013123
 SPEED_OF_LIGHT: Final[float] = 299_792_458.0  # m/s
 
 NULL_ARRAY_NUMBER: Final[List[Number]] = [0]
+
+ZERO_FREQUENCY: Final[FrequencyHz]                  = cast(FrequencyHz, 0)
 
 INVALID_CHANNEL_ID: Final[ChannelId]                = cast(ChannelId, -1)
 INVALID_PROFILE_ID: Final[ProfileId]                = cast(ProfileId, -1)
@@ -46,6 +48,7 @@ DEFAULT_SPECTRUM_ANALYZER_INDICES: Final[List[int]] = [0]
 
 __all__ = [
     "HZ", "KHZ", "MHZ", "GHZ",
+    "ZERO_FREQUENCY",
     "FEET_PER_METER", "SPEED_OF_LIGHT",
     "NULL_ARRAY_NUMBER",
     "INVALID_CHANNEL_ID", "INVALID_PROFILE_ID", "INVALID_SUB_CARRIER_ZERO_FREQ",

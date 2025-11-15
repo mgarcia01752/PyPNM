@@ -5,11 +5,11 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder
+from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder, IntegerBits, FractionalBits, ComplexSeries
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 from struct import calcsize, unpack
-from typing import Optional, List, Tuple
+from typing import Optional, Tuple
 
 
 class CmSymbolCapture(PnmHeader):
@@ -31,7 +31,9 @@ class CmSymbolCapture(PnmHeader):
     def process_cm_symbol_capture(self) -> None:
         if self.get_pnm_file_type() != PnmFileType.SYMBOL_CAPTURE:
             cann = PnmFileType.SYMBOL_CAPTURE.get_pnm_cann()
-            raise ValueError(f"PNM File Stream is not RxMER file type: {cann}, Error: {self.get_pnm_file_type().get_pnm_cann()}")
+            actual_type = self.get_pnm_file_type()
+            error_cann = actual_type.get_pnm_cann() if actual_type else "Unknown"
+            raise ValueError(f"PNM File Stream is not RxMER file type: {cann}, Error: {error_cann}")
  
         # Extract CmSymbolCapture fields using struct.unpack
         cm_symbol_capture_format = '<B6sII2HI'
@@ -49,11 +51,13 @@ class CmSymbolCapture(PnmHeader):
         self.capture_data_length = cm_symbol_capture_size[7]
         self.capture_data = self.pnm_data[calcsize(cm_symbol_capture_format):]
 
-    def process_capture_data(self, sm_n_format: Tuple[int, int] = (3, 12)) -> Optional[List[Tuple[float, float]]]:
+    def process_capture_data(self, sm_n_format: Tuple[IntegerBits, FractionalBits] = (IntegerBits(3), FractionalBits(12))) -> Optional[ComplexSeries]:
         """
         Process Capture Data.
-        Returns a list of tuples containing the complex data (I, Q) for each sample.
+        Returns a list of complex numbers containing the data (I, Q) for each sample.
         """
+        if self.capture_data is None:
+            return None
         capture_data = FixedPointDecoder.decode_complex_data(self.capture_data, sm_n_format)
         return capture_data
 
@@ -67,5 +71,5 @@ class CmSymbolCapture(PnmHeader):
             'Trigger Group Id': self.trigger_group_id,
             'Transaction ID': self.transaction_id,
             'Capture Data Length': self.capture_data_length,
-            'Capture Data': self.capture_data.hex()
+            'Capture Data': self.capture_data.hex() if self.capture_data is not None else None
         }
