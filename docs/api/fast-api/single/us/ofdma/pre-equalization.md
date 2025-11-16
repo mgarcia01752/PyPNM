@@ -1,55 +1,75 @@
 # PNM Operations – Upstream OFDMA Pre-Equalization
 
-This API allows retrieval and analysis of DOCSIS 3.1 upstream OFDMA pre-equalization data, which is crucial for identifying plant impairments like group delay, micro-reflections, and impedance mismatch. It captures and decodes the in-channel frequency response of a modem's upstream OFDMA transmission.
+This API retrieves DOCSIS 3.1 upstream OFDMA pre-equalization data, which is crucial for identifying plant impairments such as group delay, micro-reflections, and impedance mismatch. It captures and decodes the in-channel frequency response of a modem's upstream OFDMA transmission.
 
 Use this interface for proactive diagnostics and signal integrity assessments across active upstream channels.
 
-## 📛 Table of Contents
+In practical terms, the modem applies a transmit-side pre-equalizer to shape its upstream signal, while the CMTS runs an adaptive equalizer on the received signal. Together, these two equalizers describe the linear behavior of the upstream plant for a given modem. PyPNM focuses on exposing the modem-side pre-equalization coefficients and mapping them into frequency-domain views (magnitude, group delay, and complex I/Q) that are easier to interpret than raw fixed‑point taps.
 
-* [Get Measurement](#get-measurement)
-* [Get Analysis](#get-analysis)
-* [Analysis and Output Types](#analysis-and-output-types)
+## Table of Contents
 
-## Get Measurement
+* [Get Capture](#get-capture)
+* [Request](#request)
+* [Response](#response)
+* [Plots](#plots)
+* [Notes](#notes)
 
-### 🛰 Endpoint
+## Get Capture
 
-**POST** `/docs/pnm/us/ofdma/preEqualization/getMeasurement`
+### Endpoint
+
+**POST** `/docs/pnm/us/ofdma/preEqualization/getCapture`
 
 Retrieves OFDMA upstream pre-equalization complex coefficients from a DOCSIS 3.1 cable modem for PNM diagnostics.
 
-### 👥 Request Body (JSON)
+## Request
+
+The request follows the standard structure described in [Common → Request](../../../common/request.md).  
+This endpoint is SNMP-based; TFTP parameters are not required for capture, but may still be present in the common schema.
+
+### Example Request Body
 
 ```json
 {
   "cable_modem": {
-	"mac_address": "aa:bb:cc:dd:ee:ff",
-	"ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
+    "mac_address": "aa:bb:cc:dd:ee:ff",
+    "ip_address": "192.168.0.100",
+    "snmp": {
+      "snmpV2C": {
+        "community": "private"
+      }
+    }
+  },
+  "analysis": {
+    "type": "basic",
+    "output": {
+      "type": "json"
     },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
+    "plot": {
+      "ui": {
+        "theme": "dark"
+      }
     }
   }
 }
 ```
 
-### 🔑 Fields
+### Request Fields
 
-| Field        | Type   | Description                    |
-| ------------ | ------ | ------------------------------ |
-| mac\_address | string | MAC address of the cable modem |
-| ip\_address  | string | IP address of the cable modem  |
-| snmp         | object | SNMPv2c or SNMPv3 credentials  |
+| Field        | Type   | Description                                               |
+|--------------|--------|-----------------------------------------------------------|
+| mac_address  | string | MAC address of the cable modem                            |
+| ip_address   | string | IP address of the cable modem                             |
+| snmp         | object | SNMPv2c or SNMPv3 credentials                             |
+| analysis     | object | Optional analysis and plot configuration for this capture |
 
-### 📄 Response Body (Object)
+For additional shared fields (timeouts, retries, etc.), see [Common → Request](../../../common/request.md).
+
+## Response
+
+This endpoint returns the standard envelope described in [Common → Response](../../../common/response.md) (`mac_address`, `status`, `message`, `data` or `measurement`).
+
+### Example Response Body
 
 ```json
 {
@@ -77,7 +97,7 @@ Retrieves OFDMA upstream pre-equalization complex coefficients from a DOCSIS 3.1
         "value_unit": "[Real, Imaginary]",
         "values": [
           [1.0764, 0.6097],
-          [..., ...]
+          ["...", "..."]
         ]
       }
     ]
@@ -85,151 +105,58 @@ Retrieves OFDMA upstream pre-equalization complex coefficients from a DOCSIS 3.1
 }
 ```
 
-### 📊 Key Response Fields
+### Key Response Fields
 
-| Field                              | Type    | Description                                 |
-| ---------------------------------- | ------- | ------------------------------------------- |
-| mac\_address                       | string  | MAC address used in the request             |
-| status                             | integer | 0 = success                                 |
-| measurement.data                   | array   | List of measurement entries per capture     |
-| ↳ status                           | string  | Capture status (e.g., "SUCCESS")            |
-| ↳ upstream\_channel\_id            | integer | Channel ID associated with this capture     |
-| ↳ cm\_mac\_address                 | string  | Cable modem MAC address                     |
-| ↳ cmts\_mac\_address               | string  | CMTS MAC address                            |
-| ↳ subcarrier\_zero\_frequency      | integer | Base frequency (Hz) of subcarrier 0         |
-| ↳ first\_active\_subcarrier\_index | integer | Index of first active subcarrier            |
-| ↳ subcarrier\_spacing              | integer | Frequency spacing between subcarriers in Hz |
-| ↳ value\_length                    | integer | Total number of subcarriers represented     |
-| ↳ value\_unit                      | string  | Format of data (e.g., \[Real, Imaginary])   |
-| ↳ values                           | array   | List of complex coefficient pairs           |
+| Field                           | Type    | Description                                         |
+|---------------------------------|---------|-----------------------------------------------------|
+| mac_address                     | string  | MAC address used in the request                     |
+| status                          | integer | 0 = success                                         |
+| measurement.data                | array   | List of measurement entries per capture             |
+| ↳ status                        | string  | Capture status (for example, `SUCCESS`)             |
+| ↳ upstream_channel_id           | integer | Channel ID associated with this capture             |
+| ↳ cm_mac_address                | string  | Cable modem MAC address                             |
+| ↳ cmts_mac_address              | string  | CMTS MAC address                                    |
+| ↳ subcarrier_zero_frequency     | integer | Base frequency (Hz) of subcarrier 0                 |
+| ↳ first_active_subcarrier_index | integer | Index of first active subcarrier                    |
+| ↳ subcarrier_spacing            | integer | Frequency spacing between subcarriers in Hz         |
+| ↳ value_length                  | integer | Total number of subcarriers represented             |
+| ↳ value_unit                    | string  | Format of data (for example, `[Real, Imaginary]`)   |
+| ↳ values                        | array   | List of complex coefficient pairs per subcarrier    |
 
-> ℹ️ Each value represents a decoded complex tap coefficient used for plant characterization.
+Each `values` entry represents a decoded complex tap coefficient used for plant characterization.
 
-### 📍 Notes
+## Plots
+
+When `analysis` and `analysis.plot.ui` are provided, this endpoint also generates per-channel plots from the captured OFDMA pre-equalization data. Internally, PyPNM can present both the **pre-equalizer coefficients** and any **equalizer coefficient updates** using the same plot families, although the current implementation focuses on the CM pre-equalizer side.
+
+### Pre-Equalizer Coefficient Views
+
+| View Type  | Description |
+|------------|-------------|
+| [Magnitude with Fit](pnm-type.md) | Magnitude versus frequency with regression line overlay, showing overall tilt or slope  |
+| [Group Delay](pnm-type.md)        | Group delay versus frequency derived from the complex carrier values                    |
+| [IQ Scatter](pnm-type.md)         | Complex scatter of in-phase (I) versus quadrature (Q) coefficients                      |
+
+### Pre-Equalizer Coefficient Update Views
+
+In systems where CMTS equalizer update taps are available, the same plot families can be used to visualize how the network requests the modem to adjust its pre-equalizer:
+
+| View Type  | Description |
+|------------|-------------|
+| [Magnitude with Fit](pnm-type.md) | Magnitude versus frequency with regression line overlay, showing overall tilt or slope  |
+| [Group Delay](pnm-type.md)        | Group delay versus frequency derived from the complex carrier values                    |
+| [IQ Scatter](pnm-type.md)         | Complex scatter of in-phase (I) versus quadrature (Q) coefficients                      |
+
+Details:
+
+- **Magnitude with Regression Line** – Uses the raw magnitude series and a per-subcarrier regression fit to show overall tilt or slope across the upstream OFDMA band.
+- **Group Delay** – Plots group delay (microseconds) derived from the pre-equalization coefficients, useful for detecting echoes and dispersion.
+- **IQ Complex Scatter Plot** – Visualizes the complex coefficient distribution in the I/Q plane, highlighting asymmetries or clustering caused by plant impairments or correction requests.
+
+Plot theme (dark or light) and styling are controlled via the common `analysis.plot.ui` block, consistent with other PyPNM analysis endpoints.
+
+## Notes
 
 * This endpoint is part of the proactive diagnostics suite used to assess in-channel echo and group delay distortion.
-* Each `values` array contains I/Q (real/imaginary) values per subcarrier.
-* Timing information and versioning are provided via the `pnm_header` block.
-
-## Get Analysis
-
-### 🛰 Endpoint
-
-**POST** `/docs/pnm/us/ofdma/preEqualization/getAnalysis`
-
-Returns statistical analysis of decoded upstream OFDMA pre-equalization coefficients for DOCSIS 3.1 cable modems.
-
-### 👥 Request Body (JSON)
-
-```json
-{
-  "cable_modem": {
-	"mac_address": "aa:bb:cc:dd:ee:ff",
-	"ip_address": "192.168.0.100",
-  "snmp": {
-    "snmpV2C": {
-      "community": "private"
-    },
-    "snmpV3": {
-      "username": "string",
-      "securityLevel": "noAuthNoPriv",
-      "authProtocol": "MD5",
-      "authPassword": "string",
-      "privProtocol": "DES",
-      "privPassword": "string"
-    }
-  },
-  "analysis": {
-    "type": 0
-  },
-  "output": {
-    "type": 0
-  }
-}
-```
-
-### 🔑 Fields
-
-| Field         | Type   | Description                                            |
-| ------------- | ------ | ------------------------------------------------------ |
-| mac\_address  | string | MAC address of the cable modem                         |
-| ip\_address   | string | IP address of the cable modem                          |
-| snmp          | object | SNMPv2c or SNMPv3 credentials                          |
-| analysis.type | int    | 0 = basic                                              |
-| output.type   | int    | 0 = json <br> 2 = xlsx                                 |
-
-### 📄 Response Body – Output Type `0`
-
-```json
-{
-  "mac_address": "aa:bb:cc:dd:ee:ff",
-  "status": 0,
-  "data": {
-    "analysis": [
-      {
-        "pnm_header": {
-          "file_type": "PNN",
-          "file_type_version": 6,
-          "major_version": 1,
-          "minor_version": 0,
-          "capture_time": 1751782748
-        },
-        "mac_address": null,
-        "channel_id": null,
-        "frequency_unit": "Hz",
-        "magnitude_unit": "dB",
-        "group_delay_unit": "microsecond",
-        "complex_unit": "[Real, Imaginary]",
-        "carrier_values": {
-          "carrier_count": 1896,
-          "frequency": [...],
-          "magnitude": [...],
-          "group_delay": [...],
-          "complex": [[-1.9545, -1.0011]]
-        }
-      }
-    ]
-  }
-}
-```
-
-### 📊 Response Fields
-
-| Field                | Type        | Description                                  |
-| -------------------- | ----------- | -------------------------------------------- |
-| mac\_address         | string      | MAC of the target modem                      |
-| status               | int         | 0 = success                                  |
-| data.analysis        | list        | List of OFDMA analysis entries               |
-| ↳ pnm\_header        | object      | Metadata about the measurement file          |
-| ↳ frequency\_unit    | string      | Unit for x-axis of frequency array           |
-| ↳ magnitude\_unit    | string      | Unit for RxMER/magnitude in dB               |
-| ↳ group\_delay\_unit | string      | Unit for group delay values                  |
-| ↳ complex\_unit      | string      | Format of the complex coefficients           |
-| ↳ carrier\_values    | object      | Actual subcarrier data and computed analysis |
-| ↳↳ carrier\_count    | int         | Total number of OFDMA subcarriers            |
-| ↳↳ frequency         | float\[]    | Array of subcarrier center frequencies (Hz)  |
-| ↳↳ magnitude         | float\[]    | Array of magnitude values in dB              |
-| ↳↳ group\_delay      | float\[]    | Group delay per subcarrier (μs)              |
-| ↳↳ complex           | float\[]\[] | Complex I/Q tap coefficients per subcarrier  |
-
-### 📍 Notes
-
-* This endpoint performs full-spectrum statistical analysis on captured OFDMA coefficients.
-* Output type 0 is structured and suitable for plotting or CSV export.
-* Group delay is computed from the phase slope across adjacent subcarriers.
-
-## Analysis and Output Types
-
-### `analysis.type`
-
-| Value | Description                              |
-| ----- | ---------------------------------------- |
-| `0`   | Basic Magnitude and Group Delay Analysis |
-
-### `output.type`
-
-| Value | Format  | Description                                           |
-| ----- | ------- | ----------------------------------------------------- |
-| `0`   | JSON    | Structured data for dashboards or raw API consumption |
-| `1`   | CSV     | Not Supported   |
-| `2`   | XLSX    | (Planned) Taps overlay and echo/impulse view          |
+* Each element of `values` contains I/Q (real/imaginary) components per subcarrier.
+* Timing information and versioning are provided via the `pnm_header` block, which follows the standard PNN header format.

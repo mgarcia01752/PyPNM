@@ -17,9 +17,9 @@ Endpoints that perform one-shot capture or query against a single device.
 
 |  Reference                                                  | Description                         |
 |-------------------------------------------------------------|-------------------------------------|
-| [OFDMA Channel Statistics](us/ofdma/stats.md)                 | Physical Channel Statistics       |
-| [SC-QAM Pre-Equalization](us/scqam/chan/pre-equalization.md)  | Physical Channel Pre-Equalization |
-| [SC-QAM Statistics](us/scqam/chan/stats.md)                   | Physical Channel Statistics       |
+| [OFDMA Channel Statistics](us/ofdma/stats.md)               | OFDMA Channel Statistics            |
+| [ATDMA Pre-Equalization](us/atdma/chan/pre-equalization.md) | ATDMA Pre-Equalization              |
+| [ATDMA Channel Statistics](us/atdma/chan/stats.md)          | ATDMA Channel Statistics            |
 
 ### DOCSIS Frequency Division Duplex (FDD)
 
