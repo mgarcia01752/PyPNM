@@ -45,11 +45,11 @@ class ComplexDataCarrierModel(BaseModel):
 
 class ComplexDataAnalysisModel(BaseAnalysisModel):
     subcarrier_spacing: int                     = Field(..., description="Subcarrier frequency spacing in Hertz.")
-    first_active_subcarrier_index: int          = Field(..., description="Index of the first active OFDM subcarrier (0-based).")
+    first_active_subcarrier_index: int          = Field(..., description="Index of the first active OFDM/OFDMA subcarrier (0-based).")
     subcarrier_zero_frequency: FrequencyHz      = Field(..., description="Absolute frequency of subcarrier k=0 in Hertz.")
     carrier_values: ComplexDataCarrierModel     = Field(..., description="Detailed per-subcarrier results.")
-    signal_statistics: SignalStatisticsModel    = Field(..., description="Computed time-domain statistics of the channel estimate signal.")
-    echo: EchoDatasetModel                       = Field(..., description="Computed time-domain statistics of the channel estimate signal.")
+    signal_statistics: SignalStatisticsModel    = Field(..., description="Computed time-domain statistics of the complex or equalization data.")
+    echo: EchoDatasetModel                      = Field(..., description="Computed time-domain statistics of the complex or equalization data.")
 
 
 class RegressionModel(BaseModel):
@@ -114,13 +114,13 @@ class RxMerCarrierValuesModel(BaseModel):
     frequency_unit: str                 = Field(default="Hz", description="Unit for subcarrier frequencies.")
     carrier_count: int                  = Field(..., description="Number of subcarriers represented.")
     magnitude: FloatSeries              = Field(..., description="RxMER magnitudes for all subcarriers.")
-    frequency: FloatSeries              = Field(..., description="Frequencies for all subcarriers.")
+    frequency: FrequencySeriesHz        = Field(..., description="Frequencies for all subcarriers.")
     carrier_status: IntSeries           = Field(..., description="Status codes for all subcarriers.")
 
 class DsRxMerAnalysisModel(BaseAnalysisModel):
-    subcarrier_spacing: int                     = Field(..., description="Subcarrier spacing in Hz.")
+    subcarrier_spacing: FrequencyHz             = Field(..., description="Subcarrier spacing in Hz.")
     first_active_subcarrier_index: int          = Field(..., description="First active subcarrier within the channel.")
-    subcarrier_zero_frequency: int              = Field(..., description="Zero-subcarrier (DC) frequency in Hz.")
+    subcarrier_zero_frequency: FrequencyHz      = Field(..., description="Zero-subcarrier (DC) frequency in Hz.")
     carrier_values: RxMerCarrierValuesModel     = Field(..., description="Per-subcarrier frequency, magnitude, and status values.")
     regression: RegressionModel                 = Field(..., description="Trend components derived from RxMER vs. frequency.")
     modulation_statistics: ShannonSeriesModel   = Field(..., description="Shannon-derived SNR, bits/symbol, modulation estimates, and summary counts.")

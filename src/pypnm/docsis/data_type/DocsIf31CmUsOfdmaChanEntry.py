@@ -8,16 +8,17 @@ import logging
 from typing import Optional, Callable, Union, List
 from pydantic import BaseModel
 
+from pypnm.lib.types import ChannelId, FrequencyHz
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
 class DocsIf31CmUsOfdmaChan(BaseModel):
-    docsIf31CmUsOfdmaChanChannelId: Optional[int] = None
+    docsIf31CmUsOfdmaChanChannelId: Optional[ChannelId] = None
     docsIf31CmUsOfdmaChanConfigChangeCt: Optional[int] = None
-    docsIf31CmUsOfdmaChanSubcarrierZeroFreq: Optional[int] = None
+    docsIf31CmUsOfdmaChanSubcarrierZeroFreq: Optional[FrequencyHz] = None
     docsIf31CmUsOfdmaChanFirstActiveSubcarrierNum: Optional[int] = None
     docsIf31CmUsOfdmaChanLastActiveSubcarrierNum: Optional[int] = None
     docsIf31CmUsOfdmaChanNumActiveSubcarriers: Optional[int] = None
-    docsIf31CmUsOfdmaChanSubcarrierSpacing: Optional[int] = None
+    docsIf31CmUsOfdmaChanSubcarrierSpacing: Optional[FrequencyHz] = None
     docsIf31CmUsOfdmaChanCyclicPrefix: Optional[int] = None
     docsIf31CmUsOfdmaChanRollOffPeriod: Optional[int] = None
     docsIf31CmUsOfdmaChanNumSymbolsPerFrame: Optional[int] = None
@@ -73,30 +74,30 @@ class DocsIf31CmUsOfdmaChanEntry(BaseModel):
                 return None
 
         entry = DocsIf31CmUsOfdmaChan(
-            docsIf31CmUsOfdmaChanChannelId=await fetch("docsIf31CmUsOfdmaChanChannelId", int),
-            docsIf31CmUsOfdmaChanConfigChangeCt=await fetch("docsIf31CmUsOfdmaChanConfigChangeCt", int),
-            docsIf31CmUsOfdmaChanSubcarrierZeroFreq=await fetch("docsIf31CmUsOfdmaChanSubcarrierZeroFreq", int),
-            docsIf31CmUsOfdmaChanFirstActiveSubcarrierNum=await fetch("docsIf31CmUsOfdmaChanFirstActiveSubcarrierNum", int),
-            docsIf31CmUsOfdmaChanLastActiveSubcarrierNum=await fetch("docsIf31CmUsOfdmaChanLastActiveSubcarrierNum", int),
-            docsIf31CmUsOfdmaChanNumActiveSubcarriers=await fetch("docsIf31CmUsOfdmaChanNumActiveSubcarriers", int),
-            docsIf31CmUsOfdmaChanSubcarrierSpacing=await fetch("docsIf31CmUsOfdmaChanSubcarrierSpacing", int),
-            docsIf31CmUsOfdmaChanCyclicPrefix=await fetch("docsIf31CmUsOfdmaChanCyclicPrefix", int),
-            docsIf31CmUsOfdmaChanRollOffPeriod=await fetch("docsIf31CmUsOfdmaChanRollOffPeriod", int),
-            docsIf31CmUsOfdmaChanNumSymbolsPerFrame=await fetch("docsIf31CmUsOfdmaChanNumSymbolsPerFrame", int),
-            docsIf31CmUsOfdmaChanTxPower=await fetch("docsIf31CmUsOfdmaChanTxPower", tenthdBmV_to_float),
-            docsIf31CmUsOfdmaChanPreEqEnabled=await fetch("docsIf31CmUsOfdmaChanPreEqEnabled", Snmp_v2c.truth_value),
-            docsIf31CmStatusOfdmaUsT3Timeouts=await fetch("docsIf31CmStatusOfdmaUsT3Timeouts", int),
-            docsIf31CmStatusOfdmaUsT4Timeouts=await fetch("docsIf31CmStatusOfdmaUsT4Timeouts", int),
-            docsIf31CmStatusOfdmaUsRangingAborteds=await fetch("docsIf31CmStatusOfdmaUsRangingAborteds", int),
-            docsIf31CmStatusOfdmaUsT3Exceededs=await fetch("docsIf31CmStatusOfdmaUsT3Exceededs", int),
-            docsIf31CmStatusOfdmaUsIsMuted=await fetch("docsIf31CmStatusOfdmaUsIsMuted", Snmp_v2c.truth_value),
-            docsIf31CmStatusOfdmaUsRangingStatus=await fetch("docsIf31CmStatusOfdmaUsRangingStatus", str)
+            docsIf31CmUsOfdmaChanChannelId                  =   await fetch("docsIf31CmUsOfdmaChanChannelId", int),
+            docsIf31CmUsOfdmaChanConfigChangeCt             =   await fetch("docsIf31CmUsOfdmaChanConfigChangeCt", int),
+            docsIf31CmUsOfdmaChanSubcarrierZeroFreq         =   await fetch("docsIf31CmUsOfdmaChanSubcarrierZeroFreq", int),
+            docsIf31CmUsOfdmaChanFirstActiveSubcarrierNum   =   await fetch("docsIf31CmUsOfdmaChanFirstActiveSubcarrierNum", int),
+            docsIf31CmUsOfdmaChanLastActiveSubcarrierNum    =   await fetch("docsIf31CmUsOfdmaChanLastActiveSubcarrierNum", int),
+            docsIf31CmUsOfdmaChanNumActiveSubcarriers       =   await fetch("docsIf31CmUsOfdmaChanNumActiveSubcarriers", int),
+            docsIf31CmUsOfdmaChanSubcarrierSpacing          =   await fetch("docsIf31CmUsOfdmaChanSubcarrierSpacing", int),
+            docsIf31CmUsOfdmaChanCyclicPrefix               =   await fetch("docsIf31CmUsOfdmaChanCyclicPrefix", int),
+            docsIf31CmUsOfdmaChanRollOffPeriod              =   await fetch("docsIf31CmUsOfdmaChanRollOffPeriod", int),
+            docsIf31CmUsOfdmaChanNumSymbolsPerFrame         =   await fetch("docsIf31CmUsOfdmaChanNumSymbolsPerFrame", int),
+            docsIf31CmUsOfdmaChanTxPower                    =   await fetch("docsIf31CmUsOfdmaChanTxPower", tenthdBmV_to_float),
+            docsIf31CmUsOfdmaChanPreEqEnabled               =   await fetch("docsIf31CmUsOfdmaChanPreEqEnabled", Snmp_v2c.truth_value),
+            docsIf31CmStatusOfdmaUsT3Timeouts               =   await fetch("docsIf31CmStatusOfdmaUsT3Timeouts", int),
+            docsIf31CmStatusOfdmaUsT4Timeouts               =   await fetch("docsIf31CmStatusOfdmaUsT4Timeouts", int),
+            docsIf31CmStatusOfdmaUsRangingAborteds          =   await fetch("docsIf31CmStatusOfdmaUsRangingAborteds", int),
+            docsIf31CmStatusOfdmaUsT3Exceededs              =   await fetch("docsIf31CmStatusOfdmaUsT3Exceededs", int),
+            docsIf31CmStatusOfdmaUsIsMuted                  =   await fetch("docsIf31CmStatusOfdmaUsIsMuted", Snmp_v2c.truth_value),
+            docsIf31CmStatusOfdmaUsRangingStatus            =   await fetch("docsIf31CmStatusOfdmaUsRangingStatus", str)
         )
 
         return cls(
-            index=index,
-            channel_id=entry.docsIf31CmUsOfdmaChanChannelId or 0,
-            entry=entry
+            index           =   index,
+            channel_id      =   entry.docsIf31CmUsOfdmaChanChannelId or 0,
+            entry           =   entry
         )
 
     @classmethod

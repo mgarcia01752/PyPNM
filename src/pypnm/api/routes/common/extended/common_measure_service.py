@@ -266,16 +266,16 @@ class CommonMeasureService(CommonMessagingService):
         # This section is determine by the direction due to which interface and type we are accessing 
         ##############################################################################################
 
-        if 1:
-            status_index_channelId = await self._get_indexes_via_pnm_test_type(interface_parameters)
-            if status_index_channelId[0] != ServiceStatusCode.SUCCESS:
-                self.logger.error(f'{self.log_prefix} - Unable to aquire index from ChannelID, reason: {status_index_channelId[0]}')
-                return self.build_send_msg(status_index_channelId[0])
+        status_index_channelId = await self._get_indexes_via_pnm_test_type(interface_parameters)
+        self.logger.info(f'{self.log_prefix} - Index/ChannelID List: {status_index_channelId[1]}')
+        if status_index_channelId[0] != ServiceStatusCode.SUCCESS or status_index_channelId[1] is None:
+            self.logger.error(f'{self.log_prefix} - Unable to aquire index from ChannelID, reason: {status_index_channelId[0]}')
+            return self.build_send_msg(status_index_channelId[0])
 
         ##############################################################################################
         # This section runs through all the indexes, build PNM file, run measurement and check status
         ##############################################################################################
-        index_channelId: List[Tuple[int, int]] = status_index_channelId[1]                    # type: ignore
+        index_channelId: List[Tuple[InterfaceIndex, ChannelId]] = status_index_channelId[1]                   
         return self.build_send_msg(await self._pnm_measure_status_and_pnm_file_transfer(index_channelId, max_wait_count))
     
     def getInterfaceParameters(self,
@@ -578,13 +578,13 @@ class CommonMeasureService(CommonMessagingService):
 
         if self.pnm_test_type in (DocsPnmCmCtlTest.DS_HISTOGRAM, DocsPnmCmCtlTest.LATENCY_REPORT):
             idx:List[InterfaceIndex] = await self.cm.getIfTypeIndex(DocsisIfType.docsCableMaclayer)
-            return ServiceStatusCode.SUCCESS, [(idx[0], 0)]
+            return ServiceStatusCode.SUCCESS, [(idx[0], ChannelId(0))]
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
-            return ServiceStatusCode.SUCCESS, [(0, 0)]
+            return ServiceStatusCode.SUCCESS, [(InterfaceIndex(0), ChannelId(0))]
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA:
-            return ServiceStatusCode.SUCCESS, [(0, 0)]
+            return ServiceStatusCode.SUCCESS, [(InterfaceIndex(0), ChannelId(0))]
 
         elif self.pnm_test_type in (DocsPnmCmCtlTest.DS_CONSTELLATION_DISP, 
                                     DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF,
@@ -596,10 +596,9 @@ class CommonMeasureService(CommonMessagingService):
                 ifParameters = self.getInterfaceParameters(DocsisIfType.docsOfdmDownstream)
         
         elif self.pnm_test_type in (DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF,):
-            self.logger.info(f'{DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF} Measurement')
-            if not ifParameters:
-                ifParameters = self.getInterfaceParameters(DocsisIfType.docsOfdmaUpstream)
-                
+            ifParameters = self.getInterfaceParameters(DocsisIfType.docsOfdmaUpstream)
+            self.logger.info(f'{DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF} Measurement - IfParameters: {ifParameters.model_dump()}')
+
         '''
         There is redundant code, but incase I may need to change due to 
         change of requiments depending on Downstream vs. Upstream
@@ -767,7 +766,7 @@ class CommonMeasureService(CommonMessagingService):
         return ServiceStatusCode.TFTP_PNM_FILE_UPLOAD_FAILURE
                             
     async def _setDocsPnmCmMeasureTest(self, pnm_test_type:DocsPnmCmCtlTest, 
-                                       interface_index:int, channel_id:int) -> Tuple[ServiceStatusCode, List[str]]:
+                                       interface_index:int, channel_id:ChannelId) -> Tuple[ServiceStatusCode, List[str]]:
         """
         Configure and trigger a specific PNM (Proactive Network Maintenance) measurement 
         test on a cable modem based on the test type.
@@ -798,17 +797,17 @@ class CommonMeasureService(CommonMessagingService):
         if pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF:
             
             # Pre-Eq and Last Pre-EQ (2 files)            
-            pre_eq_filename = await self._pnm_file_generator(self.pnm_test_type, str(channel_id))
-            last_pre_eq_filename = await self._pnm_file_generator(self.pnm_test_type, f'last_pre-eq_{str(channel_id)}')
-            
-            self.logger.debug(f'{self.log_prefix} - Setting {self.pnm_test_type} for ChannelID: {channel_id} @ IDX: {interface_index} -> FN: {pre_eq_filename} {last_pre_eq_filename}')
+            pre_eq_filename         = await self._pnm_file_generator(self.pnm_test_type, str(channel_id))
+            last_pre_eq_filename    = await self._pnm_file_generator(self.pnm_test_type, f'last_pre-eq_{str(channel_id)}')
+
+            self.logger.info(f'{self.log_prefix} - Setting {self.pnm_test_type} for ChannelID: {channel_id} @ IDX: {interface_index} -> FN(): {pre_eq_filename}, FN(last): {last_pre_eq_filename}')
             
             self.logger.info(f'{self.log_prefix} - Performing US_PRE_EQUALIZER_COEF measurement on IDX: ({interface_index})')
-            if not await self.cm.setDocsPnmCmUsPreEq(ofdma_idx=interface_index,
-                                                     filename=pre_eq_filename,
-                                                     last_pre_eq_filename=last_pre_eq_filename):
+            if not await self.cm.setDocsPnmCmUsPreEq(ofdma_idx              =   interface_index,
+                                                     filename               =   pre_eq_filename,
+                                                     last_pre_eq_filename   =   last_pre_eq_filename):
                 self.logger.error(f"{self.log_prefix} - Upstream OFDMA Pre-Equalization is Not Avalaible")
-                return ServiceStatusCode.FILE_SET_FAIL 
+                return ServiceStatusCode.FILE_SET_FAIL, []
             
             #Append files for later fetching
             pnm_files.extend([pre_eq_filename, last_pre_eq_filename])
@@ -845,10 +844,10 @@ class CommonMeasureService(CommonMessagingService):
                 #   - modulation_offset: Optional[int]
                 #   - num_sample_symb: Optional[int]
                 if not await self.cm.setDocsPnmCmDsConstDisp(
-                    ofdm_idx=interface_index,
-                    const_disp_name=pnm_filename,
-                    modulation_order_offset=self.extra_options.get('modulation_order_offset'),
-                    number_sample_symbol=self.extra_options.get('number_sample_symbol')
+                    ofdm_idx                =   interface_index,
+                    const_disp_name         =   pnm_filename,
+                    modulation_order_offset =   self.extra_options.get('modulation_order_offset'),
+                    number_sample_symbol    =   self.extra_options.get('number_sample_symbol')
                 ):
                     self.logger.error(f"{self.log_prefix} - Failed to set PNM filename: {pnm_filename}")
                     return ServiceStatusCode.FILE_SET_FAIL, []

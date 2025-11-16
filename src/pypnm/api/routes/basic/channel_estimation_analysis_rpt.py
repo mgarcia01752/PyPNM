@@ -96,305 +96,6 @@ class ChanEstimationReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot__(self, **kwargs) -> List[MatplotManager]:
-        """
-        Generate per-channel line and multi-line plots from validated models.
-        """
-        matplot_mgr: List[MatplotManager] = []
-        any_models: bool = False
-        chan_id_list: List[ChannelId] = []
-
-        for common_model in self.get_common_analysis_model():
-            any_models = True
-            model = cast(ChanEstimationAnalysisRptModel, common_model)
-            channel_id = model.channel_id
-            chan_id_list.append(channel_id)
-
-            freq                = cast(ArrayLike, model.raw_x)
-            linear              = cast(ArrayLike, model.raw_y)
-            cplex: ComplexArray = model.raw_complex
-            rl                  = cast(ArrayLike, model.parameters.regression_line)
-            gd_us               = cast(ArrayLike, model.parameters.group_delay)
-
-            # Absolute dB (power) for plotting; no normalization here to align with spec
-            db = cast(ArrayLike, DbLinearConverter.complex_to_db(cplex))
-
-            # Channel Estimation (IQ Scatter-Plot) - OFDM DS Channel
-            try:
-
-                if not cplex:
-                    self.logger.warning("No complex samples; skipping IQ scatter for channel %s", channel_id)
-                else:
-                    i, q = zip(*cplex)  # tuples of floats
-
-                    # Symmetric bounds around origin with 5% padding
-                    max_abs = max(
-                        max(abs(v) for v in i) if i else 0.0,
-                        max(abs(v) for v in q) if q else 0.0,
-                    )
-                    pad = 0.05 * max_abs if max_abs > 0 else 1.0
-                    xlim = (-max_abs - pad, max_abs + pad)
-                    ylim = (-max_abs - pad, max_abs + pad)
-
-                    # Size heuristic: smaller points for large clouds
-                    npts = len(i)
-                    point_size = 2.0 if npts >= 10000 else (4.0 if npts >= 3000 else 8.0)
-
-                    cfg = PlotConfig(
-                        title           = f"Channel Estimation · IQ · OFDM Channel: {channel_id}",
-                        x               = list(i),
-                        y               = list(q),
-                        x_tick_decimals = 0,
-                        xlabel          = "In-Phase",
-                        ylabel          = "Quadrature",
-                        xlim            = xlim,
-                        ylim            = ylim,
-                        grid            = True,
-                        legend          = False,
-                        transparent     = False,
-                        theme           = self.getAnalysisRptMatplotConfig().theme,
-                    )
-
-                    fn_iq = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, 'iq'])
-                    self.logger.info("Creating MatPlot IQ scatter: %s for channel: %s", fn_iq, channel_id)
-
-                    mgr = MatplotManager(default_cfg=cfg)
-                    # Use the point-size heuristic; colorbar not useful here
-                    mgr.plot_scatter(
-                        filename=fn_iq,
-                        s=[point_size] * npts,              # constant size array
-                        add_colorbar=False,
-                    )
-                    matplot_mgr.append(mgr)
-
-            except Exception as exc:
-                self.logger.exception("Failed to create IQ scatter for channel %s: %s", channel_id, exc)
-
-
-            # Channel Estimation (Linear) with Regression Line - OFDM DS Channel
-            try:
-                cfg = PlotConfig(
-                    title           = f"Channel Estimation - OFDM Channel: {channel_id}",
-                    x               = freq,
-                    x_tick_mode     = "unit",
-                    x_unit_from     = "hz",
-                    x_unit_out      = "mhz",
-                    x_tick_decimals = 0,
-                    xlabel_base     = "Frequency",
-                    y_multi         = [linear, rl],
-                    y_multi_label   = ["Channel Estimation", "Regression Line"],
-                    ylabel          = "Linear",
-                    grid            = True,
-                    legend          = True,
-                    transparent     = False,
-                    theme           = self.getAnalysisRptMatplotConfig().theme,
-                )
-
-                multi = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, 'linear'])
-                self.logger.info("Creating MatPlot: %s for channel: %s", multi, channel_id)
-
-                mgr = MatplotManager(default_cfg=cfg)
-                mgr.plot_multi_line(filename=multi)
-                matplot_mgr.append(mgr)
-
-            except Exception as exc:
-                self.logger.exception("Failed to create plot for channel %s: %s", channel_id, exc)
-
-            # Channel Estimation (dB) only - OFDM DS Channel (keep existing single-series dB view)
-            try:
-                cfg = PlotConfig(
-                    title           = f"Channel Estimation (dB) - OFDM Channel: {channel_id}",
-                    x               = freq,
-                    x_tick_mode     = "unit",
-                    x_unit_from     = "hz",
-                    x_unit_out      = "mhz",
-                    x_tick_decimals = 0,
-                    xlabel_base     = "Frequency",
-                    y_multi         = [db],
-                    y_multi_label   = ["Channel Estimation"],
-                    ylabel          = "dB",
-                    grid            = True,
-                    legend          = True,
-                    transparent     = False,
-                    theme           = self.getAnalysisRptMatplotConfig().theme,)
-
-                multi = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, 'db'])
-                self.logger.info("Creating MatPlot: %s for channel: %s", multi, channel_id)
-
-                mgr = MatplotManager(default_cfg=cfg)
-                mgr.plot_multi_line(filename=multi)
-                matplot_mgr.append(mgr)
-
-            except Exception as exc:
-                self.logger.exception("Failed to create plot for channel %s: %s", channel_id, exc)
-
-            # NEW: Magnitude (dB) with Best-Fit Line (OSSI CM-SP-CM-OSSIv3.1 D.4.3)
-            try:
-                metrics = compute_magnitude_summary(cast(FrequencyHz, model.raw_x), cplex)
-                yhat_db = cast(ArrayLike, metrics.fitted_line_db)
-
-                cfg = PlotConfig(
-                    title           = f"Channel Estimation (dB) with Best-Fit - Ch {channel_id}  "
-                                      f"(m={metrics.slope_db_per_mhz:.4f} dB/MHz, "
-                                      f"Rrms={metrics.rms_ripple_db:.3f} dB, "
-                                      f"Rpp={metrics.p2p_ripple_db:.3f} dB)",
-                    x               = freq,
-                    x_tick_mode     = "unit",
-                    x_unit_from     = "hz",
-                    x_unit_out      = "mhz",
-                    x_tick_decimals = 0,
-                    xlabel_base     = "Frequency",
-                    y_multi         = [db, yhat_db],
-                    y_multi_label   = ["Measured (dB)", "Best-Fit (dB)"],
-                    ylabel          = "dB",
-                    grid            = True,
-                    legend          = True,
-                    transparent     = False,
-                    theme           = self.getAnalysisRptMatplotConfig().theme,
-                )
-
-                multi = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, 'dbfit'])
-                self.logger.info("Creating MatPlot (dB fit): %s for channel: %s", multi, channel_id)
-
-                mgr = MatplotManager(default_cfg=cfg)
-                mgr.plot_multi_line(filename=multi)
-                matplot_mgr.append(mgr)
-
-            except Exception as exc:
-                self.logger.exception("Failed to create best-fit dB plot for channel %s: %s", channel_id, exc)
-
-            # NEW: Residual ripple (y - ŷ) in dB versus frequency
-            try:
-                # residuals = db - yhat_db
-                metrics = compute_magnitude_summary(cast(FrequencyHz, model.raw_x), cplex)
-                yhat_db = metrics.fitted_line_db
-                residuals = cast(ArrayLike, [d - h for d, h in zip(cast(List[float], db), yhat_db)])
-
-                cfg = PlotConfig(
-                    title           = f"Residual Ripple (dB) - OFDM Channel: {channel_id}  "
-                                      f"(Rrms={metrics.rms_ripple_db:.3f} dB, "
-                                      f"Rpp={metrics.p2p_ripple_db:.3f} dB)",
-                    x               = freq,
-                    x_tick_mode     = "unit",
-                    x_unit_from     = "hz",
-                    x_unit_out      = "mhz",
-                    x_tick_decimals = 0,
-                    xlabel_base     = "Frequency",
-                    y               = residuals,
-                    ylabel          = "dB",
-                    grid            = True,
-                    legend          = False,
-                    transparent     = False,
-                    theme           = self.getAnalysisRptMatplotConfig().theme,
-                )
-
-                fname = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, 'dbresid'])
-                self.logger.info("Creating Residual Ripple MatPlot: %s for channel: %s", fname, channel_id)
-
-                mgr = MatplotManager(default_cfg=cfg)
-                mgr.plot_line(filename=fname)
-                matplot_mgr.append(mgr)
-
-            except Exception as exc:
-                self.logger.exception("Failed to create residual plot for channel %s: %s", channel_id, exc)
-
-            # Group Delay - OFDM DS Channel
-            try:
-                cfg = PlotConfig(
-                    title           = f"Group Delay - OFDM Channel: {channel_id}",
-                    x               = freq,
-                    x_tick_mode     = "unit",
-                    x_unit_from     = "hz",
-                    x_unit_out      = "mhz",
-                    xlabel_base     = "Frequency",
-                    y               = gd_us,
-                    ylabel          = "uS",
-                    grid            = True,
-                    legend          = False,
-                    transparent     = False,
-                    theme           = self.getAnalysisRptMatplotConfig().theme,
-                )
-
-                multi = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, 'groupdelay'])
-                self.logger.info("Creating Group Delay MatPlot: %s for channel: %s", multi, channel_id)
-
-                mgr = MatplotManager(default_cfg=cfg)
-                mgr.plot_line(filename=multi)
-                matplot_mgr.append(mgr)
-
-            except Exception as exc:
-                self.logger.exception("Failed to create plot for channel %s: %s", channel_id, exc)
-
-        # NEW: IFFT Time Response |h(t)| (linear)
-        try:
-            n = len(cplex)
-            if n >= 2 and len(freq) >= 2:
-                # Estimate Δf from frequency axis (median step to resist outliers)
-                diffs = [abs(float(freq[i+1]) - float(freq[i])) for i in range(min(len(freq) - 1, n - 1))]
-                df = float(np.median(diffs)) if diffs else 0.0
-                if df <= 0.0:
-                    raise ValueError("Unable to infer subcarrier spacing (Δf) from frequency axis.")
-
-                # n_fft = next pow2 >= n, min MIN_NFFT
-                n_fft = max(MIN_NFFT, 1 << (int(np.ceil(np.log2(max(1, n))))))
-                fs = float(n_fft) * df  # IFFT sample rate
-
-                # Optional Hann window in frequency domain
-                H = np.asarray([complex(re, im) for (re, im) in cplex], dtype=np.complex128)
-                if WINDOW_MODE == "hann":
-                    w = np.hanning(H.size).astype(np.float64)
-                    H = (H * w).astype(np.complex128)
-
-                # Zero-pad or crop to n_fft
-                if H.size < n_fft:
-                    Hn = np.zeros(n_fft, dtype=np.complex128); Hn[:H.size] = H
-                elif H.size > n_fft:
-                    Hn = H[:n_fft]
-                else:
-                    Hn = H
-
-                h_time = np.fft.ifft(Hn, n=n_fft)
-                mag = np.abs(h_time)
-
-                # Place direct path at bin 0 for readability
-                i0 = int(np.argmax(mag))
-                if DIRECT_AT_ZERO:
-                    mag = np.abs(np.roll(h_time, -i0))
-
-                time_axis_us: List[float] = (np.arange(n_fft, dtype=float) / fs * 1e6).tolist()
-                mag_list: List[float] = mag.astype(float).tolist()
-
-                cfg = PlotConfig(
-                    title           = f"IFFT Time Response |h(t)| - OFDM Channel: {channel_id}  "
-                                      f"(fs={fs/1e6:.3f} MHz, n_fft={n_fft})",
-                    x               = time_axis_us,
-                    xlabel          = "Time (µs)",
-                    y               = mag_list,
-                    ylabel          = "Magnitude (linear)",
-                    grid            = True,
-                    legend          = False,
-                    transparent     = False,
-                    theme           = self.getAnalysisRptMatplotConfig().theme,
-                )
-
-                fname = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, 'ifft'])
-                self.logger.info("Creating IFFT Time Response MatPlot: %s for channel: %s", fname, channel_id)
-
-                mgr = MatplotManager(default_cfg=cfg)
-                mgr.plot_line(filename=fname)
-                matplot_mgr.append(mgr)
-            else:
-                self.logger.info("Insufficient samples for IFFT plot; channel=%s", channel_id)
-
-        except Exception as exc:
-            self.logger.exception("Failed to create IFFT time-response plot for channel %s: %s", channel_id, exc)
-
-
-        if not any_models:
-            self.logger.info("No analysis data available; no plots created.")
-
-        return matplot_mgr
-
     def create_matplot(self, **kwargs) -> List[MatplotManager]:
         """
         Generate per-channel line and multi-line plots from validated models.
@@ -421,6 +122,8 @@ class ChanEstimationReport(AnalysisReport):
             # Absolute dB view; no normalization
             db = cast(ArrayLike, DbLinearConverter.complex_to_db(cplex))
 
+            title_prefix = f"Channel Estimation · Channel: {channel_id}"
+
             # IQ scatter
             try:
                 if not cplex:
@@ -435,11 +138,8 @@ class ChanEstimationReport(AnalysisReport):
                     xlim = (-max_abs - pad, max_abs + pad)
                     ylim = (-max_abs - pad, max_abs + pad)
 
-                    npts = len(i)
-                    point_size = 2.0 if npts >= 10000 else (4.0 if npts >= 3000 else 8.0)
-
                     cfg = PlotConfig(
-                        title           = f"Channel Estimation IQ - OFDM Channel: {channel_id}",
+                        title           = f"{title_prefix} · IQ Scatter Plot",
                         x               = list(i),
                         y               = list(q),
                         x_tick_decimals = 0,
@@ -453,11 +153,11 @@ class ChanEstimationReport(AnalysisReport):
                         theme           = self.getAnalysisRptMatplotConfig().theme,
                     )
 
-                    fn_iq = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, 'iq'])
+                    fn_iq = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, 'iq_scatter'])
                     self.logger.info("Creating MatPlot IQ scatter: %s for channel: %s", fn_iq, channel_id)
 
                     mgr = MatplotManager(default_cfg=cfg)
-                    mgr.plot_scatter(filename=fn_iq, s=[point_size] * npts, add_colorbar=False)
+                    mgr.plot_scatter(filename=fn_iq)
                     matplot_mgr.append(mgr)
 
             except Exception as exc:
@@ -466,7 +166,7 @@ class ChanEstimationReport(AnalysisReport):
             # Linear + regression
             try:
                 cfg = PlotConfig(
-                    title           = f"Channel Estimation - OFDM Channel: {channel_id}",
+                    title           = f"{title_prefix} · Linear with Regression Line",
                     x               = freq,
                     x_tick_mode     = "unit",
                     x_unit_from     = "hz",
@@ -495,7 +195,7 @@ class ChanEstimationReport(AnalysisReport):
             # dB view
             try:
                 cfg = PlotConfig(
-                    title           = f"Channel Estimation (dB) - OFDM Channel: {channel_id}",
+                    title           = f"{title_prefix} · Standard (dB)",
                     x               = freq,
                     x_tick_mode     = "unit",
                     x_unit_from     = "hz",
@@ -587,7 +287,7 @@ class ChanEstimationReport(AnalysisReport):
             # Group Delay
             try:
                 cfg = PlotConfig(
-                    title           = f"Group Delay - OFDM Channel: {channel_id}",
+                    title           = f"{title_prefix} · Group Delay",
                     x               = freq,
                     x_tick_mode     = "unit",
                     x_unit_from     = "hz",
@@ -635,7 +335,7 @@ class ChanEstimationReport(AnalysisReport):
                     mag_list: List[float] = tr.time_response
 
                     cfg = PlotConfig(
-                        title           = f"IFFT Time Response |h(t)| - OFDM Channel: {channel_id}  "
+                        title           = f"{title_prefix} · IFFT Time Response |h(t)|"
                                         f"(fs={det.fs/1e6:.3f} MHz, n_fft={det.nfft})",
                         x               = time_axis_us,
                         xlabel          = "Time (µs)",
@@ -661,7 +361,6 @@ class ChanEstimationReport(AnalysisReport):
             self.logger.info("No analysis data available; no plots created.")
 
         return matplot_mgr
-
 
     def _process(self) -> None:
         """

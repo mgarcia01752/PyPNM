@@ -19,7 +19,7 @@ from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, ThemeType
-from pypnm.lib.types import PathArray, PathLike
+from pypnm.lib.types import ChannelId, PathArray, PathLike
 from pypnm.lib.utils import Utils
 
 AnalysisData    = List[Dict[str, Any]]
@@ -322,7 +322,7 @@ class AnalysisReport(ABC):
 
         self._group_time              = Utils.time_stamp()
         self._base_filename: str      = ""
-        self._common_analysis_model: Dict[int, BaseModel] = {}
+        self._common_analysis_model: Dict[ChannelId, BaseModel] = {}
 
         # Normalize first item to a dict (supports both dict and BaseModel)
         first_item = self._data_list[0]
@@ -331,7 +331,6 @@ class AnalysisReport(ABC):
         else:
             first_dict = cast(Dict[str, Any], first_item)
 
-        # MAC addresses (prefer 'mac_address', fall back to 'cm_mac_address')
         mac_str: str = (
             first_dict.get("mac_address")
             or first_dict.get("cm_mac_address")
@@ -343,9 +342,10 @@ class AnalysisReport(ABC):
         self._cmts_mac_address: MacAddress = MacAddress(cmts_mac_str)
 
         # System descriptor (robust to missing keys)
-        dev_details: Dict[str, Any]                   = cast(Dict[str, Any], first_dict.get("device_details", {}))
-        system_description_dict: Dict[str, Any]                = cast(Dict[str, Any], dev_details.get("system_description", {}))
-        self._system_description: SystemDescriptor             = SystemDescriptor.load_from_dict(system_description_dict)
+        dev_details: Dict[str, Any]                     = cast(Dict[str, Any], first_dict.get("device_details", {}))
+        system_description_dict: Dict[str, Any]         = cast(Dict[str, Any], dev_details.get("system_description", 
+                                                                                               SystemDescriptor.empty().to_dict()))
+        self._system_description: SystemDescriptor      = SystemDescriptor.load_from_dict(system_description_dict)
 
     def _generate_fname(self, tags: List[str] = [], ext: str = "") -> str:
         """

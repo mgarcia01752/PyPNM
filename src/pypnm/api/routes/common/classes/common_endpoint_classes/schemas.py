@@ -5,8 +5,10 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 from pydantic import Field, field_validator
+from pypnm.api.routes.advance.common.types.types import TransactionId
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
     CommonAnalysisRequest, CommonRequest, CommonResponse, CommonSingleCaptureAnalysisRequest)
+from pypnm.lib.types import ChannelId
 
 class PnmRequest(CommonRequest):
     """Request model used to trigger measurement-related operations on a cable modem."""
@@ -19,12 +21,12 @@ class PnmResponse(CommonResponse):
 class PnmFileRequest(CommonRequest):
     """Request model used when the operation requires access to a specific PNM file."""
     file_name: str                  = Field(..., description="Name of the file associated with the MAC address.")
-    transaction_id: Optional[str]   = Field(default=None,description="Optional transaction identifier to track file operations or correlate requests.")
+    transaction_id: TransactionId   = Field(description="Transaction identifier to track file operations or correlate requests.")
 
 class PnmChannelEntryResponse(CommonResponse):
     """Response model containing detailed OFDM or OFDMA channel entry data."""
     index: int              = Field(default=0, description="Index in the channel table (e.g., OFDM/OFDMA channel number).")
-    channel_id: int         = Field(default=0, description="Logical channel ID assigned by the CMTS.")
+    channel_id: ChannelId   = Field(description="Logical channel ID assigned by the CMTS.")
     entry: Dict[str, Any]   = Field(default={}, description="Dictionary of all fields for this channel entry.")
 
 class PnmFileResponse(CommonResponse):

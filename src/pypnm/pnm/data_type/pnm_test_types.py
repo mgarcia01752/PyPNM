@@ -18,7 +18,7 @@ class DocsPnmCmCtlTest(Enum):
     DS_OFDM_RXMER_PER_SUBCAR = 6            # Downstream OFDM RxMER per Subcarrier
     DS_OFDM_CODEWORD_ERROR_RATE = 7         # Downstream OFDM Codeword Error Rate
     DS_HISTOGRAM = 8                        # Downstream Histogram
-    US_PRE_EQUALIZER_COEF = 9               # Upstream Pre-equalizer Coefficients
+    US_PRE_EQUALIZER_COEF = 9               # Upstream Pre-equalizer Coefficients and Last-Pre-equalizer
     DS_OFDM_MODULATION_PROFILE = 10         # Not in MIB
     LATENCY_REPORT = 11                     # Not in MIB
     SPECTRUM_ANALYZER_SNMP_AMP_DATA = 200   # Not in MIB -> SPECTRUM_ANALYZER (SNMP Amplitude Data)

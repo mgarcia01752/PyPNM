@@ -522,7 +522,7 @@ class Analysis:
         subcarrier_spacing: int                 = measurement.get("subcarrier_spacing",            INVALID_START_VALUE)
         first_active_subcarrier_index: int      = measurement.get("first_active_subcarrier_index", INVALID_START_VALUE)
         subcarrier_zero_frequency: FrequencyHz  = measurement.get("subcarrier_zero_frequency",     INVALID_START_VALUE)
-        occupied_channel_bandwidth: int         = measurement.get("occupied_channel_bandwidth",    INVALID_START_VALUE)
+        occupied_channel_bandwidth: FrequencyHz = measurement.get("occupied_channel_bandwidth",    INVALID_START_VALUE)
 
         if (first_active_subcarrier_index < 0) or (subcarrier_zero_frequency < 0) or (subcarrier_spacing <= 0):
             raise ValueError(
@@ -537,7 +537,7 @@ class Analysis:
 
         # Frequency axis
         start_freq: FrequencyHz    = cast(FrequencyHz, (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency)
-        freqs: FrequencySeriesHz   = [start_freq + (i * subcarrier_spacing) for i in range(len(values))]
+        freqs: FrequencySeriesHz   = cast(FrequencySeriesHz, [start_freq + (i * subcarrier_spacing) for i in range(len(values))])
 
         # Group delay and magnitudes
         gd = GroupDelay.from_channel_estimate(Hhat=values, df_hz=subcarrier_spacing, f0_hz=start_freq)
@@ -697,9 +697,9 @@ class Analysis:
         ValueError
             If spacing/indices/frequencies are invalid.
         """
-        spacing: int       = int(measurement.get("subcarrier_spacing", INVALID_START_VALUE))
-        active_index: int  = int(measurement.get("first_active_subcarrier_index", INVALID_START_VALUE))
-        zero_freq: int     = int(measurement.get("subcarrier_zero_frequency", INVALID_START_VALUE))
+        spacing: FrequencyHz       = FrequencyHz(measurement.get("subcarrier_spacing", INVALID_START_VALUE))
+        active_index: int          = int(measurement.get("first_active_subcarrier_index", INVALID_START_VALUE))
+        zero_freq: FrequencyHz     = FrequencyHz(measurement.get("subcarrier_zero_frequency", INVALID_START_VALUE))
 
         if active_index < 0 or zero_freq < 0 or spacing <= 0:
             raise ValueError(
@@ -711,8 +711,8 @@ class Analysis:
         out = DsModulationProfileAnalysisModel(
             device_details      = measurement.get("device_details", {}),
             pnm_header          = measurement.get("pnm_header", {}),
-            mac_address         = str(measurement.get("mac_address", MacAddress.null())),
-            channel_id          = int(measurement.get("channel_id", INVALID_CHANNEL_ID)),
+            mac_address         = MacAddressStr(measurement.get("mac_address", MacAddress.null())),
+            channel_id          = ChannelId(measurement.get("channel_id", INVALID_CHANNEL_ID)),
             frequency_unit      = "Hz",
             shannon_min_unit    = "dB",
             profiles            = [],
@@ -720,7 +720,7 @@ class Analysis:
 
         # --- Per-profile assembly ---
         for profile in measurement.get("profiles", []) or []:
-            profile_id  = int(profile.get("profile_id", INVALID_PROFILE_ID))
+            profile_id  = ProfileId(profile.get("profile_id", INVALID_PROFILE_ID))
             schemes     = profile.get("schemes", []) or []
 
             freq_list: FrequencySeriesHz    = []
@@ -807,66 +807,144 @@ class Analysis:
     @classmethod
     def basic_analysis_us_ofdma_pre_equalization(cls, measurement: Dict[str, Any]) -> UsOfdmaUsPreEqAnalysisModel:
         """
-        Perform basic analysis of upstream OFDMA pre-equalization data and return a typed model.
+        Perform Upstream OFDMA Pre-Equalization Analysis.
 
         Computes:
-        - Per-carrier frequency (Hz)
-        - Magnitude (dB) from complex coefficients
-        - Group delay (µs) from unwrapped phase gradient
+        - Per-subcarrier frequency axis (Hz)
+        - Magnitude sequence (dB) from complex coefficients
+        - Group delay (µs) from phase slope across subcarriers
+        - IFFT-based echo detection over a constrained delay window
         - Complex samples passthrough
         - Signal statistics over the magnitude sequence
+
+        Expected Keys (subset) in `measurement`
+        ---------------------------------------
+        channel_id : int
+            Upstream OFDMA channel ID.
+        subcarrier_spacing : int
+            Δf in Hz between subcarriers.
+        first_active_subcarrier_index : int
+            Index of the first active subcarrier relative to subcarrier 0.
+        subcarrier_zero_frequency : int
+            Frequency (Hz) of subcarrier 0.
+        occupied_channel_bandwidth : int
+            Occupied bandwidth for metadata.
+        values : ComplexArray
+            List of complex-like samples for H(f). [(re, im), ...] or [complex, ...].
+
+        Returns
+        -------
+        UsOfdmaUsPreEqAnalysisModel
+            Typed model with carrier values, signal statistics, and echo results.
         """
-        # --- inputs / sanity ---
-        spacing: int                    = int(measurement.get("subcarrier_spacing", 0))               
-        active_index: int               = int(measurement.get("first_active_subcarrier_index", 0))
-        zero_freq: int                  = int(measurement.get("subcarrier_zero_frequency", 0))        
-        base_freq: int                  = zero_freq + (spacing * active_index)
+        log = logging.getLogger(f"{cls.__name__}")
 
-        values: ComplexArray            = measurement.get("values", [])
+        channel_id: ChannelId                   = measurement.get("channel_id",                    INVALID_CHANNEL_ID)
+        subcarrier_spacing: int                 = measurement.get("subcarrier_spacing",            INVALID_START_VALUE)
+        first_active_subcarrier_index: int      = measurement.get("first_active_subcarrier_index", INVALID_START_VALUE)
+        subcarrier_zero_frequency: FrequencyHz  = measurement.get("subcarrier_zero_frequency",     INVALID_START_VALUE)
+        occupied_channel_bandwidth: FrequencyHz = measurement.get("occupied_channel_bandwidth",    INVALID_START_VALUE)
+
+        if (first_active_subcarrier_index < 0) or (subcarrier_zero_frequency < 0) or (subcarrier_spacing <= 0):
+            raise ValueError(
+                f"Active index: {first_active_subcarrier_index} or "
+                f"zero frequency: {subcarrier_zero_frequency} or "
+                f"spacing: {subcarrier_spacing} must be non-negative"
+            )
+
+        values: ComplexArray = measurement.get("values", [])
         if not values:
-            raise ValueError("No complex channel estimation values provided in measurement.")
+            raise ValueError("No complex pre-equalization values provided in measurement.")
 
-        # --- core calculations ---
-        complex_values                  = np.array([complex(r, i) for r, i in values], dtype=complex)
-        magnitudes_db                   = 20.0 * np.log10(np.abs(complex_values) + 1e-12)             
+        # Frequency axis
+        start_freq: FrequencyHz  = cast(FrequencyHz, (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency)
+        freqs: FrequencySeriesHz = cast(FrequencySeriesHz, [start_freq + (i * subcarrier_spacing) for i in range(len(values))])
 
-        # Group delay  (τ = - dφ/df).  φ from unwrapped angle; spacing in Hz → τ in microseconds
-        phase                           = np.unwrap(np.angle(complex_values))
-        group_delay_us                  = -np.gradient(phase, spacing) * 1e6                          
-        freqs: List[int]                = [base_freq + i * spacing for i in range(len(complex_values))]
-        complex_ndim: int               = int(np.asarray(values, dtype=complex).ndim)
+        # Group delay and magnitudes
+        gd = GroupDelay.from_channel_estimate(Hhat=values, df_hz=subcarrier_spacing, f0_hz=start_freq)
+        gd_results = gd.to_result()
 
-        # --- models: nested blocks ---
-        grp_delay_model: GrpDelayStatsModel = GrpDelayStatsModel(
-            group_delay_unit            = "microsecond",
-            magnitude                   = group_delay_us.tolist(),
+        cao = ComplexArrayOps(values)
+        magnitudes_db: FloatSeries = cao.to_list(cao.power_db())
+        signal_stats_model: SignalStatisticsModel = SignalStatistics(magnitudes_db).compute()
+        complex_arr = np.asarray(values, dtype=complex)
+
+        group_delay_stats: GrpDelayStatsModel = GrpDelayStatsModel(
+            group_delay_unit = "microsecond",
+            magnitude        = ComplexArrayOps.to_list(gd_results.group_delay_us),
         )
+
+        # ── IFFT Echo Detection (same technique as downstream channel-estimation) ──
+        N      = len(values)
+        n_fft  = 1 << (N - 1).bit_length()
+        if n_fft < 1024:
+            n_fft = 1024
+
+        fs = float(N) * float(subcarrier_spacing)
+        max_delay_s_used = 3.5e-6
+
+        cable_type_name = "RG6"
+        v               = SPEED_OF_LIGHT * CABLE_VF.get(cable_type_name, 0.87)
+        max_dist_m      = 0.5 * v * max_delay_s_used
+        i_stop          = int(max_delay_s_used * fs)
+        log.debug(
+            "US OFDMA Pre-Eq EchoDetector window: fs=%.3f Hz, n_fft=%d, i_stop=%d bins, max_delay=%.2fus, max_dist≈%.1f m",
+            fs, n_fft, i_stop, max_delay_s_used * 1e6, max_dist_m
+        )
+
+        det = EchoDetector(
+            freq_data               = values,
+            subcarrier_spacing_hz   = float(subcarrier_spacing),
+            n_fft                   = 4096,
+            cable_type              = cable_type_name,
+            channel_id              = channel_id,
+        )
+
+        echo_report: EchoDetectorReport = det.multi_echo(
+            threshold_mode        = "db_down",
+            threshold_db_down     = 60.0,
+            normalize_power       = True,
+            guard_bins            = 16,
+            min_separation_s      = 8.0 / det.fs,
+            max_delay_s           = max_delay_s_used,
+            max_peaks             = 3,
+            include_time_response = False,
+            direct_at_zero        = True,
+            window                = "hann",
+        )
+
+        i_stop     = int(np.ceil(max_delay_s_used * det.fs))
+        edge_guard = 8
+        if echo_report.echoes:
+            echo_report.echoes = [
+                e for e in echo_report.echoes
+                if (e.bin_index < (i_stop - edge_guard))
+            ]
+
+        echo_rpt = EchoDatasetModel(type=EchoDetectorType.IFFT, report=echo_report)
 
         carrier_values: OfdmaUsPreEqCarrierModel = OfdmaUsPreEqCarrierModel(
             carrier_count               = len(freqs),
             frequency_unit              = "Hz",
             frequency                   = freqs,
             complex                     = values,
-            complex_dimension           = complex_ndim,
-            magnitudes                  = magnitudes_db.tolist(),
-            group_delay                 = grp_delay_model,
-            occupied_channel_bandwidth  = int(measurement.get("occupied_channel_bandwidth", 0)),
+            complex_dimension           = int(complex_arr.ndim),
+            magnitudes                  = magnitudes_db,
+            group_delay                 = group_delay_stats,
+            occupied_channel_bandwidth  = occupied_channel_bandwidth,
         )
 
-        # Signal statistics over magnitudes (dB)
-        signal_stats_model: SignalStatisticsModel = SignalStatistics(magnitudes_db.tolist()).compute()
-
-        # --- assemble top-level analysis model ---
         result_model: UsOfdmaUsPreEqAnalysisModel = UsOfdmaUsPreEqAnalysisModel(
-            device_details              = measurement.get("device_details", {}),
-            pnm_header                  = measurement.get("pnm_header", {}),
-            mac_address                 = str(measurement.get("mac_address", "")),
-            channel_id                  = int(measurement.get("channel_id", 0)),
-            subcarrier_spacing          = spacing,
-            first_active_subcarrier_index = active_index,
-            subcarrier_zero_frequency   = zero_freq,
-            carrier_values              = carrier_values,
-            signal_statistics           = signal_stats_model,
+            device_details                  = measurement.get("device_details", {}),
+            pnm_header                      = measurement.get("pnm_header", {}),
+            mac_address                     = MacAddressStr(measurement.get("mac_address", "")),
+            channel_id                      = ChannelId(channel_id),
+            subcarrier_spacing              = subcarrier_spacing,
+            first_active_subcarrier_index   = first_active_subcarrier_index,
+            subcarrier_zero_frequency       = subcarrier_zero_frequency,
+            carrier_values                  = carrier_values,
+            signal_statistics               = signal_stats_model,
+            echo                            = echo_rpt,
         )
 
         return result_model

@@ -106,10 +106,10 @@ InterfaceIndex  = NewType("InterfaceIndex", int)
 EntryIndex      = NewType("EntryIndex", int)
 
 # Network addressing (store as plain strings; validate elsewhere)
-MacAddressStr   = NewType("MacAddressStr", str)     # aa:bb:cc:dd:ee:ff | aa-bb-cc-dd-ee-ff | aabb.ccdd.eeff | aabbccddeeff | aabbcc:ddeeff |
-IPv4Str         = NewType("IPv4Str", str)           # 192.168.0.1
-IPv6Str         = NewType("IPv6Str", str)           # 2001:db8::1
-InetAddressStr  = NewType("InetAddressStr", str)    # 192.168.0.1 | 2001:db8::1
+MacAddressStr   = NewType("MacAddressStr", str)         # aa:bb:cc:dd:ee:ff | aa-bb-cc-dd-ee-ff | aabb.ccdd.eeff | aabbccddeeff | aabbcc:ddeeff |
+InetAddressStr  = NewType("InetAddressStr", str)        # 192.168.0.1 | 2001:db8::1
+IPv4Str         = NewType("IPv4Str", InetAddressStr)    # 192.168.0.1
+IPv6Str         = NewType("IPv6Str", InetAddressStr)    # 2001:db8::1
 
 # File tokens
 FileStem      = NewType("FileStem", str)            # name without extension

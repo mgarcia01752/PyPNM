@@ -519,75 +519,6 @@ class CmSnmpOperation:
             self.logger.error(f"Failed to retrieve SC-QAM Indexes: {e}")
             return []
 
-    async def getDocsIfCmUsTdmaChanChannelIdIndex(self) -> List[InterfaceIndex]:
-        """
-        Retrieve the list of DOCSIS 3.0 upstream TDMA/ATDMA channel indices (i.e., TDMA or ATDMA).
-
-        Returns:
-            List[int]: A list of TDMA/ATDMA channel indices present on the device.
-        """
-        idx_list: List[int] = []
-        oid_channel_id = "docsIfUpChannelId"
-        
-        try:
-            results = await self._snmp.walk(oid_channel_id)
-            if not results:
-                self.logger.warning(f"No results found for OID {oid_channel_id}")
-                return []
-
-            index_list = Snmp_v2c.extract_last_oid_index(results)
-
-            oid_modulation = "docsIfUpChannelType"
-            
-            for idx in index_list:
-                
-                result = await self._snmp.get(f'{oid_modulation}.{idx}')
-                
-                if not result:
-                    self.logger.warning(f"SNMP get failed or returned empty docsIfUpChannelType for index {idx}.")
-                    continue
-
-                val = Snmp_v2c.snmp_get_result_value(result)[0]
-
-                try:
-                    channel_type = int(val)
-                    
-                except ValueError:
-                    self.logger.warning(f"Failed to convert channel-type value '{val}' to int for index {idx}. Skipping.")
-                    continue
-                
-                '''
-                    DocsisUpstreamType ::= TEXTUAL-CONVENTION
-                    STATUS          current
-                    DESCRIPTION
-                            "Indicates the DOCSIS Upstream Channel Type.
-                            'unknown' means information not available.
-                            'tdma' is related to TDMA, Time Division
-                            Multiple Access; 'atdma' is related to A-TDMA,
-                            Advanced Time Division Multiple Access,
-                            'scdma' is related to S-CDMA, Synchronous
-                            Code Division Multiple Access.
-                            'tdmaAndAtdma is related to simultaneous support of
-                            TDMA and A-TDMA modes."
-                    SYNTAX INTEGER {
-                        unknown(0),
-                        tdma(1),
-                        atdma(2),
-                        scdma(3),
-                        tdmaAndAtdma(4)
-                    }
-         
-                '''
-                
-                if channel_type != 0: # 0 means OFDMA in this case
-                    idx_list.append(idx)
-
-            return idx_list
-
-        except Exception as e:
-            self.logger.error(f"Failed to retrieve SC-QAM channel indices from {oid_channel_id}: {e}")
-            return []
-
     async def getDocsIf31CmDsOfdmChannelIdIndex(self) -> List[InterfaceIndex]:
         """
         Retrieve the list of Docsis 3.1 downstream OFDM channel indices.
@@ -596,15 +527,6 @@ class CmSnmpOperation:
             List[int]: A list of channel indices present on the device.
         """
         return await self.getIfTypeIndex(DocsisIfType.docsOfdmDownstream)
-
-    async def getDocsIf31CmUsOfdmaChanChannelIdIndex(self) -> List[InterfaceIndex]:
-        """
-        Get the Docsis 3.1 upstream OFDMA channels.
-
-        Returns:
-            List[int]: A list of OFDMA channel indices present on the device.
-        """
-        return await self.getIfTypeIndex(DocsisIfType.docsOfdmaUpstream)
 
     async def getDocsIf31CmDsOfdmChanPlcFreq(self) -> List[Tuple[InterfaceIndex, FrequencyHz]]:
         """
@@ -805,47 +727,6 @@ class CmSnmpOperation:
             self.logger.exception("Failed to retrieve downstream SC-QAM codeword error rates")
             return {"entries": [], "aggregate_error_rate": 0.0}
 
-    async def getDocsIf31CmUsOfdmaChanEntry(self) -> List[DocsIf31CmUsOfdmaChanEntry]:
-        """
-        Retrieves and initializes all OFDMA channel entries from Snmp_v2c.
-
-        Returns:
-            List[DocsIf31CmUsOfdmaChanEntry]: List of populated OFDMA channel objects.
-        """
-        results: List[DocsIf31CmUsOfdmaChanEntry] = []
-
-        indices = await self.getDocsIf31CmUsOfdmaChanChannelIdIndex()
-        if not indices:
-            self.logger.warning("No upstream OFDMA indices found.")
-            return results
-
-        return await DocsIf31CmUsOfdmaChanEntry.get(snmp=self._snmp, indices=indices)
-
-    async def getDocsIfUpstreamChannelEntry(self) -> List[DocsIfUpstreamChannelEntry]:
-        """
-        Retrieves and initializes all ATDMA US channel entries from Snmp_v2c.
-
-        Returns:
-            List[DocsIfUpstreamChannelEntry]: List of populated ATDMA channel objects.
-        """
-        try:
-            indices = await self.getDocsIfCmUsTdmaChanChannelIdIndex()
-
-            if not indices:
-                self.logger.warning("No upstream ATDMA indices found.")
-                return []
-
-            entries = await DocsIfUpstreamChannelEntry.get(
-                snmp=self._snmp,
-                indices=indices
-            )
-
-            return entries
-
-        except Exception as e:
-            self.logger.exception("Failed to retrieve ATDMA upstream channel entries")
-            return []
-
     async def getEventEntryIndex(self) -> List[EntryIndex]:
         """
         Retrieves the list of index values for the docsDevEventEntry table.
@@ -1010,7 +891,7 @@ class CmSnmpOperation:
 
         oid = oid_key_map.get(test_type)
         if not oid:
-            logging.warning(f"Unsupported test type provided: {test_type}")
+            self.logger.warning(f"Unsupported test type provided: {test_type}")
             return MeasStatusType.OTHER
 
         oid = f"{oid}.{ofdm_ifindex}"
@@ -1021,8 +902,8 @@ class CmSnmpOperation:
             return MeasStatusType(status_value)
 
         except Exception as e:
-            logging.error(f"[{test_type.name}] SNMP fetch failed on OID {oid}: {e}")
-            logging.error(f'[{test_type.name}] {result}')
+            self.logger.error(f"[{test_type.name}] SNMP fetch failed on OID {oid}: {e}")
+            self.logger.error(f'[{test_type.name}] {result}')
             return MeasStatusType.ERROR
 
     async def getDocsIfDownstreamChannelIdIndexStack(self) -> List[Tuple[InterfaceIndex, ChannelId]]:
@@ -1093,23 +974,6 @@ class CmSnmpOperation:
         idx_channelId:List[Tuple[InterfaceIndex, ChannelId]] = Snmp_v2c.snmp_get_result_last_idx_value(result)
 
         return idx_channelId or []
-
-    async def getDocsIf31CmUsOfdmaChannelIdIndexStack(self) -> List[Tuple[InterfaceIndex, ChannelId]]:
-        """
-        Retrieve a list of tuples representing OFDMA channel index and their associated channel IDs
-        for DOCSIS 3.1 upstream OFDMA channels.
-
-        Returns:
-            List[Tuple[InterfaceIndex, ChannelId]]: Each tuple contains (index, channelId). Returns an empty list if no data is found.
-        """
-        result = await self._snmp.walk(f'{"docsIf31CmUsOfdmaChanChannelId"}')
-        
-        if not result:
-            return []
-
-        idx_channelIdList: List[Tuple[InterfaceIndex, ChannelId]] = Snmp_v2c.snmp_get_result_last_idx_value(result)
-
-        return idx_channelIdList or []
 
     async def getSysUpTime(self) -> Optional[str]:
         """
@@ -1353,6 +1217,143 @@ class CmSnmpOperation:
                 stats[if_type.name] = [iface.model_dump() for iface in interfaces]
 
         return stats
+
+    async def getDocsIf31CmUsOfdmaChanChannelIdIndex(self) -> List[InterfaceIndex]:
+        """
+        Get the Docsis 3.1 upstream OFDMA channels.
+
+        Returns:
+            List[int]: A list of OFDMA channel indices present on the device.
+        """
+        return await self.getIfTypeIndex(DocsisIfType.docsOfdmaUpstream)
+
+    async def getDocsIf31CmUsOfdmaChanEntry(self) -> List[DocsIf31CmUsOfdmaChanEntry]:
+        """
+        Retrieves and initializes all OFDMA channel entries from Snmp_v2c.
+
+        Returns:
+            List[DocsIf31CmUsOfdmaChanEntry]: List of populated OFDMA channel objects.
+        """
+        results: List[DocsIf31CmUsOfdmaChanEntry] = []
+
+        indices = await self.getDocsIf31CmUsOfdmaChanChannelIdIndex()
+        if not indices:
+            self.logger.warning("No upstream OFDMA indices found.")
+            return results
+
+        return await DocsIf31CmUsOfdmaChanEntry.get(snmp=self._snmp, indices=indices)
+
+    async def getDocsIfUpstreamChannelEntry(self) -> List[DocsIfUpstreamChannelEntry]:
+        """
+        Retrieves and initializes all ATDMA US channel entries from Snmp_v2c.
+
+        Returns:
+            List[DocsIfUpstreamChannelEntry]: List of populated ATDMA channel objects.
+        """
+        try:
+            indices = await self.getDocsIfCmUsTdmaChanChannelIdIndex()
+
+            if not indices:
+                self.logger.warning("No upstream ATDMA indices found.")
+                return []
+
+            entries = await DocsIfUpstreamChannelEntry.get(
+                snmp=self._snmp,
+                indices=indices
+            )
+
+            return entries
+
+        except Exception as e:
+            self.logger.exception("Failed to retrieve ATDMA upstream channel entries")
+            return []
+
+    async def getDocsIf31CmUsOfdmaChannelIdIndexStack(self) -> List[Tuple[InterfaceIndex, ChannelId]]:
+        """
+        Retrieve a list of tuples representing OFDMA channel index and their associated channel IDs
+        for DOCSIS 3.1 upstream OFDMA channels.
+
+        Returns:
+            List[Tuple[InterfaceIndex, ChannelId]]: Each tuple contains (index, channelId). Returns an empty list if no data is found.
+        """
+        result = await self._snmp.walk(f'{"docsIf31CmUsOfdmaChanChannelId"}')
+        
+        if not result:
+            return []
+
+        idx_channelIdList: List[Tuple[InterfaceIndex, ChannelId]] = Snmp_v2c.snmp_get_result_last_idx_value(result)
+
+        return idx_channelIdList or []
+
+    async def getDocsIfCmUsTdmaChanChannelIdIndex(self) -> List[InterfaceIndex]:
+        """
+        Retrieve the list of DOCSIS 3.0 upstream TDMA/ATDMA channel indices (i.e., TDMA or ATDMA).
+
+        Returns:
+            List[int]: A list of TDMA/ATDMA channel indices present on the device.
+        """
+        idx_list: List[int] = []
+        oid_channel_id = "docsIfUpChannelId"
+        
+        try:
+            results = await self._snmp.walk(oid_channel_id)
+            if not results:
+                self.logger.warning(f"No results found for OID {oid_channel_id}")
+                return []
+
+            index_list = Snmp_v2c.extract_last_oid_index(results)
+
+            oid_modulation = "docsIfUpChannelType"
+            
+            for idx in index_list:
+                
+                result = await self._snmp.get(f'{oid_modulation}.{idx}')
+                
+                if not result:
+                    self.logger.warning(f"SNMP get failed or returned empty docsIfUpChannelType for index {idx}.")
+                    continue
+
+                val = Snmp_v2c.snmp_get_result_value(result)[0]
+
+                try:
+                    channel_type = int(val)
+                    
+                except ValueError:
+                    self.logger.warning(f"Failed to convert channel-type value '{val}' to int for index {idx}. Skipping.")
+                    continue
+                
+                '''
+                    DocsisUpstreamType ::= TEXTUAL-CONVENTION
+                    STATUS          current
+                    DESCRIPTION
+                            "Indicates the DOCSIS Upstream Channel Type.
+                            'unknown' means information not available.
+                            'tdma' is related to TDMA, Time Division
+                            Multiple Access; 'atdma' is related to A-TDMA,
+                            Advanced Time Division Multiple Access,
+                            'scdma' is related to S-CDMA, Synchronous
+                            Code Division Multiple Access.
+                            'tdmaAndAtdma is related to simultaneous support of
+                            TDMA and A-TDMA modes."
+                    SYNTAX INTEGER {
+                        unknown(0),
+                        tdma(1),
+                        atdma(2),
+                        scdma(3),
+                        tdmaAndAtdma(4)
+                    }
+         
+                '''
+                
+                if channel_type != 0: # 0 means OFDMA in this case
+                    idx_list.append(idx)
+
+            return idx_list
+
+        except Exception as e:
+            self.logger.error(f"Failed to retrieve SC-QAM channel indices from {oid_channel_id}: {e}")
+            return []
+
 
     """
     Measurement Entries

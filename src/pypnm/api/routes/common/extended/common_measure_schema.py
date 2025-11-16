@@ -40,8 +40,8 @@ class DownstreamOfdmParameters(InterfaceParameters):
             - Targets all available OFDM channels (default behavior).
     """
 
-    type: Literal["ofdm"] = Field(default="ofdm")
-    channel_id: Optional[List[ChannelId]] = Field(default=None)
+    type: Literal["ofdm"]                   = Field(default="ofdm")
+    channel_id: Optional[List[ChannelId]]   = Field(default=None)
 
 class UpstreamOfdmaParameters(InterfaceParameters):
     """
@@ -59,5 +59,5 @@ class UpstreamOfdmaParameters(InterfaceParameters):
         UpstreamOfdmaParameters()
             - Targets all available OFDMA channels (default behavior).
     """
-    type: Literal["ofdma"] = Field(default="ofdma")
-    channel_id: Optional[List[ChannelId]] = Field(default=None)
+    type: Literal["ofdma"]                  = Field(default="ofdma")
+    channel_id: Optional[List[ChannelId]]   = Field(default=None)

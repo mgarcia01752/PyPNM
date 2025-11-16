@@ -54,8 +54,6 @@ class FecSummaryAnalysisReport(AnalysisReport):
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self._results: Dict[int, FecSummaryAnalysisRptModel] = {}
 
-    # ───────────────────────── internal helpers ─────────────────────────
-
     @staticmethod
     def _as_seq(x: Any) -> List[Any]:
         """Convert input to list; None→[], tuples/arrays→list, scalars→[x]."""
@@ -133,8 +131,6 @@ class FecSummaryAnalysisReport(AnalysisReport):
             "Preview ch=%s prof=%s ts[:5]=%s total[:5]=%s corr[:5]=%s unc[:5]=%s",
             int(ch), profile, head(ts), head(tc), head(cc), head(uc),
         )
-
-    # ───────────────────────── outputs ─────────────────────────
 
     def create_csv(self, **kwargs: Any) -> List[CSVManager]:
         """

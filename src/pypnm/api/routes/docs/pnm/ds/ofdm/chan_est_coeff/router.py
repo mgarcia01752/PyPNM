@@ -56,6 +56,7 @@ class ChannelEstimationCoefficientRouter:
             """
             mac: MacAddressStr = request.cable_modem.mac_address
             ip: InetAddressStr = request.cable_modem.ip_address
+            
             tftpv4: Inet = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
             tftpv6: Inet = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
 
@@ -70,7 +71,7 @@ class ChannelEstimationCoefficientRouter:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
 
-            service: CmDsOfdmChanEstCoefService = CmDsOfdmChanEstCoefService(cm, (tftpv4,tftpv6))
+            service: CmDsOfdmChanEstCoefService = CmDsOfdmChanEstCoefService(cm, (tftpv4, tftpv6))
             msg_rsp: MessageResponse = await service.set_and_go()
 
             if msg_rsp.status != ServiceStatusCode.SUCCESS:

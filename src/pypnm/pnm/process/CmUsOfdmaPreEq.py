@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 from struct import calcsize, unpack
-from typing import Tuple, Dict, Any, cast
+from typing import Final, Tuple, Dict, Any, cast
 
 from pydantic import ConfigDict, Field
 
@@ -19,11 +19,12 @@ from pypnm.pnm.process.pnm_header import PnmHeader
 
 
 class CmUsOfdmaPreEqModel(PnmBaseModel):
-    model_config                   = ConfigDict(extra="ignore")
-    cmts_mac_address: MacAddressStr = Field(..., description="CMTS MAC address associated with this measurement.")
-    value_length: int               = Field(..., ge=0, description="Number of complex coefficient pairs (non-negative).")
-    value_unit: str                 = Field(default="[Real, Imaginary]", description="Unit representation of complex values.")
-    values: ComplexArray            = Field(..., min_length=1, description="Pre-equalization coefficients as [real, imaginary] pairs.")
+    model_config                            = ConfigDict(extra="ignore")
+    cmts_mac_address: MacAddressStr         = Field(..., description="CMTS MAC address associated with this measurement.")
+    value_length: int                       = Field(..., ge=0, description="Number of complex coefficient pairs (non-negative).")
+    value_unit: Final[str]                  = Field(default="[Real, Imaginary]", description="Unit representation of complex values.")
+    values: ComplexArray                    = Field(..., min_length=1, description="Pre-equalization coefficients as [real, imaginary] pairs.")
+    occupied_channel_bandwidth: FrequencyHz = Field(..., ge=0, description="OFDM Occupied Bandwidth (Hz)")
 
 class CmUsOfdmaPreEq(PnmHeader):
     """
@@ -34,26 +35,28 @@ class CmUsOfdmaPreEq(PnmHeader):
       - CM/CMTS MAC addresses
       - Channel/frequency metadata (subcarrier 0, first active index, spacing in Hz)
       - Complex pre-equalization coefficients as [real, imag] pairs
+
+      - The CM Pre-Equalizer coefficients are expressed as 16-bit two's complement numbers using s2.13 format.
+      - The Pre-Equalizer coefficient "update values" sent to the CM by the CMTS are expressed as 16-bit
+        two's complement numbers using S1.14 format
+
     """
 
-    def __init__(self, binary_data: bytes, 
-                 sm_n_format: Tuple[IntegerBits, FractionalBits] = (IntegerBits(1), FractionalBits(14))):
+    def __init__(self, binary_data: bytes):
         super().__init__(binary_data)
         self.logger                          = logging.getLogger(self.__class__.__name__)
-
-        self._sm_n_format                    = sm_n_format
-
         self._channel_id                     : ChannelId
         self._mac_address                    : MacAddressStr
         self._cmts_mac_address               : MacAddressStr
         self._subcarrier_zero_frequency      : FrequencyHz
         self._first_active_subcarrier_index  : int
-        self._subcarrier_spacing_khz         : FrequencyHz
+        self._subcarrier_spacing             : FrequencyHz
         self._pre_eq_data_length             : int
         self._pre_eq_coefficient_data        : bytes
         self._decoded_coefficients           : ComplexSeries
-
+        self._occupied_channel_bandwidth     : FrequencyHz
         self._model                          : CmUsOfdmaPreEqModel
+        self._sm_n_format                    : Tuple[IntegerBits, FractionalBits]
 
         self.__process()
 
@@ -78,7 +81,16 @@ class CmUsOfdmaPreEq(PnmHeader):
             got            = file_type.get_pnm_cann() if file_type is not None else "None"
             raise ValueError(f"PNM File Stream is not file type: {expected}, Error: {got}")
 
-        header_format = ">B6s6sIHB I".replace(" ", "")   # >B6s6sIHB I → >B6s6sIHBI
+        if file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS:
+            self._sm_n_format = (IntegerBits(2), FractionalBits(13))  # s2.13 format
+            debug_msg = "Using s2.13 format for Upstream Pre-Equalizer Coefficients PNM data."
+        else:
+            self._sm_n_format = (IntegerBits(1), FractionalBits(14))  # s1.14 format
+            debug_msg = "Using s1.14 format for Upstream Pre-Equalizer Coefficients Last Update PNM data."
+
+        self.logger.info(debug_msg)
+
+        header_format = '>B6s6sIHBI'
         header_size   = calcsize(header_format)
         if len(self.pnm_data) < header_size:
             raise ValueError("Insufficient data for CmUsOfdmaPreEq header.")
@@ -89,13 +101,14 @@ class CmUsOfdmaPreEq(PnmHeader):
             cmts_mac,
             self._subcarrier_zero_frequency,
             self._first_active_subcarrier_index,
-            self._subcarrier_spacing_khz,
+            subcarrier_spacing_khz ,
             self._pre_eq_data_length,
         ) = unpack(header_format, self.pnm_data[:header_size])
 
         self._mac_address                  = MacAddress(cm_mac).to_mac_format(MacAddressFormat.COLON)
         self._cmts_mac_address             = MacAddress(cmts_mac).to_mac_format(MacAddressFormat.COLON)
         self._pre_eq_coefficient_data      = self.pnm_data[header_size:]
+        self._subcarrier_spacing           = subcarrier_spacing_khz * KHZ
 
         if len(self._pre_eq_coefficient_data) != self._pre_eq_data_length:
             raise ValueError(
@@ -117,13 +130,19 @@ class CmUsOfdmaPreEq(PnmHeader):
             mac_address                    = self._mac_address,
             subcarrier_zero_frequency      = self._subcarrier_zero_frequency,
             first_active_subcarrier_index  = int(self._first_active_subcarrier_index),
-            subcarrier_spacing             = FrequencyHz(self._subcarrier_spacing_khz * KHZ),
-
+            subcarrier_spacing             = self._subcarrier_spacing,
+            occupied_channel_bandwidth     = self._cal_occ_bw(),
             cmts_mac_address               = self._cmts_mac_address,
             value_length                   = int(self._pre_eq_data_length),
             value_unit                     = "[Real, Imaginary]",
             values                         = complex_pairs,
         )
+
+    def _cal_occ_bw(self) -> FrequencyHz:
+        """
+        Calculate Occupied Channel Bandwidth (Hz).
+        """
+        return FrequencyHz(len(self._decoded_coefficients) * self._subcarrier_spacing)
 
     def process_pre_eq_coefficient_data(self) -> ComplexSeries:
         """

@@ -597,6 +597,61 @@ class MatplotManager:
             self._apply_x_ticks(ax, cfg)
             return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
+    def plot_scatter(
+        self,
+        filename: Union[str, Path],
+        *,
+        x: Optional[ArrayLike] = None,
+        y: Optional[ArrayLike] = None,
+        label: Optional[str] = None,
+        marker: Optional[str] = None,
+        s: Optional[float] = None,
+        color: Optional[str] = None,
+        cfg: Optional[PlotConfig] = None,
+    ) -> Path:
+        """
+        Plot a scatter chart and save as PNG.
+
+        Parameters
+        ----------
+        filename : Union[str, Path]
+            Output filename (relative to manager output_dir or absolute).
+        x : Optional[ArrayLike], keyword-only
+            X coordinates; if None, uses cfg.x (or auto-generated indices if only Y given).
+        y : Optional[ArrayLike], keyword-only
+            Y coordinates; if None, uses cfg.y.
+        label : Optional[str], keyword-only
+            Optional legend label for the scatter points.
+        marker : Optional[str], keyword-only
+            Matplotlib marker style (e.g., "o", ".", "+").
+        s : Optional[float], keyword-only
+            Marker size in points²; if None, Matplotlib default is used.
+        color : Optional[str], keyword-only
+            Explicit color; if None, uses cfg.line_color or Matplotlib default.
+        cfg : Optional[PlotConfig], keyword-only
+            Additional plot configuration; merged with manager defaults.
+
+        Returns
+        -------
+        Path
+            Absolute path to the saved PNG.
+        """
+        defaults = PlotConfig(grid=True, legend=None, transparent=False)
+        cfg = self._merge_cfg(cfg, defaults)
+        x_arr, y_arr = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
+        resolved_color = color if color is not None else cfg.line_color
+
+        with self._theme_context(cfg):
+            fig, ax = self._new_fig()
+            scatter_kwargs = {}
+            if marker is not None:
+                scatter_kwargs["marker"] = marker
+            if s is not None:
+                scatter_kwargs["s"] = s
+            ax.scatter(x_arr, y_arr, label=label, color=resolved_color, **scatter_kwargs)
+            self._apply_x_ticks(ax, cfg)
+            return self._finish(fig, ax, self._resolve_path(filename), cfg)
+
     def plot_bar(
         self,
         categories: Sequence[Union[str, Number]],
