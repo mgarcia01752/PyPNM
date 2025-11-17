@@ -59,13 +59,36 @@ if ! command -v sshpass >/dev/null 2>&1; then
     echo "⚠️  No package manager; cannot auto-install 'sshpass'."
   else
     echo "🔧 Installing sshpass..."
-    $PM_INSTALL sshpass
+    $PM_INSTALL sshpass || true
   fi
 fi
 
+echo "🧮 Ensuring SciPy/NumPy build prerequisites (where applicable)..."
+case "$PM" in
+  apt-get)
+    $PM_INSTALL build-essential gfortran libopenblas-dev liblapack-dev || true
+    ;;
+  dnf|yum)
+    $PM_INSTALL gcc gcc-c++ make blas-devel lapack-devel || true
+    ;;
+  zypper)
+    $PM_INSTALL gcc gcc-c++ make libopenblas-devel lapack-devel || true
+    ;;
+  apk)
+    $PM_INSTALL build-base gfortran openblas-dev lapack-dev || true
+    ;;
+  brew)
+    # Homebrew wheels usually bundle BLAS/LAPACK; nothing extra required in most cases.
+    :
+    ;;
+  *)
+    echo "⚠️  Skipping SciPy/NumPy build prerequisites for unknown or manual PM."
+    ;;
+esac
+
 PYTHON_VERSION="$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>/dev/null || echo "3")"
 PYTHON_CMD="python${PYTHON_VERSION}"
-if ! command -v "$PYTHON_CMD" >/devNull 2>&1; then
+if ! command -v "$PYTHON_CMD" >/dev/null 2>&1; then
   if command -v python3 >/dev/null 2>&1; then
     PYTHON_CMD="python3"
   else

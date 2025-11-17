@@ -25,6 +25,7 @@ dependencies = [
   "fastapi==0.115.12",
   "uvicorn[standard]==0.34.2",
   "numpy==2.2.6",
+  "scipy==1.15.1",
   "pydantic==2.11.5",
   "pysmi==1.6.1",
   "pysnmp==7.1.17",
@@ -130,4 +131,3 @@ pretty = true
 [tool.pydantic-mypy]
 init_forbid_extra = true
 warn_required_dynamic_aliases = true
-
