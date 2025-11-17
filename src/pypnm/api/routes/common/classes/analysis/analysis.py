@@ -948,6 +948,7 @@ class Analysis:
             signal_statistics               = signal_stats_model,
             echo                            = echo_rpt,
         )
+        
         if log.isEnabledFor(logging.DEBUG):
             LogFile.write( f'UsOfdmaUsPreEqAnalysisModel_{result_model.mac_address}_{result_model.channel_id}.log',result_model,)
 
