@@ -38,15 +38,16 @@ ArrayLike    = List[Number]
 ArrayLikeF64 = Union[Sequence[float], NDArray[np.float64]]
 
 # Canonical ndarray outputs (internal processing should normalize to these)
-NDArrayF64   = NDArray[np.float64]
-NDArrayI64   = NDArray[np.int64]
+NDArrayF64: TypeAlias   = NDArray[np.float64]
+NDArrayI64: TypeAlias   = NDArray[np.int64]
+NDArrayC128: TypeAlias  = NDArray[np.complex128]
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Simple series / containers  — use TypeAlias (recommended)
 # ────────────────────────────────────────────────────────────────────────────────
 IntSeries: TypeAlias        = List[int]
 FloatSeries: TypeAlias      = List[float]
-TwoDFloatSeries: TypeAlias  = List[FloatSeries]         # e.g., heatmaps M×K
+TwoDFloatSeries: TypeAlias  = List[FloatSeries]
 FloatSequence: TypeAlias    = Sequence[float]
 
 # Complex number encodings (JSON-safe)
@@ -133,6 +134,9 @@ BitsPerSymbol       = NewType("BitsPerSymbol", int)
 BitsPerSymbolSeries: TypeAlias = List[BitsPerSymbol]
 
 Microseconds = NewType("Microseconds", float)
+
+# IFFT time response
+IfftTimeResponse: TypeAlias = Tuple[NDArrayF64, NDArrayC128]
 
 # ────────────────────────────────────────────────────────────────────────────────
 # HTTP return code type

@@ -12,8 +12,8 @@ import numpy as np
 from numpy.typing import NDArray
 from pydantic import BaseModel, Field
 
-from pypnm.lib.types import ChannelId
-from pypnm.lib.constants import SPEED_OF_LIGHT, FEET_PER_METER, CABLE_VF, CableTypes
+from pypnm.lib.types import ChannelId, IfftTimeResponse
+from pypnm.lib.constants import INVALID_CHANNEL_ID, SPEED_OF_LIGHT, FEET_PER_METER, CABLE_VF, CableTypes
 
 LOG = logging.getLogger(__name__)
 
@@ -102,7 +102,7 @@ class EchoDetector:
         subcarrier_spacing_hz: float,
         n_fft: Optional[int] = None,
         cable_type: CableTypes = "RG6",
-        channel_id: ChannelId = 0,
+        channel_id: ChannelId = ChannelId(INVALID_CHANNEL_ID),
     ) -> None:
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         if subcarrier_spacing_hz <= 0.0:
@@ -397,6 +397,80 @@ class EchoDetector:
             raise ValueError("No echo peaks found under current settings.")
         self.logger.debug("first_echo: bin=%d, amp=%.3f", rep.echoes[0].bin_index, rep.echoes[0].amplitude)
         return rep.echoes[0]
+
+    def ifft_time_series(
+        self,
+        window: WindowMode = "hann",
+        direct_at_zero: bool = True,
+        normalize_power: bool = True,
+        fs_time_hz: Optional[float] = None,
+    ) -> IfftTimeResponse:
+        """
+        Compute the complex IFFT time series h(t) for external plotting.
+
+        Parameters
+        ----------
+        window : {"hann","none"}
+            Frequency-domain window applied prior to IFFT.
+        direct_at_zero : bool
+            If True, roll so the direct-path bin is at index 0.
+        normalize_power : bool
+            If True, divide h(t) by the direct-path magnitude so |h[0]| = 1
+            (when rolled).
+        fs_time_hz : float | None
+            Optional override for the sample rate used in the time axis. If
+            None, uses fs = n_fft * Δf.
+
+        Returns
+        -------
+        time_axis_s : NDArrayF64
+            1-D array of time samples in seconds, length n_fft.
+        h_time : NDArrayC128
+            1-D complex IFFT time series, aligned/normalized per arguments.
+        """
+        self.logger.debug(
+            "ifft_time_series: window=%s, direct_at_zero=%s, normalize=%s, fs_time=%s",
+            window, direct_at_zero, normalize_power,
+            "None" if fs_time_hz is None else f"{fs_time_hz:.3f}",
+        )
+
+        # Apply window in frequency domain
+        Hw = self._apply_window(self._H_in, window)
+        self.logger.debug("ifft_time_series: window applied, mode=%s", window)
+
+        # Pad/crop to n_fft
+        Hn = self._pad_or_crop(Hw, self._n_fft)
+        self.logger.debug("ifft_time_series: length adjusted: input=%d → n_fft=%d", Hw.size, self._n_fft)
+
+        # IFFT and magnitude
+        h_time = np.fft.ifft(Hn, n=self._n_fft).astype(np.complex128, copy=False)
+        mag = np.abs(h_time)
+
+        # Locate direct-path bin and optionally roll
+        i0 = int(np.argmax(mag))
+        if direct_at_zero:
+            h_time = np.roll(h_time, -i0)
+            mag = np.abs(h_time)
+            i0 = 0
+            self.logger.debug("ifft_time_series: direct-path rolled to zero")
+        else:
+            self.logger.debug("ifft_time_series: direct-path at bin=%d (no roll)", i0)
+
+        # Optional power normalization
+        if normalize_power and float(mag[i0]) > 0.0:
+            h_time = h_time / float(mag[i0])
+            self.logger.debug("ifft_time_series: normalized to direct-path amplitude=1.0")
+
+        # Time axis (can override fs just for plotting)
+        fs_time = float(fs_time_hz) if fs_time_hz and fs_time_hz > 0 else self._fs
+        time_axis = (np.arange(self._n_fft, dtype=float) / fs_time).astype(np.float64, copy=False)
+
+        self.logger.debug(
+            "ifft_time_series: n_fft=%d, fs_time=%.6f MHz",
+            self._n_fft, fs_time / 1e6,
+        )
+        return time_axis, h_time
+
 
     # ───────────────────────────────────────────────────────────────────────
     # Internals

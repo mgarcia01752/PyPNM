@@ -923,7 +923,8 @@ class Analysis:
                 if (e.bin_index < (i_stop - edge_guard))
             ]
 
-        echo_rpt = EchoDatasetModel(type=EchoDetectorType.IFFT, report=echo_report)
+        echo_rpt = EchoDatasetModel(type    =   EchoDetectorType.IFFT, 
+                                    report  =   echo_report)
 
         carrier_values: OfdmaUsPreEqCarrierModel = OfdmaUsPreEqCarrierModel(
             carrier_count               = len(freqs),

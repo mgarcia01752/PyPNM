@@ -3,13 +3,13 @@
 
 from __future__ import annotations
 
-from gzip import FNAME
 import logging
 import math
 from typing import Dict, List, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.echo_detector import EchoDetector
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.basic.common.signal_capture_agg import SignalCaptureAggregator
@@ -18,8 +18,8 @@ from pypnm.api.routes.common.classes.analysis.model.schema import ComplexDataCar
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
-from pypnm.lib.types import ArrayLike, ChannelId, ComplexArray, FloatSeries, PathLike
-from pypnm.pnm.process.pnm_header import PnmFileType, PnmHeader, PnmHeaderModel, PnmHeaderParameters
+from pypnm.lib.types import ArrayLike, ChannelId, ComplexArray, FloatSeries, FrequencyHz, MagnitudeSeries, PathLike
+from pypnm.pnm.process.pnm_header import PnmFileType, PnmHeader, PnmHeaderParameters
 
 
 class OfdmaPreEqParameters(BaseModel):
@@ -32,6 +32,14 @@ class OfdmaPreEqParameters(BaseModel):
     regression_line: FloatSeries   = Field(..., description="Regression fitted values per subcarrier.")
     group_delay: FloatSeries       = Field(..., description="Group delay (µs) per subcarrier.")
 
+class IfftTimeResponse(BaseModel):
+    """
+    IFFT time response data structure.
+    """
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+    time_series_s: FloatSeries     = Field(..., description="Time series in seconds.")
+    magnitude: MagnitudeSeries     = Field(..., description="Magnitude values.")
+    h_t: ComplexArray              = Field(default=[], description="Complex IFFT response values.")
 
 class OfdmaPreEqAnalysis(CommonAnalysis):
     """
@@ -39,6 +47,7 @@ class OfdmaPreEqAnalysis(CommonAnalysis):
     """
     pnm_header: PnmHeaderParameters     = Field(..., description="PNM header metadata.")
     parameters: OfdmaPreEqParameters    = Field(..., description="Pre-EQ analysis parameters and derived series.")
+    ifft: IfftTimeResponse              = Field(..., description="IFFT time response data.")
 
 
 class CmUsOfdmaPreEqReport(AnalysisReport):
@@ -111,6 +120,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
             any_models                    = True
             model                         = cast(OfdmaPreEqAnalysis, common_model)
             channel_id:ChannelId          = model.channel_id
+
             chan_id_list.append(channel_id)
 
             x_hz: ArrayLike         = cast(ArrayLike, model.raw_x)
@@ -118,6 +128,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
             cplex: ComplexArray     = cast(ComplexArray, model.raw_complex)
             rl: ArrayLike           = cast(ArrayLike, model.parameters.regression_line)
             gd_us: ArrayLike        = cast(ArrayLike, model.parameters.group_delay)
+
 
 
             pnm_file_type = PnmFileType.fromPnmHeaderModel(model.pnm_header)
@@ -214,6 +225,38 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
             except Exception as exc:
                 self.logger.exception("Failed to create OFDMA US Pre-EQ group-delay plot for channel %s: %s", channel_id, exc)
 
+            # OFDMA - IFFT Time Series
+            try:
+
+                ifft: IfftTimeResponse = model.ifft
+                time_axis_us: ArrayLike = cast(ArrayLike, ifft.time_series_s)
+                mag_list: ArrayLike     = cast(ArrayLike, ifft.magnitude)
+                
+                time_axis_us = time_axis_us[:500]
+                mag_list = mag_list[:500]
+                
+                cfg = PlotConfig(
+                    title           = f"{prefix_title} · IFFT Time Response |h(t)|",
+                    x               = time_axis_us,
+                    xlabel          = "Time (µs)",
+                    y               = mag_list,
+                    ylabel          = "Magnitude (linear)",
+                    grid            = True,
+                    legend          = False,
+                    transparent     = False,
+                    theme           = self.getAnalysisRptMatplotConfig().theme,
+                )
+
+                multi = self.create_png_fname(tags=[str(channel_id), fname, "ifft"])
+                self.logger.debug("Creating OFDMA US Pre-EQ IFFT plot: %s for channel: %s", multi, channel_id)
+
+                mgr = MatplotManager(default_cfg=cfg)
+                mgr.plot_line(filename=multi)
+                matplot_mgr.append(mgr)
+
+            except Exception as exc:
+                self.logger.exception("Failed to create OFDMA US Pre-EQ group-delay plot for channel %s: %s", channel_id, exc)
+
         if not any_models:
             self.logger.warning("No OFDMA US Pre-EQ analysis data available; no plots created.")
 
@@ -233,6 +276,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
 
             try:
                 channel_id: ChannelId              = model.channel_id
+                subcarrier_spacing: FrequencyHz    = model.subcarrier_spacing   
 
                 # Carrier values block
                 cv: ComplexDataCarrierModel        = model.carrier_values
@@ -255,6 +299,21 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                 y: FloatSeries      = coerce_finite(y_raw, "raw_y")
                 y_hat: FloatSeries  = cast(FloatSeries, LinearRegression1D(cast(ArrayLike, y)).fitted_values())
 
+                # IFFT time series computation
+                det = EchoDetector(freq_data                =   cplex,
+                                   subcarrier_spacing_hz    =   subcarrier_spacing)
+                
+                t_s, h_t = det.ifft_time_series(window="hann", 
+                                                direct_at_zero=True, 
+                                                normalize_power=True)
+                time_axis_us = [t * 1e6 for t in t_s]
+                mag_list = [abs(h) for h in h_t]     
+
+                ifft_time_rsp = IfftTimeResponse(
+                    time_series_s   =   time_axis_us,
+                    magnitude       =   mag_list,
+                )
+
                 params = OfdmaPreEqParameters(
                     regression_line = y_hat,
                     group_delay     = group_delay,
@@ -267,6 +326,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                     raw_y       = y,
                     raw_complex = cplex,
                     parameters  = params,
+                    ifft        = ifft_time_rsp,
                 )
 
                 # Register model for channel CSV/plot generation

@@ -324,11 +324,11 @@ class ChanEstimationReport(AnalysisReport):
                     df_hz = float(np.median(diffs))
 
                     det = EchoDetector(
-                        freq_data=cplex,                    # (N,2) real/imag pairs are supported
-                        subcarrier_spacing_hz=df_hz,
-                        n_fft=None,                         # use default (next pow2 ≥ N, min 1024)
-                        cable_type="RG6",
-                        channel_id=channel_id,
+                        freq_data               =   cplex,                    # (N,2) real/imag pairs are supported
+                        subcarrier_spacing_hz   =   df_hz,
+                        n_fft                   =   None,                         # use default (next pow2 ≥ N, min 1024)
+                        cable_type              =   "RG6",
+                        channel_id              =   channel_id,
                     )
 
                     tr = det.time_response(window="hann", direct_at_zero=True, normalize_power=True)

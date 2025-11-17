@@ -44,7 +44,7 @@ class ComplexDataCarrierModel(BaseModel):
 
 
 class ComplexDataAnalysisModel(BaseAnalysisModel):
-    subcarrier_spacing: int                     = Field(..., description="Subcarrier frequency spacing in Hertz.")
+    subcarrier_spacing: FrequencyHz             = Field(..., description="Subcarrier frequency spacing in Hertz.")
     first_active_subcarrier_index: int          = Field(..., description="Index of the first active OFDM/OFDMA subcarrier (0-based).")
     subcarrier_zero_frequency: FrequencyHz      = Field(..., description="Absolute frequency of subcarrier k=0 in Hertz.")
     carrier_values: ComplexDataCarrierModel     = Field(..., description="Detailed per-subcarrier results.")
