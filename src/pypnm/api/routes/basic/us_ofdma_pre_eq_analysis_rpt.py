@@ -7,6 +7,7 @@ import logging
 import math
 from typing import Dict, List, cast
 
+import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
 from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.echo_detector import EchoDetector
@@ -229,18 +230,35 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
             try:
 
                 ifft: IfftTimeResponse = model.ifft
-                time_axis_us: ArrayLike = cast(ArrayLike, ifft.time_series_s)
-                mag_list: ArrayLike     = cast(ArrayLike, ifft.magnitude)
-                
-                time_axis_us = time_axis_us[:500]
-                mag_list = mag_list[:500]
-                
+                t_s  = np.asarray(ifft.time_series_s, dtype=float)   # seconds
+                mag  = np.asarray(ifft.magnitude, dtype=float)       # linear |h(t)|
+
+                # Limit to first 5 µs (0.000005 s)
+                mask = t_s <= 5e-6
+                if not np.any(mask):
+                    self.logger.warning(
+                        "No IFFT samples within first 5 us for channel %s; skipping IFFT plot.",
+                        channel_id,
+                    )
+                    continue
+
+                t_win_s = t_s[mask]
+                mag_win = mag[mask]
+
+                # Convert time axis to microseconds for plotting
+                time_axis_us = (t_win_s * 1e6).tolist()
+
+                # Exaggerate small echoes by plotting in dB instead of linear
+                eps      = 1e-12
+                mag_db   = 20.0 * np.log10(np.maximum(mag_win, eps))
+                mag_list = mag_db.tolist()
+
                 cfg = PlotConfig(
-                    title           = f"{prefix_title} · IFFT Time Response |h(t)|",
+                    title           = f"{prefix_title} · IFFT Time Response |h(t)| (First 5 µs)",
                     x               = time_axis_us,
                     xlabel          = "Time (µs)",
                     y               = mag_list,
-                    ylabel          = "Magnitude (linear)",
+                    ylabel          = "Magnitude (dB)",
                     grid            = True,
                     legend          = False,
                     transparent     = False,
@@ -255,7 +273,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                 matplot_mgr.append(mgr)
 
             except Exception as exc:
-                self.logger.exception("Failed to create OFDMA US Pre-EQ group-delay plot for channel %s: %s", channel_id, exc)
+                self.logger.exception("Failed to create OFDMA US Pre-EQ IFFT plot for channel %s: %s", channel_id, exc)
 
         if not any_models:
             self.logger.warning("No OFDMA US Pre-EQ analysis data available; no plots created.")
@@ -299,19 +317,23 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                 y: FloatSeries      = coerce_finite(y_raw, "raw_y")
                 y_hat: FloatSeries  = cast(FloatSeries, LinearRegression1D(cast(ArrayLike, y)).fitted_values())
 
-                # IFFT time series computation
-                det = EchoDetector(freq_data                =   cplex,
-                                   subcarrier_spacing_hz    =   subcarrier_spacing)
-                
-                t_s, h_t = det.ifft_time_series(window="hann", 
-                                                direct_at_zero=True, 
-                                                normalize_power=True)
-                time_axis_us = [t * 1e6 for t in t_s]
-                mag_list = [abs(h) for h in h_t]     
+                # IFFT time series computation (seconds + linear magnitude)
+                det = EchoDetector(
+                    freq_data              = cplex,
+                    subcarrier_spacing_hz  = subcarrier_spacing,
+                )
+
+                t_s, h_t = det.ifft_time_series(
+                    window          = "hann",
+                    direct_at_zero  = True,
+                    normalize_power = True,
+                )
+
+                mag_list = [abs(h) for h in h_t]
 
                 ifft_time_rsp = IfftTimeResponse(
-                    time_series_s   =   time_axis_us,
-                    magnitude       =   mag_list,
+                    time_series_s   = t_s,
+                    magnitude       = mag_list,
                 )
 
                 params = OfdmaPreEqParameters(

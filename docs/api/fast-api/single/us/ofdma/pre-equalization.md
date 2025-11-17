@@ -133,9 +133,10 @@ When `analysis` and `analysis.plot.ui` are provided, this endpoint also generate
 
 | View Type  | Description |
 |------------|-------------|
-| [Magnitude with Fit](images/pre-eq/42_us_preeq_magnitude.png) | Magnitude vs. frequency with regression line overlay, showing overall tilt or slope  |
-| [Group Delay](images/pre-eq/42_us_preeq_groupdelay.png)        | Group delay vs. frequency derived from the complex carrier values                    |
-| [IQ Scatter](images/pre-eq/42_us_preeq_iqscatter.png)         | Complex scatter of in-phase (I) vs. quadrature (Q) coefficients                      |
+| [Magnitude with Fit](images/pre-eq/42_us_preeq_magnitude.png) | Magnitude vs. frequency with regression line overlay, showing overall tilt or slope               |
+| [Group Delay](images/pre-eq/42_us_preeq_groupdelay.png)       | Group delay vs. frequency derived from the complex carrier values                                 |
+| [IFFT Time Response](images/pre-eq/42_us_preeq_ifft.png)      | Time-domain impulse response \|h(t)\| (first 5 µs) derived from the pre-equalization coefficients |
+| [IQ Scatter](images/pre-eq/42_us_preeq_iqscatter.png)         | Complex scatter of in-phase (I) vs. quadrature (Q) coefficients                                   |
 
 ### Pre-Equalizer Coefficient Update Views
 

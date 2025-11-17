@@ -82,7 +82,6 @@ class UsOfdmaPreEqualizationRouter:
 
             cps = CommonProcessService(msg_rsp)
             msg_rsp = cps.process()
-            msg_rsp.log_payload()
 
             analysis = Analysis(AnalysisType.BASIC, msg_rsp)
 
