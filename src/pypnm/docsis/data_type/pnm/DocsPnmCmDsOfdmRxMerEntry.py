@@ -12,8 +12,6 @@ from pypnm.lib.types import FrequencyHz
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 from pypnm.snmp.casts import as_bool, as_int, as_str, as_float2  # freq stays int
 
-
-
 class DocsPnmCmDsOfdmRxMerFields(BaseModel):
     docsPnmCmDsOfdmRxMerFileEnable: bool
     docsPnmCmDsOfdmRxMerFileName: str

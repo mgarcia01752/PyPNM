@@ -9,6 +9,7 @@ from pydantic import BaseModel
 import logging
 
 from pypnm.lib.types import ChannelId
+from pypnm.snmp.casts import measurement_status
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
 
@@ -48,7 +49,7 @@ class DocsPnmCmUsPreEqFields(BaseModel):
     docsPnmCmUsPreEqGrpDelayRipplePkToPk: float
     docsPnmCmUsPreEqGrpDelayRippleRms: float
     docsPnmCmUsPreEqPreEqCoAdjStatus: str
-    docsPnmCmUsPreEqMeasStatus: int
+    docsPnmCmUsPreEqMeasStatus: str
     docsPnmCmUsPreEqLastUpdateFileName: str
     docsPnmCmUsPreEqFileName: str
     docsPnmCmUsPreEqAmpMean: float
@@ -144,7 +145,7 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
             docsPnmCmUsPreEqGrpDelayRipplePkToPk = await fetch("docsPnmCmUsPreEqGrpDelayRipplePkToPk", cls.thousandth_ns),
             docsPnmCmUsPreEqGrpDelayRippleRms    = await fetch("docsPnmCmUsPreEqGrpDelayRippleRms", cls.thousandth_ns),
             docsPnmCmUsPreEqPreEqCoAdjStatus     = await fetch("docsPnmCmUsPreEqPreEqCoAdjStatus", cls.to_pre_eq_status_str),
-            docsPnmCmUsPreEqMeasStatus           = await fetch("docsPnmCmUsPreEqMeasStatus", int),
+            docsPnmCmUsPreEqMeasStatus           = await fetch("docsPnmCmUsPreEqMeasStatus", measurement_status),
             docsPnmCmUsPreEqLastUpdateFileName   = await fetch("docsPnmCmUsPreEqLastUpdateFileName", str),
             docsPnmCmUsPreEqFileName             = await fetch("docsPnmCmUsPreEqFileName", str),
             docsPnmCmUsPreEqAmpMean              = await fetch("docsPnmCmUsPreEqAmpMean", cls.thousandth_db),

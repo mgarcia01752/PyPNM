@@ -17,7 +17,6 @@ class DocsPnmCmDsConstDispFields(BaseModel):
     docsPnmCmDsConstDispTrigEnable: bool
     docsPnmCmDsConstDispModOrderOffset: int
     docsPnmCmDsConstDispNumSampleSymb: int
-    # ↓ now strings (enum names) instead of raw ints
     docsPnmCmDsConstDispSelModOrder: str      # e.g., "qam256"
     docsPnmCmDsConstDispMeasStatus: str       # e.g., "sample_ready"
     docsPnmCmDsConstDispFileName: str
