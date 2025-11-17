@@ -1,35 +1,64 @@
-
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from typing import Optional, Callable, Union, List
+from enum import Enum
+from typing import Any, Optional, Callable, Union, List
 from pydantic import BaseModel
 import logging
 
+from pypnm.lib.types import ChannelId
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
 
+class PreEqCoAdjStatus(Enum):
+    """
+    Enumeration of docsPnmCmUsPreEqPreEqCoAdjStatus.
+
+    docsPnmCmUsPreEqPreEqCoAdjStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        other(1),
+                        success(2),
+                        clipped(3),
+                        rejected(4)
+                    }
+
+    This represents whether the last set of Pre-Equalization coefficient
+    adjustments were fully applied, clipped, rejected, or in some other state.
+
+    Reference:
+        CM-SP-CM-OSSI, CmUsPreEq::PreEqCoAdjStatus
+    """
+
+    OTHER    = 1  # Any state not described below
+    SUCCESS  = 2  # Adjustments fully applied
+    CLIPPED  = 3  # Partially applied due to excessive ripple/tilt
+    REJECTED = 4  # Rejected / not applied
+
+    def __str__(self) -> str:
+        return self.name.lower()
+
+
 class DocsPnmCmUsPreEqFields(BaseModel):
-    docsPnmCmUsPreEqFileEnable: Optional[bool] = None
-    docsPnmCmUsPreEqAmpRipplePkToPk: Optional[float] = None
-    docsPnmCmUsPreEqAmpRippleRms: Optional[float] = None
-    docsPnmCmUsPreEqAmpSlope: Optional[int] = None
-    docsPnmCmUsPreEqGrpDelayRipplePkToPk: Optional[int] = None
-    docsPnmCmUsPreEqGrpDelayRippleRms: Optional[int] = None
-    docsPnmCmUsPreEqPreEqCoAdjStatus: Optional[int] = None
-    docsPnmCmUsPreEqMeasStatus: Optional[int] = None
+    docsPnmCmUsPreEqFileEnable: Optional[bool]   = None
+    docsPnmCmUsPreEqAmpRipplePkToPk: Optional[float] = None        # ThousandthdB → dB
+    docsPnmCmUsPreEqAmpRippleRms: Optional[float]    = None        # ThousandthdB → dB
+    docsPnmCmUsPreEqAmpSlope: Optional[float]        = None        # ThousandthdB/MHz → dB/MHz
+    docsPnmCmUsPreEqGrpDelayRipplePkToPk: Optional[float] = None   # 0.001 nsec → nsec
+    docsPnmCmUsPreEqGrpDelayRippleRms: Optional[float]    = None   # 0.001 nsec → nsec
+    docsPnmCmUsPreEqPreEqCoAdjStatus: str = str(PreEqCoAdjStatus.OTHER)  # "other", "success", ...
+    docsPnmCmUsPreEqMeasStatus: Optional[int] = None               # MeasStatusType (int for now)
     docsPnmCmUsPreEqLastUpdateFileName: Optional[str] = None
     docsPnmCmUsPreEqFileName: Optional[str] = None
-    docsPnmCmUsPreEqAmpMean: Optional[float] = None
-    docsPnmCmUsPreEqGrpDelaySlope: Optional[int] = None
-    docsPnmCmUsPreEqGrpDelayMean: Optional[int] = None
+    docsPnmCmUsPreEqAmpMean: Optional[float] = None                # ThousandthdB → dB
+    docsPnmCmUsPreEqGrpDelaySlope: Optional[float] = None          # ThousandthNsec/MHz → nsec/MHz
+    docsPnmCmUsPreEqGrpDelayMean: Optional[float]  = None          # ThousandthNsec → nsec
 
 
 class DocsPnmCmUsPreEqEntry(BaseModel):
     index: int
-    channel_id: int
+    channel_id: ChannelId
     entry: DocsPnmCmUsPreEqFields
 
     @staticmethod
@@ -39,42 +68,94 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
         Example: 12345 -> 12.345 dB
         """
         try:
-            return float(value) / 1000
+            return float(value) / 1000.0
         except (ValueError, TypeError):
             return float("nan")
+
+    @staticmethod
+    def thousandth_db_per_mhz(value: Union[str, int, float]) -> float:
+        """
+        Converts a ThousandthdB/MHz value to a float in dB/MHz.
+        Example: 12345 -> 12.345 dB/MHz
+        """
+        try:
+            return float(value) / 1000.0
+        except (ValueError, TypeError):
+            return float("nan")
+
+    @staticmethod
+    def thousandth_ns(value: Union[str, int, float]) -> float:
+        """
+        Converts a value expressed in units of 0.001 nsec to nsec.
+        Example: 12345 -> 12.345 nsec
+        """
+        try:
+            return float(value) / 1000.0
+        except (ValueError, TypeError):
+            return float("nan")
+
+    @staticmethod
+    def thousandth_ns_per_mhz(value: Union[str, int, float]) -> float:
+        """
+        Converts a ThousandthNsec/MHz value to nsec/MHz.
+        Example: 12345 -> 12.345 nsec/MHz
+        """
+        try:
+            return float(value) / 1000.0
+        except (ValueError, TypeError):
+            return float("nan")
+
+    @staticmethod
+    def to_pre_eq_status(value: Union[str, int]) -> PreEqCoAdjStatus:
+        """
+        Converts an integer value to PreEqCoAdjStatus enum.
+        """
+        try:
+            return PreEqCoAdjStatus(int(value))
+        except (ValueError, KeyError):
+            return PreEqCoAdjStatus.OTHER
+
+    @staticmethod
+    def to_pre_eq_status_str(value: Union[str, int]) -> str:
+        """
+        Convert integer status to a lowercase string label (e.g. 'success').
+        """
+        return str(DocsPnmCmUsPreEqEntry.to_pre_eq_status(value))
 
     @classmethod
     async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsPnmCmUsPreEqEntry":
         logger = logging.getLogger(cls.__name__)
 
-        async def fetch(oid: str, cast: Optional[Callable] = None) -> Union[str, int, float, bool, None]:
+        async def fetch(oid: str, cast_fn: Optional[Callable[[Any], Any]] = None) -> Any:
             try:
                 result = await snmp.get(f"{oid}.{index}")
                 value = Snmp_v2c.get_result_value(result)
                 if value is None:
                     return None
-                return cast(value) if cast else value
+                return cast_fn(value) if cast_fn else value
             except Exception as e:
-                logger.warning(f"Fetch error for {oid}.{index}: {e}")
+                logger.warning("Fetch error for %s.%s: %s", oid, index, e)
                 return None
 
-        entry = DocsPnmCmUsPreEqFields(
-            docsPnmCmUsPreEqFileEnable=await fetch("docsPnmCmUsPreEqFileEnable", Snmp_v2c.truth_value),
-            docsPnmCmUsPreEqAmpRipplePkToPk=await fetch("docsPnmCmUsPreEqAmpRipplePkToPk", cls.thousandth_db),
-            docsPnmCmUsPreEqAmpRippleRms=await fetch("docsPnmCmUsPreEqAmpRippleRms", cls.thousandth_db),
-            docsPnmCmUsPreEqAmpSlope=await fetch("docsPnmCmUsPreEqAmpSlope", int),
-            docsPnmCmUsPreEqGrpDelayRipplePkToPk=await fetch("docsPnmCmUsPreEqGrpDelayRipplePkToPk", int),
-            docsPnmCmUsPreEqGrpDelayRippleRms=await fetch("docsPnmCmUsPreEqGrpDelayRippleRms", int),
-            docsPnmCmUsPreEqPreEqCoAdjStatus=await fetch("docsPnmCmUsPreEqPreEqCoAdjStatus", int),
-            docsPnmCmUsPreEqMeasStatus=await fetch("docsPnmCmUsPreEqMeasStatus", int),
-            docsPnmCmUsPreEqLastUpdateFileName=await fetch("docsPnmCmUsPreEqLastUpdateFileName", str),
-            docsPnmCmUsPreEqFileName=await fetch("docsPnmCmUsPreEqFileName", str),
-            docsPnmCmUsPreEqAmpMean=await fetch("docsPnmCmUsPreEqAmpMean", cls.thousandth_db),
-            docsPnmCmUsPreEqGrpDelaySlope=await fetch("docsPnmCmUsPreEqGrpDelaySlope", int),
-            docsPnmCmUsPreEqGrpDelayMean=await fetch("docsPnmCmUsPreEqGrpDelayMean", int),
+        fields = DocsPnmCmUsPreEqFields(
+            docsPnmCmUsPreEqFileEnable           = await fetch("docsPnmCmUsPreEqFileEnable", Snmp_v2c.truth_value),
+            docsPnmCmUsPreEqAmpRipplePkToPk      = await fetch("docsPnmCmUsPreEqAmpRipplePkToPk", cls.thousandth_db),
+            docsPnmCmUsPreEqAmpRippleRms         = await fetch("docsPnmCmUsPreEqAmpRippleRms", cls.thousandth_db),
+            docsPnmCmUsPreEqAmpSlope             = await fetch("docsPnmCmUsPreEqAmpSlope", cls.thousandth_db_per_mhz),
+            docsPnmCmUsPreEqGrpDelayRipplePkToPk = await fetch("docsPnmCmUsPreEqGrpDelayRipplePkToPk", cls.thousandth_ns),
+            docsPnmCmUsPreEqGrpDelayRippleRms    = await fetch("docsPnmCmUsPreEqGrpDelayRippleRms", cls.thousandth_ns),
+            docsPnmCmUsPreEqPreEqCoAdjStatus     = await fetch("docsPnmCmUsPreEqPreEqCoAdjStatus", cls.to_pre_eq_status_str),
+            docsPnmCmUsPreEqMeasStatus           = await fetch("docsPnmCmUsPreEqMeasStatus", int),
+            docsPnmCmUsPreEqLastUpdateFileName   = await fetch("docsPnmCmUsPreEqLastUpdateFileName", str),
+            docsPnmCmUsPreEqFileName             = await fetch("docsPnmCmUsPreEqFileName", str),
+            docsPnmCmUsPreEqAmpMean              = await fetch("docsPnmCmUsPreEqAmpMean", cls.thousandth_db),
+            docsPnmCmUsPreEqGrpDelaySlope        = await fetch("docsPnmCmUsPreEqGrpDelaySlope", cls.thousandth_ns_per_mhz),
+            docsPnmCmUsPreEqGrpDelayMean         = await fetch("docsPnmCmUsPreEqGrpDelayMean", cls.thousandth_ns),
         )
 
-        return cls(index=index, channel_id=index, entry=entry)
+        # If there's a separate channel-id OID later, swap this out
+        channel_id = index
+        return cls(index=index, channel_id=channel_id, entry=fields)
 
     @classmethod
     async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsPnmCmUsPreEqEntry"]:
@@ -86,6 +167,6 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
                 entry = await cls.from_snmp(idx, snmp)
                 results.append(entry)
             except Exception as e:
-                logger.warning(f"Failed to fetch US PreEq entry for index {idx}: {e}")
+                logger.warning("Failed to fetch US PreEq entry for index %s: %s", idx, e)
 
         return results
