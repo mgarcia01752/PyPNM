@@ -1,7 +1,7 @@
 {
     "FastApiRequestDefault": {
-        "mac_address": "60:6C:63:E4:36:84",
-        "ip_address": "172.19.32.234"
+        "mac_address": "aa:bb:cc:dd:ee:ff",
+        "ip_address": "192.168.0.1"
     },   
     "SNMP": {
         "timeout": 5,
@@ -27,8 +27,8 @@
     "PnmBulkDataTransfer": {
         "method": "tftp",
         "tftp": {
-            "ip_v4": "172.19.8.28",
-            "ip_v6": "2001:428:3800:100:283f:2967:938a:bd68",
+            "ip_v4": "192.168.0.10",
+            "ip_v6": "::1",
             "remote_dir": ""
         },
         "http": {
