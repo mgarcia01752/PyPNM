@@ -1,5 +1,5 @@
 site_name: PyPNM Docs
-dev_addr: 172.19.8.28:8001
+dev_addr: 127.0.0.1:8001
 
 theme:
   name: material
