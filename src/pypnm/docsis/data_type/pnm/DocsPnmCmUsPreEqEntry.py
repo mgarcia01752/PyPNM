@@ -41,20 +41,19 @@ class PreEqCoAdjStatus(Enum):
 
 
 class DocsPnmCmUsPreEqFields(BaseModel):
-    docsPnmCmUsPreEqFileEnable: Optional[bool]   = None
-    docsPnmCmUsPreEqAmpRipplePkToPk: Optional[float] = None        # ThousandthdB → dB
-    docsPnmCmUsPreEqAmpRippleRms: Optional[float]    = None        # ThousandthdB → dB
-    docsPnmCmUsPreEqAmpSlope: Optional[float]        = None        # ThousandthdB/MHz → dB/MHz
-    docsPnmCmUsPreEqGrpDelayRipplePkToPk: Optional[float] = None   # 0.001 nsec → nsec
-    docsPnmCmUsPreEqGrpDelayRippleRms: Optional[float]    = None   # 0.001 nsec → nsec
-    docsPnmCmUsPreEqPreEqCoAdjStatus: str = str(PreEqCoAdjStatus.OTHER)  # "other", "success", ...
-    docsPnmCmUsPreEqMeasStatus: Optional[int] = None               # MeasStatusType (int for now)
-    docsPnmCmUsPreEqLastUpdateFileName: Optional[str] = None
-    docsPnmCmUsPreEqFileName: Optional[str] = None
-    docsPnmCmUsPreEqAmpMean: Optional[float] = None                # ThousandthdB → dB
-    docsPnmCmUsPreEqGrpDelaySlope: Optional[float] = None          # ThousandthNsec/MHz → nsec/MHz
-    docsPnmCmUsPreEqGrpDelayMean: Optional[float]  = None          # ThousandthNsec → nsec
-
+    docsPnmCmUsPreEqFileEnable: bool
+    docsPnmCmUsPreEqAmpRipplePkToPk: float
+    docsPnmCmUsPreEqAmpRippleRms: float
+    docsPnmCmUsPreEqAmpSlope: float
+    docsPnmCmUsPreEqGrpDelayRipplePkToPk: float
+    docsPnmCmUsPreEqGrpDelayRippleRms: float
+    docsPnmCmUsPreEqPreEqCoAdjStatus: str
+    docsPnmCmUsPreEqMeasStatus: int
+    docsPnmCmUsPreEqLastUpdateFileName: str
+    docsPnmCmUsPreEqFileName: str
+    docsPnmCmUsPreEqAmpMean: float
+    docsPnmCmUsPreEqGrpDelaySlope: float
+    docsPnmCmUsPreEqGrpDelayMean: float
 
 class DocsPnmCmUsPreEqEntry(BaseModel):
     index: int
@@ -153,8 +152,7 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
             docsPnmCmUsPreEqGrpDelayMean         = await fetch("docsPnmCmUsPreEqGrpDelayMean", cls.thousandth_ns),
         )
 
-        # If there's a separate channel-id OID later, swap this out
-        channel_id = index
+        channel_id = await fetch("docsIf31CmUsOfdmaChanChannelId", ChannelId) or ChannelId(index)
         return cls(index=index, channel_id=channel_id, entry=fields)
 
     @classmethod

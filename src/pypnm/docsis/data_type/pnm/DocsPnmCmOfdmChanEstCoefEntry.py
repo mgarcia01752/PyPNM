@@ -8,7 +8,7 @@ from typing import Any, Callable, ClassVar, List, cast
 from pydantic import BaseModel
 
 from pypnm.snmp.snmp_v2c import Snmp_v2c
-from pypnm.snmp.casts import as_bool, as_int, as_str, as_float2
+from pypnm.snmp.casts import as_bool, as_int, as_str
 from pypnm.docsis.cm_snmp_operation import MeasStatusType
 
 
