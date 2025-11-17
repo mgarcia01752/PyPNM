@@ -8,6 +8,9 @@ from enum import Enum
 import json
 from typing import Any, Dict, List, Optional, Tuple, Union
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.config.pnm_config_manager import SystemConfigSettings
+from pypnm.lib.log_files import LogFile
+from pypnm.lib.utils import TimeUnit, Utils
 
 class MessageResponseType(Enum):
     """
@@ -101,6 +104,19 @@ class MessageResponse:
             Dict[Any, Any]: A dictionary containing the payload under the given key.
         """
         return {key: self.payload}
+
+    def log_payload(self, filename_prefix:str = ""):
+        """
+        Logs the payload content for debugging purposes.
+        """
+        prefix:str = ""
+        if filename_prefix:
+            prefix = f'{filename_prefix}_'
+
+        LogFile.write(f'{prefix}payload_{Utils.time_stamp(TimeUnit.MILLISECONDS)}.msgrsp', 
+                      self.payload_to_dict(),
+                      log_dir = SystemConfigSettings.message_response_dir)
+
 
 class CommonMessagingService:
     """

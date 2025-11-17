@@ -12,6 +12,7 @@ from pypnm.api.routes.docs.pnm.files.schemas import (
     FileAnalysisRequest, FileQueryResponse, FileQueryRequest, PushFileRequest, PushFileResponse, AnalysisResponse)
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
+from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 
 class PnmFileManager:
@@ -34,7 +35,8 @@ class PnmFileManager:
         
         @self.router.get("/searchFiles/{mac_address}", 
                          response_model=FileQueryResponse, 
-                         summary="Search for PNM Files via mac address")
+                         summary="Search for PNM Files via mac address",
+                         responses=FAST_API_RESPONSE,)
         def search_files(mac_address: str = Path(..., description=f"MAC address of the cable modem, default: **{default_mac_address}**")):
             """
             **Search Uploaded PNM Files by MAC Address**

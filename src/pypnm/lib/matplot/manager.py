@@ -89,6 +89,7 @@ class PlotConfig:
     # Line color controls
     line_color: Optional[str] = None
     line_colors: Optional[List[str]] = None
+    scatter_size: Optional[float] = None
 
     # X-axis visibility / human time label
     x_ticks_visible: bool = True
@@ -168,36 +169,37 @@ class MatplotManager:
         def pick(top, mid, low):
             return top if top is not None else (mid if mid is not None else low)
         return PlotConfig(
-            title               = pick(user_cfg.title               if user_cfg else None, base.title,       method_defaults.title),
-            xlabel              = pick(user_cfg.xlabel              if user_cfg else None, base.xlabel,      method_defaults.xlabel),
-            ylabel              = pick(user_cfg.ylabel              if user_cfg else None, base.ylabel,      method_defaults.ylabel),
-            zlabel              = pick(user_cfg.zlabel              if user_cfg else None, base.zlabel,      method_defaults.zlabel),
-            xlabel_prefix       = pick(user_cfg.xlabel_prefix       if user_cfg else None, base.xlabel_prefix, method_defaults.xlabel_prefix),
-            xlim                = pick(user_cfg.xlim                if user_cfg else None, base.xlim,        method_defaults.xlim),
-            ylim                = pick(user_cfg.ylim                if user_cfg else None, base.ylim,        method_defaults.ylim),
-            grid                = pick(user_cfg.grid                if user_cfg else None, base.grid,        method_defaults.grid),
-            legend              = pick(user_cfg.legend              if user_cfg else None, base.legend,      method_defaults.legend),
-            transparent         = pick(user_cfg.transparent         if user_cfg else None, base.transparent, method_defaults.transparent),
-            x                   = pick(user_cfg.x                   if user_cfg else None, base.x,           method_defaults.x),
-            y                   = pick(user_cfg.y                   if user_cfg else None, base.y,           method_defaults.y),
-            z                   = pick(user_cfg.z                   if user_cfg else None, base.z,           method_defaults.z),
-            y_multi             = pick(user_cfg.y_multi             if user_cfg else None, base.y_multi,     method_defaults.y_multi),
-            y_multi_label       = pick(user_cfg.y_multi_label       if user_cfg else None, base.y_multi_label, method_defaults.y_multi_label),
-            qam                 = pick(user_cfg.qam                 if user_cfg else None, base.qam,         method_defaults.qam),
-            soft                = pick(user_cfg.soft                if user_cfg else None, base.soft,        method_defaults.soft),
-            hard                = pick(user_cfg.hard                if user_cfg else None, base.hard,        method_defaults.hard),
-            theme               = pick(user_cfg.theme               if user_cfg else None, base.theme,       method_defaults.theme),
-            x_tick_mode         = pick(user_cfg.x_tick_mode         if user_cfg else None, base.x_tick_mode, method_defaults.x_tick_mode),
-            x_unit_from         = pick(user_cfg.x_unit_from         if user_cfg else None, base.x_unit_from, method_defaults.x_unit_from),
-            x_unit_out          = pick(user_cfg.x_unit_out          if user_cfg else None, base.x_unit_out,  method_defaults.x_unit_out),
-            x_tick_decimals     = pick(user_cfg.x_tick_decimals     if user_cfg else None, base.x_tick_decimals, method_defaults.x_tick_decimals),
-            xlabel_base         = pick(user_cfg.xlabel_base         if user_cfg else None, base.xlabel_base, method_defaults.xlabel_base),
-            line_color          = pick(user_cfg.line_color          if user_cfg else None, base.line_color,  method_defaults.line_color),
-            line_colors         = pick(user_cfg.line_colors         if user_cfg else None, base.line_colors, method_defaults.line_colors),
-            x_ticks_visible     = pick(user_cfg.x_ticks_visible     if user_cfg else None, base.x_ticks_visible,   method_defaults.x_ticks_visible),
-            x_time_labels       = pick(user_cfg.x_time_labels       if user_cfg else None, base.x_time_labels,     method_defaults.x_time_labels),
-            x_time_input_unit   = pick(user_cfg.x_time_input_unit   if user_cfg else None, base.x_time_input_unit, method_defaults.x_time_input_unit),
-            x_time_format       = pick(user_cfg.x_time_format       if user_cfg else None, base.x_time_format,     method_defaults.x_time_format),
+            title               = pick(user_cfg.title               if user_cfg else None, base.title,              method_defaults.title),
+            xlabel              = pick(user_cfg.xlabel              if user_cfg else None, base.xlabel,             method_defaults.xlabel),
+            ylabel              = pick(user_cfg.ylabel              if user_cfg else None, base.ylabel,             method_defaults.ylabel),
+            zlabel              = pick(user_cfg.zlabel              if user_cfg else None, base.zlabel,             method_defaults.zlabel),
+            xlabel_prefix       = pick(user_cfg.xlabel_prefix       if user_cfg else None, base.xlabel_prefix,      method_defaults.xlabel_prefix),
+            xlim                = pick(user_cfg.xlim                if user_cfg else None, base.xlim,               method_defaults.xlim),
+            ylim                = pick(user_cfg.ylim                if user_cfg else None, base.ylim,               method_defaults.ylim),
+            grid                = pick(user_cfg.grid                if user_cfg else None, base.grid,               method_defaults.grid),
+            legend              = pick(user_cfg.legend              if user_cfg else None, base.legend,             method_defaults.legend),
+            transparent         = pick(user_cfg.transparent         if user_cfg else None, base.transparent,        method_defaults.transparent),
+            x                   = pick(user_cfg.x                   if user_cfg else None, base.x,                  method_defaults.x),
+            y                   = pick(user_cfg.y                   if user_cfg else None, base.y,                  method_defaults.y),
+            z                   = pick(user_cfg.z                   if user_cfg else None, base.z,                  method_defaults.z),
+            y_multi             = pick(user_cfg.y_multi             if user_cfg else None, base.y_multi,            method_defaults.y_multi),
+            y_multi_label       = pick(user_cfg.y_multi_label       if user_cfg else None, base.y_multi_label,      method_defaults.y_multi_label),
+            qam                 = pick(user_cfg.qam                 if user_cfg else None, base.qam,                method_defaults.qam),
+            soft                = pick(user_cfg.soft                if user_cfg else None, base.soft,               method_defaults.soft),
+            hard                = pick(user_cfg.hard                if user_cfg else None, base.hard,               method_defaults.hard),
+            theme               = pick(user_cfg.theme               if user_cfg else None, base.theme,              method_defaults.theme),
+            x_tick_mode         = pick(user_cfg.x_tick_mode         if user_cfg else None, base.x_tick_mode,        method_defaults.x_tick_mode),
+            x_unit_from         = pick(user_cfg.x_unit_from         if user_cfg else None, base.x_unit_from,        method_defaults.x_unit_from),
+            x_unit_out          = pick(user_cfg.x_unit_out          if user_cfg else None, base.x_unit_out,         method_defaults.x_unit_out),
+            x_tick_decimals     = pick(user_cfg.x_tick_decimals     if user_cfg else None, base.x_tick_decimals,    method_defaults.x_tick_decimals),
+            xlabel_base         = pick(user_cfg.xlabel_base         if user_cfg else None, base.xlabel_base,        method_defaults.xlabel_base),
+            line_color          = pick(user_cfg.line_color          if user_cfg else None, base.line_color,         method_defaults.line_color),
+            line_colors         = pick(user_cfg.line_colors         if user_cfg else None, base.line_colors,        method_defaults.line_colors),
+            scatter_size        = pick(user_cfg.scatter_size        if user_cfg else None, base.scatter_size,       method_defaults.scatter_size),
+            x_ticks_visible     = pick(user_cfg.x_ticks_visible     if user_cfg else None, base.x_ticks_visible,    method_defaults.x_ticks_visible),
+            x_time_labels       = pick(user_cfg.x_time_labels       if user_cfg else None, base.x_time_labels,      method_defaults.x_time_labels),
+            x_time_input_unit   = pick(user_cfg.x_time_input_unit   if user_cfg else None, base.x_time_input_unit,  method_defaults.x_time_input_unit),
+            x_time_format       = pick(user_cfg.x_time_format       if user_cfg else None, base.x_time_format,      method_defaults.x_time_format),
             y_ticks             = pick(user_cfg.y_ticks             if user_cfg else None, base.y_ticks,            method_defaults.y_ticks),
             y_tick_labels       = pick(user_cfg.y_tick_labels       if user_cfg else None, base.y_tick_labels,      method_defaults.y_tick_labels),
         )
@@ -625,7 +627,7 @@ class MatplotManager:
         marker : Optional[str], keyword-only
             Matplotlib marker style (e.g., "o", ".", "+").
         s : Optional[float], keyword-only
-            Marker size in points²; if None, Matplotlib default is used.
+            Marker size in points²; if None, uses cfg.scatter_size or Matplotlib default.
         color : Optional[str], keyword-only
             Explicit color; if None, uses cfg.line_color or Matplotlib default.
         cfg : Optional[PlotConfig], keyword-only
@@ -640,14 +642,15 @@ class MatplotManager:
         cfg = self._merge_cfg(cfg, defaults)
         x_arr, y_arr = self._coerce_xy(x if x is not None else cfg.x, y if y is not None else cfg.y)
         resolved_color = color if color is not None else cfg.line_color
+        marker_size = s if s is not None else cfg.scatter_size
 
         with self._theme_context(cfg):
             fig, ax = self._new_fig()
             scatter_kwargs = {}
             if marker is not None:
                 scatter_kwargs["marker"] = marker
-            if s is not None:
-                scatter_kwargs["s"] = s
+            if marker_size is not None:
+                scatter_kwargs["s"] = marker_size
             ax.scatter(x_arr, y_arr, label=label, color=resolved_color, **scatter_kwargs)
             self._apply_x_ticks(ax, cfg)
             return self._finish(fig, ax, self._resolve_path(filename), cfg)

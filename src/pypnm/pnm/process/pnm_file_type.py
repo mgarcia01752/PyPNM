@@ -1,10 +1,14 @@
-
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
 from enum import Enum
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pypnm.pnm.process.pnm_header import PnmHeaderParameters
+
 
 class PnmFileType(Enum):
     """
@@ -31,7 +35,7 @@ class PnmFileType(Enum):
     OFDM_MODULATION_PROFILE                         = "PNN10"
     LATENCY_REPORT                                  = "LLD01"
 
-    # (Not in Spec)Placeholder for SNMP-based spectrum analysis
+    # (Not in Spec)Internal use for SNMP-based Spectrum Analysis
     CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA              = "PXX9"    
 
     def __init__(self, pnm_cann: str):
@@ -160,3 +164,31 @@ class PnmFileType(Enum):
 
         valid_codes = ", ".join(m.value for m in cls)
         raise KeyError(f"Unknown code: {code!r}. Normalized to {s!r}. Valid codes: {valid_codes}")
+
+    @classmethod
+    def fromPnmHeaderModel(cls, params: PnmHeaderParameters) -> 'PnmFileType':
+        """
+        Derive a PnmFileType from a parsed PnmHeaderParameters instance.
+
+        This helper inspects the wrapped `pnm_header` parameters and uses
+        the file_type + file_type_version pair to resolve the appropriate
+        PnmFileType enum member.
+
+        Args:
+            params (PnmHeaderParameters): Parsed PNM header parameters.
+
+        Returns:
+            PnmFileType: Matching PNM file type enum member.
+
+        Raises:
+            KeyError: If the header fields do not map to a known file type, or
+                if the file_type field is missing/empty.
+        """
+
+        file_type = (params.file_type or "").strip().upper()
+        version = params.file_type_version
+
+        if not file_type:
+            raise KeyError("PnmHeaderParameters.file_type is missing or empty")
+
+        return cls.from_mmnemonic(file_type, version)

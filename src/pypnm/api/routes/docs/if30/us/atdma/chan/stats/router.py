@@ -11,6 +11,7 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.if30.us.atdma.chan.stats.service import UsScQamChannelService
+from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 
 class UsScQamChannelRouter:
     """
@@ -27,7 +28,8 @@ class UsScQamChannelRouter:
 
     def _add_routes(self):
         @self.router.post("/stats",
-                          summary="Get DOCSIS 3.0 Upstream ATDMA Channel Stats")
+                          summary="Get DOCSIS 3.0 Upstream ATDMA Channel Stats",
+                          responses=FAST_API_RESPONSE,)
         async def get_us_scqam_upstream_channels(request: SnmpRequest):
             """
             **DOCSIS 3.0 Upstream ATDMA Channel Stats**
@@ -63,7 +65,9 @@ class UsScQamChannelRouter:
                 message     =   "Successfully retrieved upstream ATDMA channel statistics",
                 results     =   data)
         
-        @self.router.post("/preEqualization", response_model=SnmpResponse)
+        @self.router.post("/preEqualization", 
+                          response_model=SnmpResponse,
+                          responses=FAST_API_RESPONSE,)
         async def get_us_scqam_pre_equalizations(request: SnmpRequest):
             """
             **DOCSIS 3.0 Upstream Pre-Equalization Coefficients**

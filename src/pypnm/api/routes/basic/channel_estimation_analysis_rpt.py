@@ -150,6 +150,7 @@ class ChanEstimationReport(AnalysisReport):
                         grid            = True,
                         legend          = False,
                         transparent     = False,
+                        scatter_size    = 1.0,
                         theme           = self.getAnalysisRptMatplotConfig().theme,
                     )
 

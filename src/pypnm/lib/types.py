@@ -65,6 +65,7 @@ ProfileId = NewType("ProfileId", int)
 # ────────────────────────────────────────────────────────────────────────────────
 PathLike  = Union[str, Path]
 PathArray = List[PathLike]
+FileNameStr = NewType("FileNameStr", str)
 
 # ────────────────────────────────────────────────────────────────────────────────
 # JSON-like structures for REST I/O
@@ -149,7 +150,7 @@ __all__ = [
     # complex
     "Complex", "ComplexArray", "ComplexSeries",
     # paths
-    "PathLike", "PathArray",
+    "PathLike", "PathArray", "FileNameStr",
     # JSON
     "JSONScalar", "JSONDict", "JSONList", "JSONValue",
     # unit-tagged scalars

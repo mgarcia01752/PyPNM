@@ -5,15 +5,14 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from typing import Union
 from fastapi import APIRouter, HTTPException
 
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.api.routes.docs.if31.system.diplexer.schemas import DiplexerResponse
 from pypnm.api.routes.docs.if31.system.diplexer.service import DiplexerConfigService
 from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
+from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 
 
 class DiplexerConfigResult:
@@ -26,7 +25,9 @@ class DiplexerConfigResult:
         self._register_routes()
 
     def _register_routes(self) -> None:
-        @self.router.post("/diplexer", response_model=SnmpResponse)
+        @self.router.post("/diplexer", 
+                          response_model=SnmpResponse,
+                          responses=FAST_API_RESPONSE,)
         async def diplexer_config(request: SnmpRequest):
             """
             **DOCSIS 3.1 System Diplexer Configuration**

@@ -14,6 +14,7 @@ from pypnm.api.routes.common.classes.operation.cable_modem_precheck import Cable
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.fdd.system.diplexer.service import FddDiplexerConfigService
 from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
+from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 
 
 class FddDiplexerConfigResult:
@@ -32,8 +33,10 @@ class FddDiplexerConfigResult:
         self._register_routes()
 
     def _register_routes(self) -> None:
-        @self.router.post("/diplexer/configuration", response_model=Union[SnmpResponse, Dict[str, Any]])
-        async def diplexer_config(request: SnmpRequest) -> Union[SnmpResponse, JSONResponse]:
+        @self.router.post("/diplexer/configuration", 
+                          response_model=SnmpResponse,
+                          responses=FAST_API_RESPONSE,)
+        async def diplexer_config(request: SnmpRequest) -> SnmpResponse:
             """
             **DOCSIS 4.0 FDD Diplexer Configuration**
 
@@ -55,11 +58,14 @@ class FddDiplexerConfigResult:
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(mac_address=str(mac), status=status, message=msg)
+                return SnmpResponse(mac_address=mac, status=status, message=msg)
 
             service = await FddDiplexerConfigService.fetch_fdd_diplexer_config(mac_address=mac, ip_address=ip)
             cfg = service.to_dict()
-            return JSONResponse(content=cfg)
+            return SnmpResponse(mac_address     =   mac,
+                                status          =   ServiceStatusCode.SUCCESS,
+                                message         =   "Successfully retrieved FDD diplexer configuration",
+                                results         =   cfg)
 
 # Required for dynamic FastAPI router registration
 router = FddDiplexerConfigResult().router

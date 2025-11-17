@@ -14,6 +14,7 @@ from pypnm.api.routes.common.classes.operation.cable_modem_precheck import Cable
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.dev.schemas import EventLogResponse
 from pypnm.api.routes.docs.dev.service import CmDocsDevService
+from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,9 @@ class DocsDevRouter:
         self._add_routes()
 
     def _add_routes(self):
-        @self.router.post("/eventLog", response_model=EventLogResponse)
+        @self.router.post("/eventLog", 
+                          response_model=EventLogResponse, 
+                          responses=FAST_API_RESPONSE,)
         async def get_event_log(request: BaseDeviceConnectRequest):
             """
             **Retrieve DOCSIS Cable Modem Event Log**
@@ -48,12 +51,14 @@ class DocsDevRouter:
 
             if status != ServiceStatusCode.SUCCESS:
                 logger.error(msg)
-                return EventLogResponse(mac_address=str(mac), status=status, message=msg, logs=[])                
+                return EventLogResponse(mac_address=mac, 
+                                        status=status, 
+                                        message=msg, logs=[])                
             
             try:
                 service = CmDocsDevService(mac_address=mac,ip_address=ip)
                 log_entries = await service.fetch_event_log()
-                return EventLogResponse(mac_address=str(service.mac), 
+                return EventLogResponse(mac_address=service.mac_address,
                                         status=ServiceStatusCode.SUCCESS,
                                         logs=log_entries)
                 

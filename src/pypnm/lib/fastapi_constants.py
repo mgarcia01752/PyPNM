@@ -20,3 +20,4 @@ FAST_API_RESPONSE: Dict[int | str, Dict[str, Any]] = {
     cast(HttpRtnCode, 400): {"description": "Bad request"},
     cast(HttpRtnCode, 500): {"description": "Server error"},
 }
+

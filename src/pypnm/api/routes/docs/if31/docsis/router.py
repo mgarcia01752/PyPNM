@@ -11,6 +11,7 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.if31.docsis.service import DocsisBaseCapabilityService
+from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 
 class BaseCapabilityRouter:
     """
@@ -22,7 +23,8 @@ class BaseCapabilityRouter:
     def __init__(self) -> None:
         self.router = APIRouter(
             prefix="/docs/if31/docsis",
-            tags=["DOCSIS 3.1 DOCSIS Base Capability"])
+            tags=["DOCSIS 3.1 DOCSIS Base Capability"],
+            responses=FAST_API_RESPONSE,)
         self.logger = logging.getLogger(self.__class__.__name__)
         self._register_routes()
 

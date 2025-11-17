@@ -13,12 +13,15 @@ from pypnm.lib.types import PathLike
 
 
 class LogFile:
-    log_dir: str = SystemConfigSettings.log_dir
+    
 
     @classmethod
-    def write(cls, fname: PathLike, data: Union[BaseModel, dict[Any, Any], str, bytes]) -> None:
+    def write(cls, 
+              fname: PathLike, 
+              data: Union[BaseModel, dict[Any, Any], str, bytes],
+              log_dir:PathLike = SystemConfigSettings.log_dir ) -> None:
         """
-        Write log data into the configured log directory.
+        Write log data.
 
         Supports:
         ----------
@@ -26,7 +29,7 @@ class LogFile:
         - dict       → serialized as JSON string
         - str/bytes  → written directly
         """
-        full_path = os.path.join(cls.log_dir, str(fname))
+        full_path = os.path.join(log_dir, str(fname))
         fp = FileProcessor(full_path)
 
         if isinstance(data, BaseModel):

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 from struct import calcsize, unpack
-from typing import Final, Tuple, Dict, Any, cast
+from typing import Literal, Tuple, Dict, Any, cast
 
 from pydantic import ConfigDict, Field
 
@@ -22,7 +22,7 @@ class CmUsOfdmaPreEqModel(PnmBaseModel):
     model_config                            = ConfigDict(extra="ignore")
     cmts_mac_address: MacAddressStr         = Field(..., description="CMTS MAC address associated with this measurement.")
     value_length: int                       = Field(..., ge=0, description="Number of complex coefficient pairs (non-negative).")
-    value_unit: Final[str]                  = Field(default="[Real, Imaginary]", description="Unit representation of complex values.")
+    value_unit: Literal["[Real, Imaginary]"] = Field("[Real, Imaginary]", description="Unit representation of complex values.")
     values: ComplexArray                    = Field(..., min_length=1, description="Pre-equalization coefficients as [real, imaginary] pairs.")
     occupied_channel_bandwidth: FrequencyHz = Field(..., ge=0, description="OFDM Occupied Bandwidth (Hz)")
 
@@ -82,13 +82,13 @@ class CmUsOfdmaPreEq(PnmHeader):
             raise ValueError(f"PNM File Stream is not file type: {expected}, Error: {got}")
 
         if file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS:
-            self._sm_n_format = (IntegerBits(2), FractionalBits(13))  # s2.13 format
+            self._sm_n_format = (IntegerBits(1), FractionalBits(14))
             debug_msg = "Using s2.13 format for Upstream Pre-Equalizer Coefficients PNM data."
         else:
-            self._sm_n_format = (IntegerBits(1), FractionalBits(14))  # s1.14 format
+            self._sm_n_format = (IntegerBits(1), FractionalBits(14))
             debug_msg = "Using s1.14 format for Upstream Pre-Equalizer Coefficients Last Update PNM data."
 
-        self.logger.info(debug_msg)
+        self.logger.debug(debug_msg)
 
         header_format = '>B6s6sIHBI'
         header_size   = calcsize(header_format)
@@ -123,7 +123,6 @@ class CmUsOfdmaPreEq(PnmHeader):
         # Convert to ComplexArray: List[List[float, float]]
         complex_pairs:ComplexArray    = cast(ComplexArray, [[c.real, c.imag] for c in decoded])
 
-        # Build BaseModel (convert spacing to Hz; PnmBaseModel expects Hz)
         self._model                        = CmUsOfdmaPreEqModel(
             pnm_header                     = self.getPnmHeaderParameterModel(),
             channel_id                     = self._channel_id,

@@ -16,6 +16,7 @@ from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.ds.ofdm.mer_margin.schemas import PnmMerMarginRequest
 from pypnm.api.routes.docs.pnm.ds.ofdm.mer_margin.service import CmDsOfdmMerMarginService
 from pypnm.docsis.cable_modem import CableModem
+from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 
@@ -42,7 +43,8 @@ class RxMerMarginRouter:
     def _add_routes(self):
         
         @self.router.post(f"/{self.base_endpoint}/getMeasurementTemplate", 
-                          response_model=Union[SnmpResponse])
+                          response_model=Union[SnmpResponse],
+                          responses=FAST_API_RESPONSE,)
         async def get_measurement_template(request: PnmRequest) -> Union[SnmpResponse]:
             """
             📘 [API Guide - MER Margin Measurement Template](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/ds/ofdm/mer-margin.md#get-measurement-template)

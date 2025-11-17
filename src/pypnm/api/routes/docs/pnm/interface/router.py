@@ -13,6 +13,7 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import (CableModemServicePreCheck,)
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.interface.service import InterfaceStatsService
+from pypnm.api.routes.docs.pnm.spectrumAnalyzer.router import FAST_API_RESPONSE
 
 class InterfaceStatsRouter:
     """
@@ -27,7 +28,9 @@ class InterfaceStatsRouter:
         self._add_routes()
 
     def _add_routes(self):
-        @self.router.post("/stats", response_model=Union[SnmpResponse])
+        @self.router.post("/stats", 
+                          response_model=Union[SnmpResponse],
+                          responses=FAST_API_RESPONSE,)
         async def get_interface_stats(request: SnmpRequest) -> SnmpResponse:
             """
             Retrieve DOCSIS interface statistics grouped by interface type.
@@ -42,7 +45,7 @@ class InterfaceStatsRouter:
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse( mac_address=str(mac), status=status, message=msg)
+                return SnmpResponse( mac_address=mac, status=status, message=msg)
 
             service = InterfaceStatsService(mac_address=mac, ip_address=ip)
             data: Dict[str, List[Dict]] = await service.get_interface_stat_entries()

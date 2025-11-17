@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 import struct
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, Optional, Union
 from pydantic import BaseModel, Field
 from pypnm.lib.constants import DEFAULT_CAPTURE_TIME
 from pypnm.lib.types import CaptureTime
@@ -249,3 +249,32 @@ class PnmHeader:
             Parsed PNM header instance.
         """
         return cls(data)
+
+    @staticmethod
+    def get_model_from_dict(data: Union[Mapping[str, Any], Dict[str, Any]]) -> PnmHeaderParameters:
+        """
+        Build a `PnmHeaderParameters` from a known PNM header dictionary.
+
+        This is intended for cases where the original binary header is not
+        available and only the structured dictionary (or JSON) form of the
+        header exists.
+
+        Parameters
+        ----------
+        data : Dict[str, Any]
+            Dictionary containing PNM header fields. This may be either:
+            - The full structure produced by `getPnmHeader()` which wraps
+              parameters under the `pnm_header` key, or
+            - A flat mapping of `PnmHeaderParameters` fields.
+
+        Returns
+        -------
+        PnmHeaderParameters
+.
+        """
+        if "pnm_header" in data:
+            header_data = data["pnm_header"]
+        else:
+            header_data = data
+
+        return PnmHeaderParameters(**header_data)

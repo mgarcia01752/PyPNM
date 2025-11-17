@@ -19,7 +19,7 @@ from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, ThemeType
-from pypnm.lib.types import ChannelId, PathArray, PathLike
+from pypnm.lib.types import ChannelId, FileNameStr, MacAddressStr, PathArray, PathLike, TimeStamp
 from pypnm.lib.utils import Utils
 
 AnalysisData    = List[Dict[str, Any]]
@@ -36,7 +36,7 @@ class AnalysisOutputModel(BaseModel):
         report.build_report()
         payload = report.to_model()
     """
-    time: int               = Field(..., description="Ephoc Time")
+    time: TimeStamp         = Field(..., description="Ephoc Time")
     csv_files: PathArray    = Field(..., description="List of CSV file(s)")
     plot_files: PathArray   = Field(..., description="List of PNG Matplot file(s)")
     archive_file: PathLike  = Field(..., description="File name of archive file containging analysis files")
@@ -89,7 +89,7 @@ class AnalysisReport(ABC):
         """Return the device SystemDescriptor used for filenames and labeling."""
         return self._system_description
 
-    def get_group_time(self) -> int:
+    def get_group_time(self) -> TimeStamp:
         """Return the session/group timestamp used to namespace output filenames."""
         return self._group_time
     
@@ -136,7 +136,7 @@ class AnalysisReport(ABC):
         '''        
         return f"{self._archive_dir}/{self.create_generic_fname(tags=tags, ext='zip')}"
 
-    def create_generic_fname(self, tags: List[str], ext: str = "") -> str:
+    def create_generic_fname(self, tags: List[str], ext: str = "") -> FileNameStr:
         """
         Generate a generic filename using the current session metadata plus tags.
 
@@ -156,7 +156,7 @@ class AnalysisReport(ABC):
         """Return a `CSVManager` instance. Subclasses may override to customize behavior."""
         return CSVManager()
 
-    def get_base_filename(self) -> str:
+    def get_base_filename(self) -> FileNameStr:
         """
         Return the base filename (no extension) derived from MAC/model/time.
 
@@ -164,53 +164,75 @@ class AnalysisReport(ABC):
         """
         return self._generate_fname()
 
-    def register_common_analysis_model(self, channel_id:int, model: CommonAnalysis) -> None:
+    def register_common_analysis_model(self, channel_id: ChannelId, model: CommonAnalysis, *, strict: bool = True) -> None:
         """
-        Register (or overwrite) a `CommonAnalysis` model keyed by channel ID.
+        Register (or append) a `CommonAnalysis` model under a channel ID.
 
         Args:
             channel_id: Channel identifier.
             model:      The analysis model to store.
+            strict:     When True (default), disallow multiple models for the same
+                        channel_id and raise if one already exists. When False,
+                        multiple models per-channel are allowed and appended.
 
-        Example:
+        Examples:
+            # Default: enforce a single model per channel (strict=True)
             self.register_common_analysis_model(channel_id=1, model=foo)
+
+            # Allow multiple models per channel (appended)
+            self.register_common_analysis_model(channel_id=1, model=foo, strict=False)
         """
         if not isinstance(model, CommonAnalysis):
             raise TypeError("model must be an instance of CommonAnalysis")
-        
-        if channel_id in self._common_analysis_model:
-            self.logger.warning(f"Channel ID {channel_id} already exists. Overwriting the existing model.")
-            self._common_analysis_model[channel_id] = model
-        
-        self._common_analysis_model[channel_id] = model
-    
-    def get_common_analysis_model(self, channel_id: int = -1) -> List[CommonAnalysis]:
+
+        bucket = self._common_analysis_model.setdefault(channel_id, [])
+
+        if strict and bucket:
+            raise ValueError(
+                f"Channel ID {channel_id} already has {len(bucket)} "
+                "registered model(s); strict mode forbids multiple."
+            )
+
+        if bucket and not strict:
+            self.logger.debug(
+                "Channel ID %s already has %d model(s); appending another (non-strict mode).",
+                channel_id,
+                len(bucket),
+            )
+
+        bucket.append(model)
+
+    def get_common_analysis_model(self, channel_id: ChannelId = INVALID_CHANNEL_ID) -> List[CommonAnalysis]:
         """
         Retrieve one or more `CommonAnalysis` models.
 
         Args:
-            channel_id: Specific channel ID, or -1 to return all (default).
+            channel_id: Specific channel ID, or `INVALID_CHANNEL_ID` to return all (default).
 
         Returns:
-            A list of models. When `channel_id == -1`, results are ordered by channel ID.
+            A list of models. When `channel_id == INVALID_CHANNEL_ID`, results are ordered by
+            channel ID, and all models for each channel are returned in
+            registration order.
 
         Raises:
             KeyError: If a specific `channel_id` is requested but not present.
 
         Examples:
             all_models = self.get_common_analysis_model()
-            one = self.get_common_analysis_model(channel_id=5)
+            ch5_models = self.get_common_analysis_model(channel_id=5)
         """
         if channel_id == INVALID_CHANNEL_ID:
-            # Return all models sorted by channel_id
-            return [self._common_analysis_model[cid] for cid in sorted(self._common_analysis_model)]
+            out: List[CommonAnalysis] = []
+            for cid in sorted(self._common_analysis_model):
+                out.extend(self._common_analysis_model[cid])
+            return out
 
         if channel_id not in self._common_analysis_model:
             raise KeyError(f"Channel ID {channel_id} not found in results.")
 
-        return [self._common_analysis_model[channel_id]]
+        return list(self._common_analysis_model[channel_id])
 
-    def get_common_analysis_models_channel_ids(self) -> List[int]:
+    def get_common_analysis_models_channel_ids(self) -> List[ChannelId]:
         """
         Return the list of channel IDs with registered models.
 
@@ -320,10 +342,10 @@ class AnalysisReport(ABC):
         self._csv_dir: PathLike       = SystemConfigSettings.csv_dir
         self._archive_dir: PathLike   = SystemConfigSettings.archive_dir
 
-        self._group_time              = Utils.time_stamp()
-        self._base_filename: str      = ""
-        self._common_analysis_model: Dict[ChannelId, BaseModel] = {}
-
+        self._group_time: TimeStamp         = TimeStamp(Utils.time_stamp())
+        self._base_filename: FileNameStr    = FileNameStr("")
+        self._common_analysis_model: Dict[ChannelId, List[CommonAnalysis]] = {}
+        
         # Normalize first item to a dict (supports both dict and BaseModel)
         first_item = self._data_list[0]
         if isinstance(first_item, BaseModel):
@@ -331,12 +353,12 @@ class AnalysisReport(ABC):
         else:
             first_dict = cast(Dict[str, Any], first_item)
 
-        mac_str: str = (
+        mac_str: MacAddressStr = (
             first_dict.get("mac_address")
             or first_dict.get("cm_mac_address")
             or MacAddress.null()
         )
-        cmts_mac_str: str  = first_dict.get("cmts_mac_address", MacAddress.null())
+        cmts_mac_str: MacAddressStr  = first_dict.get("cmts_mac_address", MacAddress.null())
 
         self._mac_address: MacAddress      = MacAddress(mac_str)
         self._cmts_mac_address: MacAddress = MacAddress(cmts_mac_str)
@@ -347,7 +369,7 @@ class AnalysisReport(ABC):
                                                                                                SystemDescriptor.empty().to_dict()))
         self._system_description: SystemDescriptor      = SystemDescriptor.load_from_dict(system_description_dict)
 
-    def _generate_fname(self, tags: List[str] = [], ext: str = "") -> str:
+    def _generate_fname(self, tags: List[str] = [], ext: str = "") -> FileNameStr:
         """
         Construct a sanitized filename from:
           - MAC address (colon-free, lowercase)
@@ -380,4 +402,4 @@ class AnalysisReport(ABC):
         ext = ext.lstrip(".")
         ext_part = f".{ext}" if ext else ""
 
-        return f"{mac}_{model}_{ts}{tag_part}{ext_part}"
+        return FileNameStr(f"{mac}_{model}_{ts}{tag_part}{ext_part}")

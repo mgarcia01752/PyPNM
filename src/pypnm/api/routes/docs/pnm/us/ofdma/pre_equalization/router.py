@@ -35,12 +35,11 @@ from pypnm.lib.types import InetAddressStr, MacAddressStr, Path
 
 class UsOfdmaPreEqualizationRouter:
     def __init__(self):
-        prefix             = "/docs/pnm/us/ofdma"
+        prefix = "/docs/pnm/us/ofdma"
         self.base_endpoint = "/preEqualization"
-        self.router        = APIRouter(
+        self.router = APIRouter(
             prefix=prefix, tags=["PNM Operations - Upstream OFDMA Pre-Equalization"])
-        self.logger        = logging.getLogger(
-            f'UsOfdmaPreEqualizationRouter.{self.base_endpoint.strip("/")}')
+        self.logger = logging.getLogger(f'UsOfdmaPreEqualizationRouter.{self.base_endpoint.strip("/")}')
         self.__routes()
 
     def __routes(self) -> None:
@@ -72,6 +71,7 @@ class UsOfdmaPreEqualizationRouter:
 
             service: CmUsOfdmaPreEqService = CmUsOfdmaPreEqService(cm)
             msg_rsp: MessageResponse = await service.set_and_go()
+            msg_rsp.log_payload()
 
             if msg_rsp.status != ServiceStatusCode.SUCCESS:
                 err = "Unable to complete Upstream OFDMA Pre-Equalization measurement."
@@ -80,8 +80,9 @@ class UsOfdmaPreEqualizationRouter:
             measurement_stats:List[DocsPnmCmUsPreEqEntry] = \
                 cast(List[DocsPnmCmUsPreEqEntry], await service.getPnmMeasurementStatistics())
 
-            cps    = CommonProcessService(msg_rsp)
+            cps = CommonProcessService(msg_rsp)
             msg_rsp = cps.process()
+            msg_rsp.log_payload()
 
             analysis = Analysis(AnalysisType.BASIC, msg_rsp)
 
@@ -89,9 +90,9 @@ class UsOfdmaPreEqualizationRouter:
                 payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
 
                 # Clean up payload by removing unneeded or redundant sections
-                DictUtils.pop_keys_recursive(payload, ["pnm_header", "modulations", "snr_db_values"])
-                primative = msg_rsp.payload_to_dict('primative')
-                DictUtils.pop_keys_recursive(primative, ["device_details", "modulation_statistics"])
+                DictUtils.pop_keys_recursive(payload, ["pnm_header"])
+                primative:Dict[Any,Any] = msg_rsp.payload_to_dict('primative')
+                DictUtils.pop_keys_recursive(primative, ["device_details"])
                 payload.update(primative)
                 payload.update(DictUtils.models_to_nested_dict(measurement_stats, 'measurement_stats',))
 

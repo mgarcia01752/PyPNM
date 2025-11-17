@@ -217,6 +217,9 @@ class Analysis:
         expectations and returned structures:
 
         """
+        # TODO: unify return type?
+        # model:BaseAnalysisModel
+
         if pnm_file_type == PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT.value:
             self.logger.debug("Processing: OFDM_CHANNEL_ESTIMATE_COEFFICIENT")
             model = self.basic_analysis_ds_chan_est(measurement)
@@ -233,7 +236,7 @@ class Analysis:
 
         elif pnm_file_type == PnmFileType.RECEIVE_MODULATION_ERROR_RATIO.value:
             self.logger.debug("Processing: RECEIVE_MODULATION_ERROR_RATIO")
-            model:DsRxMerAnalysisModel = self.basic_analysis_rxmer(measurement)
+            model = self.basic_analysis_rxmer(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
             self.__add_pnmType(PnmFileType.RECEIVE_MODULATION_ERROR_RATIO)             
@@ -253,12 +256,11 @@ class Analysis:
             self.__add_pnmType(PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS)   
   
         elif pnm_file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE.value:
-            self.logger.debug("Stub: Processing: UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE")
-            # model = self.basic_analysis_us_ofdma_pre_equalization(measurement)
-            # self.__update_result_model(model)
-            # self.__update_result_dict(model.model_dump())
-            # self.__add_pnmType(PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS)             
-            pass
+            self.logger.debug("Processing: UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE")
+            model = self.basic_analysis_us_ofdma_pre_equalization(measurement)
+            self.__update_result_model(model)
+            self.__update_result_dict(model.model_dump())
+            self.__add_pnmType(PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE)            
 
         elif pnm_file_type == PnmFileType.OFDM_FEC_SUMMARY.value:
             self.logger.debug("Processing: OFDM_FEC_SUMMARY")
@@ -840,7 +842,7 @@ class Analysis:
         log = logging.getLogger(f"{cls.__name__}")
 
         channel_id: ChannelId                   = measurement.get("channel_id",                    INVALID_CHANNEL_ID)
-        subcarrier_spacing: int                 = measurement.get("subcarrier_spacing",            INVALID_START_VALUE)
+        subcarrier_spacing: FrequencyHz         = measurement.get("subcarrier_spacing",            INVALID_START_VALUE)
         first_active_subcarrier_index: int      = measurement.get("first_active_subcarrier_index", INVALID_START_VALUE)
         subcarrier_zero_frequency: FrequencyHz  = measurement.get("subcarrier_zero_frequency",     INVALID_START_VALUE)
         occupied_channel_bandwidth: FrequencyHz = measurement.get("occupied_channel_bandwidth",    INVALID_START_VALUE)
@@ -946,6 +948,8 @@ class Analysis:
             signal_statistics               = signal_stats_model,
             echo                            = echo_rpt,
         )
+        if log.isEnabledFor(logging.DEBUG):
+            LogFile.write( f'UsOfdmaUsPreEqAnalysisModel_{result_model.mac_address}_{result_model.channel_id}.log',result_model,)
 
         return result_model
 

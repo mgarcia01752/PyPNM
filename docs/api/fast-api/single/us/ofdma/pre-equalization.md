@@ -133,9 +133,9 @@ When `analysis` and `analysis.plot.ui` are provided, this endpoint also generate
 
 | View Type  | Description |
 |------------|-------------|
-| [Magnitude with Fit](pnm-type.md) | Magnitude versus frequency with regression line overlay, showing overall tilt or slope  |
-| [Group Delay](pnm-type.md)        | Group delay versus frequency derived from the complex carrier values                    |
-| [IQ Scatter](pnm-type.md)         | Complex scatter of in-phase (I) versus quadrature (Q) coefficients                      |
+| [Magnitude with Fit](images/pre-eq/42_us_preeq_magnitude.png) | Magnitude vs. frequency with regression line overlay, showing overall tilt or slope  |
+| [Group Delay](images/pre-eq/42_us_preeq_groupdelay.png)        | Group delay vs. frequency derived from the complex carrier values                    |
+| [IQ Scatter](images/pre-eq/42_us_preeq_iqscatter.png)         | Complex scatter of in-phase (I) vs. quadrature (Q) coefficients                      |
 
 ### Pre-Equalizer Coefficient Update Views
 
@@ -143,9 +143,9 @@ In systems where CMTS equalizer update taps are available, the same plot familie
 
 | View Type  | Description |
 |------------|-------------|
-| [Magnitude with Fit](pnm-type.md) | Magnitude versus frequency with regression line overlay, showing overall tilt or slope  |
-| [Group Delay](pnm-type.md)        | Group delay versus frequency derived from the complex carrier values                    |
-| [IQ Scatter](pnm-type.md)         | Complex scatter of in-phase (I) versus quadrature (Q) coefficients                      |
+| [Magnitude with Fit](pnm-type.md) | Magnitude vs. frequency with regression line overlay, showing overall tilt or slope  |
+| [Group Delay](pnm-type.md)        | Group delay vs. frequency derived from the complex carrier values                    |
+| [IQ Scatter](pnm-type.md)         | Complex scatter of in-phase (I) vs. quadrature (Q) coefficients                      |
 
 Details:
 

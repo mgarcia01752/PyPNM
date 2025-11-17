@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from gzip import FNAME
 import logging
 import math
 from typing import Dict, List, cast
@@ -18,6 +19,7 @@ from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
 from pypnm.lib.types import ArrayLike, ChannelId, ComplexArray, FloatSeries, PathLike
+from pypnm.pnm.process.pnm_header import PnmFileType, PnmHeader, PnmHeaderModel, PnmHeaderParameters
 
 
 class OfdmaPreEqParameters(BaseModel):
@@ -35,7 +37,8 @@ class OfdmaPreEqAnalysis(CommonAnalysis):
     """
     Analysis view over OFDMA US Pre-Equalization data (extends CommonAnalysis).
     """
-    parameters: OfdmaPreEqParameters = Field(..., description="Pre-EQ analysis parameters and derived series.")
+    pnm_header: PnmHeaderParameters     = Field(..., description="PNM header metadata.")
+    parameters: OfdmaPreEqParameters    = Field(..., description="Pre-EQ analysis parameters and derived series.")
 
 
 class CmUsOfdmaPreEqReport(AnalysisReport):
@@ -57,31 +60,39 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
         any_models: bool               = False
 
         for common_model in self.get_common_analysis_model():
+            
             any_models                 = True
             model                      = cast(OfdmaPreEqAnalysis, common_model)
-            chan                       = int(model.channel_id)
+            channel_id                 = ChannelId(model.channel_id)
 
             x: ArrayLike               = cast(ArrayLike, model.raw_x)
             y: ArrayLike               = cast(ArrayLike, model.raw_y)
             ca: ComplexArray           = model.raw_complex
             rl: FloatSeries            = model.parameters.regression_line
 
+            fname = self.FNAME_TAG
+
+            pnm_file_type = PnmFileType.fromPnmHeaderModel(model.pnm_header)
+
+            if pnm_file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE:
+                fname = self.FNAME_TAG + "_update"
+
             # Single-channel capture
             try:
                 csv_mgr: CSVManager    = self.csv_manager_factory()
-                csv_fname: PathLike     = self.create_csv_fname(tags=[str(chan), self.FNAME_TAG])
+                csv_fname: PathLike     = self.create_csv_fname(tags=[str(channel_id), fname])
                 csv_mgr.set_path_fname(csv_fname)
 
                 csv_mgr.set_header(["ChannelID", "Frequency(Hz)", "Magnitude(dB)", "Regression(dB)", "Real(Linear)", "Imaginary(Linear)"])
                 for rx, ry, reg, cmp in zip(x, y, rl, ca):
                     real, img = cmp
-                    csv_mgr.insert_row([chan, rx, ry, reg, real, img])
+                    csv_mgr.insert_row([channel_id, rx, ry, reg, real, img])
 
-                self.logger.debug(f"CSV created for OFDMA US Pre-EQ channel {chan}: {csv_fname} (rows={len(x)})")
+                self.logger.debug(f"CSV created for OFDMA US Pre-EQ channel {channel_id}: {csv_fname} (rows={len(x)})")
                 csv_mgr_list.append(csv_mgr)
 
             except Exception as exc:
-                self.logger.exception(f"Failed to create CSV for OFDMA US Pre-EQ channel {chan}: {exc}")
+                self.logger.exception(f"Failed to create CSV for OFDMA US Pre-EQ channel {channel_id}: {exc}")
 
         if not any_models:
             self.logger.debug("No OFDMA US Pre-EQ analysis data available; no CSVs created.")
@@ -108,7 +119,16 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
             rl: ArrayLike           = cast(ArrayLike, model.parameters.regression_line)
             gd_us: ArrayLike        = cast(ArrayLike, model.parameters.group_delay)
 
-            prefix_title = f"OFDMA US Pre-Equalization · Channel {channel_id}"
+
+            pnm_file_type = PnmFileType.fromPnmHeaderModel(model.pnm_header)
+
+            if pnm_file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS:
+                prefix_title = f"OFDMA US Pre-Equalization · Channel {channel_id}"
+                fname = self.FNAME_TAG
+
+            else:
+                prefix_title = f"OFDMA US Pre-Equalization-Update · Channel {channel_id}"
+                fname = self.FNAME_TAG + "_update"
 
             # OFDMA US Pre-EQ magnitude with regression
             try:
@@ -121,7 +141,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                     x_tick_decimals = 0,
                     xlabel_base     = "Frequency",
                     y_multi         = [y_db, rl],
-                    y_multi_label   = ["Channel Estimation", "Regression Line"],
+                    y_multi_label   = ["PreEqualizer", "Regression Line"],
                     ylabel          = "dB",
                     grid            = True,
                     legend          = True,
@@ -129,7 +149,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                     theme           = self.getAnalysisRptMatplotConfig().theme,
                 )
 
-                multi = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, "magnitude"])
+                multi = self.create_png_fname(tags=[str(channel_id), fname, "magnitude"])
                 self.logger.debug("Creating OFDMA US Pre-EQ magnitude plot: %s for channel: %s", multi, channel_id)
 
                 mgr = MatplotManager(default_cfg=cfg)
@@ -156,10 +176,10 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                     theme           = self.getAnalysisRptMatplotConfig().theme,
                 )
 
-                multi = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, "groupdelay"])
+                multi = self.create_png_fname(tags=[str(channel_id), fname, "groupdelay"])
                 self.logger.debug("Creating OFDMA US Pre-EQ group-delay plot: %s for channel: %s", multi, channel_id)
 
-                mgr                       = MatplotManager(default_cfg=cfg)
+                mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_line(filename=multi)
                 matplot_mgr.append(mgr)
 
@@ -180,10 +200,11 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                     grid            = False,
                     legend          = False,
                     transparent     = False,
+                    scatter_size    = 1.0,
                     theme           = self.getAnalysisRptMatplotConfig().theme,
                 )
 
-                scatter = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG, "scatter"])
+                scatter = self.create_png_fname(tags=[str(channel_id), fname, "scatter"])
                 self.logger.debug("Creating OFDMA US Pre-EQ scatter plot: %s for channel: %s", scatter, channel_id)
 
                 mgr = MatplotManager(default_cfg=cfg)
@@ -209,6 +230,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
         models: List[UsOfdmaUsPreEqAnalysisModel] = cast(List[UsOfdmaUsPreEqAnalysisModel], self.get_analysis_model())
 
         for idx, model in enumerate(models):
+
             try:
                 channel_id: ChannelId              = model.channel_id
 
@@ -239,6 +261,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                 )
 
                 analysis_model = OfdmaPreEqAnalysis(
+                    pnm_header  = PnmHeader.get_model_from_dict(model.pnm_header),
                     channel_id  = channel_id,
                     raw_x       = x,
                     raw_y       = y,
@@ -246,8 +269,8 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                     parameters  = params,
                 )
 
-                # Register model for downstream CSV/plot generation
-                self.register_common_analysis_model(channel_id, analysis_model)
+                # Register model for channel CSV/plot generation
+                self.register_common_analysis_model(channel_id, analysis_model, strict=False)
 
                 # Add to Signal Capture Aggregator
                 self.logger.debug(f"Adding OFDMA US Pre-EQ series, ChannelID: {channel_id} for aggregated signal capture")

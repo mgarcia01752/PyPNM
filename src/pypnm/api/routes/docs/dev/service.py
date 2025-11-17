@@ -14,21 +14,22 @@ from pypnm.api.routes.docs.dev.schemas import EventLogEntry
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import InetAddressStr, MacAddressStr
 
 logger = logging.getLogger(__name__)
 
 class CmDocsDevService:
     
-    def __init__(self, mac_address: str, ip_address: str):
-        self.mac = MacAddress(mac_address)
-        self.ip = Inet(ip_address)
-        self.cm = CableModem(mac_address=self.mac, inet=self.ip)
+    def __init__(self, mac_address: MacAddressStr, ip_address: InetAddressStr):
+        self._mac = MacAddress(mac_address)
+        self._ip = Inet(ip_address)
+        self._cm = CableModem(mac_address=self._mac, inet=self._ip)
         
     async def fetch_event_log(self) -> List[EventLogEntry]:
         """
         Fetch DOCSIS event log entries and return a list of structured models.
         """        
-        raw_entries: List[dict] = await self.cm.getDocsDevEventEntry(to_dict=True)
+        raw_entries: List[dict] = await self._cm.getDocsDevEventEntry(to_dict=True)
 
         log_entries = []
         for raw in raw_entries:
@@ -38,12 +39,12 @@ class CmDocsDevService:
             try:
                 _, event_data = next(iter(raw.items()))
                 log_entries.append(EventLogEntry(
-                    docsDevEvFirstTime=event_data.get("docsDevEvFirstTime", ""),
-                    docsDevEvLastTime=event_data.get("docsDevEvLastTime", ""),
-                    docsDevEvCounts=event_data.get("docsDevEvCounts", 0),
-                    docsDevEvLevel=event_data.get("docsDevEvLevel", 0),
-                    docsDevEvId=event_data.get("docsDevEvId", 0),
-                    docsDevEvText=event_data.get("docsDevEvText", ""),
+                    docsDevEvFirstTime  =event_data.get("docsDevEvFirstTime", ""),
+                    docsDevEvLastTime   =event_data.get("docsDevEvLastTime", ""),
+                    docsDevEvCounts     =event_data.get("docsDevEvCounts", 0),
+                    docsDevEvLevel      =event_data.get("docsDevEvLevel", 0),
+                    docsDevEvId         =event_data.get("docsDevEvId", 0),
+                    docsDevEvText       =event_data.get("docsDevEvText", ""),
                 ))
             except Exception:
                 continue
@@ -52,17 +53,17 @@ class CmDocsDevService:
 
     async def reset_cable_modem(self) -> PnmResponse:
         try:
-            if not await self.cm.setDocsDevResetNow():
+            if not await self._cm.setDocsDevResetNow():
                 return PnmResponse(
-                    mac_address=self.mac.__str__(),
+                    mac_address=self._mac.mac_address,
                     status=ServiceStatusCode.RESET_NOW_FAILED,
-                    message=f"Reset command to cable modem at {self.ip} failed."
+                    message=f"Reset command to cable modem at {self._ip} failed."
                 )
 
             return PnmResponse(
-                mac_address=self.mac.__str__(),
-                status=ServiceStatusCode.SUCCESS,
-                message=f"Reset command sent to cable modem at {self.ip} successfully."
+                mac_address =   self._mac.mac_address,
+                status      =   ServiceStatusCode.SUCCESS,
+                message     =   f"Reset command sent to cable modem at {self._ip} successfully."
             )
 
         except Exception as e:
@@ -71,17 +72,17 @@ class CmDocsDevService:
 
     async def ping_cable_modem(self) -> PnmResponse:
         try:
-            if not self.cm.is_ping_reachable():
+            if not self._cm.is_ping_reachable():
                 return PnmResponse(
-                    mac_address=str(self.mac),
-                    status=ServiceStatusCode.PING_FAILED,
-                    message=f"Ping to {self.ip} failed."
+                    mac_address =   self._mac.mac_address,
+                    status      =   ServiceStatusCode.PING_FAILED,
+                    message     =   f"Ping to {self._ip} failed."
                 )
 
             return PnmResponse(
-                mac_address=str(self.mac),
-                status=ServiceStatusCode.SUCCESS,
-                message=f"Ping to cable modem at {self.ip} succeeded."
+                mac_address =   self._mac.mac_address,
+                status      =   ServiceStatusCode.SUCCESS,
+                message     =   f"Ping to cable modem at {self._ip} succeeded."
             )
 
         except Exception as e:
