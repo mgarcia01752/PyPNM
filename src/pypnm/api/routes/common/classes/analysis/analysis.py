@@ -1770,7 +1770,7 @@ class Analysis:
         return result_model
 
     @classmethod
-    def basic_analysis_echo_detection_ifft(cls, model: CmDsOfdmChanEstimateCoefModel, cable_type: CableType = CableType.RG6,) -> EchoDetectorReport:
+    def basic_analysis_echo_detection_ifft(cls, model: CmDsOfdmChanEstimateCoefModel, cable_type: CableType = CableType.RG6, ) -> EchoDetectorReport:
         """
         Run FFT/IFFT-based echo detection from a single Channel-Estimation snapshot.
 
@@ -1807,6 +1807,8 @@ class Analysis:
         - n_fft is chosen as the next power of two ≥ N (min 1024) for finer time sampling.
         - Thresholding defaults to “dB-down” mode (70 dB below direct peak), with an
           automatic fallback to 80 dB if nothing is found.
+        - Magnitude smoothing uses the same Butterworth pipeline as
+          `basic_analysis_ds_chan_est()`, applied to |H(f)| before echo detection.
         """
         log = logging.getLogger(f"{cls.__name__}")
 
@@ -1820,15 +1822,53 @@ class Analysis:
 
         channel_id = cast(ChannelId, getattr(model, "channel_id", INVALID_CHANNEL_ID))
 
+        # ── Optional Butterworth smoothing over |H(f)| in dB (same pattern as ds_chan_est) ──
+        H = np.asarray(values, dtype=complex)
+        freq_data_for_detector: Sequence[complex]
+
+        try:
+            cao = ComplexArrayOps(values)
+            magnitudes_db_raw: FloatSeries = cao.to_list(cao.power_db())
+
+            cutoff_hz: FrequencyHz = FrequencyHz(
+                int(float(df_hz) * CHAN_EST_BW_CUTOFF_FRACTION)
+            )
+
+            mag_filter = MagnitudeButterworthFilter.from_subcarrier_spacing(
+                subcarrier_spacing_hz = FrequencyHz(int(df_hz)),
+                cutoff_hz             = cutoff_hz,
+            )
+
+            mag_result = mag_filter.apply(np.asarray(magnitudes_db_raw, dtype=np.float64))
+            magnitudes_db_smooth = mag_result.filtered_values
+
+            mag_lin = np.power(10.0, magnitudes_db_smooth / 20.0)
+            H_phase = np.exp(1j * np.angle(H))
+            H_filtered = mag_lin * H_phase
+
+            freq_data_for_detector = H_filtered.tolist()
+
+            log.debug(
+                "Echo IFFT: applied Butterworth smoothing (df=%.3f Hz, cutoff=%.3f Hz, N=%d)",
+                df_hz,
+                float(cutoff_hz),
+                H.shape[0],
+            )
+        except Exception as exc:
+            log.debug(
+                "Echo IFFT: Butterworth smoothing skipped due to error: %s; using raw values.",
+                exc,)
+            freq_data_for_detector = list(map(complex, H))
+
         # Choose IFFT length for finer time resolution
-        N = len(values)
+        N = len(freq_data_for_detector)
         n_fft = 1 << (N - 1).bit_length()
         if n_fft < 1024:
             n_fft = 1024
 
         # Detector
         det = EchoDetector(
-            freq_data             = values,
+            freq_data             = freq_data_for_detector,
             subcarrier_spacing_hz = df_hz,
             n_fft                 = n_fft,
             cable_type            = cable_type.name,
@@ -1851,8 +1891,6 @@ class Analysis:
             include_time_response = False,        # keep payload small by default
             direct_at_zero        = True,         # recenter direct path to t=0
             window                = "hann",       # reduce sidelobes before IFFT
-
         )
 
         return echo_report
-
