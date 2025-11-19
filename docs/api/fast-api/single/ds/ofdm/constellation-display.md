@@ -5,8 +5,8 @@ Visual Inspection Of Downstream OFDM I/Q Symbols For Rapid RF Diagnostics.
 ## Overview
 
 [`CmDsConstDispMeas`](http://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/pnm/process/CmDsConstDispMeas.py)
-validates constellation capture payloads, unpacks per‑symbol I/Q samples, normalizes frequency metadata, and exposes a
-typed model for downstream plotting and analysis (scatter, cluster metrics, and profile‑aligned modulation overlays).
+validates constellation capture payloads, unpacks per-symbol I/Q samples, normalizes frequency metadata, and exposes a
+typed model for downstream plotting and analysis (scatter, cluster metrics, and profile-aligned modulation overlays).
 
 ## Endpoint
 
@@ -15,7 +15,8 @@ typed model for downstream plotting and analysis (scatter, cluster metrics, and 
 ## Request
 
 Refer to [Common → Request](../../../common/request.md).  
-**Deltas (Analysis‑Only Additions):** optional `analysis`, `analysis.output`, and `analysis.plot.ui` controls
+**Deltas (Analysis-Only Additions):** optional `analysis`, `analysis.output`, and `analysis.plot.ui` /
+`analysis.plot.options` controls.
 
 ## Example Request
 
@@ -44,6 +45,9 @@ Refer to [Common → Request](../../../common/request.md).
     "plot": {
       "ui": {
         "theme": "dark"
+      },
+      "options": {
+        "display_cross_hair": true
       }
     }
   },
@@ -56,29 +60,32 @@ Refer to [Common → Request](../../../common/request.md).
 
 ### Delta Table
 
-| JSON path                | Type   | Allowed values / format | Default | Description                                                                                               |
-| ------------------------ | ------ | ----------------------- | ------- | --------------------------------------------------------------------------------------------------------- |
-| `analysis.type`          | string | "basic"                 | "basic" | Selects the analysis mode used during capture processing.                                                 |
-| `analysis.output.type`   | string | "json", "archive"       | "json"  | Output format: **`json`** returns inline `data`; **`archive`** returns a ZIP (CSV exports and PNG plots). |
-| `analysis.plot.ui.theme` | string | "light", "dark"         | "dark"  | Theme hint for plot generation (colors, grid, ticks). Does not affect raw metrics/CSV.                    |
+| JSON path                                   | Type    | Allowed values / format           | Default | Description                                                                                               |
+|---------------------------------------------|---------|-----------------------------------|---------|-----------------------------------------------------------------------------------------------------------|
+| `analysis.type`                             | string  | "basic"                           | "basic" | Selects the analysis mode used during capture processing.                                                 |
+| `analysis.output.type`                      | string  | "json" , "archive"                | "json"  | Output format: `json` returns inline `data`; `archive` returns a ZIP (CSV exports and PNG plots).         |
+| `analysis.plot.ui.theme`                    | string  | "light" , "dark"                  | "dark"  | Theme hint for plot generation (colors, grid, ticks). Does not affect raw metrics or CSV output.         |
+| `analysis.plot.options.display_cross_hair`  | boolean | `true` , `false`                  | true    | When true, draws a cross-hair overlay at the constellation origin to aid symbol centering and alignment. |
 
 ### Capture Settings
 
 | JSON path                                  | Type | Default | Description                                                              |
-| ------------------------------------------ | ---- | ------- | ------------------------------------------------------------------------ |
-| `capture_settings.modulation_order_offset` | int  | 0       | Modulation‑order offset to capture (0 = base profile).                   |
+|--------------------------------------------|------|---------|--------------------------------------------------------------------------|
+| `capture_settings.modulation_order_offset` | int  | 0       | Modulation-order offset to capture (0 = base profile).                   |
 | `capture_settings.number_sample_symbol`    | int  | 8192    | Number of I/Q symbols to capture.                                        |
 
 ### Usage Notes
 
 * `modulation_order_offset` corresponds to the lowest modulation order in the selected stream. If you know the modulation
   profile composition, start at 0 and increment the offset to step through each modulation order present.
-* Operators often use one modulation order per profile (Example 1), but mixed‑order profiles (Example 2) also exist.
+* Operators often use one modulation order per profile (Example 1), but mixed-order profiles (Example 2) also exist.
+* `analysis.plot.options.display_cross_hair` only affects the visualization layer. Metrics, CSV exports, and archive
+  contents are unchanged; the cross-hair is a visual reference to quickly gauge symbol centering, bias, and rotation.
 
 ### Example 1: Single Modulation Order Per Profile
 
 | Profile | Modulation | Offset |
-| ------- | ---------- | ------ |
+|---------|------------|--------|
 | 0       | 256QAM     | 0      |
 | 1       | 1024QAM    | 1      |
 | 2       | 2048QAM    | 2      |
@@ -87,7 +94,7 @@ Refer to [Common → Request](../../../common/request.md).
 ### Example 2: Mixed Modulation Orders Per Profile
 
 | Profile | Modulations          |
-| ------- | -------------------- |
+|---------|----------------------|
 | 0       | 16QAM + 256QAM       |
 | 1       | 256QAM + 512QAM      |
 | 2       | 1024QAM + 2048QAM    |
@@ -95,20 +102,20 @@ Refer to [Common → Request](../../../common/request.md).
 
 Offsets derived from the mixed orders:
 
-| Order Index | Modulation | Notes                       |
-| ----------- | ---------- | --------------------------- |
-| 0           | [16QAM](./images/constellation/16qam-constellation.png)     | Appears in Profile 0        |
-| 1           | [256QAM](./images/constellation/256qam-constellation.png)   | Appears in Profiles 0 and 1 |
-| 2           | [512QAM](./images/constellation/512qam-constellation.png)   | Appears in Profile 1        |
-| 3           | [1024QAM](./images/constellation/1kqam-constellation.png)   | Appears in Profile 2        |
-| 4           | [2048QAM](./images/constellation/2kqam-constellation.png)   | Appears in Profile 2        |
-| 5           | [4096QAM](./images/constellation/4kqam-constellation.png)   | Appears in Profile 3        |
+| Order Index | Modulation | Notes |
+|------------:|------------|-------|
+| 0           | [16QAM](./images/constellation/16qam-constellation.png)   | Appears in Profile 0        |
+| 1           | [256QAM](./images/constellation/256qam-constellation.png) | Appears in Profiles 0 and 1 |
+| 2           | [512QAM](./images/constellation/512qam-constellation.png) | Appears in Profile 1        |
+| 3           | [1024QAM](./images/constellation/1kqam-constellation.png) | Appears in Profile 2        |
+| 4           | [2048QAM](./images/constellation/2kqam-constellation.png) | Appears in Profile 2        |
+| 5           | [4096QAM](./images/constellation/4kqam-constellation.png) | Appears in Profile 3        |
 
 ### Notes
 
 * When `analysis.output.type = "archive"`, the HTTP response body is the file (no `data` JSON payload).
 * Constellation points are reported as `[Real, Imaginary]` with `complex_unit = "[Real, Imaginary]"` in models.
-* **Warning:** If the selected `modulation_order_offset` corresponds to a stream for which the CMTS is not receiving
+* If the selected `modulation_order_offset` corresponds to a stream for which the CMTS is not receiving
   traffic (user data or MAC messages), the CM may take a long time to reach the requested `number_sample_symbol`.
 
 ## Response
@@ -184,38 +191,38 @@ Standard envelope with payload under `data`.
 
 ## Return Structure
 
-### Top‑Level Envelope
+### Top-Level Envelope
 
-| Field         | Type          | Description                                                               |
-| ------------- | ------------- | ------------------------------------------------------------------------- |
-| `mac_address` | string        | Request echo of the modem MAC.                                            |
-| `status`      | int           | 0 on success, non‑zero on error.                                          |
-| `message`     | string\|null | Optional message describing status.                                       |
-| `data`        | object        | Container for results (`analysis`, `primative`, `measurement_stats`).     |
+| Field         | Type  | Description |
+|---------------|-------|-------------|
+| `mac_address` | string         | Request echo of the modem MAC.                                            |
+| `status`      | int            | 0 on success, non-zero on error.                                          |
+| `message`     | string\|null   | Optional message describing status.                                       |
+| `data`        | object         | Container for results (`analysis`, `primative`, `measurement_stats`).     |
 
 ### `data.analysis[]`
 
-Per‑channel analysis view aligned to the typed `ConstellationDisplayAnalysisModel`.
+Per-channel analysis view aligned to the typed `ConstellationDisplayAnalysisModel`.
 
-| Field              | Type   | Description                                                        |
-| ------------------ | ------ | ------------------------------------------------------------------ |
+| Field              | Type   | Description |
+|--------------------|--------|------------ |
 | device_details.*   | object | System descriptor at analysis time.                                |
 | pnm_header.*       | object | PNM header (file type, version, capture time).                     |
 | mac_address        | string | MAC address (`aa:bb:cc:dd:ee:ff`).                                 |
 | channel_id         | int    | OFDM downstream channel ID.                                        |
-| num_sample_symbols | int    | Number of constellation sample points.                              |
-| modulation_order   | string | QAM order (e.g., `qam64`, `qam256`, `qam1024`).                    |
+| num_sample_symbols | int    | Number of constellation sample points.                             |
+| modulation_order   | string | QAM order (for example, `qam64`, `qam256`, `qam1024`).             |
 | complex_unit       | string | Always `"[Real, Imaginary]"`.                                      |
-| soft.complex       | array  | Soft‑decision I/Q pairs (`[[real, imag], ...]`).                   |
-| hard.complex       | array  | Hard‑decision I/Q pairs (`[[real, imag], ...]`).                   |
+| soft.complex       | array  | Soft-decision I/Q pairs (`[[real, imag], ...]`).                   |
+| hard.complex       | array  | Hard-decision I/Q pairs (`[[real, imag], ...]`).                   |
 
 ### `data.primative[]`
 
-Normalized raw capture for export/plotting.
+Normalized raw capture for export and plotting.
 
 | Field                         | Type         | Description                                         |
-| ----------------------------- | ------------ | --------------------------------------------------- |
-| status                        | string       | Result for this capture (e.g., `SUCCESS`).          |
+|-------------------------------|--------------|-----------------------------------------------------|
+| status                        | string       | Result for this capture (for example, `SUCCESS`).   |
 | pnm_header.*                  | object       | PNM header (type, version, capture time).           |
 | channel_id                    | int          | Channel ID.                                         |
 | mac_address                   | string       | MAC address.                                        |
@@ -229,20 +236,20 @@ Normalized raw capture for export/plotting.
 
 ### `data.measurement_stats[]`
 
-Snapshot of device‑reported constellation settings at capture time (per channel).
+Snapshot of device-reported constellation settings at capture time (per channel).
 
 | Field                                    | Type    | Description                                         |
-| ---------------------------------------- | ------- | --------------------------------------------------- |
+|------------------------------------------|---------|-----------------------------------------------------|
 | index                                    | int     | SNMP table row index.                               |
 | channel_id                               | int     | OFDM downstream channel ID.                         |
 | entry.docsPnmCmDsConstDispTrigEnable     | boolean | Trigger enable state.                               |
 | entry.docsPnmCmDsConstDispModOrderOffset | int     | Modulation order offset used for capture.           |
 | entry.docsPnmCmDsConstDispNumSampleSymb  | int     | Requested number of constellation symbols.          |
-| entry.docsPnmCmDsConstDispSelModOrder    | string  | Selected modulation order (e.g., `qam256`).         |
-| entry.docsPnmCmDsConstDispMeasStatus     | string  | Measurement status (e.g., `sample_ready`).          |
-| entry.docsPnmCmDsConstDispFileName       | string  | Device‑side filename of the capture.                |
+| entry.docsPnmCmDsConstDispSelModOrder    | string  | Selected modulation order (for example, `qam256`).  |
+| entry.docsPnmCmDsConstDispMeasStatus     | string  | Measurement status (for example, `sample_ready`).   |
+| entry.docsPnmCmDsConstDispFileName       | string  | Device-side filename of the capture.                |
 
 ## Additional Notes
 
-* Large payloads are best handled via Postman/CLI or automation.
-* Each object in `data.analysis[]` or `data.primative[]` represents a **distinct OFDM channel**.
+* Large payloads are best handled via Postman or automation clients.
+* Each object in `data.analysis[]` or `data.primative[]` represents a distinct OFDM channel.

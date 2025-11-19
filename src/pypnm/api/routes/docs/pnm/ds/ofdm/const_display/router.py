@@ -10,7 +10,7 @@ from typing import Any, Dict, List, cast
 from fastapi import APIRouter
 
 from pypnm.api.routes.basic.abstract.analysis_report import Analysis, AnalysisRptMatplotConfig
-from pypnm.api.routes.basic.constellation_display_analysis_rpt import ConstellationDisplayReport
+from pypnm.api.routes.basic.constellation_display_analysis_rpt import ConstDisplayAnalysisRptMatplotConfig, ConstellationDisplayReport
 from pypnm.api.routes.common.classes.analysis.analysis import AnalysisType
 from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisResponse
@@ -123,7 +123,8 @@ class ConstellationDisplayRouter:
 
             elif request.analysis.output.type == OutputType.ARCHIVE:
                 theme = request.analysis.plot.ui.theme
-                plot_config = AnalysisRptMatplotConfig(theme = theme)                
+                crosshair = request.analysis.plot.options.display_cross_hair
+                plot_config = ConstDisplayAnalysisRptMatplotConfig(theme = theme, display_crosshair=crosshair)
                 analysis_rpt = ConstellationDisplayReport(analysis, plot_config)
                 rpt: Path = cast(Path, analysis_rpt.build_report())
                 return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)

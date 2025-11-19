@@ -18,6 +18,9 @@ from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.qam.types import QamModulation
 from pypnm.lib.types import ChannelId, ComplexArray
 
+class ConstDisplayAnalysisRptMatplotConfig(AnalysisRptMatplotConfig):
+    display_crosshair: bool = Field(default=True, description="Enable or disable crosshair on the constellation plot")
+
 class ConstellationDisplayParameters(BaseModel):
     model_config                    = ConfigDict(populate_by_name=True, extra="ignore")
     modulation:QamModulation        = Field(..., description="")
@@ -33,12 +36,13 @@ class ConstellationDisplayReport(AnalysisReport):
     FNAME_TAG:str = 'constdisplay'
 
     def __init__(self, analysis: Analysis, 
-                 analysis_matplot_config:AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(), 
+                 analysis_matplot_config:ConstDisplayAnalysisRptMatplotConfig = ConstDisplayAnalysisRptMatplotConfig(), 
                  **kwargs):
         super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("ConstellationDisplayReport")
         self._results: Dict[int, ConstellationDisplayAnalysisRptModel] = {}
         self._sig_cap_agg: SignalCaptureAggregator = SignalCaptureAggregator()
+        self._matplot_config: ConstDisplayAnalysisRptMatplotConfig = analysis_matplot_config
 
     def create_csv(self, **kwargs) -> List[CSVManager]:
         """
@@ -108,17 +112,18 @@ class ConstellationDisplayReport(AnalysisReport):
             try:
                 title = f"Constellation Display · OFDM Channel: {channel_id} · Modulation: {modulation.name} · SampleSize: {sample_count}"
                 cfg = PlotConfig(
-                    title       =   title,
-                    x           =   [0], # TODO: need to fix this, don't need to put in a dummy value
-                    xlabel      =   "In-phase (I)",
-                    ylabel      =   "Quadrature (Q)",
-                    qam         =   modulation,
-                    hard        =   hard,
-                    soft        =   soft,
-                    grid        =   False,
-                    legend      =   True,
-                    transparent =   False,
-                    theme       =   self.getAnalysisRptMatplotConfig().theme,
+                    title           =   title,
+                    x               =   [0], # TODO: need to fix this, don't need to put in a dummy value
+                    xlabel          =   "In-phase (I)",
+                    ylabel          =   "Quadrature (Q)",
+                    qam             =   modulation,
+                    hard            =   hard,
+                    soft            =   soft,
+                    grid            =   False,
+                    legend          =   True,
+                    transparent     =   False,
+                    show_crosshair  =   self._matplot_config.display_crosshair,
+                    theme           =   self._matplot_config.theme,
                 )
 
                 const_disp = self.create_png_fname(tags=[str(channel_id), self.FNAME_TAG])

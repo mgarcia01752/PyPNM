@@ -75,6 +75,7 @@ class PlotConfig:
     qam: Optional[QamModulation] = None
     soft: Optional[ComplexArray] = None
     hard: Optional[ComplexArray] = None
+    show_crosshair: Optional[bool] = None
 
     # Theme
     theme: Optional[ThemeType] = None
@@ -187,6 +188,7 @@ class MatplotManager:
             qam                 = pick(user_cfg.qam                 if user_cfg else None, base.qam,                method_defaults.qam),
             soft                = pick(user_cfg.soft                if user_cfg else None, base.soft,               method_defaults.soft),
             hard                = pick(user_cfg.hard                if user_cfg else None, base.hard,               method_defaults.hard),
+            show_crosshair      = pick(user_cfg.show_crosshair      if user_cfg else None, base.show_crosshair,     method_defaults.show_crosshair),
             theme               = pick(user_cfg.theme               if user_cfg else None, base.theme,              method_defaults.theme),
             x_tick_mode         = pick(user_cfg.x_tick_mode         if user_cfg else None, base.x_tick_mode,        method_defaults.x_tick_mode),
             x_unit_from         = pick(user_cfg.x_unit_from         if user_cfg else None, base.x_unit_from,        method_defaults.x_unit_from),
@@ -514,10 +516,29 @@ class MatplotManager:
         soft: Optional[ComplexArray] = None,
         show_boundaries: bool = True,
         boundary_alpha: float = 0.25,
+        show_crosshair: Optional[bool] = None,
         cfg: Optional[PlotConfig] = None,
     ) -> Path:
         """
         Plot a QAM constellation. Axis ticks are suppressed; only axis labels are shown.
+
+        Parameters
+        ----------
+        filename : Union[str, Path]
+            Output filename.
+        hard : Optional[ComplexArray], keyword-only
+            Hard decision constellation points (drawn as '+' markers).
+        soft : Optional[ComplexArray], keyword-only
+            Soft symbols cloud.
+        show_boundaries : bool, keyword-only
+            If True, draws decision-region rectangles around hard points.
+        boundary_alpha : float, keyword-only
+            Alpha for boundary rectangles.
+        show_crosshair : Optional[bool], keyword-only
+            If False, suppresses the hard '+' markers (useful for soft-cloud-only views).
+            If None, falls back to cfg.show_crosshair, defaulting to True.
+        cfg : Optional[PlotConfig], keyword-only
+            Additional plot configuration; merged with manager defaults.
 
         Returns
         -------
@@ -533,6 +554,13 @@ class MatplotManager:
         if hard is None:
             hard = cfg.hard
 
+        # Resolve effective crosshair flag: explicit arg → cfg.show_crosshair → True
+        effective_crosshair = True
+        if cfg.show_crosshair is not None:
+            effective_crosshair = bool(cfg.show_crosshair)
+        if show_crosshair is not None:
+            effective_crosshair = bool(show_crosshair)
+
         x_soft, y_soft = self._split_complex_array(soft)
         x_hard, y_hard = self._split_complex_array(hard)
 
@@ -540,11 +568,29 @@ class MatplotManager:
             fig, ax = self._new_fig()
 
             if x_soft.size and y_soft.size:
-                ax.scatter(x_soft, y_soft, marker='.', s=8, linewidths=0, edgecolors='none', alpha=0.75, label='Soft', rasterized=True)
+                ax.scatter(
+                    x_soft,
+                    y_soft,
+                    marker='.',
+                    s=8,
+                    linewidths=0,
+                    edgecolors='none',
+                    alpha=0.75,
+                    label='Soft',
+                    rasterized=True,
+                )
 
             n = min(x_hard.size, y_hard.size)
-            if n:
-                ax.scatter(x_hard[:n], y_hard[:n], marker="+", c="red", s=CROSSHAIR_MARKER_SIZE_PTS, linewidths=CROSSHAIR_LINEWIDTH_PTS, label="Hard")
+            if n and effective_crosshair:
+                ax.scatter(
+                    x_hard[:n],
+                    y_hard[:n],
+                    marker="+",
+                    c="red",
+                    s=CROSSHAIR_MARKER_SIZE_PTS,
+                    linewidths=CROSSHAIR_LINEWIDTH_PTS,
+                    label="Hard",
+                )
 
             if show_boundaries and n:
                 levels_i = np.unique(x_hard[:n])
@@ -561,22 +607,35 @@ class MatplotManager:
                 hx = half_step(levels_i)
                 hy = half_step(levels_q)
                 lw = 0.3
+
                 for xi, yi in zip(x_hard[:n], y_hard[:n]):
-                    rect = mpatches.Rectangle((xi - hx, yi - hy), 2.0 * hx, 2.0 * hy,
-                                              fill=False, linewidth=lw, alpha=boundary_alpha,
-                                              edgecolor="gray", zorder=0, clip_on=True)
+                    rect = mpatches.Rectangle(
+                        (xi - hx, yi - hy),
+                        2.0 * hx,
+                        2.0 * hy,
+                        fill=False,
+                        linewidth=lw,
+                        alpha=boundary_alpha,
+                        edgecolor="gray",
+                        zorder=0,
+                        clip_on=True,
+                    )
                     ax.add_patch(rect)
 
                 all_x = np.concatenate([x_soft, x_hard[:n]]) if x_soft.size else x_hard[:n]
                 all_y = np.concatenate([y_soft, y_hard[:n]]) if y_soft.size else y_hard[:n]
+
                 if all_x.size and cfg.xlim is None:
                     x_min, x_max = float(np.min(all_x)), float(np.max(all_x))
-                    pad = 0.05 * max(1e-9, (x_max - x_min))
-                    ax.set_xlim(x_min - pad, x_max + pad)
+                    span_x = max(1e-9, x_max - x_min)
+                    pad_x = max(hx, 0.05 * span_x)
+                    ax.set_xlim(x_min - pad_x, x_max + pad_x)
+
                 if all_y.size and cfg.ylim is None:
                     y_min, y_max = float(np.min(all_y)), float(np.max(all_y))
-                    pad = 0.05 * max(1e-9, (y_max - y_min))
-                    ax.set_ylim(y_min - pad, y_max + pad)
+                    span_y = max(1e-9, y_max - y_min)
+                    pad_y = max(hy, 0.05 * span_y)
+                    ax.set_ylim(y_min - pad_y, y_max + pad_y)
 
             try:
                 ax.set_aspect("equal", adjustable="datalim")
