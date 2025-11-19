@@ -11,7 +11,8 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.DocsIf31CmSystemCfgState import DocsIf31CmSystemCfgDiplexState
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import InetAddressStr, MacAddressStr
+from pypnm.lib.types import MacAddressStr, InetAddressStr
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,9 @@ class DiplexerConfigService:
     MHZ: int = 1_000_000
 
     @staticmethod
-    async def fetch_diplexer_config(mac_address: MacAddressStr, ip_address: InetAddressStr) -> DiplexerConfigResult:
+    async def fetch_diplexer_config(mac_address: MacAddressStr,
+                                    ip_address: InetAddressStr,
+                                    snmp_config: SNMPConfig) -> DiplexerConfigResult:
         """
         Fetch the DOCSIS 3.1 diplexer configuration.
 
@@ -53,7 +56,8 @@ class DiplexerConfigService:
 
         cm = CableModem(
             mac_address=MacAddress(mac_address),
-            inet=Inet(ip_address))
+            inet=Inet(ip_address),
+            write_community=snmp_config.snmp_v2c.community)
         
         state: DocsIf31CmSystemCfgDiplexState = await cm.getDocsIf31CmSystemCfgDiplexState()
 

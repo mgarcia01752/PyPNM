@@ -55,12 +55,14 @@ class RxMerRouter:
             """
             mac: MacAddressStr = request.cable_modem.mac_address
             ip: InetAddressStr = request.cable_modem.ip_address
-            tftpv4: Inet = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
-            tftpv6: Inet = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
+            community: str = request.cable_modem.snmp.snmp_v2c.community
+            tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
+            tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6) 
 
             self.logger.info(f"Starting RxMER measurement for MAC: {mac}, IP: {ip}")
 
-            cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
+            cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip), write_community=community)
 
             status, msg = await CableModemServicePreCheck(
                 cable_modem=cm, validate_ofdm_exist=True).run_precheck()
@@ -69,7 +71,7 @@ class RxMerRouter:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
 
-            service: CmDsOfdmRxMerService = CmDsOfdmRxMerService(cm, (tftpv4,tftpv6))
+            service: CmDsOfdmRxMerService = CmDsOfdmRxMerService(cm, tftp_servers)
             msg_rsp: MessageResponse = await service.set_and_go()
             
             if msg_rsp.status != ServiceStatusCode.SUCCESS:

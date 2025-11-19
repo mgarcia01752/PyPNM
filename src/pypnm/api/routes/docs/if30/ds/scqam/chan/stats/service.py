@@ -7,9 +7,11 @@ from __future__ import annotations
 import logging
 from typing import Dict, List
 from pypnm.docsis.cable_modem import CableModem
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
 from pypnm.docsis.data_type.DocsIfDownstreamChannel import DocsIfDownstreamChannelEntry
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import MacAddressStr, InetAddressStr
 
 class DsScQamChannelService:
     """
@@ -20,7 +22,9 @@ class DsScQamChannelService:
     and extract downstream channel metrics such as frequency, power, SNR, and modulation type.
     """
 
-    def __init__(self, mac_address: str, ip_address: str):
+    def __init__(self, mac_address: MacAddressStr, 
+                 ip_address: InetAddressStr, 
+                 snmp_config: SNMPConfig=SNMPConfig()):
         """
         Initialize the service with a target cable modem's MAC and IP address.
 
@@ -29,7 +33,9 @@ class DsScQamChannelService:
             ip_address (str): IP address of the cable modem.
         """
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.cm = CableModem(mac_address=MacAddress(mac_address), inet=Inet(ip_address))
+        self.cm = CableModem(mac_address=MacAddress(mac_address), 
+                             inet=Inet(ip_address), 
+                             write_community = snmp_config.snmp_v2c.community)
 
     async def get_scqam_chan_entries(self) -> List[Dict]:
         """

@@ -5,10 +5,7 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from typing import Union, Dict, Any
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
-
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
@@ -48,19 +45,21 @@ class FddDiplexerConfigResult:
             - Returns diplexer frequency configuration in MHz.
             - Returns an error response if the modem is unreachable or SNMP fails.
 
-            [API Guide - FDD Diplexer Configuration](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/fdd/fdd-system-diplexer-configuration.md)
+            [API Guide - FDD Diplexer Configuration](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/fdd/fdd-system-diplexer-configuration.md)
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
 
-            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip,
-                check_docsis_version=[ClabsDocsisVersion.DOCSIS_40]).run_precheck()
+            status, msg = await CableModemServicePreCheck(mac_address=mac, 
+                                                          ip_address=ip,
+                                                          snmp_config=request.cable_modem.snmp,
+                                                          check_docsis_version=[ClabsDocsisVersion.DOCSIS_40]).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
 
-            service = await FddDiplexerConfigService.fetch_fdd_diplexer_config(mac_address=mac, ip_address=ip)
+            service = await FddDiplexerConfigService.fetch_fdd_diplexer_config(mac_address=mac, ip_address=ip, snmp_config=request.cable_modem.snmp)
             cfg = service.to_dict()
             return SnmpResponse(mac_address     =   mac,
                                 status          =   ServiceStatusCode.SUCCESS,

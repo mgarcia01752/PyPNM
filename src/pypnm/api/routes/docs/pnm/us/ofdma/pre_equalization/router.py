@@ -56,11 +56,15 @@ class UsOfdmaPreEqualizationRouter:
             """
             mac: MacAddressStr = request.cable_modem.mac_address
             ip: InetAddressStr = request.cable_modem.ip_address
+            community: str = request.cable_modem.snmp.snmp_v2c.community
+            tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
+            tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)  
 
             self.logger.info(
                 f"Starting Upstream OFDMA Pre-Equalization measurement for MAC: {mac}, IP: {ip}")
 
-            cm = CableModem(MacAddress(mac), Inet(ip))
+            cm = CableModem(MacAddress(mac), Inet(ip), write_community=community)
 
             status, msg = await CableModemServicePreCheck(cable_modem=cm, 
                                                           validate_ofdma_exist=True).run_precheck()
@@ -69,7 +73,7 @@ class UsOfdmaPreEqualizationRouter:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
 
-            service: CmUsOfdmaPreEqService = CmUsOfdmaPreEqService(cm)
+            service: CmUsOfdmaPreEqService = CmUsOfdmaPreEqService(cm, tftp_servers,)
             msg_rsp: MessageResponse = await service.set_and_go()
             msg_rsp.log_payload()
 

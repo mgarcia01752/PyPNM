@@ -49,15 +49,19 @@ class DsScQamChannelRouter:
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
             self.logger.info(f"Retrieving DOCSIS 3.0 SC-QAM downstream channel stats for MAC: {mac}, IP: {ip}")
-            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
+            status, msg = await CableModemServicePreCheck(mac_address=mac, 
+                                                          ip_address=ip,
+                                                          snmp_config=request.cable_modem.snmp).run_precheck()
             
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
-            
-            service = DsScQamChannelService(mac_address=mac, ip_address=ip)
+
+            service = DsScQamChannelService(mac_address=mac, 
+                                            ip_address=ip,
+                                            snmp_config=request.cable_modem.snmp)
             data = await service.get_scqam_chan_entries()
-            
+
             return SnmpResponse(
                 mac_address =   mac,
                 status      =   ServiceStatusCode.SUCCESS,
@@ -80,13 +84,16 @@ class DsScQamChannelRouter:
 
             status, msg = await CableModemServicePreCheck(mac_address   =   mac,
                                                           ip_address    =   ip,
+                                                          snmp_config   =   request.cable_modem.snmp,
                                                           validate_scqam_exist=True).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)              
-            
-            service = DsScQamChannelService(mac_address=mac, ip_address=ip)
+
+            service = DsScQamChannelService(mac_address=mac, 
+                                            ip_address=ip, 
+                                            snmp_config=request.cable_modem.snmp)
             sample_time_elapsed = float(request.capture_parameters.sample_time_elapsed)
             if sample_time_elapsed <= 0:
                 error_msg = "Sample time elapsed must be a positive number."

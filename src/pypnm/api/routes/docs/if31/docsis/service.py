@@ -5,6 +5,7 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
 from pypnm.api.routes.docs.if31.docsis.schemas import DocsisBaseCapability
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
@@ -23,7 +24,9 @@ class DocsisBaseCapabilityService:
     """
 
     @staticmethod
-    async def fetch_docsis_base_capabilty(mac_address: MacAddressStr, ip_address: InetAddressStr) -> DocsisBaseCapability:
+    async def fetch_docsis_base_capabilty(mac_address: MacAddressStr,
+                                          ip_address: InetAddressStr,
+                                          snmp_config: SNMPConfig) -> DocsisBaseCapability:
         """
         Fetch the DOCSIS base capability from a given cable modem.
 
@@ -39,7 +42,9 @@ class DocsisBaseCapabilityService:
         """
         logger.info(f"Fetching DOCSIS Base Capability for: {mac_address}@{ip_address}")
 
-        cm = CableModem(MacAddress(mac_address),Inet(ip_address))
+        cm = CableModem(MacAddress(mac_address),
+                        Inet(ip_address),
+                        write_community=snmp_config.snmp_v2c.community)
 
         docsis_cap: ClabsDocsisVersion = await cm.getDocsisBaseCapability()
 

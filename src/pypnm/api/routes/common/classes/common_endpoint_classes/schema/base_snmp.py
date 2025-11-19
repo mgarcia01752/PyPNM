@@ -46,11 +46,11 @@ class SNMPv3(BaseModel):
         privPassword (Optional[str]): Privacy password.
     """
     username: Optional[str]                     = Field(default=None, description="Username; if omitted, system default is used")
-    securityLevel: Literal["noAuthNoPriv","authNoPriv","authPriv"] = Field(..., description="SNMPv3 security level")
-    authProtocol: Optional[Literal["MD5","SHA"]]    = Field(default=None, description="Authentication protocol")
-    authPassword: Optional[str]                     = Field(default=None, description="Authentication password")
-    privProtocol: Optional[Literal["DES","AES"]]    = Field(default=None, description="Privacy protocol")
-    privPassword: Optional[str]                     = Field(default=None, description="Privacy password")
+    securityLevel: Literal["noAuthNoPriv","authNoPriv","authPriv"] = Field(default="noAuthNoPriv", description="SNMPv3 security level")
+    authProtocol: Optional[Literal["MD5","SHA"]]    = Field(default="SHA", description="Authentication protocol")
+    authPassword: Optional[str]                     = Field(default="password", description="Authentication password")
+    privProtocol: Optional[Literal["DES","AES"]]    = Field(default="AES", description="Privacy protocol")
+    privPassword: Optional[str]                     = Field(default="password", description="Privacy password")
 
     @model_validator(mode="after") # type: ignore
     def check_v3_fields(cls, model: "SNMPv3") -> "SNMPv3":
@@ -72,7 +72,7 @@ class SNMPConfig(BaseModel):
     SNMP configuration model supporting both v2c and optional v3 settings.
     """
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
-    snmp_v2c: SNMPv2c   = Field(..., description="SNMP v2c settings")
+    snmp_v2c: SNMPv2c   = Field(default_factory=SNMPv2c, description="SNMP v2c settings")
 
     if SCSC.snmp_v3_enable:
-        snmp_v3: SNMPv3     = Field(..., description="SNMP v3 settings")
+        snmp_v3: SNMPv3     = Field(default_factory=SNMPv3, description="SNMP v3 settings")

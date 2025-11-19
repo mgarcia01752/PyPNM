@@ -14,6 +14,7 @@ from pypnm.api.routes.common.classes.operation.cable_modem_precheck import (Cabl
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.interface.service import InterfaceStatsService
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.router import FAST_API_RESPONSE
+from pypnm.lib.types import MacAddressStr, InetAddressStr
 
 class InterfaceStatsRouter:
     """
@@ -35,22 +36,28 @@ class InterfaceStatsRouter:
             """
             Retrieve DOCSIS interface statistics grouped by interface type.
 
-            [API Guide - Retrieve DOCSIS Interface Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/pnm/interface/stats.md)
+            [API Guide - Retrieve DOCSIS Interface Statistics](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/pnm/interface/stats.md)
             """
-            mac = request.cable_modem.mac_address
-            ip = request.cable_modem.ip_address
+            mac: MacAddressStr = request.cable_modem.mac_address
+            ip: InetAddressStr = request.cable_modem.ip_address
+            community: str = request.cable_modem.snmp.snmp_v2c.community
             self.logger.info(f"Retrieving interface statistics for MAC: {mac}, IP: {ip}")
 
-            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
+            status, msg = await CableModemServicePreCheck(mac_address   =   mac,
+                                                          ip_address    =   ip,
+                                                          snmp_config   =   request.cable_modem.snmp).run_precheck() 
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse( mac_address=mac, status=status, message=msg)
 
-            service = InterfaceStatsService(mac_address=mac, ip_address=ip)
+            service = InterfaceStatsService(mac_address=mac, ip_address=ip, write_community=community)
             data: Dict[str, List[Dict]] = await service.get_interface_stat_entries()
 
-            return JSONResponse(content=data) # type: ignore
+            return SnmpResponse(mac_address=mac, 
+                                status=ServiceStatusCode.SUCCESS,
+                                message="Interface statistics retrieved successfully",
+                                results=data)
 
 # Required for dynamic auto-registration
 router = InterfaceStatsRouter().router

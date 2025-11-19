@@ -8,13 +8,19 @@ import logging
 from typing import Dict, List
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.DocsIf31CmUsOfdmaChanEntry import DocsIf31CmUsOfdmaChanEntry
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import InetAddressStr, MacAddressStr
 
 class UsOfdmChannelService:
-    def __init__(self, mac_address: str, ip_address: str):
+    def __init__(self, mac_address: MacAddressStr, 
+                 ip_address: InetAddressStr,
+                 snmp_config: SNMPConfig=SNMPConfig()):
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.cm = CableModem(mac_address=MacAddress(mac_address), inet=Inet(ip_address))
+        self.cm = CableModem(mac_address=MacAddress(mac_address), 
+                             inet=Inet(ip_address),
+                             write_community = snmp_config.snmp_v2c.community)
 
     async def get_ofdma_chan_entries(self) -> List[Dict]:
         """

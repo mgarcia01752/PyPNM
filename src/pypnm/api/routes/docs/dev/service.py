@@ -8,6 +8,7 @@ import logging
 from typing import List
 from fastapi import HTTPException
 
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmResponse
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.dev.schemas import EventLogEntry
@@ -20,11 +21,18 @@ logger = logging.getLogger(__name__)
 
 class CmDocsDevService:
     
-    def __init__(self, mac_address: MacAddressStr, ip_address: InetAddressStr):
+    def __init__(self, mac_address: MacAddressStr, 
+                 ip_address: InetAddressStr, 
+                 snmp_config: SNMPConfig = SNMPConfig()) -> None:
         self._mac = MacAddress(mac_address)
         self._ip = Inet(ip_address)
-        self._cm = CableModem(mac_address=self._mac, inet=self._ip)
-        
+        self._cm = CableModem(mac_address   =   self._mac,
+                              inet          =   self._ip,
+                              write_community = snmp_config.snmp_v2c.community)
+
+    def get_mac_address(self) -> MacAddressStr:
+        return self._mac.mac_address
+
     async def fetch_event_log(self) -> List[EventLogEntry]:
         """
         Fetch DOCSIS event log entries and return a list of structured models.

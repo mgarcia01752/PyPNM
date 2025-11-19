@@ -78,11 +78,17 @@ class SpectrumAnalyzerRouter:
             """
             mac: MacAddressStr = request.cable_modem.mac_address
             ip: InetAddressStr = request.cable_modem.ip_address
+            community: str = request.cable_modem.snmp.snmp_v2c.community
+            tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
+            tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)  
 
             self.logger.info("Starting Spectrum Analyzer capture for MAC: %s, IP: %s, Output Type: %s",
                 mac, ip, request.analysis.output.type,)
 
-            cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
+            cm = CableModem(mac_address=MacAddress(mac), 
+                            inet=Inet(ip), 
+                            write_community=community,)
 
             status, msg = await CableModemServicePreCheck(
                 cable_modem=cm, validate_pnm_ready_status=True,).run_precheck()
@@ -92,7 +98,9 @@ class SpectrumAnalyzerRouter:
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
 
             service = CmSpectrumAnalysisService(
-                cable_modem=cm, capture_parameters=request.capture_parameters,)
+                cable_modem=cm,
+                tftp_servers=tftp_servers, 
+                capture_parameters=request.capture_parameters,)
 
             msg_rsp: MessageResponse = await service.set_and_go()
 
@@ -170,8 +178,14 @@ class SpectrumAnalyzerRouter:
             """
             mac: MacAddressStr = request.cable_modem.mac_address
             ip: InetAddressStr = request.cable_modem.ip_address
+            community: str = request.cable_modem.snmp.snmp_v2c.community
+            tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
+            tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)  
 
-            cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
+            cm = CableModem(mac_address=MacAddress(mac),
+                            inet=Inet(ip),
+                            write_community=community)
             multi_analysis = MultiAnalysis()
 
             self.logger.info("DOCSIS 3.1 OFDM Downstream Spectrum Capture for MAC %s, IP %s", mac, ip,)
@@ -258,19 +272,19 @@ class SpectrumAnalyzerRouter:
             """
             mac: MacAddressStr = request.cable_modem.mac_address
             ip: InetAddressStr = request.cable_modem.ip_address
+            community: str = request.cable_modem.snmp.snmp_v2c.community
+            tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
+            tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)  
 
-            cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
+            cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip), write_community=community)
             multi_analysis = MultiAnalysis()
 
-            self.logger.info(
-                "DOCSIS 3.0 SC-QAM downstream spectrum capture for MAC %s, IP %s",
-                mac,
-                ip,
-            )
+            self.logger.info("DOCSIS 3.0 SC-QAM downstream spectrum capture for MAC %s, IP %s", mac, ip)
 
             status, msg = await CableModemServicePreCheck(
                 cable_modem=cm,
-                validate_scqam_exist=True, validate_pnm_ready_status=True, ).run_precheck()
+                validate_scqam_exist=True, validate_pnm_ready_status=True,).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
@@ -282,6 +296,7 @@ class SpectrumAnalyzerRouter:
             spectrum_retrieval_type = request.capture_parameters.spectrum_retrieval_type
             service = DsScQamChannelSpectrumAnalyzer(
                 cable_modem             =   cm,
+                tftp_servers            =   tftp_servers,
                 number_of_averages      =   number_of_averages,
                 spectrum_retrieval_type =   spectrum_retrieval_type,
             )

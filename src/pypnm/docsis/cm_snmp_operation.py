@@ -318,16 +318,34 @@ class CmSnmpOperation:
         # Return the list of found indexes
         return indexes
 
-    async def getSysDescr(self) -> SystemDescriptor:
+    async def getSysDescr(self, timeout: Optional[int] = None, retries: Optional[int] = None) -> SystemDescriptor:
         """
         Retrieves and parses the sysDescr SNMP value into a SysDescr dataclass.
 
         Returns:
             SysDescr if successful, otherwise empty SysDescr.empty().
         """
-        self.logger.debug("Starting getSysDescr...")
+        timeout = timeout if timeout is not None else self._snmp._timeout
+        retries = retries if retries is not None else self._snmp._retries
 
-        result = await self._snmp.get(f'{"sysDescr"}.0')
+        self.logger.debug(f"Retrieving sysDescr for {self._inet}, timeout: {timeout}, retries: {retries}")   
+
+        try:
+            result = await self._snmp.get(f'{"sysDescr"}.0', timeout=timeout, retries=retries)
+        except Exception as e:
+            self.logger.error(f"Error occurred while retrieving sysDescr: {e}")
+            return SystemDescriptor.empty()
+
+        if not result:
+            self.logger.warning("SNMP get failed or returned empty for sysDescr.")
+            return SystemDescriptor.empty()
+
+        self.logger.debug(f"SysDescr Results: {result} before get_result_value")
+        values = Snmp_v2c.get_result_value(result)
+
+        if not values:
+            self.logger.warning("No sysDescr value parsed.")
+            return SystemDescriptor.empty()
 
         if not result:
             self.logger.warning("SNMP get failed or returned empty for sysDescr.")
@@ -345,6 +363,7 @@ class CmSnmpOperation:
             parsed = SystemDescriptor.parse(values)
             self.logger.debug(f"Successfully parsed sysDescr: {parsed}")
             return parsed
+        
         except ValueError as e:
             self.logger.error(f"Failed to parse sysDescr: {values}. Error: {e}")
             return SystemDescriptor.empty()

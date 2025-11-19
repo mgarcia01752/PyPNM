@@ -57,9 +57,13 @@ class FecSummaryRouter:
             """
             mac: MacAddressStr = request.cable_modem.mac_address
             ip: InetAddressStr = request.cable_modem.ip_address
+            community: str = request.cable_modem.snmp.snmp_v2c.community
+            tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
+            tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6) 
             self.logger.info(f"Starting FEC Summary capture for MAC: {mac}, IP: {ip}")
 
-            cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
+            cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip), write_community=community)
 
             status, msg = await CableModemServicePreCheck(
                 cable_modem=cm, validate_ofdm_exist=True).run_precheck()
@@ -69,7 +73,10 @@ class FecSummaryRouter:
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
 
             fec_type:FecSummaryType = request.capture_settings.fec_summary_type
-            service = CmDsOfdmFecSummaryService(cable_modem=cm, fec_summary_type=fec_type)
+            service = CmDsOfdmFecSummaryService(cable_modem=cm,
+                                                fec_summary_type=fec_type,
+                                                tftp_servers=tftp_servers)
+            
             msg_rsp: MessageResponse = await service.set_and_go()
 
             if msg_rsp.status != ServiceStatusCode.SUCCESS:

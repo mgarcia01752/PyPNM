@@ -8,6 +8,7 @@ from typing import Dict, List
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import MacAddressStr, InetAddressStr
 
 
 class InterfaceStatsService:
@@ -15,7 +16,7 @@ class InterfaceStatsService:
     Service class for retrieving DOCSIS interface statistics from a cable modem.
     """
 
-    def __init__(self, mac_address: str, ip_address: str):
+    def __init__(self, mac_address: MacAddressStr, ip_address: InetAddressStr, write_community: str):
         """
         Initialize the service with a target cable modem's MAC and IP address.
 
@@ -23,7 +24,9 @@ class InterfaceStatsService:
             mac_address (str): MAC address of the cable modem.
             ip_address (str): IP address of the cable modem.
         """
-        self.cm = CableModem(mac_address=MacAddress(mac_address), inet=Inet(ip_address))
+        self.cm = CableModem(mac_address=MacAddress(mac_address), 
+                             inet=Inet(ip_address), 
+                             write_community=write_community)
 
     async def get_interface_stat_entries(self) -> Dict[str, List[Dict]]:
         """

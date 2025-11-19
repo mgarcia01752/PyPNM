@@ -48,10 +48,10 @@ class InetAddressType(IntEnum):
     DNS = 16
 
 class DocsisIfType(IntEnum):
-    docsCableMaclayer = 127                # CATV MAC Layer
-    docsCableDownstream = 128              # CATV Downstream Interface
-    docsCableUpstream = 129                # CATV Upstream Interface
-    docsCableUpstreamChannel = 205         # CATV Upstream Channel
-    docsCableUpstreamRfPort = 256          # DOCSIS Upstream RF Port
-    docsOfdmDownstream = 277               # DOCSIS Downstream OFDM Interface
-    docsOfdmaUpstream = 278                # DOCSIS Upstream OFDMA Interface
+    docsCableMaclayer           = 127   # CATV MAC Layer
+    docsCableDownstream         = 128   # CATV Downstream Interface
+    docsCableUpstream           = 129   # CATV Upstream Interface
+    docsCableUpstreamChannel    = 205   # CATV Upstream Channel
+    docsCableUpstreamRfPort     = 256   # DOCSIS Upstream RF Port
+    docsOfdmDownstream          = 277   # DOCSIS Downstream OFDM Interface
+    docsOfdmaUpstream           = 278   # DOCSIS Upstream OFDMA Interface

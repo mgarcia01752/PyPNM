@@ -51,12 +51,15 @@ class UsScQamChannelRouter:
             
             # Pre-check cable modem connectivity and status
             status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip,
+                                                          snmp_config=request.cable_modem.snmp,
                                                           validate_atdma_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)                  
             
-            service = UsScQamChannelService(mac_address=mac, ip_address=ip)
+            service = UsScQamChannelService(mac_address=mac, 
+                                            ip_address=ip,
+                                            snmp_config=request.cable_modem.snmp)
             data = await service.get_upstream_entries()
             
             return SnmpResponse(
@@ -89,12 +92,15 @@ class UsScQamChannelRouter:
             self.logger.info(f"Retrieving DOCSIS 3.0 ATDMA upstream pre-equalization for MAC: {mac}, IP: {ip}")
 
             status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip, 
+                                                          snmp_config=request.cable_modem.snmp,
                                                           validate_atdma_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
                                   
-            service = UsScQamChannelService(mac_address=mac, ip_address=ip)
+            service = UsScQamChannelService(mac_address=mac, 
+                                            ip_address=ip,
+                                            snmp_config=request.cable_modem.snmp)
             data = await service.get_upstream_pre_equalizations()
 
             return SnmpResponse(mac_address =   mac, 

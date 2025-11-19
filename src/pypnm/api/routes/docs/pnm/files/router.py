@@ -45,7 +45,7 @@ class PnmFileManager:
 
             Each file represents a measurement such as RxMER, constellation, pre-equalization taps, or spectrum scan, and can be downloaded or analyzed via other endpoints.
 
-            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/file_manager/file-manager.md#-search-uploaded-files)
+            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-search-uploaded-files)
             """
             request = FileQueryRequest(mac_address=mac_address)
             result = PnmFileService().search_files(request)

@@ -4,9 +4,8 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from ipaddress import ip_interface
 import logging
-from typing import Dict, List, Union
+from typing import Dict, List, Union, cast
 from fastapi import APIRouter
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
     PnmAnalysisResponse, PnmRequest)
@@ -15,6 +14,7 @@ from pypnm.api.routes.common.classes.operation.cable_modem_precheck import Cable
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.ds.ofdm.mer_margin.schemas import PnmMerMarginRequest
 from pypnm.api.routes.docs.pnm.ds.ofdm.mer_margin.service import CmDsOfdmMerMarginService
+from pypnm.lib.types import MacAddressStr, InetAddressStr
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet
@@ -49,39 +49,42 @@ class RxMerMarginRouter:
             """
             📘 [API Guide - MER Margin Measurement Template](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/ds/ofdm/mer-margin.md#get-measurement-template)
             """
-            mac = request.cable_modem.mac_address
-            ip = request.cable_modem.ip_address
+            mac: MacAddressStr = request.cable_modem.mac_address
+            ip: InetAddressStr = request.cable_modem.ip_address
+            community: str = request.cable_modem.snmp.snmp_v2c.community
+
             self.logger.info(f"Retrieving MER Margin measurement template for MAC: {mac}, IP: {ip}")
 
-            cm = CableModem(mac_address=MacAddress(mac),inet=Inet(ip))
+            cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip), write_community=community)
 
             status, msg = await CableModemServicePreCheck(cable_modem=cm,validate_ofdm_exist=True).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
-                    mac_address=str(mac),
+                    mac_address=mac,
                     status=status, message=msg)
 
             service = CmDsOfdmMerMarginService(cm)
             template:Dict[str, List[Dict]] = await service.getMeasurementTemplate()
 
             return SnmpResponse(
-                mac_address=str(mac),
+                mac_address=mac,
                 status=ServiceStatusCode.SUCCESS,
                 message="MER Margin test triggered successfully",
                 results=template)
                 
         @self.router.post(f"/{self.base_endpoint}/getMeasurement", 
-                          response_model=Union[SnmpResponse])
-        async def get_measurement(request: PnmMerMarginRequest) -> Union[SnmpResponse]:
+                          response_model=SnmpResponse,
+                          responses=FAST_API_RESPONSE,)
+        async def get_measurement(request: PnmMerMarginRequest):
             """
             Initiates a MER Margin test on a specified OFDM channel/profile.
 
             Triggers the modem to calculate MER margin statistics against a given modulation profile.
             This test measures subcarrier MER against required profile thresholds and computes available MER margin.
 
-            [API Guide - MER Margin Measurement](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/ds/ofdm/mer-margin.md#get-measurement)
+            [API Guide - MER Margin Measurement](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/ds/ofdm/mer-margin.md#get-measurement)
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
@@ -94,14 +97,14 @@ class RxMerMarginRouter:
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
-                    mac_address=str(mac),
+                    mac_address=mac,
                     status=status, message=msg)
 
             service = CmDsOfdmMerMarginService(cm)
             await service.set(request.mer_margin)
 
             return SnmpResponse(
-                mac_address=str(request.cable_modem.mac_address),
+                mac_address=request.cable_modem.mac_address,
                 status=ServiceStatusCode.SUCCESS,
                 message="MER Margin test triggered successfully")
 
@@ -129,7 +132,7 @@ class RxMerMarginRouter:
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(mac_address=str(mac),status=status, message=msg)
+                return SnmpResponse(mac_address=mac,status=status, message=msg)
 
             service = CmDsOfdmMerMarginService(cm)
             return await service.get_analysis()
@@ -150,23 +153,24 @@ class RxMerMarginRouter:
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
+            community: str = request.cable_modem.snmp.snmp_v2c.community
             self.logger.info(f"Fetching MER Margin measurement statistics for MAC: {mac}, IP: {ip}")            
 
-            cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
+            cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip), write_community=community)
 
             status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(
-                    mac_address=str(mac),
+                    mac_address=mac,
                     status=status, message=msg)
 
             service = CmDsOfdmMerMarginService(cm)
             results = await service.getMeasurementStatus()
 
             return SnmpResponse(
-                mac_address=str(mac),
+                mac_address=mac,
                 status=ServiceStatusCode.SUCCESS,
                 message="Measurement Statistics for MER Margin",
                 results=results)

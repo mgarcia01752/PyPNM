@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import ClassVar, Dict
 
 from pydantic import BaseModel, Field
+from pydantic.types import T
 
 class SystemDescriptorModel(BaseModel):
     """
@@ -19,7 +20,7 @@ class SystemDescriptorModel(BaseModel):
     BOOTR:    str  = Field("",  description="Bootloader revision.")
     SW_REV:   str  = Field("",  description="Software/firmware revision.")
     MODEL:    str  = Field("",  description="Device model.")
-    is_empty: bool = Field(False, description="True if derived from an empty descriptor.")
+    is_empty: bool = Field(default=True, description="True if derived from an empty descriptor.")
 
 @dataclass(frozen=True)
 class SystemDescriptor:
@@ -33,12 +34,12 @@ class SystemDescriptor:
 
     Provides parsing, serialization, and an "empty" factory.
     """
-    hw_rev: str
-    vendor: str
-    boot_rev: str
-    sw_rev: str
-    model: str
-    _is_empty:bool = False
+    hw_rev: str     = ""
+    vendor: str     = ""
+    boot_rev: str   = ""
+    sw_rev: str     = ""
+    model: str      = ""
+    _is_empty:bool  = True
 
     _PATTERN: ClassVar[re.Pattern] = re.compile(r"<<\s*(.*?)\s*>>")
 
@@ -61,13 +62,17 @@ class SystemDescriptor:
             key, val = [part.strip() for part in entry.split(':', 1)]
             data[key] = val
         try:
-
+            empty:bool = False
+            if data.get('HW_REV') == '':
+                empty = True
+            
             return cls(
-                hw_rev      =   data['HW_REV'],
-                vendor      =   data['VENDOR'],
-                boot_rev    =   data['BOOTR'],
-                sw_rev      =   data['SW_REV'],
-                model       =   data['MODEL'],
+                hw_rev      =   data.get('HW_REV', ''),
+                vendor      =   data.get('VENDOR', ''),
+                boot_rev    =   data.get('BOOTR', ''),
+                sw_rev      =   data.get('SW_REV', ''),
+                model       =   data.get('MODEL', ''),
+                _is_empty   =   empty
             )
             
         except KeyError as e:

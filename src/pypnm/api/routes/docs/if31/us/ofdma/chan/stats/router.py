@@ -47,13 +47,15 @@ class UsOfdmaChannelRouter:
             ip = request.cable_modem.ip_address
             self.logger.info(f"Retrieving Upstream OFDMA Channel Statistics for MAC: {mac}, IP: {ip}")
 
-            status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip,
+            status, msg = await CableModemServicePreCheck(mac_address=mac, 
+                                                          ip_address=ip,
+                                                          snmp_config=request.cable_modem.snmp,
                                                           validate_ofdma_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)              
 
-            service = UsOfdmChannelService(mac, ip)
+            service = UsOfdmChannelService(mac, ip, request.cable_modem.snmp)
             data = await service.get_ofdma_chan_entries()
 
             return SnmpResponse(mac_address =   mac, 

@@ -55,22 +55,26 @@ class FddDiplexerBandEdgeCapability:
             - Downstream Lower Band Edge Capability (TLV 5.82)
             - Downstream Upper Band Edge Capability (TLV 5.83)
 
-            [API Guide - FDD Diplexer Band Edge Capabilities](https://github.com/mgarcia01752/PyPNM/tree/main/documentation/api/fast-api/single/fdd/fdd-diplexer-band-edge-cap.md)
+            [API Guide - FDD Diplexer Band Edge Capabilities](https://github.com/mgarcia01752/PyPNM/tree/main/docs/api/fast-api/single/fdd/fdd-diplexer-band-edge-cap.md)
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
             self.logger.info(f"Retrieving FDD diplexer band edge capabilities for MAC: {mac}, IP: {ip}")
 
             # Ensure modem is reachable and SNMP is operational
-            status, msg = await CableModemServicePreCheck(mac_address=mac,ip_address=ip, 
-                check_docsis_version=[ClabsDocsisVersion.DOCSIS_40]).run_precheck()
+            status, msg = await CableModemServicePreCheck(mac_address=mac,
+                                                          ip_address=ip, 
+                                                          snmp_config=request.cable_modem.snmp,
+                                                          check_docsis_version=[ClabsDocsisVersion.DOCSIS_40]).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
             
             # Fetch capability data from the cable modem
-            service = FddDiplexerBandEdgeCapabilityService(mac_address=mac,ip_address=ip)
+            service = FddDiplexerBandEdgeCapabilityService(mac_address=mac,
+                                                           ip_address=ip,
+                                                           snmp_config=request.cable_modem.snmp)
                         
             entry = await service.getFddDiplexerBandEdgeCapabilityEntries()
 

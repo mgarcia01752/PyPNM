@@ -390,13 +390,15 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
         Data retrieval mechanism for captures.
     """
 
-    def __init__(self, cable_modem: CableModem, 
+    def __init__(self, cable_modem: CableModem,
+                 tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(), 
                  number_of_averages: int = 1, 
                  spectrum_retrieval_type:SpectrumRetrievalType = SpectrumRetrievalType.FILE,):
         super().__init__(cable_modem)
         self.logger = logging.getLogger(self.__class__.__name__)
         self._number_of_averages = number_of_averages
         self._spectrum_retrieval_type = spectrum_retrieval_type
+        self._tftp_servers = tftp_servers
         
         self.log_prefix = f"DsScQamChannelSpectrumAnalyzer - CM {self._cm.get_mac_address}"
         self._test_mode = False
@@ -463,7 +465,7 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
             channel_spec_capture.append((chan_id, capture_parameter))
 
         for chan_id, capture_parameter in channel_spec_capture:
-            service = ScQamChanSpecAnalyzerService(self._cm)
+            service = ScQamChanSpecAnalyzerService(self._cm, tftp_servers=self._tftp_servers)
             service.setSpectrumCaptureParameters(capture_parameter)
             out.append((chan_id, await service.set_and_go()))
             await self.updatePnmMeasurementStatistics(chan_id)

@@ -11,6 +11,8 @@ from enum import Enum
 
 from fastapi import APIRouter, HTTPException
 
+from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
+from pypnm.lib.types import MacAddressStr, InetAddressStr
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
@@ -32,25 +34,31 @@ class SystemRouter:
         self._register_routes()
 
     def _register_routes(self) -> None:
-        @self.router.post("/sysDescr",response_model=Union[SysDescrResponse, SnmpResponse])
-        async def get_sysdescr(request: SysRequest) -> Union[SysDescrResponse, SnmpResponse]:
+        @self.router.post("/sysDescr",
+                          response_model=Union[SysDescrResponse, SnmpResponse],
+                          summary="Retrieve DOCSIS System Description",
+                          description="Fetches the system description from a DOCSIS modem.",
+                          responses=FAST_API_RESPONSE,)
+        async def get_sysdescr(request: SysRequest):
             """
             **Retrieve DOCSIS System Description**
 
             This endpoint performs an SNMP query to fetch the system description (`sysDescr`) string
             from a DOCSIS modem, then parses it to extract hardware, software, bootloader, vendor, and model details.
 
-            [API Guide - DOCSIS System Description](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/system-description.md)
+            [API Guide - DOCSIS System Description](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/system-description.md)
             """
-            mac = request.cable_modem.mac_address
-            ip = request.cable_modem.ip_address
+            mac: MacAddressStr = request.cable_modem.mac_address
+            ip: InetAddressStr = request.cable_modem.ip_address
             self.logger.info(f"Retrieving sysDescr for MAC: {mac}, IP: {ip}")
 
             try:
-                status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
+                status, msg = await CableModemServicePreCheck(mac_address=mac,
+                                                              ip_address=ip,
+                                                              snmp_config=request.cable_modem.snmp).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
-                    return SnmpResponse(mac_address=str(mac), status=status, message=msg,)                     
+                    return SnmpResponse(mac_address=mac, status=status, message=msg)
                 
                 return await SystemSnmpService.get_sysdescr(request)
             
@@ -69,18 +77,20 @@ class SystemRouter:
             Retrieves the SNMP system uptime from a DOCSIS cable modem, expressed as a human-readable
             duration (`hh:mm:ss.microseconds`). Useful for identifying recent reboots or uptime trends.
 
-            [API Guide - Device System Uptime](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/up-time.md)
+            [API Guide - Device System Uptime](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/up-time.md)
 
             """
-            mac = request.cable_modem.mac_address
-            ip = request.cable_modem.ip_address
+            mac: MacAddressStr = request.cable_modem.mac_address
+            ip: InetAddressStr = request.cable_modem.ip_address
             self.logger.info(f"Retrieving sysUpTime for MAC: {mac}, IP: {ip}")
 
             try:
-                status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
+                status, msg = await CableModemServicePreCheck(mac_address=mac,
+                                                              ip_address=ip,
+                                                              snmp_config=request.cable_modem.snmp).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
-                    return SnmpResponse(mac_address=str(mac), status=status, message=msg)                          
+                    return SnmpResponse(mac_address=mac, status=status, message=msg)                          
                 
                 return await SystemSnmpService.get_sys_up_time(request) 
             

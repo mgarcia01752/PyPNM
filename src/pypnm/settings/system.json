@@ -4,17 +4,17 @@
         "ip_address": "192.168.0.1"
     },   
     "SNMP": {
-        "timeout": 5,
+        "timeout": 2,
         "version": {
             "2c" : {
                 "enable" :true,
-                "retries": 5,
+                "retries": 3,
                 "read_community": "private",
                 "write_community": "private"                
             }, 
             "3" : {
                 "enable" : false,
-                "retries": 5,
+                "retries": 3,
                 "username": "user",
                 "securityLevel": "authPriv",
                 "authProtocol": "SHA",

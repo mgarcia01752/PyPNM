@@ -11,7 +11,8 @@ from __future__ import annotations
 
 import logging
 from typing import List, Dict, Any
-
+from pypnm.lib.types import MacAddressStr, InetAddressStr
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -29,7 +30,9 @@ class OfdmProfileStatsService:
     """
     
     @staticmethod
-    async def fetch_profile_stats(mac_address: str, ip_address: str) -> List[Dict[str, Any]]:
+    async def fetch_profile_stats(mac_address: MacAddressStr, 
+                                  ip_address: InetAddressStr, 
+                                  snmp_config: SNMPConfig) -> List[Dict[str, Any]]:
         """
         Fetches OFDM downstream profile statistics from the cable modem.
 
@@ -47,7 +50,8 @@ class OfdmProfileStatsService:
         try:
             cm = CableModem(
                 mac_address=MacAddress(mac_address),
-                inet=Inet(ip_address)
+                inet=Inet(ip_address),
+                write_community=snmp_config.snmp_v2c.community
             )
             entries = await cm.getDocsIf31CmDsOfdmProfileStatsEntry()
             stats = [entry.to_dict(nested=False) for entry in entries]

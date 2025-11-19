@@ -5,6 +5,8 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 from typing import List
+from pypnm.lib.types import MacAddressStr, InetAddressStr
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -19,7 +21,9 @@ class UsScQamChannelService:
         cm (CableModem): An instance of the CableModem class used to perform SNMP operations.
     """
 
-    def __init__(self, mac_address: str, ip_address: str):
+    def __init__(self, mac_address: MacAddressStr, 
+                 ip_address: InetAddressStr, 
+                 snmp_config: SNMPConfig):
         """
         Initializes the service with a MAC and IP address.
 
@@ -27,7 +31,9 @@ class UsScQamChannelService:
             mac_address (str): MAC address of the target cable modem.
             ip_address (str): IP address of the target cable modem.
         """
-        self.cm = CableModem(mac_address=MacAddress(mac_address), inet=Inet(ip_address))
+        self.cm = CableModem(mac_address=MacAddress(mac_address), 
+                             inet=Inet(ip_address),
+                             write_community=snmp_config.snmp_v2c.community)
 
     async def get_upstream_entries(self) -> List[dict]:
         """

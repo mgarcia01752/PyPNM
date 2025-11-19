@@ -13,6 +13,7 @@ import logging
 from typing import Iterable, List, Tuple, Optional
 
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.docs.dev.service import SNMPConfig
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus
 from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
@@ -47,6 +48,7 @@ class CableModemServicePreCheck:
         cable_modem: Optional[CableModem] = None,
         mac_address: Optional[MacAddressStr] = None,
         ip_address: Optional[InetAddressStr] = None,
+        snmp_config: Optional[SNMPConfig] = None,
         check_docsis_version: List[ClabsDocsisVersion] = [],
         validate_ofdm_exist: bool       = False,
         validate_ofdma_exist: bool      = False,
@@ -74,9 +76,15 @@ class CableModemServicePreCheck:
         if cable_modem:
             self.cm = cable_modem
         elif mac_address and ip_address:
+            
+            if snmp_config is None:
+                self.logger.debug("No SNMPConfig provided, using default settings")
+                snmp_config = SNMPConfig()
+
             self.cm = CableModem(
-                mac_address=MacAddress(mac_address),
-                inet=Inet(ip_address)
+                mac_address     =   MacAddress(mac_address),
+                inet            =   Inet(ip_address),
+                write_community =   snmp_config.snmp_v2c.community,
             )
         else:
             raise ValueError("Must provide either `cable_modem` or both `mac_address` and `ip_address`.")
@@ -168,7 +176,7 @@ class CableModemServicePreCheck:
                 return status, msg 
 
         msg = "Pre-check successful: CableModem reachable via ping and SNMP"
-        self.logger.info(msg)
+        self.logger.debug(msg)
         return ServiceStatusCode.SUCCESS, msg
 
     def ping_reachable(self) -> ServiceStatusCode:
@@ -201,6 +209,7 @@ class CableModemServicePreCheck:
                 return ServiceStatusCode.SUCCESS
             self.logger.debug("SNMP check failed")
             return ServiceStatusCode.UNREACHABLE_SNMP
+        
         except Exception as e:
             self.logger.error(f"SNMP check exception: {e}", exc_info=True)
             return ServiceStatusCode.UNREACHABLE_SNMP

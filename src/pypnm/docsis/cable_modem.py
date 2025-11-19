@@ -21,7 +21,9 @@ class CableModem(CmSnmpOperation):
 
     inet: Inet
 
-    def __init__(self, mac_address: MacAddress, inet: Inet, write_community: str = PnmConfigManager.get_write_community()):
+    def __init__(self, mac_address: MacAddress, 
+                 inet: Inet, 
+                 write_community: str = PnmConfigManager.get_write_community()):
         """
         Initialize the CableModem instance.
 
@@ -70,9 +72,11 @@ class CableModem(CmSnmpOperation):
         Returns:
             bool: True if SNMP communication is successful, False otherwise.
         """
-        system_description = await self.getSysDescr()
+        system_description = await self.getSysDescr(timeout=1, retries=1)
 
-        if not system_description:
+        self.logger.debug(f"SNMP.is_snmp_reachable: System Description for {system_description}, is_empty: {system_description.is_empty()}")
+
+        if system_description.is_empty():
             self.logger.debug(f"{self.__repr__()}- SNMP access failed")
             return False
 
@@ -81,7 +85,7 @@ class CableModem(CmSnmpOperation):
     async def isCableModemMacCorrect(self) -> bool:
         "Checks to see if mac address is cable modem mac-address (docsCableMaclayer)"
         mac = await self.getIfPhysAddress()
-        self.logger.info(f"CableModem MAC Address: {self.get_mac_address}, SNMP Retrieved MAC Address: {mac}")
+        self.logger.debug(f"CableModem MAC Address: {self.get_mac_address}, SNMP Retrieved MAC Address: {mac}")
         return self.get_mac_address.is_equal(mac)
 
     def same_inet_version(self, other: Inet) -> bool:

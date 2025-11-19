@@ -7,14 +7,19 @@ from __future__ import annotations
 import logging
 from typing import Dict, List
 from pypnm.docsis.cable_modem import CableModem, InetAddressStr
-from pypnm.docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanEntry
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
+from pypnm.docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanChannelEntry
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress, MacAddressStr
 
 class DsOfdmChannelService:
 
-    def __init__(self, mac_address: MacAddressStr, ip_address: InetAddressStr):
-        self.cm = CableModem(MacAddress(mac_address), Inet(ip_address))
+    def __init__(self, mac_address: MacAddressStr, 
+                 ip_address: InetAddressStr,
+                 snmp_config: SNMPConfig):
+        self.cm = CableModem(MacAddress(mac_address), 
+                             Inet(ip_address), 
+                             write_community=snmp_config.snmp_v2c.community)
         self.logger = logging.getLogger("DsOfdmChannelService")
 
     async def get_ofdm_chan_entries(self) -> List[Dict]:
@@ -24,7 +29,7 @@ class DsOfdmChannelService:
         Returns:
             List[dict]: List of dictionaries with `index`, `channel_id`, and `entry` keys.
         """
-        entries: List[DocsIf31CmDsOfdmChanEntry] = await self.cm.getDocsIf31CmDsOfdmChanEntry()
+        entries: List[DocsIf31CmDsOfdmChanChannelEntry] = await self.cm.getDocsIf31CmDsOfdmChanEntry()
 
         if not entries:
             self.logger.warning("No OFDM channel entries retrieved from the cable modem.")

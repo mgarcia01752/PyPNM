@@ -52,9 +52,9 @@ class Snmp_v2c:
 
     def __init__(self, host: Inet, 
                  community: str = SystemConfigSettings.snmp_write_community, 
-                 port: int = SNMP_PORT,
-                 timeout: int = SystemConfigSettings.snmp_timeout,
-                 retries: int = SystemConfigSettings.snmp_retries):
+                 port: int      = SNMP_PORT,
+                 timeout: int   = SystemConfigSettings.snmp_timeout,
+                 retries: int   = SystemConfigSettings.snmp_retries):
         """
         Initializes the SNMPv2c client.
 
@@ -71,35 +71,54 @@ class Snmp_v2c:
         self._retries   = retries
         self._snmp_engine = SnmpEngine()
 
-    async def get(self, oid: Union[str, Tuple[str, str, int]]):
+    async def get(
+        self,
+        oid: Union[str, Tuple[str, str, int]],
+        timeout: Optional[float] = None,
+        retries: Optional[int] = None,
+    ):
         """
         Perform an SNMP GET operation.
 
+        Notes
+        -----
+        `timeout` for UdpTransportTarget.create(...) is in **seconds**, not milliseconds.
+
         Args:
-            oid (Union[str, Tuple[str, str, int]]): OID to fetch, either as string or tuple.
+            oid: OID to fetch, either as a numeric string, symbolic name, or tuple.
+            timeout: Request timeout in **seconds**. If None, uses self._timeout.
+            retries: Number of retries. If None, uses self._retries.
 
         Returns:
             List[ObjectType]: List of SNMP variable bindings.
 
         Raises:
-            RuntimeError: On SNMP errors.
+            RuntimeError: On SNMP errors (transport/protocol).
         """
-        self.logger.debug(f'Input OID: {oid}')
-        obj = ObjectType(self._to_object_identity(Snmp_v2c.resolve_oid(oid)))
+        self.logger.debug(f"Input OID: {oid}, timeout: {timeout}, retries: {retries}")
+
+        resolved_oid = Snmp_v2c.resolve_oid(oid)
+        obj = ObjectType(self._to_object_identity(resolved_oid))
+
+        timeout_s = float(timeout if timeout is not None else self._timeout)
+        retries_n = int(retries if retries is not None else self._retries)
 
         errorIndication, errorStatus, errorIndex, varBinds = await get_cmd(
             self._snmp_engine,
             CommunityData(self._community, mpModel=1),
             await UdpTransportTarget.create((self._host, self._port),
-                                            timeout=self._timeout, 
-                                            retries=self._retries),
-                                            ContextData(),
-                                            obj,)
+                                            timeout=timeout_s,     # seconds
+                                            retries=retries_n,     # count
+                                            ),
+            ContextData(),
+            obj,
+        )
+
         try:
             self._raise_on_snmp_error(errorIndication, errorStatus, errorIndex)
         except Exception as e:
-            self.logger.error(f"Failed get : {e}")
-  
+            self.logger.error(f"Failed GET for OID {resolved_oid}: {e}")
+
         return varBinds
 
     async def walk(self, oid: Union[str, Tuple[str, str, int]]) -> Optional[List[ObjectType]]:

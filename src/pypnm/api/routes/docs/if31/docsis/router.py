@@ -31,7 +31,8 @@ class BaseCapabilityRouter:
     def _register_routes(self) -> None:
         
         @self.router.post("/baseCapability", 
-                          response_model=SnmpResponse)
+                          response_model=SnmpResponse,
+                          responses=FAST_API_RESPONSE,)
         async def base_capability(request: SnmpRequest) -> SnmpResponse:
             """
             **DOCSIS 3.1 Base Capability**
@@ -51,13 +52,17 @@ class BaseCapabilityRouter:
 
             try:
                 # Verify modem is reachable
-                status, msg = await CableModemServicePreCheck(mac_address=mac, ip_address=ip).run_precheck()
+                status, msg = await CableModemServicePreCheck(mac_address=mac, 
+                                                              ip_address=ip,
+                                                              snmp_config=request.cable_modem.snmp).run_precheck()
 
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(mac_address=mac, status=status, message=msg)
 
-                result = await DocsisBaseCapabilityService.fetch_docsis_base_capabilty(mac_address=mac, ip_address=ip)
+                result = await DocsisBaseCapabilityService.fetch_docsis_base_capabilty(mac_address=mac,
+                                                                                       ip_address=ip,
+                                                                                       snmp_config=request.cable_modem.snmp)
 
                 return SnmpResponse(
                     mac_address =   mac,

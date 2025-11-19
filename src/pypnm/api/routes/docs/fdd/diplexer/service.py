@@ -5,11 +5,13 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 from typing import Dict, List
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
 from pypnm.docsis.data_type.DocsFddCmFddCapabilities import DocsFddCmFddBandEdgeCapabilities
 from pypnm.lib.inet import Inet
-from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.mac_address import MacAddress, MacAddressStr
+from pypnm.lib.types import InetAddressStr
 
 class FddDiplexerBandEdgeCapabilityService:
     """
@@ -25,7 +27,9 @@ class FddDiplexerBandEdgeCapabilityService:
     in the modem's SNMP MIBs (e.g., `docsFddDiplexerUsUpperBandEdgeCapability`, etc.).
     """
 
-    def __init__(self, mac_address: str, ip_address: str):
+    def __init__(self, mac_address: MacAddressStr,
+                 ip_address: InetAddressStr, 
+                 snmp_config: SNMPConfig=SNMPConfig()):
         """
         Initialize the service using a modem's MAC and IP address.
 
@@ -33,7 +37,9 @@ class FddDiplexerBandEdgeCapabilityService:
             mac_address (str): The MAC address of the target cable modem.
             ip_address (str): The IP address of the target cable modem.
         """
-        self.cm = CableModem(mac_address=MacAddress(mac_address), inet=Inet(ip_address))
+        self.cm = CableModem(mac_address=MacAddress(mac_address), 
+                             inet=Inet(ip_address), 
+                             write_community=snmp_config.snmp_v2c.community)
 
     def isDocsis40(self) -> bool:
         if self.cm.getDocsisBaseCapability() != ClabsDocsisVersion.DOCSIS_40:
@@ -53,10 +59,13 @@ class FddDiplexerBandEdgeCapabilityService:
         Returns:
             List[Dict]: A list of populated band edge capability entries.
         """
-        fdd_band_edge_list: List[DocsFddCmFddBandEdgeCapabilities] = \
+        fdd_band_edge_list: List[DocsFddCmFddBandEdgeCapabilities] | None = \
             await self.cm.getDocsFddCmFddBandEdgeCapabilities(create_and_start=False)
 
         entries: List[Dict] = []
+
+        if fdd_band_edge_list is None:
+            return entries
 
         for fdd_band_edge in fdd_band_edge_list:
             if await fdd_band_edge.start():

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, cast
+from typing import Any, Dict, List, Tuple, cast
 
 from fastapi import APIRouter
 
@@ -62,20 +62,31 @@ class DsHistogramRouter:
             """
             mac: MacAddressStr = request.cable_modem.mac_address
             ip: InetAddressStr = request.cable_modem.ip_address
+            community: str = request.cable_modem.snmp.snmp_v2c.community
+            tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
+            tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)
+
+            sample_duration: int = request.capture_settings.sample_duration
 
             self.logger.info(
                 f"Starting Histogram measurement for MAC: {mac}, IP: {ip}, "
                 f"Sample Duration: {request.capture_settings.sample_duration}"
             )
 
-            cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
+            cm = CableModem(mac_address=MacAddress(mac), 
+                            inet=Inet(ip), 
+                            write_community=community)
 
             status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
 
-            service = CmDsHistogramService(cable_modem=cm, sample_duration=int(request.capture_settings.sample_duration))
+            service = CmDsHistogramService(cable_modem=cm, 
+                                           sample_duration=sample_duration,
+                                           tftp_servers=tftp_servers)
+
             msg_rsp: MessageResponse = await service.set_and_go()
 
             if msg_rsp.status != ServiceStatusCode.SUCCESS:
