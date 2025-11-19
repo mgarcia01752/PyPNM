@@ -109,8 +109,8 @@ class CommonMeasureService(CommonMessagingService):
         self.extra_options                          = extra_options
         self.config_mgr:ConfigManager               = ConfigManager()
         self.log_prefix:str                         = f"MAC: {self.cm.get_mac_address} - INET: {self.cm.get_inet_address}"
-        self.save_dir                               = PnmConfigManager.get_save_dir()
-        self.pnm_local_dir                          = SystemConfigSettings.save_dir
+        self.pnm_dir                               = PnmConfigManager.get_save_dir()
+        self.pnm_local_dir                          = SystemConfigSettings.pnm_dir
         self._capture_parameter:SpecAnCapturePara   = SpecAnCapturePara()
 
         # Initialize default spectrum capture parameters
@@ -126,8 +126,8 @@ class CommonMeasureService(CommonMessagingService):
         """
         Perform pre-check and ensure the save directory exists.
         """
-        self.logger.debug(f'PreCheck: SaveDir: {self.save_dir}')
-        save_path = Path(self.save_dir)
+        self.logger.debug(f'PreCheck: SaveDir: {self.pnm_dir}')
+        save_path = Path(self.pnm_dir)
         save_path.mkdir(parents=True, exist_ok=True)
 
     def _preload_interface_parameters(self) -> None:
@@ -219,8 +219,8 @@ class CommonMeasureService(CommonMessagingService):
                 tx_id = await PnmFileTransaction().insert(self.cm,
                     DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA, filename)
                 
-                save_dir = SystemConfigSettings.save_dir
-                fpath = f"{save_dir}/{filename}"
+                pnm_dir = SystemConfigSettings.pnm_dir
+                fpath = f"{pnm_dir}/{filename}"
                 self.logger.debug(f'SpectrumAmplitudeData: - FNAME: {filename} - Length:{len(amp_data)} - TransactionID: {tx_id}')
                 
                 FileProcessor(fpath).write_file(amp_data)
@@ -716,7 +716,7 @@ class CommonMeasureService(CommonMessagingService):
                 
                 # Get and copy PNM file to local data directory
                 if not await self._get_and_move_pnm_file(pnm_fname):
-                    self.logger.error(f"{self.log_prefix} - Uanble to copy PNM file to local {self.save_dir} dir")
+                    self.logger.error(f"{self.log_prefix} - Uanble to copy PNM file to local {self.pnm_dir} dir")
                     return ServiceStatusCode.COPY_PNM_FILE_TO_LOCAL_SAVE_DIR_FAILED
                 
                 # Find Transaction ID via filename
@@ -924,10 +924,10 @@ class CommonMeasureService(CommonMessagingService):
         src_dir = SystemConfigSettings.local_src_dir
 
         self.logger.info(
-            f'{self.log_prefix} - Local Copy - SRC: {src_dir} - SAVE: {self.save_dir} - FN: {pnm_file_name}'
+            f'{self.log_prefix} - Local Copy - SRC: {src_dir} - SAVE: {self.pnm_dir} - FN: {pnm_file_name}'
         )
 
-        if not os.path.isdir(src_dir) or not os.path.isdir(self.save_dir):
+        if not os.path.isdir(src_dir) or not os.path.isdir(self.pnm_dir):
             self.logger.error(f"{self.log_prefix} - Invalid source or destination directory")
             return False
 
@@ -938,10 +938,10 @@ class CommonMeasureService(CommonMessagingService):
                 if filename == pnm_file_name:
                     file_found = True
                     src_path = os.path.join(src_dir, filename)
-                    dest_path = os.path.join(self.save_dir, filename)
+                    dest_path = os.path.join(self.pnm_dir, filename)
                     try:
                         shutil.copy2(src_path, dest_path)
-                        self.logger.debug(f"{self.log_prefix} - Copied {filename} to {self.save_dir}")
+                        self.logger.debug(f"{self.log_prefix} - Copied {filename} to {self.pnm_dir}")
                         return True
                     except Exception as e:
                         self.logger.error(f"{self.log_prefix} - Copy failed for {filename}: {e}")
@@ -978,8 +978,8 @@ class CommonMeasureService(CommonMessagingService):
             
             remote_file_path = f'{sys_config.scp_remote_dir}/{pnm_file_name}'
             if not scp.receive_file(remote_path=remote_file_path,
-                                    local_path=sys_config.save_dir):
-                self.logger.error(f'{self.log_prefix} - SCP Receive File Error (SRC:{remote_file_path} DST: {sys_config.save_dir})')
+                                    local_path=sys_config.pnm_dir):
+                self.logger.error(f'{self.log_prefix} - SCP Receive File Error (SRC:{remote_file_path} DST: {sys_config.pnm_dir})')
                 return False
             
             self.logger.info(f'{self.log_prefix} - Successfully fetched file: {pnm_file_name}')
@@ -1018,8 +1018,8 @@ class CommonMeasureService(CommonMessagingService):
             
             remote_file_path = f'{sys_config.sftp_remote_dir}/{pnm_file_name}'
             if not sftp.receive_file(remote_path=remote_file_path,
-                                    local_path=sys_config.save_dir):
-                self.logger.error(f'{self.log_prefix} - SFTP Receive File Error (SRC:{remote_file_path} DST: {sys_config.save_dir})')
+                                    local_path=sys_config.pnm_dir):
+                self.logger.error(f'{self.log_prefix} - SFTP Receive File Error (SRC:{remote_file_path} DST: {sys_config.pnm_dir})')
                 return False
             
             self.logger.info(f'{self.log_prefix} - Successfully fetched file: {pnm_file_name}')
@@ -1068,7 +1068,7 @@ class CommonMeasureService(CommonMessagingService):
                 if SystemConfigSettings.tftp_remote_dir else
                 pnm_file_name
             )
-            local_path = os.path.join(SystemConfigSettings.save_dir, pnm_file_name)
+            local_path = os.path.join(SystemConfigSettings.pnm_dir, pnm_file_name)
 
             success = connector.download_file(remote_name, local_path)
 

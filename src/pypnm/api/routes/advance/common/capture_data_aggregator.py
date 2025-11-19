@@ -33,7 +33,7 @@ class CaptureDataAggregator:
         """
         self.logger = logging.getLogger(self.__class__.__name__)
         self._capture_group_id:GroupId = capture_group_id
-        self._save_dir = Path(SystemConfigSettings.save_dir)
+        self._save_dir = Path(SystemConfigSettings.pnm_dir)
         self._trans_file_bin_entries: TransactionFileCollection = []
         self._trans_collection: TransactionCollection = TransactionCollection()
 

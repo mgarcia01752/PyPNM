@@ -107,12 +107,12 @@ class MultiDsChanEstRouter(AbstractService):
 
             svc: MultiChannelEstimationService = cast(MultiChannelEstimationService, self.getService(operation_id))
             samples = svc.results(operation_id)
-            save_dir, mac = SystemConfigSettings.save_dir, svc.cm.get_mac_address.mac_address
+            pnm_dir, mac = SystemConfigSettings.pnm_dir, svc.cm.get_mac_address.mac_address
             buf = io.BytesIO()
 
             with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
                 for s in samples:
-                    path = os.path.join(save_dir, s.filename)
+                    path = os.path.join(pnm_dir, s.filename)
                     
                     try: 
                         zf.write(path, arcname=os.path.basename(s.filename))

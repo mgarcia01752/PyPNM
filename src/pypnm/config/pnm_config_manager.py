@@ -18,7 +18,7 @@ class PnmConfigManager:
     _tftp_v6 = SystemConfigSettings.bulk_tftp_ip_v6
     _write_community = SystemConfigSettings.snmp_write_community
     _tftp_path = SystemConfigSettings.tftp_remote_dir
-    _save_dir = SystemConfigSettings.save_dir
+    _pnm_dir = SystemConfigSettings.pnm_dir
 
     @classmethod
     def reload(cls):
@@ -30,7 +30,7 @@ class PnmConfigManager:
         cls._tftp_v6 = SystemConfigSettings.bulk_tftp_ip_v6
         cls._write_community = SystemConfigSettings.snmp_write_community
         cls._tftp_path = SystemConfigSettings.snmp_write_community
-        cls._save_dir = SystemConfigSettings.save_dir
+        cls._pnm_dir = SystemConfigSettings.pnm_dir
 
     @staticmethod
     def get_save_dir() -> str:
@@ -39,7 +39,7 @@ class PnmConfigManager:
             Directory of the saved PNM capture files
         '''
         PnmConfigManager.reload()
-        return PnmConfigManager._save_dir
+        return PnmConfigManager._pnm_dir
 
     @staticmethod
     def get_tftpv4() -> Inet:

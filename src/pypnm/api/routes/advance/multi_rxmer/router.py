@@ -233,13 +233,13 @@ class MultiRxMerRouter(AbstractService):
             svc:MultiRxMerService = cast(MultiRxMerService, self.getService(operation_id))
             samples = svc.results(operation_id)
 
-            save_dir = SystemConfigSettings.save_dir
+            pnm_dir = SystemConfigSettings.pnm_dir
             mac = svc.cm.get_mac_address.mac_address
             
             buf = io.BytesIO()
             with zipfile.ZipFile(buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zipf:
                 for sample in samples:
-                    file_path = os.path.join(save_dir, sample.filename)
+                    file_path = os.path.join(pnm_dir, sample.filename)
                     arcname = os.path.basename(sample.filename)
                     try:
                         zipf.write(file_path, arcname=arcname)

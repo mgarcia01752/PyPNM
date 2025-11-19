@@ -28,7 +28,7 @@ class CommonProcessService(CommonMessagingService):
     def __init__(self, message_response:MessageResponse, **extra_options):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.pnm_file_dir = self.config_mgr = SystemConfigSettings.save_dir
+        self.pnm_file_dir = self.config_mgr = SystemConfigSettings.pnm_dir
         self._msg_rsp = message_response
         self.logger.debug(f'CommonProcessService: {self._msg_rsp}')
 
