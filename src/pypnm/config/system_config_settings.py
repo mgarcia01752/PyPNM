@@ -5,7 +5,6 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 from pathlib import Path
-from warnings import deprecated
 from pypnm.config.config_manager import ConfigManager
 from pypnm.lib.types import IPv4Str, IPv6Str, InetAddressStr, MacAddressStr
 
@@ -113,7 +112,6 @@ class SystemConfigSettings:
 
     # PNM file retrieval/storage settings
     @classproperty
-    @deprecated("Use pnm_dir() instead", "2025-11-19")
     def save_dir(cls) -> str:
         return cls._cfg.get("PnmFileRetrieval", "pnm_dir")
 

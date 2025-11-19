@@ -8,7 +8,8 @@ import re
 from pathlib import Path
 
 import pytest
-from typing_extensions import assert_type  # static check only; no-op at runtime
+from typing_extensions import assert_type
+
 
 from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 from pypnm.lib.types import ComplexArray, ComplexSeries
