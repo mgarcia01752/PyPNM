@@ -26,7 +26,7 @@ dependencies = [
   "uvicorn[standard]==0.34.2",
   "numpy==2.2.6",
   "scipy==1.15.1",
-  "pydantic==2.11.5",
+  "pydantic>=2.12.4,<2.13",
   "pysmi==1.6.1",
   "pysnmp==7.1.17",
   "python-dotenv>=1.0.0",

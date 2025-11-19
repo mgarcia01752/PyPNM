@@ -32,7 +32,6 @@ class SNMPv2c(BaseModel):
             raise ValueError("SNMPv2c.community must not be blank")
         return v
 
-
 class SNMPv3(BaseModel):
     """
     SNMP v3 settings model.
@@ -45,26 +44,27 @@ class SNMPv3(BaseModel):
         privProtocol (Optional[Literal["DES","AES"]]): Privacy protocol.
         privPassword (Optional[str]): Privacy password.
     """
-    username: Optional[str]                     = Field(default=None, description="Username; if omitted, system default is used")
+    username: Optional[str] = Field(default=None, description="Username; if omitted, system default is used")
     securityLevel: Literal["noAuthNoPriv","authNoPriv","authPriv"] = Field(default="noAuthNoPriv", description="SNMPv3 security level")
-    authProtocol: Optional[Literal["MD5","SHA"]]    = Field(default="SHA", description="Authentication protocol")
-    authPassword: Optional[str]                     = Field(default="password", description="Authentication password")
-    privProtocol: Optional[Literal["DES","AES"]]    = Field(default="AES", description="Privacy protocol")
-    privPassword: Optional[str]                     = Field(default="password", description="Privacy password")
+    authProtocol: Optional[Literal["MD5","SHA"]] = Field(default="SHA", description="Authentication protocol")
+    authPassword: Optional[str] = Field(default="password", description="Authentication password")
+    privProtocol: Optional[Literal["DES","AES"]] = Field(default="AES", description="Privacy protocol")
+    privPassword: Optional[str] = Field(default="password", description="Privacy password")
 
-    @model_validator(mode="after") # type: ignore
-    def check_v3_fields(cls, model: "SNMPv3") -> "SNMPv3":
+    @model_validator(mode="after")
+    def check_v3_fields(self) -> "SNMPv3":
         """
         Ensure that authentication and privacy fields are present based on securityLevel.
         """
-        lvl = model.securityLevel
-        if lvl in ("authNoPriv","authPriv"):
-            if not model.authProtocol or not model.authPassword:
+        lvl = self.securityLevel
+        if lvl in ("authNoPriv", "authPriv"):
+            if not self.authProtocol or not self.authPassword:
                 raise ValueError("authProtocol & authPassword are required for auth levels")
         if lvl == "authPriv":
-            if not model.privProtocol or not model.privPassword:
+            if not self.privProtocol or not self.privPassword:
                 raise ValueError("privProtocol & privPassword are required for privacy level")
-        return model
+        return self
+
 
 
 class SNMPConfig(BaseModel):
