@@ -134,7 +134,7 @@ mkdocs serve
 - [CM-SP-CM-OSSIv4.0](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv4.0)
 - [DOCSIS MIBs](https://mibs.cablelabs.com/MIBs/DOCSIS/)
 
-## PNM architecture & guidance:
+## PNM architecture & guidance
 
 - [CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)
 - [CM-GL-PNM-HFC](https://www.cablelabs.com/specifications/CM-GL-PNM-HFC)
