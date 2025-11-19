@@ -128,17 +128,17 @@ mkdocs serve
 
 ## CableLabs specifications & MIBs
 
-- DOCSIS 3.1: [https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
-- DOCSIS 4.0: [https://www.cablelabs.com/specifications/CM-SP-MULPIv4.0](https://www.cablelabs.com/specifications/CM-SP-MULPIv4.0)
-- CM-SP-CM-OSSIv3.1 (PNM): [https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
-- CM-SP-CM-OSSIv4.0 (PNM): [https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv4.0](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv4.0)
-- DOCSIS MIBs: [https://mibs.cablelabs.com/MIBs/DOCSIS/](https://mibs.cablelabs.com/MIBs/DOCSIS/)
+- [CM-SP-MULPIv3.1](https://www.cablelabs.com/specifications/CM-SP-MULPIv3.1)
+- [CM-SP-CM-OSSIv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)
+- [CM-SP-MULPIv4.0](https://www.cablelabs.com/specifications/CM-SP-MULPIv4.0)
+- [CM-SP-CM-OSSIv4.0](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv4.0)
+- [DOCSIS MIBs](https://mibs.cablelabs.com/MIBs/DOCSIS/)
 
 ## PNM architecture & guidance:
 
-- CM-TR-PMA: [https://www.cablelabs.com/specifications/CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)
-- CM-GL-PNM-HFC: [https://www.cablelabs.com/specifications/CM-GL-PNM-HFC](https://www.cablelabs.com/specifications/CM-GL-PNM-HFC)
-- CM-GL-PNM-3.1: [https://www.cablelabs.com/specifications/CM-GL-PNM-3.1](https://www.cablelabs.com/specifications/CM-GL-PNM-3.1)
+- [CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)
+- [CM-GL-PNM-HFC](https://www.cablelabs.com/specifications/CM-GL-PNM-HFC)
+- [CM-GL-PNM-3.1](https://www.cablelabs.com/specifications/CM-GL-PNM-3.1)
 
 ## License
 
@@ -150,4 +150,3 @@ Maurice Garcia
 
 - [Email](mailto:mgarcia01752@outlook.com)
 - [LinkedIn](https://www.linkedin.com/in/mauricemgarcia/)
-- 
