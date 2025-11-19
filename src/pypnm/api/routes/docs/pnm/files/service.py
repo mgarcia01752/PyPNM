@@ -38,7 +38,7 @@ class PnmFileService:
     """
 
     def __init__(self):
-        self.save_dir = SystemConfigSettings.save_dir
+        self.pnm_dir = SystemConfigSettings.pnm_dir
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def search_files(self, req: FileQueryRequest) -> FileQueryResponse:
@@ -95,7 +95,7 @@ class PnmFileService:
             raise HTTPException(status_code=404, detail="Transaction ID not found.")
 
         filename = txn_data.get("filename")
-        full_path = Path(self.save_dir) / str(filename)
+        full_path = Path(self.pnm_dir) / str(filename)
 
         if not full_path.exists():
             raise HTTPException(status_code=404, detail="File not found on disk.")
@@ -114,8 +114,8 @@ class PnmFileService:
         Raises:
             HTTPException if the file cannot be saved or type is unrecognized.
         """
-        os.makedirs(self.save_dir, exist_ok=True)
-        filepath = os.path.join(self.save_dir, req.filename)
+        os.makedirs(self.pnm_dir, exist_ok=True)
+        filepath = os.path.join(self.pnm_dir, req.filename)
 
         processor = FileProcessor(filepath)
         success = processor.write_file(req.data or "")
