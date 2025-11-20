@@ -5,8 +5,14 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
+
+from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
+
+class CmLatencyModel(PnmBaseModel):
+    ''' Pydantic model for Latency Report data -> PnmBaseModel'''
+    pass
 
 class CmLatencyRpt(PnmHeader):
     def __init__(self, binary_data: bytes):
@@ -26,3 +32,7 @@ class CmLatencyRpt(PnmHeader):
             raise ValueError(f"PNM File Stream is not RxMER file type: {cann}, Error: {actual_cann}")
  
         return None
+    
+    def to_model(self) -> CmLatencyModel:
+        ''' Convert parsed data to a Pydantic model ''' 
+        return CmLatencyModel()

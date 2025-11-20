@@ -14,11 +14,11 @@ from pypnm.pnm.process.pnm_file_type import PnmFileType
 
 class PnmHeaderParameters(BaseModel):
     """Typed fields parsed from a PNM header."""
-    file_type: Optional[str]  = Field(..., description="PNM file type identifier (e.g., 'PNN')")
-    file_type_version: int    = Field(..., description="Numeric version of the file type (e.g., 10 for PNN10)")
-    major_version: int        = Field(..., description="Major version of the PNM format")
-    minor_version: int        = Field(..., description="Minor version of the PNM format")
-    capture_time: CaptureTime = Field(..., description="Capture timestamp as epoch seconds since 1970-01-01")
+    file_type: Optional[str]  = Field(default="PNN", description="PNM file type identifier (e.g., 'PNN')")
+    file_type_version: int    = Field(default=0, description="Numeric version of the file type (e.g., 10 for PNN10)")
+    major_version: int        = Field(default=1, description="Major version of the PNM format")
+    minor_version: int        = Field(default=0, description="Minor version of the PNM format")
+    capture_time: CaptureTime = Field(default=DEFAULT_CAPTURE_TIME, description="Capture timestamp as epoch seconds since 1970-01-01")
 
 
 class PnmHeaderModel(BaseModel):

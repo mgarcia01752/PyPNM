@@ -116,10 +116,10 @@ class MacAddress:
             str: Formatted MAC address.
         """
 
-        hex_str = self.mac_address
+        hex_str = cast(str, self.mac_address).lower()
 
         if fmt == MacAddressFormat.FLAT:
-            return hex_str
+            return cast(MacAddressStr, hex_str)
 
         elif fmt == MacAddressFormat.COLON:
             return  cast(MacAddressStr, ':'.join(hex_str[i:i+2] for i in range(0, 12, 2)))

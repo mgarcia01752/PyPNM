@@ -1,11 +1,38 @@
+from __future__ import annotations
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-
-from __future__ import annotations
+from typing import TYPE_CHECKING, Union
 
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
+
+if TYPE_CHECKING:
+    from pypnm.pnm.process.CmSymbolCapture import CmSymbolCapture
+    from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
+    from pypnm.pnm.process.CmDsConstDispMeas import CmDsConstDispMeas
+    from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
+    from pypnm.pnm.process.CmDsHist import CmDsHist
+    from pypnm.pnm.process.CmUsOfdmaPreEq import CmUsOfdmaPreEq
+    from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
+    from pypnm.pnm.process.CmSpectrumAnalysis import CmSpectrumAnalysis
+    from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
+    from pypnm.pnm.process.CmLatencyRpt import CmLatencyRpt
+
+PnmParserClass = Union[
+    "CmSymbolCapture",
+    "CmDsOfdmChanEstimateCoef",
+    "CmDsConstDispMeas",
+    "CmDsOfdmRxMer",
+    "CmDsHist",
+    "CmUsOfdmaPreEq",
+    "CmDsOfdmFecSummary",
+    "CmSpectrumAnalysis",
+    "CmDsOfdmModulationProfile",
+    "CmLatencyRpt",
+]
+
 
 class PnmFileTypeObjectFetcher(PnmHeader):
     """
@@ -14,22 +41,25 @@ class PnmFileTypeObjectFetcher(PnmHeader):
 
     Usage:
         fetcher = PnmFileTypeObjectFetcher(byte_stream)
-        parser = fetcher.get_parser()
-        result = parser.parse()
+        parser  = fetcher.get_parser()
+        model   = parser.to_model()
     """
+
     def __init__(self, byte_stream: bytes):
         super().__init__(byte_stream)
         self._byte_stream = byte_stream
-        self._parser = None
+        self._parser: PnmParserClass | None = None
         self._process()
 
     def _process(self) -> None:
         """
-        Determine the PNM file type and instantiate its parser via if/elif.
+        Determine The PNM File Type And Instantiate Its Parser.
+
+        Uses lazy imports to avoid circular dependencies with individual
+        PNM parser modules.
         """
         pnm_type = self.get_pnm_file_type()
 
-        # Map PNM type to parser class explicitly
         if pnm_type == PnmFileType.SYMBOL_CAPTURE:
             from pypnm.pnm.process.CmSymbolCapture import CmSymbolCapture as ParserClass
         elif pnm_type == PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT:
@@ -57,13 +87,15 @@ class PnmFileTypeObjectFetcher(PnmHeader):
 
         self._parser = ParserClass(self._byte_stream)
 
-    def get_parser(self):
+    def get_parser(self) -> PnmParserClass:
         """
-        Return the parser instance for this PNM file.
+        Return The Parser Instance For This PNM File.
 
-        Raises:
-            RuntimeError: if parser not initialized (unsupported type).
+        Raises
+        ------
+        RuntimeError
+            If the parser was not initialized (e.g., unsupported PNM type).
         """
-        if not self._parser:
+        if self._parser is None:
             raise RuntimeError("PNM parser not available; unsupported file type or initialization error")
         return self._parser

@@ -6,11 +6,16 @@ from __future__ import annotations
 
 import logging
 from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder, IntegerBits, FractionalBits, ComplexSeries
+from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 from struct import calcsize, unpack
 from typing import Optional, Tuple
 
+
+class CmSymbolCaptureModel(PnmBaseModel):
+    ''' Pydantic model for Symbol Capture Report data'''
+    pass
 
 class CmSymbolCapture(PnmHeader):
     def __init__(self, binary_data: bytes):
@@ -73,3 +78,7 @@ class CmSymbolCapture(PnmHeader):
             'Capture Data Length': self.capture_data_length,
             'Capture Data': self.capture_data.hex() if self.capture_data is not None else None
         }
+    
+    def to_model(self) -> CmSymbolCaptureModel:
+        ''' Convert parsed data to a Pydantic model ''' 
+        return CmSymbolCaptureModel()

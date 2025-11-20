@@ -12,7 +12,7 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import 
 from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_snmp import SNMPConfig
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.system_config_settings import SystemConfigSettings
-from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.matplot.manager import ThemeType
 from pypnm.lib.types import IPv4Str, IPv6Str, InetAddressStr, MacAddressStr
 
@@ -50,14 +50,18 @@ class CableModemPnmConfig(BaseModel):
 class CommonMatPlotUiConfig(BaseModel):
     theme: ThemeType = Field(default="dark", description="Matplotlib theme selection for plot rendering")
 
-
 class CommonMatPlotConfigRequest(BaseModel):
     ui: CommonMatPlotUiConfig = Field(default=CommonMatPlotUiConfig(), description="Matplotlib UI configuration for plot generation")
 
-
-class CommonFileRequest(BaseModel):
-    cable_modem: CableModemPnmConfig = Field(description="Cable modem configuration for file-based operations")
-
+class CommonFileSearchRequest(BaseModel):
+    mac_address: MacAddressStr = Field(description="MAC address of the cable modem")
+    
+    @field_validator("mac_address")
+    def validate_mac(cls, v: MacAddressStr) -> MacAddressStr:
+        try:
+            return MacAddress(v).to_mac_format(MacAddressFormat.COLON)
+        except Exception as e:
+            raise ValueError(f"Invalid MAC address: {v}, reason: ({e})")
 
 class CommonRequest(BaseModel):
     cable_modem: CableModemPnmConfig = Field(description="Cable modem configuration for basic PNM operations")

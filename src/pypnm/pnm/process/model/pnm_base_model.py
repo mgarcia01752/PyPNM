@@ -35,7 +35,7 @@ class PnmBaseModel(PnmHeaderModel):
     - This base model does not enforce domain limits; downstream models may add validation.
     """
     model_config = ConfigDict(populate_by_name=True)
-    pnm_header:PnmHeaderParameters          = Field(..., description="")
+    pnm_header:PnmHeaderParameters          = Field(default_factory=PnmHeaderParameters, description="")
     channel_id: ChannelId                   = Field(default = INVALID_CHANNEL_ID, description="Downstream channel ID")
     mac_address: MacAddressStr              = Field(default = MacAddress.null(), description="Device MAC address")
     subcarrier_zero_frequency: FrequencyHz  = Field(default = INVALID_SUB_CARRIER_ZERO_FREQ, description="Frequency of subcarrier 0 (Hz)")

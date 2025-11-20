@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import Dict, List, Literal, TypeVar, cast
 from typing_extensions import Final, TypeAlias
-from pypnm.lib.types import CaptureTime, ChannelId, FloatEnum, FrequencyHz, Number, ProfileId
+from pypnm.lib.types import CaptureTime, ChannelId, FloatEnum, FrequencyHz, Number, ProfileId, StringEnum
 
 HZ:  Final[int] = 1
 KHZ: Final[int] = 1_000
@@ -41,6 +41,27 @@ class CableType(FloatEnum):
     RG6  = 0.87
     RG59 = 0.82
     RG11 = 0.87
+
+class MediaType(StringEnum):
+    """
+    Canonical Media Type Enumeration Used For File And HTTP Responses.
+
+    Values
+    ------
+    APPLICATION_JSON
+        JSON payloads (FastAPI JSONResponse, .json files).
+    APPLICATION_ZIP
+        ZIP archives (analysis bundles, multi-file exports).
+    APPLICATION_OCTET_STREAM
+        Raw binary streams (PNM files, generic downloads).
+    TEXT_CSV
+        Comma-separated values (tabular exports).
+    """
+
+    APPLICATION_JSON         = "application/json"
+    APPLICATION_ZIP          = "application/zip"
+    APPLICATION_OCTET_STREAM = "application/octet-stream"
+    TEXT_CSV                 = "text/csv"
 
 T = TypeVar("T")
 

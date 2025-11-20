@@ -6,12 +6,11 @@ from __future__ import annotations
 import json
 import hashlib
 import time
-from typing import Dict, Optional
+from typing import Dict, List
 from pathlib import Path
-from datetime import datetime
 
 from pypnm.api.routes.common.classes.file_capture.transaction_record_parser import TransactionRecordParser
-from pypnm.api.routes.common.classes.file_capture.types import TransactionRecordModel
+from pypnm.api.routes.common.classes.file_capture.types import TransactionId, TransactionRecordModel
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
@@ -58,10 +57,10 @@ class PnmFileTransaction:
         }
     """
 
-    PNM_TEST_TYPE = "pnm_test_type"
-    FILE_NAME = "filename"
+    PNM_TEST_TYPE  = "pnm_test_type"
+    FILE_NAME      = "filename"
     DEVICE_DETAILS = "device_details"
-    MAC_ADDRESS = "mac_address"
+    MAC_ADDRESS    = "mac_address"
 
     def __init__(self):
         self.transaction_db_path = Path(SystemConfigSettings.transaction_db)
@@ -71,26 +70,71 @@ class PnmFileTransaction:
 
     async def insert(self, cable_modem: CableModem, pnm_test_type: DocsPnmCmCtlTest, filename: str) -> str:
         """
-        Records a transaction initiated from an actual cable modem test.
+        Record A Transaction Initiated From An Actual Cable Modem Test.
+
+        This method is invoked by measurement services once a PNM capture has
+        successfully completed and produced a result file. It pulls the current
+        system description from the cable modem, generates a new transaction
+        identifier, and appends a normalized record into the transaction
+        database.
+
+        Parameters
+        ----------
+        cable_modem:
+            Live `CableModem` instance representing the device under test. Used
+            to obtain the MAC address and system description snapshot.
+        pnm_test_type:
+            Enumeration value describing which PNM test produced the file
+            (for example, DS_RXMER, DS_OFDM_HISTOGRAM, DS_CONSTELLATION).
+        filename:
+            Relative or absolute path to the generated PNM binary file, as
+            stored by the calling measurement service.
+
+        Returns
+        -------
+        str
+            Newly generated transaction identifier (16-character SHA-256
+            digest prefix) suitable for later lookup (download and analysis).
         """
         sd: SystemDescriptor = await cable_modem.getSysDescr()
         return self._insert_generic(
-            mac_address     = cable_modem.get_mac_address,
-            pnm_test_type   = pnm_test_type,
-            filename        = filename,
-            system_description=sd.to_dict(),
+            mac_address       = cable_modem.get_mac_address,
+            pnm_test_type     = pnm_test_type,
+            filename          = filename,
+            system_description= sd.to_dict(),
         )
 
     @staticmethod
-    def set_file_by_user(mac_address: MacAddress, pnm_test_type: DocsPnmCmCtlTest, filename: str) -> str:
+    def set_file_by_user(mac_address: MacAddress, pnm_test_type: DocsPnmCmCtlTest, filename: str) -> TransactionId:
         """
-        Records a transaction manually initiated by a user (e.g., uploaded file).
+        Record A Transaction For A Manually Supplied File (User Upload).
+
+        This path is used when the file is not the result of an automated test
+        initiated by PyPNM, but rather provided by the user (for example, a
+        lab-captured PNM file uploaded via REST). The record is normalized into
+        the same transaction database used for automated captures.
+
+        Parameters
+        ----------
+        mac_address:
+            MAC address of the cable modem associated with the uploaded file.
+        pnm_test_type:
+            Enumeration describing the semantic PNM test type for the file,
+            allowing downstream analysis routing to behave consistently.
+        filename:
+            Filesystem path or name where the uploaded file has been stored on
+            the server.
+
+        Returns
+        -------
+        str
+            Newly generated transaction identifier bound to the uploaded file.
         """
         txn = PnmFileTransaction()
         return txn._insert_generic(
-            mac_address=mac_address,
-            pnm_test_type=pnm_test_type,
-            filename=filename,
+            mac_address   = mac_address,
+            pnm_test_type = pnm_test_type,
+            filename      = filename,
         )
 
     # ---------------------------
@@ -99,14 +143,44 @@ class PnmFileTransaction:
 
     def _load_record_dict(self, transaction_id: str) -> dict | None:
         """
-        Load the raw JSON record for a transaction_id directly from disk.
+        Load The Raw JSON Record For A Transaction Identifier.
+
+        This helper reads the on-disk transaction database and returns the
+        underlying dictionary for the requested transaction identifier, if
+        present. It does not perform any schema normalization or conversion.
+
+        Parameters
+        ----------
+        transaction_id:
+            Unique transaction identifier to resolve.
+
+        Returns
+        -------
+        dict | None
+            Raw JSON-compatible dictionary for the transaction when present,
+            or `None` if no record exists for the supplied identifier.
         """
         db = self._load_db()
         return db.get(transaction_id)
 
     def get_record(self, transaction_id: str) -> dict | None:
         """
-        Return a plain dictionary representation of a transaction record, or None.
+        Fetch A Plain Dictionary Representation Of A Transaction Record.
+
+        This method provides a minimal, schema-free view into the transaction
+        database. It is intended for low-level callers that need direct access
+        to the stored fields without constructing a Pydantic model.
+
+        Parameters
+        ----------
+        transaction_id:
+            Unique transaction identifier for the record to retrieve.
+
+        Returns
+        -------
+        dict | None
+            The underlying transaction record as a dictionary, or `None` when
+            the identifier does not exist in the database.
         """
         rec = self._load_record_dict(transaction_id)
         return rec if rec else None
@@ -115,39 +189,69 @@ class PnmFileTransaction:
     def get(self, transaction_id: str) -> dict | None:
         return self.get_record(transaction_id)
 
-    def getRecordModel(self, transaction_id: str) -> TransactionRecordModel:
+    def getRecordModel(self, transaction_id: TransactionId) -> TransactionRecordModel:
         """
-        Return a Pydantic model for a transaction record, or a null() model if missing.
+        Build A Canonical TransactionRecordModel For A Transaction Identifier.
+
+        This convenience wrapper resolves the raw JSON record and delegates to
+        `TransactionRecordParser` to construct the normalized Pydantic model.
+        If the record does not exist, a `null()` sentinel model is returned.
+
+        Parameters
+        ----------
+        transaction_id:
+            Unique transaction identifier for which a model representation is
+            requested.
+
+        Returns
+        -------
+        TransactionRecordModel
+            Canonical, fully-normalized transaction model, or the sentinel
+            `TransactionRecordModel.null()` instance for missing records.
         """
         rec = self._load_record_dict(transaction_id)
         if not rec:
             return TransactionRecordModel.null()
-        # Delegate to the parser to construct the canonical model
         return TransactionRecordParser.from_id(transaction_id)
 
-    def get_file_info_via_macaddress(self, mac_address: MacAddress) -> Optional[list[dict]]:
+    def get_file_info_via_macaddress(self, mac_address: MacAddress) -> List[TransactionRecordModel]:
         """
-        Find all transactions for a given MAC address.
+        Retrieve All Transaction Records Associated With A Given MAC Address.
+
+        This method scans the transaction database and collects all entries
+        whose stored `mac_address` matches the supplied cable modem MAC (case-
+        insensitive). Each matching record is returned as a fully normalized
+        `TransactionRecordModel`, using the same parsing logic as individual
+        lookups.
+
+        Typical usage patterns include:
+        - Building a catalog of all PNM files available for a modem.
+        - Populating UI tables of historical captures keyed by MAC address.
+        - Providing selection lists for downstream download or analysis calls.
+
+        Parameters
+        ----------
+        mac_address:
+            Cable modem MAC address used as the primary lookup key. The value
+            is normalized to lower-case for comparison against stored records.
+
+        Returns
+        -------
+        List[TransactionRecordModel]
+            List of canonical `TransactionRecordModel` instances for all
+            transactions associated with the given MAC address. The list is
+            empty when no matching records are found.
         """
-        db = self._load_db()
-        mac_str = str(mac_address).lower()
-        results: list[dict] = []
+        db       = self._load_db()
+        mac_str  = str(mac_address).lower()
+        records: List[TransactionRecordModel] = []
 
         for txn_id, record in db.items():
-            if record.get("mac_address", "").lower() == mac_str:
-                results.append(
-                    {
-                        "transaction_id": txn_id,
-                        "pnm_test_type": record.get("pnm_test_type"),
-                        "filename": record.get("filename"),
-                        "timestamp": datetime.utcfromtimestamp(record.get("timestamp", 0)).strftime(
-                            "%Y-%m-%d %H:%M:%S UTC"
-                        ),
-                        "device_details": record.get("device_details", {}),
-                    }
-                )
+            if record.get(self.MAC_ADDRESS, "").lower() != mac_str:
+                continue
+            records.append(TransactionRecordParser.from_id(txn_id))
 
-        return results if results else None
+        return records
 
     # ---------------------------
     # Write helpers
@@ -159,20 +263,43 @@ class PnmFileTransaction:
         pnm_test_type: DocsPnmCmCtlTest,
         filename: str,
         system_description: Dict[str, str] | None = None,
-    ) -> str:
+    ) -> TransactionId:
         """
-        Common logic for creating a transaction record.
+        Common Logic For Creating And Persisting A Transaction Record.
+
+        This internal helper generates a new transaction identifier, assembles
+        the JSON-serializable record structure, and writes the updated
+        transaction database back to disk.
+
+        Parameters
+        ----------
+        mac_address:
+            MAC address of the cable modem associated with the transaction.
+        pnm_test_type:
+            Enumeration describing the PNM test type that produced or owns the
+            associated file.
+        filename:
+            Path or name of the PNM data file linked to this transaction.
+        system_description:
+            Optional system description snapshot dictionary, typically produced
+            via `SystemDescriptor.to_dict()`. When omitted, an empty mapping is
+            stored under `device_details.system_description`.
+
+        Returns
+        -------
+        str
+            Newly created transaction identifier associated with the record.
         """
-        timestamp = int(time.time())
-        hash_input = f"{filename}{timestamp}".encode("utf-8")
-        transaction_id = hashlib.sha256(hash_input).hexdigest()[:16]
+        timestamp       = int(time.time())
+        hash_input      = f"{filename}{timestamp}".encode("utf-8")
+        transaction_id  = TransactionId(hashlib.sha256(hash_input).hexdigest()[:16])
 
         db = self._load_db()
         db[transaction_id] = {
-            "timestamp": timestamp,
-            "mac_address": str(mac_address),
-            "pnm_test_type": pnm_test_type.name,
-            "filename": filename,
+            "timestamp":      timestamp,
+            "mac_address":    str(mac_address),
+            "pnm_test_type":  pnm_test_type.name,
+            "filename":       filename,
             "device_details": {
                 "system_description": system_description or {},
             },
@@ -182,7 +309,18 @@ class PnmFileTransaction:
 
     def _load_db(self) -> dict:
         """
-        Load the transaction database from JSON; return {} on parse errors.
+        Load The Transaction Database From JSON Storage.
+
+        This helper reads the transaction database file configured by
+        `SystemConfigSettings.transaction_db` and returns its contents as a
+        dictionary. If JSON parsing fails, an empty dictionary is returned to
+        avoid propagating the error to callers.
+
+        Returns
+        -------
+        dict
+            Dictionary of all transaction records keyed by transaction
+            identifier. An empty dictionary is returned on parse errors.
         """
         try:
             with self.transaction_db_path.open("r") as f:
@@ -192,7 +330,13 @@ class PnmFileTransaction:
 
     def _save_db(self, db: dict) -> None:
         """
-        Persist the transaction database to disk.
+        Persist The Transaction Database To Disk.
+
+        Parameters
+        ----------
+        db:
+            Fully realized transaction database dictionary to be serialized and
+            written to the configured JSON file.
         """
         with self.transaction_db_path.open("w") as f:
             json.dump(db, f, indent=4)
