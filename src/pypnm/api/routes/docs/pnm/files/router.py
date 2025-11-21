@@ -61,7 +61,7 @@ class PnmFileManager:
             return JSONResponse(content=result.model_dump())
 
         @self.router.get(
-            "/download/{transaction_id}",
+            "/download/transactionID/{transaction_id}",
             response_class=FileResponse,
             summary="Download A PNM File By Transaction ID",
         )

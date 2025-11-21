@@ -100,13 +100,15 @@ class PnmFileService:
         filename = txn_data.get("filename")
         full_path = Path(self.pnm_dir) / str(filename)
 
+        self.logger.info(f"Retrieving file for transaction {transaction_id}: {full_path}")
+
         if not full_path.exists():
             raise HTTPException(status_code=404, detail="File not found on disk.")
 
         return FileResponse(
-            path=full_path,
-            filename=filename,
-            media_type=MediaType.APPLICATION_OCTET_STREAM,
+            path        =   full_path,
+            filename    =   filename,
+            media_type  =   MediaType.APPLICATION_OCTET_STREAM,
         )
 
     def upload_file(self, req: PushFileRequest) -> PushFileResponse:
