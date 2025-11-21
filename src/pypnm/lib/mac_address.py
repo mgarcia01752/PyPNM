@@ -114,6 +114,7 @@ class MacAddress:
 
         Returns:
             str: Formatted MAC address.
+            default is FLAT (no separators) and lowercase.
         """
 
         hex_str = cast(str, self.mac_address).lower()

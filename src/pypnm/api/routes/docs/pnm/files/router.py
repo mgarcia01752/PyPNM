@@ -80,6 +80,27 @@ class PnmFileManager:
             """
             return PnmFileService().get_file_by_transaction_id(transaction_id)
 
+        @self.router.get(
+            "/download/macAddress/{mac_address}",
+            response_class=FileResponse,
+            summary="Download A PNM File By MAC Address",
+        )
+        def download_file_via_mac_address(mac_address: MacAddressStr = Path(..., description="MAC address of the file to download")):
+            """
+            **Download PNM Measurement File By Transaction ID**
+
+            Retrieves the raw binary file generated during a telemetry capture session.
+            Used for offline inspection, reprocessing, or historical archiving.
+
+            Note:
+            Depending on your browser and SwaggerUI behavior, the file may either download
+            automatically or require clicking the returned link.
+
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-download-file-by-transaction)
+            """
+            return PnmFileService().get_file_by_mac_address(mac_address)
+    
+
         @self.router.post(
             "/upload",
             response_model=PushFileResponse,

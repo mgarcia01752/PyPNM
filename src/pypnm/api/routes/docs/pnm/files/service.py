@@ -16,10 +16,12 @@ from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import Pn
 from pypnm.api.routes.common.classes.file_capture.types import TransactionId
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlTest
+from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.constants import MediaType
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import PathLike, TimeStamp
+from pypnm.lib.types import MacAddressStr, PathLike, TimeStamp
+from pypnm.lib.utils import Utils
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 from pypnm.pnm.process.pnm_type_header_mapper import PnmFileTypeMapper
@@ -109,6 +111,64 @@ class PnmFileService:
             path        =   full_path,
             filename    =   filename,
             media_type  =   MediaType.APPLICATION_OCTET_STREAM,
+        )
+
+    def get_file_by_mac_address(self, mac_address: MacAddressStr) -> FileResponse:
+        """
+        Retrieve All PNM Files For A MAC Address As A ZIP Archive.
+
+        Looks up all transaction records bound to the provided cable modem
+        MAC address, collects their associated PNM files from the PNM
+        directory, and packages them into a single ZIP archive for download.
+
+        If no records are found, or none of the files exist on disk, a 404 is raised.
+        """
+        records = PnmFileTransaction().get_file_info_via_macaddress(MacAddress(mac_address))
+
+        if not records:
+            raise HTTPException(status_code=404, detail="No transactions found for MAC address.")
+
+        # Resolve all existing files for this MAC
+        files_to_archive: list[Path] = []
+        for rec in records:
+            src_path = Path(self.pnm_dir) / Path(rec.filename)
+            if not src_path.is_file():
+                self.logger.warning(
+                    "Skipping missing file for transaction %s: %s",
+                    rec.transaction_id,
+                    src_path,
+                )
+                continue
+            files_to_archive.append(src_path)
+
+        if not files_to_archive:
+            raise HTTPException(status_code=404, detail="No files on disk for MAC address.")
+
+        archive_dir = Path(SystemConfigSettings.archive_dir)
+        archive_dir.mkdir(parents=True, exist_ok=True)
+
+        safe_mac = str(MacAddress(mac_address).to_mac_format())
+        archive_name = f"pnm_files_{safe_mac}_{Utils.time_stamp()}.zip"
+        archive_path = archive_dir / archive_name
+
+        ArchiveManager.zip_files(
+            files           = files_to_archive,
+            archive_path    = archive_path,
+            mode            = "w",
+            compression     = "zipdeflated",
+            preserve_tree   = False,
+        )
+
+        if not archive_path.is_file():
+            self.logger.error("Archive creation failed for MAC %s at %s", mac_address, archive_path)
+            raise HTTPException(status_code=500, detail="Failed to create archive for MAC address.")
+
+        self.logger.info("Returning ZIP archive for MAC %s: %s", mac_address, archive_path)
+
+        return FileResponse(
+            path        =   str(archive_path),
+            filename    =   archive_name,
+            media_type  =   MediaType.APPLICATION_ZIP,
         )
 
     def upload_file(self, req: PushFileRequest) -> PushFileResponse:
