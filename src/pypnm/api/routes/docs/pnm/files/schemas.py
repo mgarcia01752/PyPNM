@@ -8,7 +8,6 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import CommonFileSearchRequest
 from pypnm.api.routes.common.classes.file_capture.types import TransactionId
 from pypnm.lib.types import FileName, MacAddressStr, TimeStamp
 
