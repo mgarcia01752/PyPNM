@@ -3,38 +3,49 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+from typing import Dict, List, Optional
+
 from pydantic import BaseModel, Field
-from typing import Dict, Optional, List
-
-from pypnm.api.routes.common.classes.file_capture.types import TransactionId, TransactionRecordModel
-from pypnm.lib.types import MacAddressStr, PathLike
 
 
-class FileQueryRequest(BaseModel):
-    '''Base Model'''
-    mac_address: MacAddressStr = Field(..., description="MAC address of the cable modem")
+from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import CommonFileSearchRequest
+from pypnm.api.routes.common.classes.file_capture.types import TransactionId
+from pypnm.lib.types import FileName, TimeStamp
+
+
+class FileQueryRequest(CommonFileSearchRequest):
+    """Base request model for querying PNM files (inherits MAC/IP/etc. from CommonFileRequest)."""
+    pass
+
+
+class FileEntry(BaseModel):
+    transaction_id: TransactionId           = Field(..., description="Unique identifier for this file transaction")
+    filename: FileName                      = Field(..., description="Name of the file")
+    pnm_test_type: str                      = Field(..., description="Type of PNM test performed")
+    timestamp: TimeStamp                    = Field(..., description="Capture or transaction timestamp")
+    system_description: Optional[dict]      = Field(None, description="Optional system description metadata")
 
 
 class FileQueryResponse(BaseModel):
-    files: Dict[str, List[TransactionRecordModel]] = Field(description="Mapping of MAC address to list of PNM file entries",)
+    files: Dict[str, List[FileEntry]]       = Field(..., description="Mapping of MAC address to list of PNM file entries")
 
 
-class UploadFileRequest(FileQueryRequest):
-    filename: PathLike          = Field(..., description="Name of the file to push into the temporary upload area")
-    data: Optional[bytes]       = Field(None, description="Raw PNM binary payload to persist for later analysis")
+class PushFileRequest(FileQueryRequest):
+    filename: FileName                      = Field(..., description="Name of the file to push")
+    data: Optional[str]                     = Field(None, description="Optional base64-encoded or raw file data")
 
 
-class UploadFileResponse(FileQueryRequest):
-    filename: PathLike              = Field(..., description="Name of the file that was registered")
-    transaction_id: TransactionId   = Field(..., description="Unique transaction identifier for the uploaded file")
+class PushFileResponse(FileQueryRequest):
+    filename: FileName                      = Field(..., description="Name of the file that was pushed")
+    transaction_id: TransactionId           = Field(..., description="Unique identifier for the created file transaction")
 
 
 class FileAnalysisRequest(FileQueryRequest):
-    transaction_id: TransactionId = Field(..., description="transaction id from file search")
-    analysis_type: Optional[str]  = Field(default="auto", description="Type of analysis: spectrum, rxmer, etc.")
+    transaction_id: TransactionId           = Field(..., description="Transaction ID returned from file search")
+    analysis_type: Optional[str]            = Field(default="auto", description="Type of analysis to perform (e.g., 'spectrum', 'rxmer', or 'auto').")
 
 
 class AnalysisResponse(BaseModel):
-    analysis_type: str
-    plot_url: str  # Or raw data if not generating a URL
-    summary: Optional[str] = None
+    analysis_type: str                      = Field(..., description="Resolved analysis type that was performed")
+    plot_url: str                           = Field(..., description="URL to rendered plot or visualization resource")
+    summary: Optional[str]                  = Field(None, description="Optional human-readable analysis summary")

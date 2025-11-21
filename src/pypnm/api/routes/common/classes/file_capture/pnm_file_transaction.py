@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import hashlib
+import logging
 import time
 from typing import Dict, List
 from pathlib import Path
@@ -15,6 +16,7 @@ from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import FileName
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 
 
@@ -63,6 +65,7 @@ class PnmFileTransaction:
     MAC_ADDRESS    = "mac_address"
 
     def __init__(self):
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.transaction_db_path = Path(SystemConfigSettings.transaction_db)
         self.transaction_db_path.parent.mkdir(parents=True, exist_ok=True)
         if not self.transaction_db_path.exists():
@@ -105,7 +108,7 @@ class PnmFileTransaction:
         )
 
     @staticmethod
-    def set_file_by_user(mac_address: MacAddress, pnm_test_type: DocsPnmCmCtlTest, filename: str) -> TransactionId:
+    def set_file_by_user(mac_address: MacAddress, pnm_test_type: DocsPnmCmCtlTest, filename: FileName) -> TransactionId:
         """
         Record A Transaction For A Manually Supplied File (User Upload).
 
@@ -242,12 +245,14 @@ class PnmFileTransaction:
             transactions associated with the given MAC address. The list is
             empty when no matching records are found.
         """
-        db       = self._load_db()
-        mac_str  = str(mac_address).lower()
+        db = self._load_db()
+        mac_str = str(mac_address).lower()
+        self.logger.info(f"Searching for files with MAC address: {mac_str}")
         records: List[TransactionRecordModel] = []
 
         for txn_id, record in db.items():
             if record.get(self.MAC_ADDRESS, "").lower() != mac_str:
+                self.logger.info(f"Skipping file with MAC address: {record.get(self.MAC_ADDRESS, '').lower()}")
                 continue
             records.append(TransactionRecordParser.from_id(txn_id))
 

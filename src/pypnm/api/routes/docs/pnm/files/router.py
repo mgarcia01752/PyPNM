@@ -3,18 +3,18 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from fastapi import APIRouter, Path, UploadFile, File, Form
+from fastapi import APIRouter, Path
 from fastapi.responses import FileResponse, JSONResponse
 
 from pypnm.api.routes.common.classes.file_capture.types import TransactionId
 from pypnm.api.routes.docs.pnm.files.schemas import (
-    FileAnalysisRequest, FileQueryResponse, FileQueryRequest, 
-    UploadFileRequest, UploadFileResponse, AnalysisResponse)
+    AnalysisResponse, FileAnalysisRequest, FileQueryRequest, FileQueryResponse,
+    PushFileRequest, PushFileResponse,)
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
-from pypnm.lib.types import FileNameStr, MacAddressStr, PathLike
+from pypnm.lib.types import MacAddressStr
 
 
 class PnmFileManager:
@@ -28,131 +28,106 @@ class PnmFileManager:
     """
 
     def __init__(self):
-        self.router = APIRouter(prefix="/docs/pnm/files",tags=["PNM File Manager"])
+        self.router = APIRouter(
+            prefix="/docs/pnm/files",
+            tags=["PNM File Manager"],
+        )
         self._add_routes()
 
-    def _add_routes(self):
+    def _add_routes(self) -> None:
+        default_mac_address = (
+            MacAddress(SystemConfigSettings.default_mac_address)
+            .to_mac_format(fmt=MacAddressFormat.COLON).lower())
 
-        default_mac_address = MacAddress(SystemConfigSettings.default_mac_address).to_mac_format(fmt=MacAddressFormat.COLON).lower()
-        
-        @self.router.get("/searchFiles/{mac_address}", 
-                         response_model=FileQueryResponse, 
-                         summary="Search for PNM Files via mac address",
-                         responses=FAST_API_RESPONSE,)
-        def search_files(mac_address: MacAddressStr = Path(..., description=f"MAC address of the cable modem, default: **{default_mac_address}**")):
+        @self.router.get(
+            "/searchFiles/{mac_address}",
+            response_model=FileQueryResponse,
+            summary="Search For PNM Files Via Mac Address",
+            responses=FAST_API_RESPONSE,
+        )
+        def search_files(mac_address: MacAddressStr = Path(description=(f"MAC address of the cable modem, default: **{default_mac_address}**"),)):
             """
-            **Search Uploaded PNM Files by MAC Address**
+            **Search Uploaded PNM Files By MAC Address**
 
             Returns all registered telemetry capture files associated with a given DOCSIS cable modem.
 
-            Each file represents a measurement such as RxMER, constellation, pre-equalization taps, or spectrum scan, and can be downloaded or analyzed via other endpoints.
+            Each file represents a measurement such as RxMER, constellation, pre-equalization taps,
+            or spectrum scan, and can be downloaded or analyzed via other endpoints.
 
-            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-search-uploaded-files)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-search-uploaded-files)
             """
             request = FileQueryRequest(mac_address=mac_address)
-            result  = PnmFileService().search_files(request)
+            result = PnmFileService().search_files(request)
             return JSONResponse(content=result.model_dump())
 
-        @self.router.get("/download/transactionID/{transaction_id}", 
-                         response_class=FileResponse, 
-                         summary="Download a PNM file by transaction ID",
-                         responses=FAST_API_RESPONSE,)
-        def download_file_via_transaction_id(transaction_id: TransactionId = Path(description="Transaction ID of the file")):
+        @self.router.get(
+            "/download/{transaction_id}",
+            response_class=FileResponse,
+            summary="Download A PNM File By Transaction ID",
+        )
+        def download_file_via_transaction_id(transaction_id: TransactionId = Path(..., description="Transaction ID of the file to download")):
             """
-            **Download PNM Measurement File by Transaction ID**
+            **Download PNM Measurement File By Transaction ID**
 
-            Download a previously uploaded PNM measurement file using its unique transaction ID.
+            Retrieves the raw binary file generated during a telemetry capture session.
+            Used for offline inspection, reprocessing, or historical archiving.
+
+            Note:
+            Depending on your browser and SwaggerUI behavior, the file may either download
+            automatically or require clicking the returned link.
 
             [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-download-file-by-transaction)
             """
             return PnmFileService().get_file_by_transaction_id(transaction_id)
 
-        @self.router.get("/download/macAddress/{mac_address}", 
-                         response_class=FileResponse, 
-                         summary="Download a PNM file by transaction ID",
-                         responses=FAST_API_RESPONSE,)
-        def download_file_via_mac_address(mac_address: MacAddressStr = Path(..., description="MAC address of the cable modem")):
+        @self.router.post(
+            "/upload",
+            response_model=PushFileResponse,
+            summary="Upload A PNM File",
+            responses=FAST_API_RESPONSE,
+        )
+        def upload_file(request: PushFileRequest):
             """
-            **Download PNM Measurement File by MacAddress**
+            **Upload A PNM Binary File Into The PyPNM Transaction Database**
 
-            Download a previously uploaded PNM measurement files using its associated MAC address.
+            Accepts a PNM capture file (for example, RxMER, constellation, histogram, spectrum)
+            that was generated outside of PyPNM and stores it under a new transaction record.
 
-            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-download-file-by-transaction)
+            The server will:
+            - Persist the file to the configured PNM directory.
+            - Inspect the PNM header to identify the file type.
+            - Map the file type to a logical PNM test (DocsPnmCmCtlTest).
+            - Register a transaction entry with MAC, test type, and filename.
+
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-upload-pnm-file)
             """
-            return PnmFileService().get_file_by_macaddress(mac_address)
-
-        @self.router.get("/download/file/{filename}", 
-                         response_class=FileResponse, 
-                         summary="Download a PNM file by filename",
-                         responses=FAST_API_RESPONSE,)
-        def download_file_via_filename(filename: PathLike = Path(..., description="Filename of the PNM file")):
-            """
-            **Download PNM Measurement File by Filename**
-
-            Download a previously uploaded PNM measurement files using its associated filename.
-
-            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-download-file-by-transaction)
-            """
-            return PnmFileService().get_file_by_filename(filename)
-
-        @self.router.post("/upload", 
-                          response_model=UploadFileResponse, 
-                          summary="Upload A PNM File",
-                          responses=FAST_API_RESPONSE,)
-        async def upload_file(file: UploadFile = File(..., description="PNM binary file to upload"),
-                              filename: FileNameStr = Form(..., description="Filename to assign to the uploaded PNM binary")):
-            """
-            **Upload A Raw PNM Measurement File**
-
-            Accepts a user-provided PNM binary payload plus a target filename,
-            stores the file in a temporary upload directory, inspects its
-            header to determine the PNM test type, and registers a new
-            transaction in the PyPNM file database.
-
-            Returns:
-            - `PushFileResponse` containing the filename and newly assigned
-              transaction ID.
-
-            Usage (SwaggerUI):
-            - Select a file in the `file` field.
-            - Provide a desired `filename`.
-            - Execute the request to register the upload.
-            """
-            content = await file.read()
-
-            request = UploadFileRequest(
-                filename = filename,
-                data     = content,
-            )
-
             result = PnmFileService().upload_file(request)
             return JSONResponse(content=result.model_dump())
 
-        @self.router.post("/getAnalysis", 
-                          response_model=UploadFileResponse,  
-                          summary="Analyze a PNM File",
-                          responses=FAST_API_RESPONSE,)
-        def get_analysis(file: UploadFile = File(..., description="PNM binary file to upload"),
-                         filename: FileNameStr = Form(..., description="Filename to assign to the uploaded PNM binary")):
+        @self.router.post(
+            "/getAnalysis",
+            response_model=AnalysisResponse,
+            summary="Analyze A PNM File",
+            responses=FAST_API_RESPONSE,
+        )
+        def get_analysis(request: FileAnalysisRequest):
             """
-            **Trigger Automated Analysis of a PNM File**
+            **Trigger Automated Analysis Of A PNM File**
 
-            Launches an analysis routine based on the specified file and test type.
-            Performs a basic analysis and returns structured results.
+            Launches an analysis routine based on the specified transaction ID and requested
+            analysis type. The backend will resolve the PNM file associated with the transaction,
+            inspect its header, and route it to the appropriate analysis pipeline.
 
-            Supports analysis types such as:
+            Supported analysis types include, but are not limited to:
             - RxMER per subcarrier
             - Channel estimation
             - Pre-equalization taps
             - Spectrum snapshots
 
-            Returns:
-            - Analysis results in JSON format
-            - Key performance metrics
-            - CSV data for further processing
-            - Matplotlib plots 
+            The response returns a resolved `analysis_type`, a plot or asset URL, and an optional
+            human-readable summary.
 
-            🔗 [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/file_manager/file-manager.md#-trigger-file-analysis)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-trigger-file-analysis)
             """
             result = PnmFileService().get_analysis(request)
             return JSONResponse(content=result.model_dump())
