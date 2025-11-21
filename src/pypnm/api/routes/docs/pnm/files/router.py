@@ -156,12 +156,12 @@ class PnmFileManager:
             return JSONResponse(content=result.model_dump())
 
         @self.router.post(
-            "/getAnalysis",
+            "/getAnalysis/upload",
             response_model=AnalysisResponse,
-            summary="Analyze A PNM File",
+            summary="Analyze A PNM File Via Upload File",
             responses=FAST_API_RESPONSE,
         )
-        def get_analysis(request: FileAnalysisRequest):
+        def get_analysis_via_upload_file(request: FileAnalysisRequest):
             """
             **Trigger Automated Analysis Of A PNM File**
 
@@ -180,8 +180,36 @@ class PnmFileManager:
 
             [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file-manager/file-manager-api.md#6-analyze-pnm-file)
             """
-            result = PnmFileService().get_analysis(request)
-            return JSONResponse(content=result.model_dump())
+            # result = PnmFileService().get_analysis(request)
+            # return JSONResponse(content=result.model_dump())
+            return JSONResponse(content="Not implemented yet")
+
+        @self.router.post(
+            "/getAnalysis/transactionID/{transaction_id}",
+            response_model=AnalysisResponse,
+            summary="Analyze A PNM File Via Transaction ID",
+            responses=FAST_API_RESPONSE,
+        )
+        def get_analysis_via_transaction_id(transaction_id: TransactionId):
+            """
+            **Trigger Automated Analysis Of A PNM File**
+
+            Launches an analysis routine based on the specified transaction ID and requested
+            analysis type. The backend will resolve the PNM file associated with the transaction,
+            inspect its header, and route it to the appropriate analysis pipeline.
+
+            Supported analysis types include, but are not limited to:
+            - RxMER per subcarrier
+            - Channel estimation
+            - Pre-equalization taps
+            - Spectrum snapshots
+
+            The response returns a resolved `analysis_type`, a plot or asset URL, and an optional
+            human-readable summary.
+
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file-manager/file-manager-api.md#6-analyze-pnm-file-via-transaction-id)
+            """
+            return JSONResponse(content="Not implemented yet")
 
 
 # Required for auto-discovery via dynamic router loading
