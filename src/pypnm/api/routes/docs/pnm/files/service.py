@@ -1,3 +1,4 @@
+# pypnm/api/routes/docs/pnm/files/service.py
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
@@ -22,7 +23,7 @@ from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.constants import MediaType
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import MacAddressStr, PathLike
+from pypnm.lib.types import FileName, MacAddressStr, PathLike
 from pypnm.lib.utils import Utils
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
@@ -30,7 +31,7 @@ from pypnm.pnm.process.pnm_type_header_mapper import PnmFileTypeMapper
 
 from .schemas import (
     AnalysisResponse, FileAnalysisRequest, FileEntry, FileQueryRequest,
-    FileQueryResponse, PushFileRequest, PushFileResponse,)
+    FileQueryResponse, UploadFileRequest, UploadFileResponse,)
 
 
 class PnmFileService:
@@ -41,7 +42,9 @@ class PnmFileService:
     Methods:
         - search_files: List available files by MAC.
         - get_file_by_transaction_id: Download raw PNM file by transaction ID.
-        - push_file: Accepts uploaded files, saves, and registers.
+        - get_file_by_operation_id: Download all files for an operation as a ZIP.
+        - get_file_by_mac_address: Download all files for a MAC as a ZIP.
+        - upload_file: Accepts uploaded files, saves, and registers.
         - get_analysis: Produces analysis for a stored file.
         - get_file: Serve generated CSV/JSON/ARCHIVE files.
     """
@@ -69,7 +72,6 @@ class PnmFileService:
                 device_details = getattr(entry, "device_details", None)
 
                 if hasattr(device_details, "model_dump"):
-                    # SystemDescriptorModel → plain dict
                     system_description = device_details.model_dump()
                 elif isinstance(device_details, dict):
                     system_description = device_details
@@ -186,7 +188,6 @@ class PnmFileService:
         if not records:
             raise HTTPException(status_code=404, detail="No transactions found for MAC address.")
 
-        # Resolve all existing files for this MAC
         files_to_archive: list[Path] = []
         for rec in records:
             src_path = Path(self.pnm_dir) / Path(rec.filename)
@@ -229,20 +230,26 @@ class PnmFileService:
             media_type  =   MediaType.APPLICATION_ZIP,
         )
 
-    def upload_file(self, req: PushFileRequest) -> PushFileResponse:
+    def upload_file(self, filename: FileName, data: bytes) -> UploadFileResponse:
         """
-        Handles user-initiated uploads of raw PNM binary files.
+        Handle A User-Initiated Upload Of A Raw PNM Binary File.
 
         1. Saves the file locally to the configured directory.
         2. Inspects its header to identify the PNM file type.
         3. Maps it to a known DOCSIS test type.
         4. Registers the transaction and returns the transaction ID.
+
+        Note
+        ----
+        The MAC address is *not* required at upload time. A null MAC
+        (MacAddress.null()) is recorded as a placeholder. A later enhancement
+        will re-inspect the PNM header and backfill the true MAC address.
         """
         os.makedirs(self.pnm_dir, exist_ok=True)
-        filepath = os.path.join(self.pnm_dir, req.filename)
+        filepath = os.path.join(self.pnm_dir, filename)
 
         processor = FileProcessor(filepath)
-        success = processor.write_file(req.data or "")
+        success = processor.write_file(data)
         if not success:
             raise HTTPException(status_code=500, detail="Failed to write file")
 
@@ -250,26 +257,29 @@ class PnmFileService:
         pnm_file_type: PnmFileType = header.get_pnm_file_type()
 
         if not pnm_file_type:
-            self.logger.error(f"Unrecognized PNM file format: {req.filename}")
+            self.logger.error("Unrecognized PNM file format: %s", filename)
             raise HTTPException(status_code=400, detail="Unsupported or unrecognized PNM file type.")
 
         test_type: DocsPnmCmCtlTest = PnmFileTypeMapper.get_test_type(pnm_file_type)
         if not test_type:
-            self.logger.error(f"No mapping found from file type {pnm_file_type} to DOCSIS test")
+            self.logger.error("No mapping found from file type %s to DOCSIS test", pnm_file_type)
             raise HTTPException(status_code=400, detail="PNM file type does not map to a known DOCSIS test")
 
+        # TODO: Placeholder null MAC until you add header-based MAC extraction
+        null_mac_str = MacAddress.null()
+        null_mac_obj = MacAddress(null_mac_str)
+
         transaction_id = PnmFileTransaction().set_file_by_user(
-            mac_address=MacAddress(req.mac_address),
-            pnm_test_type=test_type,
-            filename=req.filename,
+            mac_address   = null_mac_obj,
+            pnm_test_type = test_type,
+            filename      = filename,
         )
 
-        return PushFileResponse(
-            mac_address     =   req.mac_address,
-            filename        =   req.filename,
-            transaction_id  =   transaction_id,
+        return UploadFileResponse(
+            mac_address     = null_mac_str,
+            filename        = filename,
+            transaction_id  = transaction_id,
         )
-
     def get_analysis(self, req: FileAnalysisRequest) -> AnalysisResponse:
         """
         Returns basic analysis result for a stored file (placeholder implementation).

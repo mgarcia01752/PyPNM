@@ -3,17 +3,16 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, File, Path, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
 from pypnm.api.routes.advance.common.capture_service import OperationId
 from pypnm.api.routes.common.classes.file_capture.types import TransactionId
 from pypnm.api.routes.docs.pnm.files.schemas import (
     AnalysisResponse, FileAnalysisRequest, FileQueryRequest, FileQueryResponse,
-    PushFileRequest, PushFileResponse,)
+    UploadFileRequest, UploadFileResponse,)
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
-from pypnm.lib import mac_address
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.types import MacAddressStr
@@ -66,6 +65,7 @@ class PnmFileManager:
             "/download/transactionID/{transaction_id}",
             response_class=FileResponse,
             summary="Download A PNM File By Transaction ID",
+            responses=FAST_API_RESPONSE
         )
         def download_file_via_transaction_id(transaction_id: TransactionId = Path(..., description="Transaction ID of the file to download")):
             """
@@ -86,6 +86,7 @@ class PnmFileManager:
             "/download/macAddress/{mac_address}",
             response_class=FileResponse,
             summary="Download A PNM File By MAC Address",
+            responses=FAST_API_RESPONSE
         )
         def download_file_via_mac_address(mac_address: MacAddressStr = Path(..., description="MAC address of the file to download")):
             """
@@ -106,6 +107,7 @@ class PnmFileManager:
             "/download/operationID/{operation_id}",
             response_class=FileResponse,
             summary="Download A PNM File By Operation ID",
+            responses=FAST_API_RESPONSE
         )
         def download_file_via_operationID(operation_id: OperationId = Path(..., description="Operation ID of the file to download")):
             """
@@ -124,26 +126,33 @@ class PnmFileManager:
         
         @self.router.post(
             "/upload",
-            response_model=PushFileResponse,
+            response_model=UploadFileResponse,
             summary="Upload A PNM File",
             responses=FAST_API_RESPONSE,
         )
-        def upload_file(request: PushFileRequest):
+        async def upload_file(
+            file: UploadFile = File(
+                ...,
+                description="Raw PNM capture file (e.g., RxMER, constellation, histogram, spectrum)",
+            ),
+        ):
             """
             **Upload A PNM Binary File Into The PyPNM Transaction Database**
 
-            Accepts a PNM capture file (for example, RxMER, constellation, histogram, spectrum)
-            that was generated outside of PyPNM and stores it under a new transaction record.
+            This endpoint accepts a PNM capture file as multipart/form-data and stores
+            it under a new transaction record.
 
             The server will:
             - Persist the file to the configured PNM directory.
             - Inspect the PNM header to identify the file type.
             - Map the file type to a logical PNM test (DocsPnmCmCtlTest).
-            - Register a transaction entry with MAC, test type, and filename.
+            - Register a transaction entry with a placeholder null MAC address
+              (to be backfilled later from the file contents).
 
-            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-upload-pnm-file)
+            The response returns the generated transaction_id and echoes the stored filename.
             """
-            result = PnmFileService().upload_file(request)
+            content = await file.read()
+            result = PnmFileService().upload_file(filename=file.filename, data=content)
             return JSONResponse(content=result.model_dump())
 
         @self.router.post(

@@ -1,20 +1,20 @@
-from __future__ import annotations
-
+# pypnm/api/routes/docs/pnm/files/schemas.py
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+from __future__ import annotations
 
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import CommonFileSearchRequest
 from pypnm.api.routes.common.classes.file_capture.types import TransactionId
-from pypnm.lib.types import FileName, TimeStamp
+from pypnm.lib.types import FileName, MacAddressStr, TimeStamp
 
 
-class FileQueryRequest(CommonFileSearchRequest):
-    """Base request model for querying PNM files (inherits MAC/IP/etc. from CommonFileRequest)."""
+class FileQueryRequest(BaseModel):
+    """Base request model for querying PNM files."""
     pass
 
 
@@ -30,13 +30,17 @@ class FileQueryResponse(BaseModel):
     files: Dict[str, List[FileEntry]]       = Field(..., description="Mapping of MAC address to list of PNM file entries")
 
 
-class PushFileRequest(FileQueryRequest):
-    filename: FileName                      = Field(..., description="Name of the file to push")
+class UploadFileRequest(BaseModel):
+    filename: FileName                      = Field(..., description="Name of the file to upload")
     data: Optional[str]                     = Field(None, description="Optional base64-encoded or raw file data")
 
 
-class PushFileResponse(FileQueryRequest):
-    filename: FileName                      = Field(..., description="Name of the file that was pushed")
+class UploadFileResponse(BaseModel):
+    mac_address: Optional[MacAddressStr]    = Field(
+        None,
+        description="MAC address associated with the uploaded file (placeholder null MAC until header inspection is wired in)",
+    )
+    filename: FileName                      = Field(..., description="Name of the file that was uploaded")
     transaction_id: TransactionId           = Field(..., description="Unique identifier for the created file transaction")
 
 
