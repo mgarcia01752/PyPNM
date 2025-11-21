@@ -6,12 +6,14 @@ from __future__ import annotations
 from fastapi import APIRouter, Path
 from fastapi.responses import FileResponse, JSONResponse
 
+from pypnm.api.routes.advance.common.capture_service import OperationId
 from pypnm.api.routes.common.classes.file_capture.types import TransactionId
 from pypnm.api.routes.docs.pnm.files.schemas import (
     AnalysisResponse, FileAnalysisRequest, FileQueryRequest, FileQueryResponse,
     PushFileRequest, PushFileResponse,)
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
+from pypnm.lib import mac_address
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.types import MacAddressStr
@@ -100,7 +102,26 @@ class PnmFileManager:
             """
             return PnmFileService().get_file_by_mac_address(mac_address)
     
+        @self.router.get(
+            "/download/operationID/{operation_id}",
+            response_class=FileResponse,
+            summary="Download A PNM File By Operation ID",
+        )
+        def download_file_via_operationID(operation_id: OperationId = Path(..., description="Operation ID of the file to download")):
+            """
+            **Download PNM Measurement File By Operation ID**
 
+            Retrieves the raw binary file generated during a telemetry capture session.
+            Used for offline inspection, reprocessing, or historical archiving.
+
+            Note:
+            Depending on your browser and SwaggerUI behavior, the file may either download
+            automatically or require clicking the returned link.
+
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-download-file-by-operation-id)
+            """
+            return PnmFileService().get_file_by_operation_id(operation_id)
+        
         @self.router.post(
             "/upload",
             response_model=PushFileResponse,

@@ -144,7 +144,7 @@ class PnmFileTransaction:
     # Safe read helpers (no recursion)
     # ---------------------------
 
-    def _load_record_dict(self, transaction_id: str) -> dict | None:
+    def _load_record_dict(self, transaction_id: TransactionId) -> dict | None:
         """
         Load The Raw JSON Record For A Transaction Identifier.
 
@@ -166,7 +166,7 @@ class PnmFileTransaction:
         db = self._load_db()
         return db.get(transaction_id)
 
-    def get_record(self, transaction_id: str) -> dict | None:
+    def get_record(self, transaction_id: TransactionId) -> dict | None:
         """
         Fetch A Plain Dictionary Representation Of A Transaction Record.
 
@@ -188,8 +188,7 @@ class PnmFileTransaction:
         rec = self._load_record_dict(transaction_id)
         return rec if rec else None
 
-    # Optional convenience alias if other code expects .get(...)
-    def get(self, transaction_id: str) -> dict | None:
+    def get(self, transaction_id: TransactionId) -> dict | None:
         return self.get_record(transaction_id)
 
     def getRecordModel(self, transaction_id: TransactionId) -> TransactionRecordModel:

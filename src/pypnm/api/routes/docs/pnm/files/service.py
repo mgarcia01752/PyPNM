@@ -11,7 +11,9 @@ from fastapi import HTTPException
 from fastapi.responses import FileResponse
 
 # from pypnm.api.routes.common.classes.analysis.analysis import Analysis   # < This is causing circular import noqa: F401 (reserved for future use)
+from pypnm.api.routes.advance.common.capture_service import OperationId
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
+from pypnm.api.routes.common.classes.file_capture.pnm_file_opearation import OperationCaptureGroupResolver
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
 from pypnm.api.routes.common.classes.file_capture.types import TransactionId
 from pypnm.config.system_config_settings import SystemConfigSettings
@@ -20,7 +22,7 @@ from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.constants import MediaType
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import MacAddressStr, PathLike, TimeStamp
+from pypnm.lib.types import MacAddressStr, PathLike
 from pypnm.lib.utils import Utils
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
@@ -111,6 +113,62 @@ class PnmFileService:
             path        =   full_path,
             filename    =   filename,
             media_type  =   MediaType.APPLICATION_OCTET_STREAM,
+        )
+
+    def get_file_by_operation_id(self, operation_id: OperationId) -> FileResponse:
+        """
+        Retrieve All PNM Files For An Operation ID As A ZIP Archive.
+
+        Resolves the capture group associated with the supplied operation ID,
+        then collects all transaction records in that group, locates their
+        corresponding PNM files on disk, and packages them into a single ZIP
+        archive for download.
+        """
+        resolver    = OperationCaptureGroupResolver()
+        txn_models  = resolver.get_transaction_models_for_operation(operation_id)
+
+        if not txn_models:
+            raise HTTPException(status_code=404, detail="No transactions found for Operation ID.")
+
+        files_to_archive: list[Path] = []
+        for rec in txn_models:
+            src_path = Path(self.pnm_dir) / Path(rec.filename)
+            if not src_path.is_file():
+                self.logger.warning(
+                    "Skipping missing file for transaction %s at %s",
+                    rec.transaction_id,
+                    src_path,
+                )
+                continue
+            files_to_archive.append(src_path)
+
+        if not files_to_archive:
+            raise HTTPException(status_code=404, detail="No files on disk for Operation ID.")
+
+        archive_dir = Path(SystemConfigSettings.archive_dir)
+        archive_dir.mkdir(parents=True, exist_ok=True)
+
+        archive_name = f"pnm_operation_{operation_id}_{Utils.time_stamp()}.zip"
+        archive_path = archive_dir / archive_name
+
+        ArchiveManager.zip_files(
+            files         = files_to_archive,
+            archive_path  = archive_path,
+            mode          = "w",
+            compression   = "zipdeflated",
+            preserve_tree = False,
+        )
+
+        if not archive_path.is_file():
+            self.logger.error("Archive creation failed for Operation ID %s at %s", operation_id, archive_path)
+            raise HTTPException(status_code=500, detail="Failed to create archive for Operation ID.")
+
+        self.logger.info("Returning ZIP archive for Operation ID %s: %s", operation_id, archive_path)
+
+        return FileResponse(
+            path        = str(archive_path),
+            filename    = archive_name,
+            media_type  = MediaType.APPLICATION_ZIP,
         )
 
     def get_file_by_mac_address(self, mac_address: MacAddressStr) -> FileResponse:
