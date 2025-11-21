@@ -3,19 +3,20 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+from typing import cast
+
 from fastapi import APIRouter, File, Path, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
 from pypnm.api.routes.advance.common.capture_service import OperationId
 from pypnm.api.routes.common.classes.file_capture.types import TransactionId
 from pypnm.api.routes.docs.pnm.files.schemas import (
-    AnalysisResponse, FileAnalysisRequest, FileQueryRequest, FileQueryResponse,
-    UploadFileRequest, UploadFileResponse,)
+    AnalysisResponse, FileAnalysisRequest, FileQueryRequest, FileQueryResponse, UploadFileResponse,)
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
-from pypnm.lib.types import MacAddressStr
+from pypnm.lib.types import FileName, MacAddressStr
 
 
 class PnmFileManager:
@@ -55,7 +56,7 @@ class PnmFileManager:
             Each file represents a measurement such as RxMER, constellation, pre-equalization taps,
             or spectrum scan, and can be downloaded or analyzed via other endpoints.
 
-            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-search-uploaded-files)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file-manager/file-manager-api.md#1-search-files-by-mac-address)
             """
             request = FileQueryRequest(mac_address=mac_address)
             result = PnmFileService().search_files(request)
@@ -78,7 +79,7 @@ class PnmFileManager:
             Depending on your browser and SwaggerUI behavior, the file may either download
             automatically or require clicking the returned link.
 
-            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-download-file-by-transaction)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file-manager/file-manager-api.md#2-download-file-by-transaction-id)
             """
             return PnmFileService().get_file_by_transaction_id(transaction_id)
 
@@ -99,7 +100,7 @@ class PnmFileManager:
             Depending on your browser and SwaggerUI behavior, the file may either download
             automatically or require clicking the returned link.
 
-            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-download-file-by-transaction)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file-manager/file-manager-api.md#3-download-files-by-mac-address-zip-archive)
             """
             return PnmFileService().get_file_by_mac_address(mac_address)
     
@@ -120,7 +121,7 @@ class PnmFileManager:
             Depending on your browser and SwaggerUI behavior, the file may either download
             automatically or require clicking the returned link.
 
-            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-download-file-by-operation-id)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file-manager/file-manager-api.md#4-download-files-by-operation-id-zip-archive)
             """
             return PnmFileService().get_file_by_operation_id(operation_id)
         
@@ -130,11 +131,7 @@ class PnmFileManager:
             summary="Upload A PNM File",
             responses=FAST_API_RESPONSE,
         )
-        async def upload_file(
-            file: UploadFile = File(
-                ...,
-                description="Raw PNM capture file (e.g., RxMER, constellation, histogram, spectrum)",
-            ),
+        async def upload_file(file: UploadFile = File(description="Raw PNM capture file (e.g., RxMER, constellation, histogram, spectrum)",),
         ):
             """
             **Upload A PNM Binary File Into The PyPNM Transaction Database**
@@ -150,9 +147,12 @@ class PnmFileManager:
               (to be backfilled later from the file contents).
 
             The response returns the generated transaction_id and echoes the stored filename.
+
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file-manager/file-manager-api.md#5-upload-pnm-file)
+
             """
             content = await file.read()
-            result = PnmFileService().upload_file(filename=file.filename, data=content)
+            result = PnmFileService().upload_file(filename=cast(FileName, file.filename), data=content)
             return JSONResponse(content=result.model_dump())
 
         @self.router.post(
@@ -178,7 +178,7 @@ class PnmFileManager:
             The response returns a resolved `analysis_type`, a plot or asset URL, and an optional
             human-readable summary.
 
-            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file_manager/file-manager.md#-trigger-file-analysis)
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file-manager/file-manager-api.md#6-analyze-pnm-file)
             """
             result = PnmFileService().get_analysis(request)
             return JSONResponse(content=result.model_dump())

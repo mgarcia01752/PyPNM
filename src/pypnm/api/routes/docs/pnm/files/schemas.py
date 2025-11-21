@@ -14,8 +14,7 @@ from pypnm.lib.types import FileName, MacAddressStr, TimeStamp
 
 
 class FileQueryRequest(BaseModel):
-    """Base request model for querying PNM files."""
-    pass
+    mac_address: MacAddressStr = Field(description="MAC address of the cable modem used when searching for registered PNM files")
 
 
 class FileEntry(BaseModel):
