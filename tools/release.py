@@ -12,15 +12,16 @@ from typing import Final
 
 
 VERSION_FILE_PATH: Final[Path] = Path("src/pypnm/version.py")
+BUMP_SCRIPT_PATH: Final[Path]  = Path("tools") / "bump_version.py"
 
 
 def _run(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
-    """Run a subprocess command, returning the completed process."""
+    """Run a subprocess command and return the completed process."""
     return subprocess.run(cmd, text=True, check=check)
 
 
 def _ensure_clean_worktree() -> None:
-    """Ensure there are no uncommitted changes in the git working tree."""
+    """Ensure the git working tree has no uncommitted changes."""
     result = _run(["git", "status", "--porcelain"], check=False)
     if result.stdout.strip():
         print("ERROR: Working tree is not clean. Commit or stash changes first.", file=sys.stderr)
@@ -28,13 +29,13 @@ def _ensure_clean_worktree() -> None:
 
 
 def _checkout_and_pull(branch: str) -> None:
-    """Checkout the target branch and perform a fast-forward pull."""
+    """Checkout the target branch and fast-forward pull from origin."""
     _run(["git", "checkout", branch])
     _run(["git", "pull", "--ff-only"])
 
 
 def _read_current_version() -> str:
-    """Read the current __version__ from the version file."""
+    """Read the current __version__ value from the version file."""
     if not VERSION_FILE_PATH.exists():
         print(f"ERROR: Version file not found: {VERSION_FILE_PATH}", file=sys.stderr)
         sys.exit(1)
@@ -61,14 +62,13 @@ def _read_current_version() -> str:
     return text[start_index:end_index]
 
 
-def _bump_version_with_script(new_version: str) -> None:
-    """Call tools/bump_version.py to update the version string."""
-    script_path = Path("tools") / "bump_version.py"
-    if not script_path.exists():
-        print(f"ERROR: Version bump script not found: {script_path}", file=sys.stderr)
+def _bump_version(new_version: str) -> None:
+    """Invoke tools/bump_version.py to update the version string."""
+    if not BUMP_SCRIPT_PATH.exists():
+        print(f"ERROR: Version bump script not found: {BUMP_SCRIPT_PATH}", file=sys.stderr)
         sys.exit(1)
 
-    _run([sys.executable, str(script_path), new_version])
+    _run([sys.executable, str(BUMP_SCRIPT_PATH), new_version])
 
 
 def _run_tests() -> None:
@@ -104,7 +104,7 @@ def main() -> None:
     1) Release a specific version from main:
        tools/release.py 1.3.0.0
 
-    2) Release from a different branch (e.g., stable):
+    2) Release from stable:
        tools/release.py 1.3.0.0 --branch stable
 
     3) Release without running tests (not recommended):
@@ -126,7 +126,7 @@ def main() -> None:
     parser.add_argument(
         "--branch",
         default="main",
-        help="Branch to release from (default: main).",
+        help="Branch to release from (default: main). Use 'stable' when ready.",
     )
     parser.add_argument(
         "--tag-prefix",
@@ -145,7 +145,7 @@ def main() -> None:
     )
 
     args = parser.parse_args()
-    new_version: str = args.version
+    new_version: str  = args.version
     branch: str       = args.branch
     tag_prefix: str   = args.tag_prefix
     skip_tests: bool  = args.skip_tests
@@ -169,7 +169,7 @@ def main() -> None:
     _checkout_and_pull(branch)
 
     print(f"Bumping version: {current_version} -> {new_version}")
-    _bump_version_with_script(new_version)
+    _bump_version(new_version)
 
     if not skip_tests:
         _run_tests()
