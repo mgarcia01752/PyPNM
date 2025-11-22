@@ -64,6 +64,12 @@ class AbstractService(ABC):
 
         Raises:
             Exception: Propagates errors from instantiation or startup.
+
+        Supported Service Types:
+            - MultiRxMerService
+            - MultiChannelEstimationService
+            - MultiRxMer_Ofdm_Performance_1_Service
+
         """
         service: T = service_cls(*args, **kwargs)
         group_id, operation_id = await service.start()

@@ -31,8 +31,9 @@ from pypnm.api.routes.docs.pnm.files.service import FileType, PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
-from pypnm.lib.inet import Inet
+from pypnm.lib.inet import Inet, InetAddressStr
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import MacAddressStr
 
 class MultiRxMerRouter(AbstractService):
     """
@@ -81,8 +82,8 @@ class MultiRxMerRouter(AbstractService):
 
             Modes
             -----
-            • `MeasureModes.CONTINUOUS` – Continuous sampling for min/avg/max and heat-map workflows  
-            • `MeasureModes.OFDM_PERFORMANCE_1` – Performance study pairing RxMER with modulation-profile
+            • `MeasureModes.CONTINUOUS` - Continuous sampling for min/avg/max and heat-map workflows  
+            • `MeasureModes.OFDM_PERFORMANCE_1` - Performance study pairing RxMER with modulation-profile
               and FEC summary collection
 
             Returns
@@ -92,63 +93,68 @@ class MultiRxMerRouter(AbstractService):
 
             [API Guide - Results](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/multi/multi-capture-rxmer.md#3-download-measurements)
             """
+
+            mac_address: MacAddressStr = request.cable_modem.mac_address
+            ip_address: InetAddressStr = request.cable_modem.ip_address
+            community: str = request.cable_modem.snmp.snmp_v2c.community
+            tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
+            tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)
             duration = request.capture.parameters.measurement_duration
-            interval = request.capture.parameters.sample_interval
+            interval = request.capture.parameters.sample_interval              
             
             measure_modes = request.measure.mode
             msg:str = ""
             
             self.logger.info(
-                f"Starting Multi-RxMER capture for MAC={request.cable_modem.mac_address} "
+                f"Starting Multi-RxMER capture for MAC={mac_address} "
                 f"(duration={duration}s, interval={interval}s)")
 
-            cable_modem = CableModem(
-                mac_address=MacAddress(request.cable_modem.mac_address),
-                inet=Inet(request.cable_modem.ip_address),)
+            cable_modem = CableModem(mac_address=MacAddress(mac_address),
+                                     inet=Inet(ip_address),
+                                     write_community=community)
 
             status, msg = await CableModemServicePreCheck(cable_modem=cable_modem,
                                                           validate_ofdm_exist=True,
                                                           validate_pnm_ready_status=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(
-                    mac_address=str(request.cable_modem.mac_address),
-                    status=status, message=msg)   
+                return SnmpResponse(mac_address=mac_address, status=status, message=msg)   
 
             if measure_modes == MultiRxMerMeasureModes.CONTINUOUS:
-                msg=f'Starting Multi-RxMER capture for MAC={request.cable_modem.mac_address}'
+                msg=f'Starting Multi-RxMER capture for MAC={mac_address}'
                 self.logger.info(f'{msg}')
                 group_id, operation_id = await self.loadService(
                     MultiRxMerService,
                     cable_modem,
+                    tftp_servers,
                     duration=duration,
                     interval=interval,)
                 
             elif measure_modes == MultiRxMerMeasureModes.OFDM_PERFORMANCE_1:
-                msg=f'Starting Multi-RxMER-OFDM-Performance-1 capture for MAC={request.cable_modem.mac_address}'
+                msg=f'Starting Multi-RxMER-OFDM-Performance-1 capture for MAC={mac_address}'
                 self.logger.info(f'{msg}')
                 group_id, operation_id = await self.loadService(
                     MultiRxMer_Ofdm_Performance_1_Service,
                     cable_modem,
+                    tftp_servers,
                     duration=duration,
                     interval=interval,)
 
             else:
                 self.logger.error(f'Invalid Measure Mode Selected: ({measure_modes})')
                 return MultiRxMerStartResponse(
-                    mac_address=request.cable_modem.mac_address,
-                    status=ServiceStatusCode.MEASURE_MODE_INVALID,
-                    message=f"{ServiceStatusCode.MEASURE_MODE_INVALID.name}",
-                    group_id="",
-                    operation_id="",
-                )
+                    mac_address =   mac_address,
+                    status      =   ServiceStatusCode.MEASURE_MODE_INVALID,
+                    message =f"{ServiceStatusCode.MEASURE_MODE_INVALID.name}",
+                    group_id="", operation_id="",)
                                 
             return MultiRxMerStartResponse(
-                mac_address=request.cable_modem.mac_address,
-                status=OperationState.RUNNING,
-                message=msg,
-                group_id=group_id,
-                operation_id=operation_id,
+                mac_address =   mac_address,
+                status      =   OperationState.RUNNING,
+                message     =   msg,
+                group_id    =   group_id,
+                operation_id=   operation_id,
             )
 
         @self.router.get("/status/{operation_id}",

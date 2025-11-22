@@ -6,6 +6,9 @@ from __future__ import annotations
 
 import logging
 import math
+from typing import Tuple
+
+from _pytest.stash import T
 
 from pypnm.api.routes.advance.common.capture_service import AbstractCaptureService
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
@@ -13,8 +16,9 @@ from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.ds.ofdm.fec_summary.service import CmDsOfdmFecSummaryService
 from pypnm.api.routes.docs.pnm.ds.ofdm.modulation_profile.service import CmDsOfdmModProfileService
 from pypnm.api.routes.docs.pnm.ds.ofdm.rxmer.service import CmDsOfdmRxMerService
-from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.cable_modem import CableModem, PnmConfigManager
 from pypnm.docsis.cm_snmp_operation import FecSummaryType
+from pypnm.lib.inet import Inet
 
 class MultiRxMerService(AbstractCaptureService):
     """
@@ -34,7 +38,9 @@ class MultiRxMerService(AbstractCaptureService):
       - duration: total measurement duration in seconds.
       - interval: interval between captures in seconds.
     """
-    def __init__(self, cm: CableModem, duration: float, interval: float):
+    def __init__(self, cm: CableModem, duration: float, interval: float,
+                 tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
+                 tftp_path: str = PnmConfigManager.get_tftp_path()):
         """
         Initialize the MultiRxMerService.
 
@@ -45,6 +51,8 @@ class MultiRxMerService(AbstractCaptureService):
         """
         super().__init__(duration, interval)
         self.cm = cm
+        self.tftp_servers = tftp_servers
+        self.tftp_path = tftp_path
         self.logger = logging.getLogger(__name__)
 
     async def _capture_message_response(self) -> MessageResponse:
@@ -60,7 +68,8 @@ class MultiRxMerService(AbstractCaptureService):
             - Validates payload type and entry contents.
         """
         try:
-            msg_rsp: MessageResponse = await CmDsOfdmRxMerService(self.cm).set_and_go()
+            msg_rsp: MessageResponse = \
+                await CmDsOfdmRxMerService(self.cm, self.tftp_servers, self.tftp_path).set_and_go()
             
         except Exception as exc:
             err_msg = f"Exception during RxMER SNMP/TFTP operation: {exc}"
@@ -92,7 +101,10 @@ class MultiRxMer_Ofdm_Performance_1_Service(AbstractCaptureService):
       - duration: total measurement duration in seconds.
       - interval: interval between captures in seconds.
     """
-    def __init__(self, cm: CableModem, duration: float, interval: float):
+    def __init__(self, cm: CableModem, 
+                tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
+                tftp_path: str = PnmConfigManager.get_tftp_path(),
+                duration: float = 1, interval: float = 1):
         """
         Initialize the MultiRxMerService.
 
@@ -104,6 +116,8 @@ class MultiRxMer_Ofdm_Performance_1_Service(AbstractCaptureService):
         super().__init__(duration, interval)
         self.logger = logging.getLogger(__name__)
         self.cm = cm
+        self.tftp_servers = tftp_servers
+        self.tftp_path = tftp_path
         self._half_life = math.ceil(self.duration/2)
         self._mod_profile_done = False
         
@@ -143,7 +157,8 @@ class MultiRxMer_Ofdm_Performance_1_Service(AbstractCaptureService):
             
         # First, perform the primary RxMER capture
         try:
-            msg_rsp: MessageResponse = await CmDsOfdmRxMerService(self.cm).set_and_go()
+            msg_rsp: MessageResponse = \
+                await CmDsOfdmRxMerService(self.cm, self.tftp_servers, self.tftp_path).set_and_go()
         except Exception as exc:
             self.logger.error(f"Exception during RxMER capture: {exc}", exc_info=True)
             return MessageResponse(ServiceStatusCode.DS_OFDM_RXMER_NOT_AVAILABLE)

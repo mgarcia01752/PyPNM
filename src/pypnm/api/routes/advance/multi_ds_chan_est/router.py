@@ -33,8 +33,9 @@ from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.lib.inet import Inet
+from pypnm.lib.inet import Inet, InetAddressStr
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import MacAddressStr
 
 
 class MultiDsChanEstRouter(AbstractService):
@@ -58,19 +59,30 @@ class MultiDsChanEstRouter(AbstractService):
         async def start_multi_chan_estimation(request: MultiChanEstRequest) -> Union[MultiChanEstimationStartResponse, SnmpResponse]:
 
             duration, interval = request.capture.parameters.measurement_duration, request.capture.parameters.sample_interval
-            mac, ip_address = request.cable_modem.mac_address, request.cable_modem.ip_address
-            self.logger.info(f"[start] Multi-ChanEst for MAC={mac}, duration={duration}s interval={interval}s")
+            mac_address: MacAddressStr = request.cable_modem.mac_address
+            ip_address: InetAddressStr = request.cable_modem.ip_address
+            community: str = request.cable_modem.snmp.snmp_v2c.community
+            tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
+            tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)
 
-            cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip_address))
+                 
+            self.logger.info(f"[start] Multi-ChanEst for MAC={mac_address}, duration={duration}s interval={interval}s")
+
+            cm = CableModem(mac_address=MacAddress(mac_address), inet=Inet(ip_address), write_community=community)
+
+             # Pre-checks
             status, msg = await CableModemServicePreCheck(cable_modem=cm, validate_ofdm_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
-                self.logger.error(f"[start] Precheck failed for MAC={mac}: {msg}")
-                return SnmpResponse(mac_address=mac, status=status, message=msg)
+                self.logger.error(f"[start] Precheck failed for MAC={mac_address}: {msg}")
+                return SnmpResponse(mac_address=mac_address, status=status, message=msg)
 
             group_id, operation_id = await self.loadService(MultiChannelEstimationService, 
                                                             cm,
-                                                            duration=duration, interval=interval)
-            return MultiChanEstimationStartResponse(mac_address     =   mac,
+                                                            tftp_servers,
+                                                            duration=duration, 
+                                                            interval=interval,)
+            return MultiChanEstimationStartResponse(mac_address     =   mac_address,
                                                     status          =   OperationState.RUNNING,
                                                     message         =   None,
                                                     group_id        =   group_id,
