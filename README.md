@@ -9,6 +9,8 @@
 
 # PyPNM (pre-alpha) — DOCSIS 3.x/4.0 Proactive Network Maintenance Toolkit
 
+[![Daily Build](https://github.com/mgarcia01752/PyPNM/actions/workflows/daily-build.yml/badge.svg?branch=main)](https://github.com/mgarcia01752/PyPNM/actions/workflows/daily-build.yml)
+
 PyPNM is a modular toolkit for collecting, parsing, and analyzing DOCSIS 3.x/4.0 Proactive Network Maintenance (PNM) telemetry. Use it as a Python library or via a FastAPI web service for real-time and offline workflows.
 
 ## Key features
