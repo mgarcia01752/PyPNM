@@ -1,189 +1,318 @@
-# Software Release And Versioning Strategy
+# PyPNM Release And Versioning Guide
 
-This document describes a lightweight but robust release and versioning strategy designed for a solo developer today, with a clear path to grow into a multi‑developer workflow later.
+This guide describes how to manage versions, branches, and releases for the PyPNM project using the built‑in tools and GitHub Actions.
 
-## 1. Goals
+## 1. Branch Model
 
-- Keep the process simple enough for one person to follow consistently.
-- Make it easy to reproduce and compare releases.
-- Support General Available (GA), maintenance releases, and fast hotfixes.
-- Allow future expansion to more branches and CI without changing the core versioning scheme.
-
-## 2. Branch Model (Solo Developer)
-
-For a single developer, keep long‑lived branches to a minimum.
-
-### 2.1 Long‑Lived Branches
+PyPNM uses three long‑lived branches:
 
 - `main`  
-  - Always buildable and reasonably stable.  
-  - All GA and maintenance releases come from this branch.  
-  - Tagged releases are cut from `main`.
+  Active development branch. Most day‑to‑day work happens here.
 
-### 2.2 Short‑Lived Branches (Optional)
+- `develop` (optional for now)  
+  You can use this later as a staging branch if you want a stricter flow. For initial phases, `main` and `stable` are usually enough.
 
-Use short‑lived branches only when you want isolation for a task:
+- `stable`  
+  Represents code that is considered General Available (GA). Releases intended for wider use should come from this branch.
 
-- `feature/<topic>`  
-  - New features, refactors, larger changes.  
-  - Example: `feature/ofdm-heatmap`, `feature/group-delay-plot`.
+When in doubt during early development, work from `main`, and when you are ready to ship a stable version, merge `main` into `stable` and release from `stable`.
 
-- `fix/<topic>`  
-  - Non‑critical bugfixes and minor changes.  
-  - Example: `fix/pre-eq-metric`, `fix/constellation-normalization`.
+## 2. Single Source Of Truth For Version
 
-Typical flow for a task:
+The canonical version string lives in:
+
+```text
+src/pypnm/version.py
+```
+
+Structure:
+
+```python
+from __future__ import annotations
+
+__all__ = ["__version__"]
+
+# MAJOR.MINOR.MAINTENANCE.BUILD
+__version__: str = "0.1.2.0"
+```
+
+Only this file should be edited to change the version. All other places (for example, FastAPI’s `version` field) must import `__version__` from here.
+
+Example in the FastAPI app:
+
+```python
+from fastapi import FastAPI
+from pypnm.version import __version__
+
+app = FastAPI(
+    title="PyPNM REST API",
+    version=__version__,
+    description=fast_api_description,
+    openapi_url="/openapi.json",
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
+```
+
+## 3. Versioning Scheme
+
+PyPNM uses a four‑part version:
+
+```text
+MAJOR.MINOR.MAINTENANCE.BUILD
+```
+
+Guidelines:
+
+- `MAJOR`  
+  Increment when there are significant breaking changes or large structural shifts.
+
+- `MINOR`  
+  Increment when adding features in a backward‑compatible way.
+
+- `MAINTENANCE`  
+  Increment when fixing bugs or making compatible improvements that are smaller than a full minor release.
+
+- `BUILD`  
+  Increment for very small hotfixes or internal rebuilds that do not change public behavior but still need a distinct version.
+
+Examples:
+
+- `0.1.2.0` – Minor feature set with a couple of maintenance updates.  
+- `0.2.0.0` – Next minor release from stable.  
+- `1.0.0.0` – First major release.
+
+## 4. Version Tools
+
+Two main tools are used to manage versions and releases:
+
+- `tools/bump_version.py`  
+  Reads and updates `__version__` in `src/pypnm/version.py`.
+
+- `tools/release.py`  
+  Wraps `bump_version.py` plus git operations (tests, commit, tag, push).
+
+### 4.1 `tools/bump_version.py`
+
+This script can:
+
+1. Show the current version.  
+2. Compute and apply the next version.  
+3. Set a specific version explicitly.
+
+Examples:
+
+```bash
+# Show current version
+tools/bump_version.py --current
+
+# Compute and apply the next MAINTENANCE version
+tools/bump_version.py --next maintenance
+
+# Compute and apply the next BUILD version
+tools/bump_version.py --next build
+
+# Explicitly set the version
+tools/bump_version.py 0.1.3.0
+```
+
+Notes:
+
+- The script only edits the `__version__` line.  
+- If the requested version is the same as the current one, it prints a message and exits without modifying the file.
+
+### 4.2 `tools/release.py`
+
+This script automates the release flow:
+
+- Ensures the git working tree is clean.  
+- Checks out the target branch (for example `main` or `stable`) and pulls with `--ff-only`.  
+- Calls `tools/bump_version.py` with the target version.  
+- Runs `pytest`.  
+- Commits the version bump.  
+- Creates an annotated git tag.  
+- Pushes the branch and tag to `origin`.
+
+Common usage patterns:
+
+```bash
+# Dry run: see what would happen, but do nothing
+tools/release.py 0.1.3.0 --dry-run
+
+# Release from main
+tools/release.py 0.1.3.0
+
+# Release from stable
+tools/release.py 0.2.0.0 --branch stable
+
+# Release without running tests (not recommended)
+tools/release.py 0.1.3.0 --skip-tests
+
+# Use a different tag prefix (for example, pypnm-0.1.3.0)
+tools/release.py 0.1.3.0 --tag-prefix pypnm-
+```
+
+When using `--dry-run`, the script prints the planned steps and exits without changing anything.
+
+## 5. Branch‑Based Release Flows
+
+### 5.1 Releasing From `main`
+
+Use this flow during early development or for internal builds.
+
+Steps:
+
+```bash
+# 1) Make sure main is up to date and clean
+git checkout main
+git pull origin main
+git status
+
+# 2) Sanity check current version
+tools/bump_version.py --current
+
+# 3) Dry run the release
+tools/release.py 0.1.3.0 --dry-run
+
+# 4) Run the real release
+tools/release.py 0.1.3.0
+```
+
+Results:
+
+- `src/pypnm/version.py` is updated (for example `0.1.2.0` -> `0.1.3.0`).  
+- A commit `Release 0.1.3.0` is added on `main`.  
+- Tag `v0.1.3.0` is created and pushed to `origin`.
+
+### 5.2 Releasing From `stable`
+
+Use this flow when you are ready to expose a stable, GA‑quality build.
+
+Steps:
+
+```bash
+# 1) Merge main into stable
+git checkout main
+git pull origin main
+
+git checkout stable
+git pull origin stable
+git merge main
+
+# Resolve conflicts if any, then push stable
+git push origin stable
+
+# 2) Ensure you are ready to release from stable
+git status
+
+# 3) Dry run the release from stable
+tools/release.py 0.2.0.0 --branch stable --dry-run
+
+# 4) Run the real release from stable
+tools/release.py 0.2.0.0 --branch stable
+```
+
+Results:
+
+- `src/pypnm/version.py` on `stable` is updated to the requested version.  
+- A commit `Release 0.2.0.0` is added on `stable`.  
+- Tag `v0.2.0.0` is created and pushed to `origin`.
+
+## 6. Daily Build And Online Checks (GitHub Actions)
+
+PyPNM uses GitHub Actions to run tests on a schedule. This provides an online “daily build” that confirms the project is still healthy.
+
+The workflow file lives in:
+
+```text
+.github/workflows/daily-build.yml
+```
+
+Example content:
+
+```yaml
+name: Daily Build
+
+on:
+  schedule:
+    - cron: "0 8 * * *"     # Every day at 08:00 UTC
+  workflow_dispatch:         # Allow manual triggering from GitHub UI
+
+jobs:
+  daily-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Run tests
+        run: |
+          pytest
+```
+
+Notes:
+
+- This file must be committed on the default branch (typically `main`) for the scheduled `cron` to run.  
+- You can also trigger the workflow manually from the GitHub Actions tab (because of `workflow_dispatch`).
+
+## 7. Quick Reference
+
+### 7.1 Show Current Version
+
+```bash
+tools/bump_version.py --current
+```
+
+### 7.2 Bump Version Only
+
+```bash
+# Next maintenance version from current
+tools/bump_version.py --next maintenance
+
+# Explicit version
+tools/bump_version.py 0.1.3.0
+```
+
+### 7.3 Full Release From Main
 
 ```bash
 git checkout main
-git pull
-git checkout -b feature/ofdm-heatmap
-# work, commit, test
-git checkout main
-git merge feature/ofdm-heatmap
-git branch -d feature/ofdm-heatmap
-git push origin main
+git pull origin main
+git status
+
+tools/bump_version.py --current
+tools/release.py 0.1.3.0 --dry-run
+tools/release.py 0.1.3.0
 ```
 
-There is no need for a permanent `develop`, `maintenance`, or `daily-builds` branch at this stage; those can be introduced later if needed.
-
-## 3. Versioning Scheme (Four‑Point x.x.x.x)
-
-Use a four‑part version number:
-
-> `MAJOR.MINOR.MAINTENANCE.BUILD`
-
-### 3.1 Field Definitions
-
-| Position | Name        | Purpose                                                                 | Example |
-|----------|-------------|-------------------------------------------------------------------------|---------|
-| 1        | MAJOR       | Breaking changes, major architecture or API changes                    | `2`     |
-| 2        | MINOR       | New features and improvements, backward‑compatible                      | `3`     |
-| 3        | MAINTENANCE | Maintenance / patch level for a given MAJOR.MINOR line                 | `1`     |
-| 4        | BUILD       | Build or hotfix counter on top of a specific MAJOR.MINOR.MAINTENANCE   | `5`     |
-
-Example full version: `2.3.1.5`
-
-### 3.2 Mapping To Release Types
-
-- **General Available (GA)**  
-  - `BUILD = 0`  
-  - Example: `1.4.2.0` is a GA release.
-
-- **Maintenance Release**  
-  - Increment `MAINTENANCE`, reset `BUILD` to `0`.  
-  - Example: `1.4.3.0` is the next maintenance release on the 1.4 line.
-
-- **Fix / Hotfix**  
-  - Keep `MAJOR.MINOR.MAINTENANCE` constant, increment `BUILD`.  
-  - Example: `1.4.3.1`, `1.4.3.2`, etc.
-
-This lets you quickly see whether you are on an original GA, a later maintenance release, or a subsequent hotfix.
-
-## 4. Tagging Conventions
-
-Use annotated Git tags to record every release:
-
-- Tag name format: `vMAJOR.MINOR.MAINTENANCE.BUILD`
-- Examples:
-  - `v1.3.0.0`  (GA)
-  - `v1.3.1.0`  (maintenance)
-  - `v1.3.1.1`  (hotfix)
-
-Create tags from the `main` branch after bumping the version in code:
+### 7.4 Full Release From Stable
 
 ```bash
 git checkout main
-# edit version in pyproject.toml / __init__.py
-git commit -am "Bump version to 1.3.0.0"
-git tag -a v1.3.0.0 -m "PyPNM 1.3.0.0 GA"
-git push origin main
-git push origin v1.3.0.0
+git pull origin main
+
+git checkout stable
+git pull origin stable
+git merge main
+git push origin stable
+
+tools/release.py 0.2.0.0 --branch stable --dry-run
+tools/release.py 0.2.0.0 --branch stable
 ```
 
-The tags are your single source of truth for which code went into which release.
-
-## 5. Release Workflows
-
-### 5.1 Day‑To‑Day Development
-
-1. Start from `main`:
-   - `git checkout main`
-   - `git pull`
-2. Optionally create a short‑lived branch:
-   - `git checkout -b feature/<topic>` or `fix/<topic>`
-3. Implement changes, commit as needed.
-4. Run tests and minimal QA.
-5. Merge back into `main` and push:
-   - `git checkout main`
-   - `git merge feature/<topic>`
-   - `git branch -d feature/<topic>`
-   - `git push origin main`
-
-During this phase you do **not** need to bump the version for every commit.
-
-### 5.2 Creating A General Available (GA) Release
-
-When the current state of `main` is stable and you want to publish a new GA release:
-
-1. Decide the new version, for example `1.3.0.0`.
-2. Update the version field in your code (for example in `pyproject.toml` and/or `__init__.py`).
-3. Commit the version bump:
-   - `git commit -am "Bump version to 1.3.0.0"`
-4. Tag the release:
-   - `git tag -a v1.3.0.0 -m "PyPNM 1.3.0.0 GA"`
-5. Push code and tag:
-   - `git push origin main`
-   - `git push origin v1.3.0.0`
-6. Build and publish release artifacts (wheels, Docker images, documentation, etc.).
-
-### 5.3 Creating A Maintenance Release
-
-Use a maintenance release when you have accumulated bug fixes or small improvements on top of a GA:
-
-1. Fix issues on `main` as part of normal development.
-2. Decide the new version, for example `1.3.1.0` (increment `MAINTENANCE`, reset `BUILD` to `0`).
-3. Update the version field in code and commit.
-4. Tag:
-   - `git tag -a v1.3.1.0 -m "PyPNM 1.3.1.0 maintenance release"`
-5. Push `main` and the tag.
-6. Build and publish artifacts.
-
-### 5.4 Creating A Hotfix
-
-For urgent bugs discovered in a just‑released version:
-
-1. Fix the bug on `main` as soon as possible.
-2. Bump `BUILD` for the current maintenance line, e.g. `1.3.1.0` → `1.3.1.1`.
-3. Update the version in code and commit.
-4. Tag:
-   - `git tag -a v1.3.1.1 -m "PyPNM 1.3.1.1 hotfix"`
-5. Push `main` and the tag.
-6. Build and publish hotfix artifacts.
-
-This keeps the process fast for a solo developer without sacrificing traceability.
-
-## 6. Dev / Daily Builds
-
-If you introduce CI later, you can distinguish “dev” or “daily” builds from the same scheme:
-
-- Always build dev artifacts from the tip of `main` (or from a future `develop` branch).
-- Use either:
-  - A suffix on the version (in tags or artifacts), such as `1.4.0.0-dev.20251122` or `1.4.0.0-dev.<short-sha>`, or
-  - Keep the code version at the next planned release number (for example `1.4.0.0`) and rely on the Git SHA and CI build number to identify the exact dev build.
-
-Initially, you can keep it very simple:
-
-- Only tag **real** GA, maintenance, and hotfix releases.
-- For dev testing, just use `main` plus the Git commit hash.
-
-## 7. Future Evolution (When The Team Grows)
-
-If more developers join or you want more formal stabilization, you can extend this strategy without changing the versioning scheme:
-
-- Add a `develop` branch as the integration branch for day‑to‑day work.
-- Add `release/x.y` branches for stabilizing major or minor releases.
-- Reserve `main` for code that has already passed release criteria.
-- Keep using the same `MAJOR.MINOR.MAINTENANCE.BUILD` scheme and tag conventions.
-
-Because the versioning scheme is stable and tag‑driven, you can grow the process around it over time without invalidating existing releases or documentation.
+With these steps, PyPNM gains a repeatable software release strategy:
+- A single canonical version source.  
+- Scripts that manage version bumps and tagging.  
+- Branch discipline between `main` and `stable`.  
+- Automated daily tests via GitHub Actions.
