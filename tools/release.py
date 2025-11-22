@@ -17,13 +17,15 @@ BUMP_SCRIPT_PATH: Final[Path]  = Path("tools") / "bump_version.py"
 
 def _run(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
     """Run a subprocess command and return the completed process."""
-    return subprocess.run(cmd, text=True, check=check)
+    proc = subprocess.run(cmd, text=True, capture_output=True, check=check)
+    return proc
 
 
 def _ensure_clean_worktree() -> None:
     """Ensure the git working tree has no uncommitted changes."""
     result = _run(["git", "status", "--porcelain"], check=False)
-    if result.stdout.strip():
+    output = (result.stdout or "").strip()
+    if output:
         print("ERROR: Working tree is not clean. Commit or stash changes first.", file=sys.stderr)
         sys.exit(1)
 
@@ -74,7 +76,10 @@ def _bump_version(new_version: str) -> None:
 def _run_tests() -> None:
     """Run the test suite before finalizing the release."""
     print("Running tests (pytest)...")
-    _run(["pytest"])
+    result = _run(["pytest"], check=False)
+    if result.returncode != 0:
+        print("ERROR: pytest failed. Aborting release.", file=sys.stderr)
+        sys.exit(result.returncode)
 
 
 def _commit_version_bump(new_version: str) -> None:
@@ -102,16 +107,16 @@ def main() -> None:
     Typical flows
     -------------
     1) Release a specific version from main:
-       tools/release.py 1.3.0.0
+       tools/release.py 0.1.0.0
 
     2) Release from stable:
-       tools/release.py 1.3.0.0 --branch stable
+       tools/release.py 0.1.0.0 --branch stable
 
     3) Release without running tests (not recommended):
-       tools/release.py 1.3.0.0 --skip-tests
+       tools/release.py 0.1.0.0 --skip-tests
 
     4) Show what would happen without changing anything:
-       tools/release.py 1.3.0.0 --dry-run
+       tools/release.py 0.1.0.0 --dry-run
     """
     parser = argparse.ArgumentParser(
         description=(
@@ -121,7 +126,7 @@ def main() -> None:
     )
     parser.add_argument(
         "version",
-        help="Release version in MAJOR.MINOR.MAINTENANCE.BUILD format (e.g. 1.3.1.0).",
+        help="Release version in MAJOR.MINOR.MAINTENANCE.BUILD format (e.g. 0.1.0.0).",
     )
     parser.add_argument(
         "--branch",
@@ -131,7 +136,7 @@ def main() -> None:
     parser.add_argument(
         "--tag-prefix",
         default="v",
-        help="Prefix for git tag names (default: 'v', e.g. v1.3.1.0).",
+        help="Prefix for git tag names (default: 'v', e.g. v0.1.0.0).",
     )
     parser.add_argument(
         "--skip-tests",
