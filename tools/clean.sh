@@ -14,12 +14,14 @@ Usage: $(basename "$0") [OPTIONS] [ROOT_DIR]
 
 Options:
   --all         Clean logs, Python cache, build artifacts, PNM data, output
-  --logs        Clean only logs/
+  --logs        Truncate logs/pypnm.log (preserve file and permissions)
   --python      Clean only Python caches (__pycache__, *.pyc, .pytest_cache)
   --build       Clean build/, dist/, *.egg-info
   --pnm         Clean data/pnm/ and data/db/
-  --plot-data   Clean data/png/, .data/csv/ and data/archive/
-  --msg-rsp     Clean data/msg_rsp (Message Response)
+  --archive     Clean .data/archive/
+  --excel       Clean .data/xlsx/ and .data/csv/
+  --plot-data   Clean .data/png/, .data/csv/ and .data/archive/
+  --msg-rsp     Clean .data/msg_rsp (Message Response)
   --output      Clean output/
   -h, --help    Show this help and exit
 
@@ -39,7 +41,7 @@ declare -a ACTIONS=()
 # -----------------------------------------------------------------------------
 while (( $# )); do
   case "$1" in
-    --all|--logs|--python|--build|--pnm|--output|--plot-data|--msg-rsp)
+    --all|--logs|--python|--build|--pnm|--output|--plot-data|--msg-rsp|--archive|--excel)
       ACTIONS+=("$1")
       shift
       ;;
@@ -79,12 +81,20 @@ safe_rm() {
 # Individual “clean” functions
 # -----------------------------------------------------------------------------
 clean_logs() {
-  echo "🧹 Cleaning logs..."
-  safe_rm "$ROOT_DIR/.data/pnm/"*
+  echo "🧹 Cleaning logs (truncate, preserve files)..."
+
+  local log_file="$ROOT_DIR/logs/pypnm.log"
+
+  if [[ -f "$log_file" ]]; then
+    : > "$log_file"   # truncate to zero bytes, keep permissions and inode
+    echo "🧾 Truncated: $log_file"
+  else
+    echo "ℹ️  No log file found at: $log_file"
+  fi
 }
 
 clean_archives() {
-  echo "🧹 Cleaning Archives..."
+  echo "🧹 Cleaning archives..."
   safe_rm "$ROOT_DIR/.data/archive/"*
 }
 
@@ -109,17 +119,15 @@ clean_pnm() {
 }
 
 clean_excel() {
-  echo "📦 Cleaning excel data..."
+  echo "📊 Cleaning Excel/CSV data..."
   safe_rm "$ROOT_DIR/.data/xlsx/"*
   safe_rm "$ROOT_DIR/.data/csv/"*
 }
 
 clean_png() {
-  echo "📦 Cleaning matplot.png ..."
+  echo "🖼️  Cleaning PNG data..."
   safe_rm "$ROOT_DIR/.data/png/"*
 }
-
-safe_rm "$ROOT_DIR/.data/db/"*
 
 clean_output() {
   echo "📤 Cleaning output files..."
@@ -127,14 +135,14 @@ clean_output() {
 }
 
 clean_plot_data() {
-  echo "📤 Cleaning plot data and archive files..."
+  echo "📈 Cleaning plot data and archive files..."
   safe_rm "$ROOT_DIR/.data/png/"*
   safe_rm "$ROOT_DIR/.data/csv/"*
   safe_rm "$ROOT_DIR/.data/archive/"*
 }
 
 clean_msg_rsp() {
-  echo "📤 Cleaning message-response data..."
+  echo "📨 Cleaning message-response data..."
   safe_rm "$ROOT_DIR/.data/msg_rsp/"*
 }
 
@@ -146,6 +154,7 @@ for action in "${ACTIONS[@]}"; do
 
     --all)
       echo "🚀 Performing full cleanup..."
+      clean_logs
       clean_archives
       clean_python
       clean_build
@@ -180,7 +189,7 @@ for action in "${ACTIONS[@]}"; do
     --excel)
       clean_excel
       ;;
-      
+
     --plot-data)
       clean_plot_data
       ;;
