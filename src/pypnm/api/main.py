@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
@@ -11,6 +10,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from pypnm.api.utils.auto_load import RouterRegistrar
 from pypnm.startup.startup import StartUp
+from pypnm.version import __version__
 
 project_root = pathlib.Path(__file__).resolve()
 while project_root.name != "src" and project_root != project_root.parent:
@@ -41,7 +41,7 @@ Designed for integration into dashboards, automation pipelines, and engineering 
 
 app = FastAPI(
     title="PyPNM REST API",
-    version="0.1.0",
+    version=__version__,
     description=fast_api_description,
     openapi_url="/openapi.json",
     docs_url="/docs",
