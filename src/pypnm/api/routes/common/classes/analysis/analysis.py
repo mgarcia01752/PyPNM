@@ -38,19 +38,19 @@ from pypnm.lib.signal_processing.butterworth import DEFAULT_BUTTERWORTH_ORDER, M
 from pypnm.lib.signal_processing.complex_array_ops import ComplexArrayOps
 from pypnm.lib.signal_processing.group_delay import GroupDelay
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
-from pypnm.lib.types import (ArrayLike, ChannelId, ComplexArray, FloatSeries, FrequencyHz, 
-                             FrequencySeriesHz, MacAddressStr, ProfileId)
+from pypnm.lib.types import (
+    ArrayLike, ChannelId, ComplexArray, FloatSeries, FrequencyHz, 
+    FrequencySeriesHz, MacAddressStr, ProfileId)
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import WindowFunction
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
-from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoefModel, ComplexSeries
+from pypnm.pnm.process.model.process_rtn_models import CmDsOfdmChanEstimateCoefModel
 from pypnm.pnm.process.CmDsOfdmModulationProfile import (
     CmDsOfdmModulationProfile, CmDsOfdmModulationProfileModel, ModulationOrderType, 
     RangeModulationProfileSchemaModel, SkipModulationProfileSchemaModel)
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
-from pypnm.lib.signal_processing.groupdelay.ofdm import (
-    SpacedFrequencyAxisHz, GroupDelayOptions, SignConvention, OFDMGroupDelay)
+
 
 class RxMerCarrierType(Enum):
     """

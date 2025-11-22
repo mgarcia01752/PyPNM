@@ -5,26 +5,16 @@ from __future__ import annotations
 
 import logging
 import struct
-from typing import Any, Dict, cast
-
-from pydantic.fields import Field
+from typing import  Dict, cast
 
 from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_SUB_CARRIER_ZERO_FREQ, KHZ, ZERO_FREQUENCY
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.signal_processing.shan.series import ShannonSeries
-from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
-from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
+from pypnm.pnm.lib.signal_statistics import SignalStatistics
+from pypnm.pnm.process.model.process_rtn_models import CmDsOfdmRxMerModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 from pypnm.lib.types import ChannelId, FloatSeries, FrequencyHz, FrequencySeriesHz, MacAddressStr
-
-class CmDsOfdmRxMerModel(PnmBaseModel):
-    data_length: int                        = Field(..., ge=0, description="Number of RxMER points (subcarriers)")
-    occupied_channel_bandwidth: FrequencyHz = Field(..., ge=0, description="OFDM Occupied Bandwidth (Hz)")
-    value_units:str                         = Field(default="dB", description="Non-mutable")
-    values:FloatSeries                      = Field(..., description="RxMER values per active subcarrier (dB)")
-    signal_statistics:SignalStatisticsModel = Field(..., description="Aggregate statistics computed from values")
-    modulation_statistics:Dict[str, Any]    = Field(..., description="Shannon-based modulation metrics")
 
 
 class CmDsOfdmRxMer(PnmHeader):

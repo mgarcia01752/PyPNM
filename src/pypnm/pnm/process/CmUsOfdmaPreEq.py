@@ -5,26 +5,17 @@ from __future__ import annotations
 
 import logging
 from struct import calcsize, unpack
-from typing import Literal, Tuple, Dict, Any, cast
-
-from pydantic import ConfigDict, Field
+from typing import Tuple, Dict, Any, cast
 
 from pypnm.lib.constants import KHZ
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.types import ChannelId, ComplexArray, ComplexSeries, FrequencyHz, MacAddressStr
 from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder, FractionalBits, IntegerBits
-from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
+from pypnm.pnm.process.model.process_rtn_models import CmUsOfdmaPreEqModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 
 
-class CmUsOfdmaPreEqModel(PnmBaseModel):
-    model_config                            = ConfigDict(extra="ignore")
-    cmts_mac_address: MacAddressStr         = Field(..., description="CMTS MAC address associated with this measurement.")
-    value_length: int                       = Field(..., ge=0, description="Number of complex coefficient pairs (non-negative).")
-    value_unit: Literal["[Real, Imaginary]"] = Field("[Real, Imaginary]", description="Unit representation of complex values.")
-    values: ComplexArray                    = Field(..., min_length=1, description="Pre-equalization coefficients as [real, imaginary] pairs.")
-    occupied_channel_bandwidth: FrequencyHz = Field(..., ge=0, description="OFDM Occupied Bandwidth (Hz)")
 
 class CmUsOfdmaPreEq(PnmHeader):
     """

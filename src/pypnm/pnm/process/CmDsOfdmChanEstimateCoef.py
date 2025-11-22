@@ -7,33 +7,14 @@ import logging
 from struct import calcsize, unpack
 from typing import Dict, Optional, Tuple, overload, Literal, Union
 
-from pydantic import Field
-
 from pypnm.api.routes.docs.pnm.files.service import MacAddress
 from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_SUB_CARRIER_ZERO_FREQ, KHZ, ZERO_FREQUENCY, cast
 from pypnm.lib.mac_address import MacAddressFormat
 from pypnm.lib.types import ChannelId, ComplexArray, ComplexSeries, FrequencyHz, MacAddressStr
 from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder, FractionalBits, IntegerBits
-from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
+from pypnm.pnm.process.model.process_rtn_models import CmDsOfdmChanEstimateCoefModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
-
-
-class CmDsOfdmChanEstimateCoefModel(PnmBaseModel):
-    """
-    Canonical payload for DOCSIS OFDM downstream channel-estimation coefficients.
-
-    Notes
-    -----
-    - `value_units` is fixed to "complex".
-    - `data_length` is the byte length of the coefficient payload (2 bytes real + 2 bytes imag per subcarrier).
-    - Number of complex points = `data_length // 4`.
-    - `occupied_channel_bandwidth` = (#points) * subcarrier_spacing (Hz).
-    """
-    data_length: int                        = Field(..., ge=0, description="Coefficient payload length (bytes)")
-    occupied_channel_bandwidth: FrequencyHz = Field(..., ge=0, description="OFDM Occupied Bandwidth (Hz)")
-    value_units: str                        = Field(default="complex", description="Non-mutable")
-    values: ComplexArray                    = Field(..., description="Per-subcarrier [real, imag] pairs")
 
 
 class CmDsOfdmChanEstimateCoef(PnmHeader):

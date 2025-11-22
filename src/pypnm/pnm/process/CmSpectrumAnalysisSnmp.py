@@ -31,26 +31,6 @@ class SpecAnalysisSnmpConfigModel(BaseModel):
     resolution_bandwidth: FrequencyHz    = Field(..., ge=0, description="Resolution bandwidth used for the spectrum measurement in Hz.")
 
 
-class CmSpectrumAnalysisSnmpModel(BaseModel):
-    """
-    Canonical payload for SNMP-based CM Spectrum Analysis amplitude results.
-
-    This model aggregates the flattened frequency and amplitude vectors across
-    all parsed spectrum groups along with the associated configuration header
-    and the raw amplitude bytes.
-    """
-
-    model_config = ConfigDict(extra="ignore", populate_by_name=True, ser_json_bytes="base64")
-    spectrum_config: SpecAnalysisSnmpConfigModel = Field(..., description="Spectrum configuration header derived from the first parsed spectrum group.")
-    pnm_file_type: str              = Field(default=PnmFileType.CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA.name, description="(Special Case) PNM file type identifier.")
-    total_samples: int              = Field(..., ge=0, description="Total number of amplitude samples parsed across all spectrum groups.")
-    frequency: FrequencySeriesHz    = Field(..., description="Flattened frequency bin values in Hz across all spectrum groups.")
-    amplitude: FloatSeries          = Field(..., description="Flattened amplitude values in dBmV corresponding to each frequency bin.")
-    amplitude_bytes: bytes          = Field(..., description="Raw concatenated amplitude bytes across all parsed spectrum groups.")
-
-    @field_serializer("amplitude_bytes")
-    def _ser_amplitude_bytes(self, value: bytes, _info) -> str:
-        return value.hex()
 
 
 class CmSpectrumAnalysisSnmp:

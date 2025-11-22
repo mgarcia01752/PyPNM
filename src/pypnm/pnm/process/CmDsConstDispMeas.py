@@ -8,24 +8,14 @@ import logging
 from struct import unpack, calcsize
 from typing import Optional, Dict, Tuple, cast
 
-from pydantic import Field
-
 from pypnm.lib.constants import KHZ
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder, FractionalBits, IntegerBits
-from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
+from pypnm.pnm.process.model.process_rtn_models import CmDsConstDispMeasModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 from pypnm.lib.types import ChannelId, ComplexArray, FrequencyHz, MacAddressStr
 
-class CmDsConstDispMeasModel(PnmBaseModel):
-    """
-    """
-    actual_modulation_order: int    = Field(..., ge=0, description="")
-    num_sample_symbols: int         = Field(..., ge=0, description="Number of constellation soft-decision symbol samples")
-    sample_length: int              = Field(..., ge=0, description="Number of constellation soft-decision complex pairs")
-    sample_units: str               = Field(default="[Real(I), Imaginary(Q)]", description="Non-mutable")
-    samples: ComplexArray           = Field(..., description="Constellation soft-decision samples")
 
 class CmDsConstDispMeas(PnmHeader):
     """

@@ -1,3 +1,9 @@
+
+from __future__ import annotations
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 import pydantic
 import pytest
 from pydantic import BaseModel, Field, ValidationError, model_validator

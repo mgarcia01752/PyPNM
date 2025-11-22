@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 """
 # Clear all data
 # ./tools/clean --all
@@ -16,3 +19,5 @@
 # Restore factory settings
 # ./tools/factory-reset
 """ 
+from __future__ import annotations
+

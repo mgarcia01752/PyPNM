@@ -7,7 +7,7 @@ import numpy as np
 from typing import Any, Dict
 from pydantic import BaseModel, Field
 
-from pypnm.api.routes.common.classes.analysis.analysis import SignalStatistics, SignalStatisticsModel
+from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
 from pypnm.lib.types import ComplexMatrix, FloatSeries, NDArrayF64
 
 # ──────────────────────────────────────────────────────────────────────────────

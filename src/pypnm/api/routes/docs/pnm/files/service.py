@@ -11,7 +11,7 @@ from pathlib import Path
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 
-# from pypnm.api.routes.common.classes.analysis.analysis import Analysis   # < This is causing circular import noqa: F401 (reserved for future use)
+  # < This is causing circular import noqa: F401 (reserved for future use)
 from pypnm.api.routes.advance.common.capture_service import OperationId
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
 from pypnm.api.routes.common.classes.file_capture.pnm_file_opearation import OperationCaptureGroupResolver
@@ -29,10 +29,11 @@ from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 from pypnm.pnm.process.pnm_type_header_mapper import PnmFileTypeMapper
 
-from .schemas import (
+from pypnm.api.routes.docs.pnm.files.schemas import (
     AnalysisResponse, FileAnalysisRequest, FileEntry, FileQueryRequest,
-    FileQueryResponse, UploadFileRequest, UploadFileResponse,)
+    FileQueryResponse, UploadFileResponse,)
 
+from pypnm.api.routes.common.classes.analysis.analysis import Analysis 
 
 class PnmFileService:
     """

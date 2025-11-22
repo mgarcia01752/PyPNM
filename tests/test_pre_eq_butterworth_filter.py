@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 # tests/test_pre_eq_butterworth_filter.py
 
 from __future__ import annotations
