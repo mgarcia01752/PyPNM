@@ -5,14 +5,12 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import argparse
-import re
 import sys
 from pathlib import Path
-from typing import Final
+from typing import Final, List
 
 
 VERSION_FILE_PATH: Final[Path]               = Path("src/pypnm/version.py")
-VERSION_VAR_NAME: Final[str]                 = "__version__"
 VERSION_PART_SEPARATOR: Final[str]           = "."
 EXPECTED_VERSION_PARTS: Final[int]           = 4
 
@@ -21,18 +19,10 @@ MINOR_INDEX: Final[int]                      = 1
 MAINTENANCE_INDEX: Final[int]                = 2
 BUILD_INDEX: Final[int]                      = 3
 
-VERSION_ASSIGNMENT_PATTERN: Final[re.Pattern[str]] = re.compile(
-    rf'({VERSION_VAR_NAME}\s*:\s*str\s*=\s*")(\d+\.\d+\.\d+\.\d+)(")'
-)
-
-VERSION_VALUE_PATTERN: Final[re.Pattern[str]] = re.compile(
-    rf'{VERSION_VAR_NAME}\s*:\s*str\s*=\s*"([^"]+)"'
-)
-
 
 def _validate_version_string(version: str) -> None:
     """Validate that the version string matches MAJOR.MINOR.MAINTENANCE.BUILD."""
-    if not re.fullmatch(r"\d+\.\d+\.\d+\.\d+", version):
+    if not all(part.isdigit() for part in version.split(VERSION_PART_SEPARATOR)):
         print(
             f"ERROR: Invalid version '{version}'. Expected numeric MAJOR.MINOR.MAINTENANCE.BUILD.",
             file=sys.stderr,
@@ -55,33 +45,58 @@ def _read_current_version(version_file: Path) -> str:
         sys.exit(1)
 
     text = version_file.read_text(encoding="utf-8")
-    match = VERSION_VALUE_PATTERN.search(text)
-    if match is None:
-        print(
-            f"ERROR: Could not find {VERSION_VAR_NAME} assignment in {version_file}.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("__version__"):
+            first_quote = line.find('"')
+            second_quote = line.find('"', first_quote + 1)
+            if first_quote == -1 or second_quote == -1:
+                print(
+                    f"ERROR: Malformed __version__ line in {version_file}: {line!r}",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            return line[first_quote + 1 : second_quote]
 
-    return match.group(1)
+    print(
+        f"ERROR: Could not find __version__ assignment in {version_file}.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 
 def _write_new_version(version_file: Path, new_version: str) -> None:
-    """Write the new version into the version file, replacing the existing assignment."""
+    """Write the new version into the version file, replacing the existing assignment line."""
     text = version_file.read_text(encoding="utf-8")
-    if VERSION_ASSIGNMENT_PATTERN.search(text) is None:
+    lines: List[str] = text.splitlines()
+    updated_lines: List[str] = []
+    replaced = False
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("__version__"):
+            first_quote = line.find('"')
+            second_quote = line.find('"', first_quote + 1)
+            if first_quote == -1 or second_quote == -1:
+                print(
+                    f"ERROR: Malformed __version__ line in {version_file}: {line!r}",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            new_line = line[: first_quote + 1] + new_version + line[second_quote:]
+            updated_lines.append(new_line)
+            replaced = True
+        else:
+            updated_lines.append(line)
+
+    if not replaced:
         print(
-            f"ERROR: Could not match {VERSION_VAR_NAME} assignment for replacement in {version_file}.",
+            f"ERROR: Could not find __version__ assignment to replace in {version_file}.",
             file=sys.stderr,
         )
         sys.exit(1)
 
-    new_text = VERSION_ASSIGNMENT_PATTERN.sub(
-        rf'\1{new_version}\3',
-        text,
-        count=1,
-    )
-    version_file.write_text(new_text, encoding="utf-8")
+    version_file.write_text("\n".join(updated_lines) + ("\n" if text.endswith("\n") else ""), encoding="utf-8")
 
 
 def _compute_next_version(current_version: str, mode: str) -> str:
@@ -92,19 +107,19 @@ def _compute_next_version(current_version: str, mode: str) -> str:
 
     match mode:
         case "major":
-            parts_int[MAJOR_INDEX]      = parts_int[MAJOR_INDEX] + 1
-            parts_int[MINOR_INDEX]      = 0
+            parts_int[MAJOR_INDEX]       = parts_int[MAJOR_INDEX] + 1
+            parts_int[MINOR_INDEX]       = 0
             parts_int[MAINTENANCE_INDEX] = 0
-            parts_int[BUILD_INDEX]      = 0
+            parts_int[BUILD_INDEX]       = 0
         case "minor":
-            parts_int[MINOR_INDEX]      = parts_int[MINOR_INDEX] + 1
+            parts_int[MINOR_INDEX]       = parts_int[MINOR_INDEX] + 1
             parts_int[MAINTENANCE_INDEX] = 0
-            parts_int[BUILD_INDEX]      = 0
+            parts_int[BUILD_INDEX]       = 0
         case "maintenance":
             parts_int[MAINTENANCE_INDEX] = parts_int[MAINTENANCE_INDEX] + 1
             parts_int[BUILD_INDEX]       = 0
         case "build":
-            parts_int[BUILD_INDEX]      = parts_int[BUILD_INDEX] + 1
+            parts_int[BUILD_INDEX]       = parts_int[BUILD_INDEX] + 1
         case _:
             print(f"ERROR: Unsupported --next mode '{mode}'.", file=sys.stderr)
             sys.exit(1)
@@ -156,7 +171,6 @@ def main() -> None:
     show_current: bool           = args.current
     next_mode: str | None        = args.next
 
-    # Determine mode; exactly one of (--current, --next, explicit version) must be used.
     if show_current:
         if explicit_version is not None or next_mode is not None:
             print("ERROR: --current cannot be combined with a version argument or --next.", file=sys.stderr)
