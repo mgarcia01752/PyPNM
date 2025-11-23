@@ -67,6 +67,19 @@ T = TypeVar("T")
 
 DEFAULT_SPECTRUM_ANALYZER_INDICES: Final[List[int]] = [0]
 
+
+FEC_SUMMARY_TYPE_STEP_SECONDS: Dict[int, int] = {
+    2: 1,      # interval10min(2): 600 samples, 1 sec apart
+    3: 60,     # interval24hr(3): 1440 samples, 60 sec apart
+    # other(1): unknown / device-specific, do not enforce
+}
+
+FEC_SUMMARY_TYPE_LABEL: Dict[int, str] = {
+    1: "other",
+    2: "10-minute interval (1s cadence)",
+    3: "24-hour interval (60s cadence)",
+}
+
 __all__ = [
     "HZ", "KHZ", "MHZ", "GHZ",
     "ZERO_FREQUENCY",
@@ -76,5 +89,6 @@ __all__ = [
     "INVALID_START_VALUE", "INVALID_SCHEMA_TYPE", "INVALID_CAPTURE_TIME",
     "DEFAULT_CAPTURE_TIME",
     "CableTypes", "CABLE_VF",
-    "DEFAULT_SPECTRUM_ANALYZER_INDICES"
+    "DEFAULT_SPECTRUM_ANALYZER_INDICES",
+    "FEC_SUMMARY_TYPE_STEP_SECONDS", "FEC_SUMMARY_TYPE_LABEL",
 ]

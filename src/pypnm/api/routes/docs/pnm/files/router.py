@@ -131,8 +131,7 @@ class PnmFileManager:
             summary="Upload A PNM File",
             responses=FAST_API_RESPONSE,
         )
-        async def upload_file(file: UploadFile = File(description="Raw PNM capture file (e.g., RxMER, constellation, histogram, spectrum)",),
-        ):
+        async def upload_file(file: UploadFile = File(description="Raw PNM capture file (e.g., RxMER, constellation, histogram, spectrum)",),):
             """
             **Upload A PNM Binary File Into The PyPNM Transaction Database**
 
@@ -156,59 +155,30 @@ class PnmFileManager:
             return JSONResponse(content=result.model_dump())
 
         @self.router.post(
-            "/getAnalysis/upload",
+            "/getAnalysis",
             response_model=AnalysisResponse,
-            summary="Analyze A PNM File Via Upload File",
+            summary="Analyze a PNM File Via Transaction ID",
             responses=FAST_API_RESPONSE,
         )
-        def get_analysis_via_upload_file(request: FileAnalysisRequest):
+        def get_analysis_via_transaction_id(request: FileAnalysisRequest):
             """
-            **Trigger Automated Analysis Of A PNM File**
+            **Analysis Of A PNM File**
 
-            Launches an analysis routine based on the specified transaction ID and requested
-            analysis type. The backend will resolve the PNM file associated with the transaction,
+            Launches an analysis routine based on the specified transactionID and requested
+            analysis type. The backend will resolve the PNM file associated with the transactionID,
             inspect its header, and route it to the appropriate analysis pipeline.
 
-            Supported analysis types include, but are not limited to:
+            Supported Uploaded PNM File Types:
             - RxMER per subcarrier
-            - Channel estimation
-            - Pre-equalization taps
-            - Spectrum snapshots
-
-            The response returns a resolved `analysis_type`, a plot or asset URL, and an optional
-            human-readable summary.
-
-            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file-manager/file-manager-api.md#6-analyze-pnm-file)
-            """
-            # result = PnmFileService().get_analysis(request)
-            # return JSONResponse(content=result.model_dump())
-            return JSONResponse(content="Not implemented yet")
-
-        @self.router.post(
-            "/getAnalysis/transactionID/{transaction_id}",
-            response_model=AnalysisResponse,
-            summary="Analyze A PNM File Via Transaction ID",
-            responses=FAST_API_RESPONSE,
-        )
-        def get_analysis_via_transaction_id(transaction_id: TransactionId):
-            """
-            **Trigger Automated Analysis Of A PNM File**
-
-            Launches an analysis routine based on the specified transaction ID and requested
-            analysis type. The backend will resolve the PNM file associated with the transaction,
-            inspect its header, and route it to the appropriate analysis pipeline.
-
-            Supported analysis types include, but are not limited to:
-            - RxMER per subcarrier
-            - Channel estimation
-            - Pre-equalization taps
-            - Spectrum snapshots
-
-            The response returns a resolved `analysis_type`, a plot or asset URL, and an optional
-            human-readable summary.
+            - Channel Estimation Coefficients
+            - Constellation Diagram
+            - Downstream Histogram
+            - OFDMA Pre-equalization
 
             [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file-manager/file-manager-api.md#6-analyze-pnm-file-via-transaction-id)
             """
+            PnmFileService().get_analysis(request)
+
             return JSONResponse(content="Not implemented yet")
 
 

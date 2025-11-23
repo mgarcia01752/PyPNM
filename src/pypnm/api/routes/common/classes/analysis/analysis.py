@@ -40,11 +40,13 @@ from pypnm.lib.signal_processing.group_delay import GroupDelay
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
 from pypnm.lib.types import (
     ArrayLike, ChannelId, ComplexArray, FloatSeries, FrequencyHz, 
-    FrequencySeriesHz, MacAddressStr, ProfileId)
+    FrequencySeriesHz, IntSeries, MacAddressStr, ProfileId)
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import WindowFunction
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
-from pypnm.pnm.process.model.process_rtn_models import CmDsOfdmChanEstimateCoefModel
+from pypnm.pnm.process.model.process_rtn_models import (
+    CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel, 
+    CmDsOfdmFecSummaryModel, CmDsOfdmRxMerModel)
 from pypnm.pnm.process.CmDsOfdmModulationProfile import (
     CmDsOfdmModulationProfile, CmDsOfdmModulationProfileModel, ModulationOrderType, 
     RangeModulationProfileSchemaModel, SkipModulationProfileSchemaModel)
@@ -1549,106 +1551,81 @@ class Analysis:
     #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 
     @classmethod
-    def basic_analysis_ds_modulation_profile_from_model(cls, model: CmDsOfdmModulationProfileModel, 
-                                                        split_carriers: bool = True) -> DsModulationProfileAnalysisModel:
+    def basic_analysis_rxmer_from_model(cls, model: CmDsOfdmRxMerModel) -> DsRxMerAnalysisModel:
         """
-        Analyze a Downstream OFDM Modulation Profile using a parsed model
-        from :class:`CmDsOfdmModulationProfile`.
-        """
-        spacing: int      = int(model.subcarrier_spacing)
-        active_index: int = int(model.first_active_subcarrier_index)
-        zero_freq: int    = int(model.subcarrier_zero_frequency)
+        Perform basic RxMER analysis from a parsed :class:`CmDsOfdmRxMerModel`.
 
-        if active_index < 0 or zero_freq < 0 or spacing <= 0:
+        This is the model-based counterpart to ``basic_analysis_rxmer(...)`` and builds
+        a :class:`DsRxMerAnalysisModel` using typed fields instead of a raw measurement
+        dictionary. It re-derives the frequency axis, carrier status classification, and
+        regression line, while reusing metadata already normalized into the model.
+        """
+        channel_id: ChannelId                   = ChannelId(getattr(model, "channel_id", INVALID_CHANNEL_ID))
+        subcarrier_spacing: FrequencyHz         = FrequencyHz(getattr(model, "subcarrier_spacing", INVALID_START_VALUE))
+        first_active_subcarrier_index: int      = int(getattr(model, "first_active_subcarrier_index", INVALID_START_VALUE))
+        subcarrier_zero_frequency: FrequencyHz  = FrequencyHz(getattr(model, "subcarrier_zero_frequency", INVALID_START_VALUE))
+
+        if (first_active_subcarrier_index < 0) or (subcarrier_zero_frequency < 0) or (subcarrier_spacing <= 0):
             raise ValueError(
-                f"Invalid parameters: spacing={spacing}, active_index={active_index}, zero_freq={zero_freq}")
-
-        start_freq = zero_freq + spacing * active_index
-
-        result = DsModulationProfileAnalysisModel(
-            device_details      = {},
-            pnm_header          = model.pnm_header.model_dump() if hasattr(model.pnm_header, "model_dump") else {},
-            mac_address         = model.mac_address,
-            channel_id          = model.channel_id,
-            frequency_unit      = "Hz",
-            shannon_min_unit    = "dB",
-            profiles            = [],
-        )
-
-        for profile in model.profiles:
-            profile_id = int(profile.profile_id)
-            freq_list: FrequencySeriesHz = []
-            mod_list: list[str] = []
-            shan_list: list[float] = []
-            carrier_items: list[CarrierItemModel] = []
-            freq_ptr = start_freq
-
-            for scheme in profile.schemes:
-                # ---- branch by schema type / model ----
-                if isinstance(scheme, RangeModulationProfileSchemaModel):
-                    mod_name = str(scheme.modulation_order)
-                    count = int(scheme.num_subcarriers)
-
-                elif isinstance(scheme, SkipModulationProfileSchemaModel):
-                    mod_name = str(scheme.main_modulation_order)
-                    count = int(scheme.num_subcarriers)
-
-                else:
-                    logging.warning(
-                        f"Unknown modulation profile schema type: {getattr(scheme, 'schema_type', '?')}"
-                    )
-                    continue
-
-                for _ in range(count):
-                    if mod_name in (
-                        ModulationOrderType.continuous_pilot.name,
-                        ModulationOrderType.exclusion.name,
-                    ):
-                        s_min = 0.0
-                    elif mod_name == ModulationOrderType.plc.name:
-                        s_min = Shannon.bits_to_snr(4)
-                    else:
-                        s_min = Shannon.snr_from_modulation(mod_name)
-
-                    s_min = round(float(s_min), 2)
-                    f_val = int(freq_ptr)
-
-                    if split_carriers:
-                        freq_list.append(f_val)
-                        mod_list.append(mod_name)
-                        shan_list.append(s_min)
-                    else:
-                        carrier_items.append(
-                            CarrierItemModel(
-                                frequency       = f_val,
-                                modulation      = mod_name,
-                                shannon_min_mer = s_min,
-                            )
-                        )
-                    freq_ptr += spacing
-
-            if split_carriers:
-                carrier_values: CarrierValuesModel = CarrierValuesSplitModel(
-                    layout          = "split",
-                    frequency       = freq_list,
-                    modulation      = mod_list,
-                    shannon_min_mer = shan_list,
-                )
-            else:
-                carrier_values = CarrierValuesListModel(
-                    layout      = "list",
-                    carriers    = carrier_items,
-                )
-
-            result.profiles.append(
-                ProfileAnalysisEntryModel(
-                    profile_id      = profile_id,
-                    carrier_values  = carrier_values,
-                )
+                f"Active index: {first_active_subcarrier_index} or "
+                f"zero frequency: {subcarrier_zero_frequency} or "
+                f"spacing: {subcarrier_spacing} must be non-negative"
             )
 
-        return result
-    
+        magnitudes: FloatSeries = model.values
+        if not magnitudes:
+            raise ValueError("No RxMER values provided in model.")
+
+        base_freq: FrequencyHz   = FrequencyHz((subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency)
+        freqs: FrequencySeriesHz = [FrequencyHz(base_freq + (i * subcarrier_spacing)) for i in range(len(magnitudes))]
+
+        def classify(v: float) -> int:
+            if v == RXMER_EXCLUSION:
+                return int(RxMerCarrierType.EXCLUSION.value)
+            if v in (RXMER_CLIPPED_LOW, RXMER_CLIPPED_HIGH):
+                return int(RxMerCarrierType.CLIPPED.value)
+            return int(RxMerCarrierType.NORMAL.value)
+
+        carrier_status: IntSeries = [classify(v) for v in magnitudes]
+
+        if not (len(freqs) == len(magnitudes) == len(carrier_status)):
+            raise ValueError(
+                f"Length mismatch detected: frequencies({len(freqs)}), "
+                f"magnitudes({len(magnitudes)}), carrier_status({len(carrier_status)})"
+            )
+
+        regession_model = RegressionModel(
+            slope   = cast(FloatSeries, LinearRegression1D(cast(ArrayLike, magnitudes),
+                                                           cast(ArrayLike, freqs)).regression_line())
+        )
+
+        csm: Dict[str, Any] = {
+            RxMerCarrierType.EXCLUSION.name.lower(): RxMerCarrierType.EXCLUSION.value,
+            RxMerCarrierType.CLIPPED.name.lower():   RxMerCarrierType.CLIPPED.value,
+            RxMerCarrierType.NORMAL.name.lower():    RxMerCarrierType.NORMAL.value,
+        }
+
+        carrier_values = RxMerCarrierValuesModel(
+            carrier_status_map  = csm,
+            carrier_count       = len(freqs),
+            magnitude           = magnitudes,
+            frequency           = freqs,
+            carrier_status      = carrier_status,
+        )
+
+        return DsRxMerAnalysisModel(
+            device_details                  = getattr(model, "device_details", {}),
+            pnm_header                      = model.pnm_header.model_dump() if hasattr(model.pnm_header, "model_dump") else getattr(model, "pnm_header", {}),
+            mac_address                     = MacAddressStr(getattr(model, "mac_address", MacAddress.null())),
+            channel_id                      = channel_id,
+            subcarrier_spacing              = subcarrier_spacing,
+            first_active_subcarrier_index   = first_active_subcarrier_index,
+            subcarrier_zero_frequency       = subcarrier_zero_frequency,
+            carrier_values                  = carrier_values,
+            regression                      = regession_model,
+            modulation_statistics           = model.modulation_statistics,
+        )
+
     @classmethod
     def basic_analysis_ds_chan_est_from_model(cls, model: CmDsOfdmChanEstimateCoefModel, 
                                               cable_type: CableType = CableType.RG6,) -> DsChannelEstAnalysisModel:
@@ -1805,6 +1782,294 @@ class Analysis:
         )
 
         return result_model
+
+    @classmethod
+    def basic_analysis_ds_modulation_profile_from_model(cls, model: CmDsOfdmModulationProfileModel, 
+                                                        split_carriers: bool = True) -> DsModulationProfileAnalysisModel:
+        """
+        Analyze a Downstream OFDM Modulation Profile using a parsed model
+        from :class:`CmDsOfdmModulationProfile`.
+        """
+        spacing: int      = int(model.subcarrier_spacing)
+        active_index: int = int(model.first_active_subcarrier_index)
+        zero_freq: int    = int(model.subcarrier_zero_frequency)
+
+        if active_index < 0 or zero_freq < 0 or spacing <= 0:
+            raise ValueError(
+                f"Invalid parameters: spacing={spacing}, active_index={active_index}, zero_freq={zero_freq}")
+
+        start_freq = zero_freq + spacing * active_index
+
+        result = DsModulationProfileAnalysisModel(
+            device_details      = {},
+            pnm_header          = model.pnm_header.model_dump() if hasattr(model.pnm_header, "model_dump") else {},
+            mac_address         = model.mac_address,
+            channel_id          = model.channel_id,
+            frequency_unit      = "Hz",
+            shannon_min_unit    = "dB",
+            profiles            = [],
+        )
+
+        for profile in model.profiles:
+            profile_id = int(profile.profile_id)
+            freq_list: FrequencySeriesHz = []
+            mod_list: list[str] = []
+            shan_list: list[float] = []
+            carrier_items: list[CarrierItemModel] = []
+            freq_ptr = start_freq
+
+            for scheme in profile.schemes:
+                # ---- branch by schema type / model ----
+                if isinstance(scheme, RangeModulationProfileSchemaModel):
+                    mod_name = str(scheme.modulation_order)
+                    count = int(scheme.num_subcarriers)
+
+                elif isinstance(scheme, SkipModulationProfileSchemaModel):
+                    mod_name = str(scheme.main_modulation_order)
+                    count = int(scheme.num_subcarriers)
+
+                else:
+                    logging.warning(
+                        f"Unknown modulation profile schema type: {getattr(scheme, 'schema_type', '?')}"
+                    )
+                    continue
+
+                for _ in range(count):
+                    if mod_name in (
+                        ModulationOrderType.continuous_pilot.name,
+                        ModulationOrderType.exclusion.name,
+                    ):
+                        s_min = 0.0
+                    elif mod_name == ModulationOrderType.plc.name:
+                        s_min = Shannon.bits_to_snr(4)
+                    else:
+                        s_min = Shannon.snr_from_modulation(mod_name)
+
+                    s_min = round(float(s_min), 2)
+                    f_val = int(freq_ptr)
+
+                    if split_carriers:
+                        freq_list.append(f_val)
+                        mod_list.append(mod_name)
+                        shan_list.append(s_min)
+                    else:
+                        carrier_items.append(
+                            CarrierItemModel(
+                                frequency       = f_val,
+                                modulation      = mod_name,
+                                shannon_min_mer = s_min,
+                            )
+                        )
+                    freq_ptr += spacing
+
+            if split_carriers:
+                carrier_values: CarrierValuesModel = CarrierValuesSplitModel(
+                    layout          = "split",
+                    frequency       = freq_list,
+                    modulation      = mod_list,
+                    shannon_min_mer = shan_list,
+                )
+            else:
+                carrier_values = CarrierValuesListModel(
+                    layout      = "list",
+                    carriers    = carrier_items,
+                )
+
+            result.profiles.append(
+                ProfileAnalysisEntryModel(
+                    profile_id      = profile_id,
+                    carrier_values  = carrier_values,
+                )
+            )
+
+        return result
+    
+    @classmethod
+    def basic_analysis_ds_constellation_display_from_model(cls, model: CmDsConstDispMeasModel) -> ConstellationDisplayAnalysisModel:
+        """
+        Build a constellation analysis payload from a parsed :class:`CmDsConstDispMeasModel`.
+
+        This is the model-based counterpart to ``basic_analysis_ds_constellation_display(...)``.
+        It interprets the parsed constellation capture (soft decisions, modulation order,
+        and metadata) and returns a fully-typed :class:`ConstellationDisplayAnalysisModel`.
+
+        CM Output Assumption
+        --------------------
+        DOCSIS defines the constellation display samples as s2.13 soft decisions that
+        are already scaled to approximately unit average power at the slicer input.
+        Because the LUT hard points are normalized in the same way, **no additional
+        scaling is applied** to the soft samples here.
+
+        Parameters
+        ----------
+        model : CmDsConstDispMeasModel
+            Parsed constellation display measurement, including:
+            - ``samples``                : ComplexArray of soft decisions
+            - ``actual_modulation_order``: int modulation order (e.g., 256)
+            - ``num_sample_symbols``     : number of captured symbols
+            - common PNM header fields   : ``pnm_header``, ``mac_address``, ``channel_id``.
+
+        Returns
+        -------
+        ConstellationDisplayAnalysisModel
+            Typed model carrying device/header info, inferred QAM order, LUT-hard
+            constellation points, and CM-provided soft decisions.
+
+        Raises
+        ------
+        ValueError
+            If ``model.samples`` is empty.
+        """
+        samples: ComplexArray = model.samples or []
+        if not samples:
+            raise ValueError("CmDsConstDispMeasModel.samples must be a non-empty ComplexArray.")
+
+        amo: int = int(getattr(model, "actual_modulation_order", 0))
+        qm: QamModulation = QamModulation.from_DsOfdmModulationType(amo)
+
+        hard: ComplexArray = QamLutManager().get_hard_decisions(qm)
+        soft: ComplexArray = samples
+
+        return ConstellationDisplayAnalysisModel(
+            device_details      = getattr(model, "device_details", SystemDescriptor.empty()),
+            pnm_header          = model.pnm_header.model_dump() if hasattr(model.pnm_header, "model_dump") else getattr(model, "pnm_header", {}),
+            mac_address         = MacAddressStr(getattr(model, "mac_address", MacAddress.null())),
+            channel_id          = ChannelId(getattr(model, "channel_id", INVALID_CHANNEL_ID)),
+            num_sample_symbols  = int(getattr(model, "num_sample_symbols", len(samples))),
+            modulation_order    = qm,
+            hard                = hard,
+            soft                = soft,
+        )
+
+    @classmethod
+    def basic_analysis_ds_histogram_from_model(cls, model: CmDsHistModel) -> DsHistogramAnalysisModel:
+        """
+        Build a :class:`DsHistogramAnalysisModel` from a parsed :class:`CmDsHistModel`.
+
+        This is the model-based counterpart to ``basic_analysis_ds_histogram(...)``.
+        It preserves the parsed symmetry flag, dwell counts, and hit counts, while
+        normalizing PNM header and MAC/channel metadata into the canonical analysis
+        model used by the API layer.
+
+        Parameters
+        ----------
+        model : CmDsHistModel
+            Parsed downstream histogram PNM payload, including:
+            - ``pnm_header``               : :class:`PnmHeaderParameters`
+            - ``mac_address``              : MAC address string
+            - ``symmetry``                 : histogram symmetry indicator
+            - ``dwell_count_values_length``: declared dwell-count length
+            - ``dwell_count_values``       : dwell-count series
+            - ``hit_count_values_length``  : declared hit-count length
+            - ``hit_count_values``         : hit-count series
+
+        Returns
+        -------
+        DsHistogramAnalysisModel
+            Typed histogram analysis payload suitable for downstream consumers.
+        """
+        log = logging.getLogger(f"{cls.__name__}")
+
+        dwell_counts = list(model.dwell_count_values or [])
+        hit_counts   = list(model.hit_count_values or [])
+
+        if model.dwell_count_values_length and model.dwell_count_values_length != len(dwell_counts):
+            new_len = min(model.dwell_count_values_length, len(dwell_counts))
+            log.warning(
+                "DsHistogram: dwell_count length mismatch; declared=%d, actual=%d, truncating to %d",
+                model.dwell_count_values_length,
+                len(dwell_counts),
+                new_len,
+            )
+            dwell_counts = dwell_counts[:new_len]
+
+        if model.hit_count_values_length and model.hit_count_values_length != len(hit_counts):
+            new_len = min(model.hit_count_values_length, len(hit_counts))
+            log.warning(
+                "DsHistogram: hit_count length mismatch; declared=%d, actual=%d, truncating to %d",
+                model.hit_count_values_length,
+                len(hit_counts),
+                new_len,
+            )
+            hit_counts = hit_counts[:new_len]
+
+        return DsHistogramAnalysisModel(
+            device_details  = getattr(model, "device_details", {}),
+            pnm_header      = model.pnm_header.model_dump() if hasattr(model.pnm_header, "model_dump") else model.pnm_header,
+            mac_address     = model.mac_address or MacAddress.null(),
+            channel_id      = ChannelId(getattr(model, "channel_id", INVALID_CHANNEL_ID)),
+            symmetry        = model.symmetry,
+            dwell_counts    = dwell_counts,
+            hit_counts      = hit_counts,
+        )
+
+    @classmethod
+    def basic_analysis_ds_ofdm_fec_summary_from_model(cls, model: CmDsOfdmFecSummaryModel) -> OfdmFecSummaryAnalysisModel:
+        """
+        Build an :class:`OfdmFecSummaryAnalysisModel` from a parsed
+        :class:`CmDsOfdmFecSummaryModel`.
+
+        This is the model-based counterpart to ``basic_analysis_ds_ofdm_fec_summary(...)``.
+        It maps the parser-facing structures:
+
+        * :class:`OfdmFecSumDataModel`          → :class:`OfdmFecSummaryProfileModel`
+        * :class:`OfdmFecSumCodeWordEntryModel` → :class:`FecSummaryCodeWordModel`
+
+        while carrying forward common analysis metadata from ``CmDsOfdmFecSummaryModel``.
+
+        Parameters
+        ----------
+        model : CmDsOfdmFecSummaryModel
+            Canonical DOCSIS downstream OFDM FEC summary model, including:
+            - ``pnm_header``       : :class:`PnmHeaderParameters`
+            - ``channel_id``       : ChannelId
+            - ``mac_address``      : MAC address string
+            - ``summary_type``     : CM-OSSI summary type enum
+            - ``num_profiles``     : declared profile count
+            - ``fec_summary_data`` : list of :class:`OfdmFecSumDataModel` entries
+
+        Returns
+        -------
+        OfdmFecSummaryAnalysisModel
+            Normalized FEC summary analysis payload used by the API/plotting layers.
+        """
+        log = logging.getLogger(f"{cls.__name__}")
+
+        profiles: List[OfdmFecSummaryProfileModel] = []
+
+        for idx, prof in enumerate(model.fec_summary_data or []):
+            cwe = prof.codeword_entries
+
+            cw = FecSummaryCodeWordModel(
+                timestamps      = list(cwe.timestamp),
+                total_codewords = list(cwe.total_codewords),
+                corrected       = list(cwe.corrected),
+                uncorrected     = list(cwe.uncorrectable),
+            )
+
+            profiles.append(
+                OfdmFecSummaryProfileModel(
+                    profile         = ProfileId(prof.profile_id),
+                    number_of_sets  = int(prof.number_of_sets),
+                    codewords       = cw,
+                )
+            )
+
+        declared_num_profiles = int(model.num_profiles)
+        if declared_num_profiles != len(profiles):
+            log.debug(
+                "FEC Summary (model): num_profiles declared=%d, parsed=%d",
+                declared_num_profiles,
+                len(profiles),
+            )
+
+        return OfdmFecSummaryAnalysisModel(
+            device_details = {},
+            pnm_header     = model.pnm_header.model_dump() if hasattr(model.pnm_header, "model_dump") else model.pnm_header,
+            mac_address    = MacAddressStr(model.mac_address or MacAddress.null()),
+            channel_id     = ChannelId(model.channel_id if model.channel_id is not None else INVALID_CHANNEL_ID),
+            profiles       = profiles,
+        )
 
     @classmethod
     def basic_analysis_echo_detection_ifft(cls, model: CmDsOfdmChanEstimateCoefModel, cable_type: CableType = CableType.RG6, ) -> EchoDetectorReport:

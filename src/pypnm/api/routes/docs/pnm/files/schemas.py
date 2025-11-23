@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import CommonSingleCaptureAnalysisType
 from pypnm.api.routes.common.classes.file_capture.types import TransactionId
 from pypnm.lib.types import FileName, MacAddressStr, TimeStamp
 
@@ -41,11 +42,12 @@ class UploadFileResponse(BaseModel):
     filename: FileName                      = Field(..., description="Name of the file that was uploaded")
     transaction_id: TransactionId           = Field(..., description="Unique identifier for the created file transaction")
 
+class FileSearchRequest(BaseModel):
+    transaction_id: TransactionId = Field(description="Transaction ID returned from file search")
 
-class FileAnalysisRequest(FileQueryRequest):
-    transaction_id: TransactionId           = Field(..., description="Transaction ID returned from file search")
-    analysis_type: Optional[str]            = Field(default="auto", description="Type of analysis to perform (e.g., 'spectrum', 'rxmer', or 'auto').")
-
+class FileAnalysisRequest(BaseModel):
+    search: FileSearchRequest                   = Field(description="Transaction ID returned from file search")
+    analysis: CommonSingleCaptureAnalysisType   = Field(description="Single capture analysis configuration")
 
 class AnalysisResponse(BaseModel):
     analysis_type: str                      = Field(..., description="Resolved analysis type that was performed")

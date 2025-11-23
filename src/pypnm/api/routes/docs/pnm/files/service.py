@@ -7,11 +7,11 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 
-  # < This is causing circular import noqa: F401 (reserved for future use)
 from pypnm.api.routes.advance.common.capture_service import OperationId
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
 from pypnm.api.routes.common.classes.file_capture.pnm_file_opearation import OperationCaptureGroupResolver
@@ -27,13 +27,18 @@ from pypnm.lib.types import FileName, MacAddressStr, PathLike
 from pypnm.lib.utils import Utils
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
+
 from pypnm.pnm.process.pnm_type_header_mapper import PnmFileTypeMapper
 
 from pypnm.api.routes.docs.pnm.files.schemas import (
     AnalysisResponse, FileAnalysisRequest, FileEntry, FileQueryRequest,
     FileQueryResponse, UploadFileResponse,)
 
-from pypnm.api.routes.common.classes.analysis.analysis import Analysis 
+from pypnm.api.routes.common.classes.analysis.analysis import Analysis
+
+# TODO: Move this import inside method to avoid circular dependency
+if TYPE_CHECKING:
+    from pypnm.pnm.process.pnm_parameter import PnmObjectAndParameters
 
 class PnmFileService:
     """
@@ -281,26 +286,7 @@ class PnmFileService:
             filename        = filename,
             transaction_id  = transaction_id,
         )
-    def get_analysis(self, req: FileAnalysisRequest) -> AnalysisResponse:
-        """
-        Returns basic analysis result for a stored file (placeholder implementation).
-
-        Currently resolves the filename from the transaction ID and returns a
-        stubbed plot URL; analysis orchestration will be wired in later.
-        """
-        txn_data = PnmFileTransaction().get_record(req.transaction_id)
-        if not txn_data:
-            raise HTTPException(status_code=404, detail="Transaction ID not found for analysis.")
-
-        filename = str(txn_data.get("filename", "unknown"))
-        safe_stem = Path(filename).stem
-
-        return AnalysisResponse(
-            analysis_type=req.analysis_type or "auto",
-            plot_url=f"/static/plots/{safe_stem}.png",
-            summary=f"Auto analysis placeholder for transaction {req.transaction_id}",
-        )
-
+    
     def get_file(self, file_type: FileType, filename: PathLike) -> FileResponse:
         """
         Serve a generated file from its configured directory.
@@ -341,4 +327,46 @@ class PnmFileService:
             path        =   str(file_path),
             filename    =   safe_name,
             media_type  =   media_type,
+        )
+
+    def get_analysis(self, req: FileAnalysisRequest) -> AnalysisResponse:
+        """
+        Returns basic analysis result for a stored file (placeholder implementation).
+
+        Currently resolves the filename from the transaction ID and returns a
+        stubbed plot URL; analysis orchestration will be wired in later.
+        """
+        txn_rec = PnmFileTransaction().get_record(req.search.transaction_id)
+        if not txn_rec:
+            raise HTTPException(status_code=404, detail="Transaction ID not found for analysis.")
+
+        filename = txn_rec.get("filename")
+        if not filename:
+            raise HTTPException(status_code=404, detail="Filename not found in transaction record.")
+
+        # Get binary file
+        file_path = Path(self.pnm_dir/filename)
+        
+        if not file_path.is_file():
+            raise HTTPException(status_code=404, detail="PNM file not found on disk for analysis.")
+        fp = FileProcessor(file_path).read_file()
+
+        # Get PnmHeader to Determine PnmFileType
+        from pypnm.pnm.process.pnm_parameter import PnmObjectAndParameters
+        parser  = PnmObjectAndParameters(fp)
+
+        #if not parser:
+        #    raise HTTPException(status_code=400, detail="Unrecognized PNM file type for analysis.")
+
+        # Route to Appropriate Analysis Pipeline Based on PnmFileType
+        
+        
+        # Generate Plots/Visualizations
+        # Return AnalysisResponse with results
+
+
+        return AnalysisResponse(
+            analysis_type=req.analysis_type or "auto",
+            plot_url=f"/static/plots/{safe_stem}.png",
+            summary=f"Auto analysis placeholder for transaction {req.search.transaction_id}",
         )

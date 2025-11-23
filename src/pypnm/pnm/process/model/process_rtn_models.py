@@ -1,14 +1,16 @@
 
 from __future__ import annotations
-from typing import Any, Dict, Literal
+from typing import Any, Dict, List, Literal
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
 
+from pypnm.lib.constants import FEC_SUMMARY_TYPE_LABEL, INVALID_CHANNEL_ID
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import FrequencyHz, ComplexArray, MacAddressStr, IntSeries, FloatSeries, FrequencySeriesHz
-from pydantic import Field, BaseModel, ConfigDict, field_serializer
+from pypnm.lib.qam.types import CodeWordArray
+from pypnm.lib.types import ChannelId, FrequencyHz, ComplexArray, MacAddressStr, IntSeries, FloatSeries, FrequencySeriesHz, ProfileId, TimeStamp
+from pydantic import Field, BaseModel, ConfigDict, computed_field, field_serializer, model_validator
 from pypnm.pnm.lib.signal_statistics import SignalStatisticsModel
 from pypnm.pnm.process.CmSpectrumAnalysisSnmp import SpecAnalysisSnmpConfigModel
 from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
@@ -84,3 +86,60 @@ class CmSpectrumAnalysisSnmpModel(BaseModel):
     @field_serializer("amplitude_bytes")
     def _ser_amplitude_bytes(self, value: bytes, _info) -> str:
         return value.hex()
+
+class OfdmFecSumCodeWordEntryModel(BaseModel):
+    """
+    Parallel arrays holding per-interval codeword statistics for a single OFDM profile.
+    """
+    timestamp: List[TimeStamp]      = Field(..., description="Unix timestamps (seconds) for each aggregation interval")
+    total_codewords: CodeWordArray  = Field(..., description="Total codewords observed in each interval")
+    corrected: CodeWordArray        = Field(..., description="FEC-corrected codewords per interval")
+    uncorrectable: CodeWordArray    = Field(..., description="Uncorrectable codewords per interval")
+
+    @model_validator(mode="after")
+    def _validate_lengths(self) -> "OfdmFecSumCodeWordEntryModel":
+        n = len(self.timestamp)
+        if not (len(self.total_codewords) == len(self.corrected) == len(self.uncorrectable) == n):
+            raise ValueError("timestamp, total_codewords, corrected, uncorrectable must have equal lengths")
+        return self
+
+class OfdmFecSumDataModel(BaseModel):
+    """
+    FEC summary dataset for a single OFDM modulation profile.
+    """
+    profile_id: ProfileId                          = Field(..., description="OFDM modulation profile identifier")
+    number_of_sets: int                            = Field(..., description="Number of time-ordered codeword statistic sets")
+    codeword_entries: OfdmFecSumCodeWordEntryModel = Field(..., description="Per-interval codeword stats (parallel arrays)")
+
+    @model_validator(mode="after")
+    def _validate_number_of_sets(self) -> "OfdmFecSumDataModel":
+        if self.number_of_sets != len(self.codeword_entries.timestamp):
+            raise ValueError(f"number_of_sets={self.number_of_sets} does not match entries={len(self.codeword_entries.timestamp)}")
+        return self
+
+
+class CmDsOfdmFecSummaryModel(BaseModel):
+    """
+    Canonical model for DOCSIS downstream OFDM FEC summary.
+    """
+    model_config = ConfigDict(populate_by_name=True)
+
+    pnm_header: PnmHeaderParameters                 = Field(..., description="PNM header metadata for this capture")
+    channel_id: ChannelId                           = Field(INVALID_CHANNEL_ID, description="Downstream channel ID")
+    mac_address: MacAddressStr                      = Field(default_factory=MacAddress.null, description="Cable modem MAC address")
+    summary_type: int                               = Field(..., description="CM-OSSI SummaryType enum: other(1), interval10min(2), interval24hr(3)")
+    num_profiles: int                               = Field(..., description="Number of OFDM profiles reported in this summary")
+    fec_summary_data: List[OfdmFecSumDataModel]     = Field(..., description="Per-profile FEC summary datasets")
+
+    @computed_field
+    @property
+    def summary_type_label(self) -> str:
+        """
+        Human-friendly label for summary_type using docsPnmCmDsOfdmFecSumType.
+
+        Mapping:
+        1 -> other
+        2 -> 10-minute interval (1s cadence, 600 samples)
+        3 -> 24-hour interval (60s cadence, 1440 samples)
+        """
+        return FEC_SUMMARY_TYPE_LABEL.get(self.summary_type, f"unknown({self.summary_type})")
