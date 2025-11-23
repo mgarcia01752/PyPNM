@@ -15,7 +15,7 @@ from pypnm.api.routes.advance.analysis.signal_analysis.group_delay_calculator im
 from pypnm.api.routes.advance.analysis.signal_analysis.multi_rxmer_signal_analysis import MultiAnalysisRpt
 from pypnm.api.routes.advance.common.capture_data_aggregator import CaptureDataAggregator
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.api.routes.common.classes.analysis.model.chan_est_schema import DsChannelEstAnalysisModel
+from pypnm.api.routes.common.classes.analysis.model.schema import DsChannelEstAnalysisModel
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.log_files import LogFile
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig

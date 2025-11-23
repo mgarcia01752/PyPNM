@@ -4,13 +4,13 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional, overload
+from typing import Dict, List, Optional, overload
 from typing_extensions import override
 
 from pydantic import BaseModel, Field
 
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.api.routes.common.classes.analysis.model.mod_profile_schema import DsModulationProfileAnalysisModel
+from pypnm.api.routes.common.classes.analysis.model.schema import DsModulationProfileAnalysisModel
 from pypnm.api.routes.common.classes.collection.abstract.multi_pnm_aggreator import MultiPnmCollection, MultiPnmCollectionObject
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import CaptureTime, ChannelId, FrequencySeriesHz, MacAddressStr

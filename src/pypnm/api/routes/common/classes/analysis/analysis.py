@@ -11,15 +11,13 @@ from typing import List, Dict, Any, Mapping, Optional, Sequence, Union, cast
 
 from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.echo_detector import EchoDetector, EchoDetectorReport
 from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.type import EchoDetectorType
-from pypnm.api.routes.common.classes.analysis.model.chan_est_schema import ChanEstCarrierModel, DsChannelEstAnalysisModel
 from pypnm.api.routes.common.classes.analysis.model.mod_profile_schema import (
-    CarrierItemModel, CarrierValuesListModel, CarrierValuesModel, CarrierValuesSplitModel, 
-    DsModulationProfileAnalysisModel, ProfileAnalysisEntryModel)
+    CarrierItemModel, CarrierValuesListModel, CarrierValuesModel, CarrierValuesSplitModel, ProfileAnalysisEntryModel)
 from pypnm.api.routes.common.classes.analysis.model.process import AnalysisProcessParameters
 from pypnm.api.routes.common.classes.analysis.model.schema import (
-    BaseAnalysisModel, ConstellationDisplayAnalysisModel, DsHistogramAnalysisModel, DsRxMerAnalysisModel, EchoDatasetModel, 
-    FecSummaryCodeWordModel, GrpDelayStatsModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel, 
-    OfdmaUsPreEqCarrierModel, RegressionModel, RxMerCarrierValuesModel, UsOfdmaUsPreEqAnalysisModel)
+    BaseAnalysisModel, ChanEstCarrierModel, ConstellationDisplayAnalysisModel, DsChannelEstAnalysisModel, DsHistogramAnalysisModel, DsModulationProfileAnalysisModel, 
+    DsRxMerAnalysisModel, EchoDatasetModel, FecSummaryCodeWordModel, GrpDelayStatsModel, OfdmFecSummaryAnalysisModel, 
+    OfdmFecSummaryProfileModel, OfdmaUsPreEqCarrierModel, RegressionModel, RxMerCarrierValuesModel, UsOfdmaUsPreEqAnalysisModel)
 from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema import (
     DEFAULT_POINT_AVG, MagnitudeSeries, SpecAnaAnalysisResults, SpectrumAnalyzerAnalysisModel, WindowAverage)
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
@@ -46,9 +44,9 @@ from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
 from pypnm.pnm.process.model.process_rtn_models import (
     CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel, 
-    CmDsOfdmFecSummaryModel, CmDsOfdmRxMerModel)
+    CmDsOfdmFecSummaryModel, CmDsOfdmModulationProfileModel, CmDsOfdmRxMerModel)
 from pypnm.pnm.process.CmDsOfdmModulationProfile import (
-    CmDsOfdmModulationProfile, CmDsOfdmModulationProfileModel, ModulationOrderType, 
+    CmDsOfdmModulationProfile, ModulationOrderType, 
     RangeModulationProfileSchemaModel, SkipModulationProfileSchemaModel)
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
@@ -825,155 +823,6 @@ class Analysis:
         return out
 
     @classmethod
-    def basic_analysis_us_ofdma_pre_equalization_NO_BUTTERWORTH(cls, measurement: Dict[str, Any]) -> UsOfdmaUsPreEqAnalysisModel:
-        """
-        Perform Upstream OFDMA Pre-Equalization Analysis.
-
-        Computes:
-        - Per-subcarrier frequency axis (Hz)
-        - Magnitude sequence (dB) from complex coefficients
-        - Group delay (µs) from phase slope across subcarriers
-        - IFFT-based echo detection over a constrained delay window
-        - Complex samples passthrough
-        - Signal statistics over the magnitude sequence
-
-        Expected Keys (subset) in `measurement`
-        ---------------------------------------
-        channel_id : int
-            Upstream OFDMA channel ID.
-        subcarrier_spacing : int
-            Δf in Hz between subcarriers.
-        first_active_subcarrier_index : int
-            Index of the first active subcarrier relative to subcarrier 0.
-        subcarrier_zero_frequency : int
-            Frequency (Hz) of subcarrier 0.
-        occupied_channel_bandwidth : int
-            Occupied bandwidth for metadata.
-        values : ComplexArray
-            List of complex-like samples for H(f). [(re, im), ...] or [complex, ...].
-
-        Returns
-        -------
-        UsOfdmaUsPreEqAnalysisModel
-            Typed model with carrier values, signal statistics, and echo results.
-        """
-        log = logging.getLogger(f"{cls.__name__}")
-
-        channel_id: ChannelId                   = measurement.get("channel_id",                    INVALID_CHANNEL_ID)
-        subcarrier_spacing: FrequencyHz         = measurement.get("subcarrier_spacing",            INVALID_START_VALUE)
-        first_active_subcarrier_index: int      = measurement.get("first_active_subcarrier_index", INVALID_START_VALUE)
-        subcarrier_zero_frequency: FrequencyHz  = measurement.get("subcarrier_zero_frequency",     INVALID_START_VALUE)
-        occupied_channel_bandwidth: FrequencyHz = measurement.get("occupied_channel_bandwidth",    INVALID_START_VALUE)
-
-        if (first_active_subcarrier_index < 0) or (subcarrier_zero_frequency < 0) or (subcarrier_spacing <= 0):
-            raise ValueError(
-                f"Active index: {first_active_subcarrier_index} or "
-                f"zero frequency: {subcarrier_zero_frequency} or "
-                f"spacing: {subcarrier_spacing} must be non-negative"
-            )
-
-        values: ComplexArray = measurement.get("values", [])
-        if not values:
-            raise ValueError("No complex pre-equalization values provided in measurement.")
-
-        # Frequency axis
-        start_freq: FrequencyHz  = cast(FrequencyHz, (subcarrier_spacing * first_active_subcarrier_index) + subcarrier_zero_frequency)
-        freqs: FrequencySeriesHz = cast(FrequencySeriesHz, [start_freq + (i * subcarrier_spacing) for i in range(len(values))])
-
-        # Group delay and magnitudes
-        gd = GroupDelay.from_channel_estimate(Hhat=values, df_hz=subcarrier_spacing, f0_hz=start_freq)
-        gd_results = gd.to_result()
-
-        cao = ComplexArrayOps(values)
-        magnitudes_db: FloatSeries = cao.to_list(cao.power_db())
-        signal_stats_model: SignalStatisticsModel = SignalStatistics(magnitudes_db).compute()
-        complex_arr = np.asarray(values, dtype=complex)
-
-        group_delay_stats: GrpDelayStatsModel = GrpDelayStatsModel(
-            group_delay_unit = "microsecond",
-            magnitude        = ComplexArrayOps.to_list(gd_results.group_delay_us),
-        )
-
-        # ── IFFT Echo Detection (same technique as downstream channel-estimation) ──
-        N      = len(values)
-        n_fft  = 1 << (N - 1).bit_length()
-        if n_fft < 1024:
-            n_fft = 1024
-
-        fs = float(N) * float(subcarrier_spacing)
-        max_delay_s_used = 3.5e-6
-
-        cable_type_name = "RG6"
-        v               = SPEED_OF_LIGHT * CABLE_VF.get(cable_type_name, 0.87)
-        max_dist_m      = 0.5 * v * max_delay_s_used
-        i_stop          = int(max_delay_s_used * fs)
-        log.debug(
-            "US OFDMA Pre-Eq EchoDetector window: fs=%.3f Hz, n_fft=%d, i_stop=%d bins, max_delay=%.2fus, max_dist≈%.1f m",
-            fs, n_fft, i_stop, max_delay_s_used * 1e6, max_dist_m
-        )
-
-        det = EchoDetector(
-            freq_data               = values,
-            subcarrier_spacing_hz   = float(subcarrier_spacing),
-            n_fft                   = 4096,
-            cable_type              = cable_type_name,
-            channel_id              = channel_id,
-        )
-
-        echo_report: EchoDetectorReport = det.multi_echo(
-            threshold_mode        = "db_down",
-            threshold_db_down     = 60.0,
-            normalize_power       = True,
-            guard_bins            = 16,
-            min_separation_s      = 8.0 / det.fs,
-            max_delay_s           = max_delay_s_used,
-            max_peaks             = 3,
-            include_time_response = False,
-            direct_at_zero        = True,
-            window                = "hann",
-        )
-
-        i_stop     = int(np.ceil(max_delay_s_used * det.fs))
-        edge_guard = 8
-        if echo_report.echoes:
-            echo_report.echoes = [
-                e for e in echo_report.echoes
-                if (e.bin_index < (i_stop - edge_guard))
-            ]
-
-        echo_rpt = EchoDatasetModel(type    =   EchoDetectorType.IFFT, 
-                                    report  =   echo_report)
-
-        carrier_values: OfdmaUsPreEqCarrierModel = OfdmaUsPreEqCarrierModel(
-            carrier_count               = len(freqs),
-            frequency_unit              = "Hz",
-            frequency                   = freqs,
-            complex                     = values,
-            complex_dimension           = int(complex_arr.ndim),
-            magnitudes                  = magnitudes_db,
-            group_delay                 = group_delay_stats,
-            occupied_channel_bandwidth  = occupied_channel_bandwidth,
-        )
-
-        result_model: UsOfdmaUsPreEqAnalysisModel = UsOfdmaUsPreEqAnalysisModel(
-            device_details                  = measurement.get("device_details", {}),
-            pnm_header                      = measurement.get("pnm_header", {}),
-            mac_address                     = MacAddressStr(measurement.get("mac_address", "")),
-            channel_id                      = ChannelId(channel_id),
-            subcarrier_spacing              = subcarrier_spacing,
-            first_active_subcarrier_index   = first_active_subcarrier_index,
-            subcarrier_zero_frequency       = subcarrier_zero_frequency,
-            carrier_values                  = carrier_values,
-            signal_statistics               = signal_stats_model,
-            echo                            = echo_rpt,
-        )
-        
-        if log.isEnabledFor(logging.DEBUG):
-            LogFile.write( f'UsOfdmaUsPreEqAnalysisModel_{result_model.mac_address}_{result_model.channel_id}.log',result_model,)
-
-        return result_model
-
-    @classmethod
     def basic_analysis_us_ofdma_pre_equalization(cls, measurement: Dict[str, Any]) -> UsOfdmaUsPreEqAnalysisModel:
         """
         Perform Upstream OFDMA Pre-Equalization Analysis.
@@ -1560,10 +1409,10 @@ class Analysis:
         dictionary. It re-derives the frequency axis, carrier status classification, and
         regression line, while reusing metadata already normalized into the model.
         """
-        channel_id: ChannelId                   = ChannelId(getattr(model, "channel_id", INVALID_CHANNEL_ID))
-        subcarrier_spacing: FrequencyHz         = FrequencyHz(getattr(model, "subcarrier_spacing", INVALID_START_VALUE))
-        first_active_subcarrier_index: int      = int(getattr(model, "first_active_subcarrier_index", INVALID_START_VALUE))
-        subcarrier_zero_frequency: FrequencyHz  = FrequencyHz(getattr(model, "subcarrier_zero_frequency", INVALID_START_VALUE))
+        channel_id: ChannelId                   = model.channel_id
+        subcarrier_spacing: FrequencyHz         = model.subcarrier_spacing
+        first_active_subcarrier_index: int      = model.first_active_subcarrier_index
+        subcarrier_zero_frequency: FrequencyHz  = model.subcarrier_zero_frequency
 
         if (first_active_subcarrier_index < 0) or (subcarrier_zero_frequency < 0) or (subcarrier_spacing <= 0):
             raise ValueError(
@@ -1931,7 +1780,7 @@ class Analysis:
         soft: ComplexArray = samples
 
         return ConstellationDisplayAnalysisModel(
-            device_details      = getattr(model, "device_details", SystemDescriptor.empty()),
+            device_details      = getattr(model, "device_details", SystemDescriptor.empty().to_dict()),
             pnm_header          = model.pnm_header.model_dump() if hasattr(model.pnm_header, "model_dump") else getattr(model, "pnm_header", {}),
             mac_address         = MacAddressStr(getattr(model, "mac_address", MacAddress.null())),
             channel_id          = ChannelId(getattr(model, "channel_id", INVALID_CHANNEL_ID)),

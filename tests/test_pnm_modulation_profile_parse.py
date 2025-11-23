@@ -8,10 +8,9 @@ from pathlib import Path
 
 import pytest
 
-from pypnm.pnm.process.CmDsOfdmModulationProfile import (
-    CmDsOfdmModulationProfile,
-    CmDsOfdmModulationProfileModel,
-)
+from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
+from pypnm.pnm.process.model.process_rtn_models import CmDsOfdmModulationProfileModel
+
 
 DATA_DIR = Path(__file__).parent / "_data"
 MODPROF_PATH = DATA_DIR / "modulation_profile.bin"

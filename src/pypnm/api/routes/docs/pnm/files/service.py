@@ -1,4 +1,4 @@
-# pypnm/api/routes/docs/pnm/files/service.py
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
@@ -7,12 +7,13 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple, cast
 
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 
 from pypnm.api.routes.advance.common.capture_service import OperationId
+from pypnm.api.routes.common.classes.analysis.model.schema import ParserAnalysisModelReturn
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
 from pypnm.api.routes.common.classes.file_capture.pnm_file_opearation import OperationCaptureGroupResolver
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
@@ -25,20 +26,24 @@ from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import FileName, MacAddressStr, PathLike
 from pypnm.lib.utils import Utils
+from pypnm.pnm.process.model.process_rtn_models import (
+    CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel, 
+    CmDsOfdmFecSummaryModel, CmDsOfdmModulationProfileModel, CmDsOfdmRxMerModel)
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 
 from pypnm.pnm.process.pnm_type_header_mapper import PnmFileTypeMapper
 
 from pypnm.api.routes.docs.pnm.files.schemas import (
-    AnalysisResponse, FileAnalysisRequest, FileEntry, FileQueryRequest,
+    FileAnalysisRequest, FileEntry, FileQueryRequest,
     FileQueryResponse, UploadFileResponse,)
-
-from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 
 # TODO: Move this import inside method to avoid circular dependency
 if TYPE_CHECKING:
-    from pypnm.pnm.process.pnm_parameter import PnmObjectAndParameters
+    from pypnm.pnm.process.pnm_parameter import PnmParsers
+    from pypnm.pnm.process.pnm_parameter import GetPnmParserAndParameters
+    from pypnm.pnm.process.pnm_parameter import PnmParserParametersModel
+    from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 
 class PnmFileService:
     """
@@ -56,7 +61,7 @@ class PnmFileService:
     """
 
     def __init__(self):
-        self.pnm_dir = SystemConfigSettings.pnm_dir
+        self.pnm_dir: PathLike = SystemConfigSettings.pnm_dir
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def search_files(self, req: FileQueryRequest) -> FileQueryResponse:
@@ -329,12 +334,14 @@ class PnmFileService:
             media_type  =   media_type,
         )
 
-    def get_analysis(self, req: FileAnalysisRequest) -> AnalysisResponse:
+    def get_analysis(self, req: FileAnalysisRequest) -> Tuple[ParserAnalysisModelReturn, PnmFileType]:
         """
-        Returns basic analysis result for a stored file (placeholder implementation).
-
-        Currently resolves the filename from the transaction ID and returns a
-        stubbed plot URL; analysis orchestration will be wired in later.
+        Returns basic analysis result for a stored PNM file identified by transaction ID.
+        The analysis performed depends on the PNM file type.
+        
+        Return:
+        Tuple[ParserAnalysisModelReturn, PnmFileType]
+            A tuple containing the analysis model and the PNM file type.
         """
         txn_rec = PnmFileTransaction().get_record(req.search.transaction_id)
         if not txn_rec:
@@ -344,29 +351,50 @@ class PnmFileService:
         if not filename:
             raise HTTPException(status_code=404, detail="Filename not found in transaction record.")
 
+        self.logger.info(f"Starting analysis for transaction ID {req.search.transaction_id} on file: {self.pnm_dir}/{filename}")
+
         # Get binary file
-        file_path = Path(self.pnm_dir/filename)
-        
-        if not file_path.is_file():
+        file_path = f'{self.pnm_dir}/{filename}'
+
+        if not Path(file_path).is_file():
             raise HTTPException(status_code=404, detail="PNM file not found on disk for analysis.")
         fp = FileProcessor(file_path).read_file()
 
         # Get PnmHeader to Determine PnmFileType
-        from pypnm.pnm.process.pnm_parameter import PnmObjectAndParameters
-        parser  = PnmObjectAndParameters(fp)
+        from pypnm.pnm.process.pnm_parameter import GetPnmParserAndParameters
+        parser, model  = GetPnmParserAndParameters(fp).get_parser()
 
-        #if not parser:
-        #    raise HTTPException(status_code=400, detail="Unrecognized PNM file type for analysis.")
+        self.logger.info(f"Performing {model.file_type.name} analysis for transaction {req.search.transaction_id} on file {filename}")
 
-        # Route to Appropriate Analysis Pipeline Based on PnmFileType
+        return self.__get_analysis(parser, model)
+    
+    def __get_analysis(self, parser: PnmParsers, model:PnmParserParametersModel) -> Tuple[ParserAnalysisModelReturn, PnmFileType]:
+        """
+        Internal method to instantiate the Analysis class with the given parser and model.
+        """
+        from pypnm.api.routes.common.classes.analysis.analysis import Analysis
+        if model.file_type == PnmFileType.RECEIVE_MODULATION_ERROR_RATIO:
+            return Analysis.basic_analysis_rxmer_from_model(cast(CmDsOfdmRxMerModel, parser.to_model())), model.file_type
+
+        elif model.file_type == PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT:
+            return Analysis.basic_analysis_ds_chan_est_from_model(cast(CmDsOfdmChanEstimateCoefModel, parser.to_model())), model.file_type
+
+        elif model.file_type == PnmFileType.OFDM_MODULATION_PROFILE:
+            return Analysis.basic_analysis_ds_modulation_profile_from_model(cast(CmDsOfdmModulationProfileModel, parser.to_model())), model.file_type
+
+        elif model.file_type == PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY:
+            return Analysis.basic_analysis_ds_constellation_display_from_model(cast(CmDsConstDispMeasModel, parser.to_model())), model.file_type
         
+        elif model.file_type == PnmFileType.DOWNSTREAM_HISTOGRAM:
+            return Analysis.basic_analysis_ds_histogram_from_model(cast(CmDsHistModel, parser.to_model())), model.file_type
         
-        # Generate Plots/Visualizations
-        # Return AnalysisResponse with results
+        elif model.file_type == PnmFileType.OFDM_FEC_SUMMARY:
+            return Analysis.basic_analysis_ds_ofdm_fec_summary_from_model(cast(CmDsOfdmFecSummaryModel, parser.to_model())), model.file_type
 
-
-        return AnalysisResponse(
-            analysis_type=req.analysis_type or "auto",
-            plot_url=f"/static/plots/{safe_stem}.png",
-            summary=f"Auto analysis placeholder for transaction {req.search.transaction_id}",
+        raise HTTPException(
+            status_code=400,
+            detail=f"Analysis not implemented for file type: {model.file_type.name}"
         )
+
+        
+        

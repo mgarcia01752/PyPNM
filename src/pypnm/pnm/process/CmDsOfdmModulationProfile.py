@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 from enum import IntEnum
 from struct import calcsize, unpack
-from typing import Any, Dict, List, Union, Annotated, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Union, Annotated, cast
 from typing_extensions import Literal
 
 from pydantic import BaseModel, Field, ConfigDict
@@ -15,7 +15,11 @@ from pypnm.lib.constants import KHZ
 from pypnm.lib.types import FrequencySeriesHz, ProfileId
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
-from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
+
+# TODO: Need to fix circular import
+if TYPE_CHECKING:
+    from pypnm.pnm.process.model.process_rtn_models import CmDsOfdmModulationProfileModel
+
 
 class ModulationOrderType(IntEnum):
     zero_bit_loaded   = 0
@@ -61,27 +65,6 @@ class ModulationProfileModel(BaseModel):
     profile_id: ProfileId       = Field(..., ge=0, description="Profile identifier")
     schemes: List[SchemeModel]  = Field(default_factory=list, description="Schema chunks composing the profile")
 
-class CmDsOfdmModulationProfileModel(PnmBaseModel):
-    """
-    Canonical payload for DS OFDM Modulation Profile.
-
-    Inherits the following from PnmBaseModel (do NOT re-declare):
-      - pnm_header : PnmHeaderParameters
-      - channel_id : int
-      - mac_address : str
-      - subcarrier_zero_frequency : int
-      - first_active_subcarrier_index : int
-      - subcarrier_spacing : int   (Hz)
-
-    Additional fields:
-      - num_profiles : total number of profiles found
-      - profile_data_length_bytes : raw length of the profile data section
-      - profiles : parsed profile structures
-    """
-    model_config = ConfigDict(extra="ignore", use_enum_values=True)
-    num_profiles: int                      = Field(..., ge=0, description="Number of profiles in this capture")
-    profile_data_length_bytes: int         = Field(..., ge=0, description="Length of the profile data block (bytes)")
-    profiles: List[ModulationProfileModel] = Field(default_factory=list, description="Parsed modulation profiles")
 
 class CmDsOfdmModulationProfile(PnmHeader):
     """
@@ -96,7 +79,6 @@ class CmDsOfdmModulationProfile(PnmHeader):
     >>> model = parser.to_model()
     >>> print(model.model_dump_json(indent=2))
     """
-
     RANGE_MODULATION: int   = 0
     SKIP_MODULATION: int    = 1
 
@@ -145,6 +127,8 @@ class CmDsOfdmModulationProfile(PnmHeader):
         profile_blob = self.pnm_data[header_sz:]
 
         profiles = self._parse_profiles(profile_blob)
+
+        from pypnm.pnm.process.model.process_rtn_models import CmDsOfdmModulationProfileModel
 
         self._model = CmDsOfdmModulationProfileModel(
             pnm_header                      =   self.getPnmHeaderParameterModel(),

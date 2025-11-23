@@ -1,12 +1,17 @@
-
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
+# Copyright (c) 2025
+# Maurice Garcia
 
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Union
 
+from pydantic import BaseModel, Field
+
+from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import MacAddressStr, Tuple
+from pypnm.pnm.process.CmDsHist import CmDsHist
 from pypnm.pnm.process.pnm_file_type import PnmFileType
 from pypnm.pnm.process.pnm_header import PnmHeader
 from pypnm.pnm.process.CmDsConstDispMeas import CmDsConstDispMeas
@@ -16,116 +21,165 @@ from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfil
 from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
 from pypnm.pnm.process.CmUsOfdmaPreEq import CmUsOfdmaPreEq
 
+PnmParsers = Union[CmDsConstDispMeas,
+                   CmDsOfdmChanEstimateCoef,
+                   CmDsOfdmFecSummary,
+                   CmDsOfdmRxMer,
+                   CmUsOfdmaPreEq,
+                   CmDsHist]
+
+class PnmParserParametersModel(BaseModel):
+    file_type: PnmFileType     = Field(..., description="PNM file type enum (e.g., PNN2, PNN3, ...).")
+    mac_address: MacAddressStr = Field(default_factory=MacAddress.null, description="Cable modem MAC address extracted from the PNM payload, if present.")
 
 
-class PnmObjectAndParameters(PnmHeader):
+class GetPnmParserAndParameters(PnmHeader):
     """
     Parses raw PNM file byte streams, dispatches to type-specific parsers,
-    and exposes core parameters in a standardized dict form.
+    and exposes core parameters plus the concrete parser instance.
 
-    Inherits:
-        PnmHeader: provides `file_type` and `file_type_num` properties.
+    Inherits
+    --------
+    PnmHeader
+        Provides `file_type` and `file_type_num` properties.
 
-    Public Methods:
-        to_dict(): Returns parameters or error details as a dict.
+    Public Methods
+    --------------
+    to_model()
+        Return parameters as a PnmParserParametersModel.
+    to_dict()
+        Return parameters as a plain dictionary (model_dump()).
+    get_parser()
+        Return (parser_instance, parameters_model) as a typed tuple.
     """
 
     def __init__(self, byte_stream: bytes):
         """
         Initialize the parser with raw PNM data.
 
-        Args:
-            file_byte_stream: Full contents of a PNM file, header + payload.
+        Parameters
+        ----------
+        byte_stream : bytes
+            Full contents of a PNM file, header + payload.
         """
         super().__init__(byte_stream)
         self.logger = logging.getLogger(self.__class__.__name__)
         self.byte_stream = byte_stream
-        
-        # Normalize header type fields to ASCII strings
+
         if isinstance(self._file_type, (bytes, bytearray)):
-            file_type_str = self._file_type.decode('ascii', errors='ignore')
+            file_type_str = self._file_type.decode("ascii", errors="ignore")
         else:
             file_type_str = str(self._file_type)
 
         if isinstance(self._file_type_num, (bytes, bytearray)):
-            file_type_num_str = self._file_type_num.decode('ascii', errors='ignore')
+            file_type_num_str = self._file_type_num.decode("ascii", errors="ignore")
         else:
             file_type_num_str = str(self._file_type_num)
 
         self.pnm_type = f"{file_type_str}{file_type_num_str}"
-        self.logger.debug(f"Processing PNM-Type: ({self.pnm_type})")
+        self.logger.debug("Processing PNM-Type: (%s)", self.pnm_type)
+
+        self._parameters_model: Optional[PnmParserParametersModel] = None
+        self._parser: Optional[PnmParsers] = None
+
+    def to_model(self) -> PnmParserParametersModel:
+        """
+        Process the PNM file and return a structured PnmParserParametersModel.
+
+        Behavior
+        --------
+        - On first call, this method parses and caches both the parameter model
+          and the concrete parser instance.
+        - Subsequent calls return the cached model.
+        - Parsing errors are propagated as exceptions.
+        """
+        if self._parameters_model is not None:
+            return self._parameters_model
+
+        try:
+            file_type_enum = PnmFileType(self.pnm_type)
+        except ValueError:
+            self.logger.error("Unsupported PNM file type code: %s", self.pnm_type)
+            raise
+
+        parsed = self._process()
+        self.logger.info("%s", parsed)
+        self._parser = parsed
+
+        mac_address = getattr(parsed, "_mac_address", MacAddress.null())
+
+        self._parameters_model = PnmParserParametersModel(
+            file_type=file_type_enum,
+            mac_address=mac_address,
+        )
+        return self._parameters_model
 
     def to_dict(self) -> Dict[str, Any]:
         """
-        Process the PNM file and return a dict of core parameters, including
-        any error encountered.
+        Process the PNM file and return core parameters as a plain dict.
 
-        Returns:
-            Dict with keys:
-              - file_type (str): 4-char PNM code
-              - capture_time (int|None)
-              - channel_id (int|None)
-              - mac_address (str|None)
-              - subcarrier_zero_frequency (int|None)
-              - first_active_subcarrier_index (int|None)
-              - subcarrier_spacing (int|None)
-              - error (str, optional)
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary with keys:
+              - file_type: PnmFileType enum value (serializes to its value in JSON).
+              - mac_address: MAC address string (may be empty/null string).
         """
-        result: Dict[str, Any] = {"file_type": self.pnm_type}
-        try:
-            parsed = self._process()
-            
-            self.logger.debug(f'{parsed}')
+        return self.to_model().model_dump()
 
-            result.update({
-                "capture_time":                 getattr(parsed, "capture_time", None),
-                "channel_id":                   getattr(parsed, "_channel_id", None),
-                "mac_address":                  getattr(parsed, "_mac_address", None),
-                "subcarrier_zero_frequency":    getattr(parsed, "_subcarrier_zero_frequency", None),
-                "first_active_subcarrier_index":getattr(parsed, "_first_active_subcarrier_index", None),
-                "subcarrier_spacing":           getattr(parsed, "_subcarrier_spacing", None),
-            })
+    def get_parser(self) -> Tuple[PnmParsers, PnmParserParametersModel]:
+        """
+        Return a (parser_instance, parameters_model) tuple for this PNM file.
 
-        except NotImplementedError as nie:
-            result["error"] = str(nie)
-        except ValueError as ve:
-            result["error"] = str(ve)
-        except Exception as exc:
-            result["error"] = f"Unexpected error: {exc}"
-        return result
+        Behavior
+        --------
+        - If parsing has not yet occurred, this method triggers parsing via to_model().
+        - Any parsing errors are propagated to the caller.
+        """
+        params: PnmParserParametersModel
+        if self._parser is None or self._parameters_model is None:
+            params = self.to_model()
+        else:
+            params = self._parameters_model
+
+        assert self._parser is not None
+        return self._parser, params
 
     def _process(self) -> Any:
         """
         Determine PNM type and call the associated parser.
 
-        Returns:
+        Returns
+        -------
+        Any
             The object returned by the specific _process_* method.
 
-        Raises:
-            ValueError: For unknown PNM codes.
-            NotImplementedError: For unimplemented handlers.
+        Raises
+        ------
+        ValueError
+            For unknown PNM codes.
+        NotImplementedError
+            For unimplemented handlers.
         """
-            
         try:
             file_type_enum = PnmFileType(self.pnm_type)
         except ValueError:
             raise ValueError(f"Unsupported PNM file type code: {self.pnm_type}")
 
-        self.logger.debug(f'PNM-File-Type-Enum: {file_type_enum}')
-        
-        # Dispatch in enum order
+        self.logger.debug("PNM-File-Type-Enum: %s", file_type_enum)
+
         dispatch_map = {
-            PnmFileType.SYMBOL_CAPTURE:                     self._process_symbol_capture,
-            PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT:  self._process_ofdm_channel_estimate,
-            PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY:   self._process_constellation_display,
-            PnmFileType.RECEIVE_MODULATION_ERROR_RATIO:     self._process_rxmer,
-            PnmFileType.DOWNSTREAM_HISTOGRAM:               self._process_histogram,
+            PnmFileType.SYMBOL_CAPTURE:                      self._process_symbol_capture,
+            PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT:   self._process_ofdm_channel_estimate,
+            PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY:    self._process_constellation_display,
+            PnmFileType.RECEIVE_MODULATION_ERROR_RATIO:      self._process_rxmer,
+            PnmFileType.DOWNSTREAM_HISTOGRAM:                self._process_histogram,
             PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS: self._process_upstream_pre_eq,
             PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE: self._process_upstream_pre_eq_update,
-            PnmFileType.OFDM_FEC_SUMMARY:                   self._process_fec_summary,
-            PnmFileType.SPECTRUM_ANALYSIS:                  self._process_spectrum_analysis,
-            PnmFileType.OFDM_MODULATION_PROFILE:            self._process_modulation_profile,
-            PnmFileType.LATENCY_REPORT:                     self._process_latency_report,
+            PnmFileType.OFDM_FEC_SUMMARY:                    self._process_fec_summary,
+            PnmFileType.SPECTRUM_ANALYSIS:                   self._process_spectrum_analysis,
+            PnmFileType.OFDM_MODULATION_PROFILE:             self._process_modulation_profile,
+            PnmFileType.LATENCY_REPORT:                      self._process_latency_report,
         }
 
         handler = dispatch_map.get(file_type_enum)
@@ -151,8 +205,8 @@ class PnmObjectAndParameters(PnmHeader):
         return CmDsOfdmRxMer(self.byte_stream)
 
     def _process_histogram(self) -> Any:
-        """Downstream histogram parser (not implemented)."""
-        raise NotImplementedError("Histogram parsing not implemented.")
+        """Downstream histogram parser"""
+        return CmDsHist(self.byte_stream)
 
     def _process_upstream_pre_eq(self) -> CmUsOfdmaPreEq:
         """Upstream pre-equalizer coefficients parser."""

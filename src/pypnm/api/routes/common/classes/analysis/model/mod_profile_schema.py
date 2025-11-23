@@ -5,11 +5,8 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 from typing import Annotated, List, Literal, Union
-from pydantic import BaseModel, ConfigDict, Field
-
-from pypnm.api.routes.common.classes.analysis.model.schema import BaseAnalysisModel
+from pydantic import BaseModel, Field
 from pypnm.lib.types import FloatSeries, FrequencyHz, FrequencySeriesHz, ProfileId
-
 
 class CarrierItemModel(BaseModel):
     """Per-carrier record."""
@@ -39,19 +36,3 @@ class ProfileAnalysisEntryModel(BaseModel):
     profile_id: ProfileId                   = Field(..., ge=0, description="Profile identifier")
     carrier_values: CarrierValuesModel
 
-class DsModulationProfileAnalysisModel(BaseAnalysisModel):
-    """
-    Downstream OFDM Modulation Profile analysis result.
-
-    Inherits header fields from BaseAnalysisModel:
-      - device_details, pnm_header, mac_address, channel_id.
-
-    The `profiles[*].carrier_values` field is a discriminated union:
-      * layout='split'  → `CarrierValuesSplitModel` (parallel arrays)
-      * layout='list'   → `CarrierValuesListModel`  (explicit records)
-    """
-    model_config = ConfigDict(extra="ignore")
-
-    frequency_unit: Literal["Hz"]     = Field("Hz", description="Frequency unit")
-    shannon_min_unit: Literal["dB"]   = Field("dB", description="Shannon minimum MER unit")
-    profiles: List[ProfileAnalysisEntryModel] = Field(default_factory=list, description="Per-profile results")

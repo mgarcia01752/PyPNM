@@ -9,9 +9,10 @@ from fastapi import APIRouter, File, Path, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
 from pypnm.api.routes.advance.common.capture_service import OperationId
+from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
 from pypnm.api.routes.common.classes.file_capture.types import TransactionId
 from pypnm.api.routes.docs.pnm.files.schemas import (
-    AnalysisResponse, FileAnalysisRequest, FileQueryRequest, FileQueryResponse, UploadFileResponse,)
+    AnalysisJsonResponse, FileAnalysisRequest, FileQueryRequest, FileQueryResponse, UploadFileResponse,)
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
@@ -156,7 +157,7 @@ class PnmFileManager:
 
         @self.router.post(
             "/getAnalysis",
-            response_model=AnalysisResponse,
+            response_model=AnalysisJsonResponse,
             summary="Analyze a PNM File Via Transaction ID",
             responses=FAST_API_RESPONSE,
         )
@@ -178,6 +179,17 @@ class PnmFileManager:
             [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file-manager/file-manager-api.md#6-analyze-pnm-file-via-transaction-id)
             """
             PnmFileService().get_analysis(request)
+
+            output_type = request.analysis.output.type
+
+            if output_type == OutputType.JSON:
+                analysis_result, file_type = PnmFileService().get_analysis(request)
+                return AnalysisJsonResponse(
+                        mac_address     =   analysis_result.mac_address,
+                        pnm_file_type   =   file_type.name,
+                        status          =   "success",
+                        analysis        =   analysis_result.model_dump(),
+                    )
 
             return JSONResponse(content="Not implemented yet")
 

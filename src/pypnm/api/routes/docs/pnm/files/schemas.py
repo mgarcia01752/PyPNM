@@ -49,7 +49,8 @@ class FileAnalysisRequest(BaseModel):
     search: FileSearchRequest                   = Field(description="Transaction ID returned from file search")
     analysis: CommonSingleCaptureAnalysisType   = Field(description="Single capture analysis configuration")
 
-class AnalysisResponse(BaseModel):
-    analysis_type: str                      = Field(..., description="Resolved analysis type that was performed")
-    plot_url: str                           = Field(..., description="URL to rendered plot or visualization resource")
-    summary: Optional[str]                  = Field(None, description="Optional human-readable analysis summary")
+class AnalysisJsonResponse(BaseModel):
+    mac_address: MacAddressStr    = Field(description="MAC address associated with the analyzed file")
+    pnm_file_type: str          = Field(..., description="PNM file type")
+    status: str                   = Field(..., description="Status of the analysis operation")
+    analysis: Dict                = Field(..., description="Analysis result in JSON format")

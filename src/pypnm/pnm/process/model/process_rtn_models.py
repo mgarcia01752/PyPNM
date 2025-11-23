@@ -14,6 +14,7 @@ from pypnm.lib.types import (
     FloatSeries, FrequencySeriesHz, ProfileId, TimeStamp)
 from pydantic import Field, BaseModel, ConfigDict, computed_field, field_serializer, model_validator
 from pypnm.pnm.lib.signal_statistics import SignalStatisticsModel
+from pypnm.pnm.process.CmDsOfdmModulationProfile import ModulationProfileModel
 from pypnm.pnm.process.CmSpectrumAnalysisSnmp import SpecAnalysisSnmpConfigModel
 from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
 from pypnm.pnm.process.pnm_file_type import PnmFileType
@@ -119,7 +120,6 @@ class OfdmFecSumDataModel(BaseModel):
             raise ValueError(f"number_of_sets={self.number_of_sets} does not match entries={len(self.codeword_entries.timestamp)}")
         return self
 
-
 class CmDsOfdmFecSummaryModel(BaseModel):
     """
     Canonical model for DOCSIS downstream OFDM FEC summary.
@@ -145,3 +145,26 @@ class CmDsOfdmFecSummaryModel(BaseModel):
         3 -> 24-hour interval (60s cadence, 1440 samples)
         """
         return FEC_SUMMARY_TYPE_LABEL.get(self.summary_type, f"unknown({self.summary_type})")
+
+class CmDsOfdmModulationProfileModel(PnmBaseModel):
+    """
+    Canonical payload for DS OFDM Modulation Profile.
+
+    Inherits the following from PnmBaseModel (do NOT re-declare):
+      - pnm_header : PnmHeaderParameters
+      - channel_id : int
+      - mac_address : str
+      - subcarrier_zero_frequency : int
+      - first_active_subcarrier_index : int
+      - subcarrier_spacing : int   (Hz)
+
+    Additional fields:
+      - num_profiles : total number of profiles found
+      - profile_data_length_bytes : raw length of the profile data section
+      - profiles : parsed profile structures
+    """
+    model_config = ConfigDict(extra="ignore", use_enum_values=True)
+    num_profiles: int                      = Field(..., ge=0, description="Number of profiles in this capture")
+    profile_data_length_bytes: int         = Field(..., ge=0, description="Length of the profile data block (bytes)")
+    profiles: List[ModulationProfileModel] = Field(default_factory=list, description="Parsed modulation profiles")
+

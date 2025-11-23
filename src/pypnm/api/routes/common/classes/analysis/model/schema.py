@@ -5,11 +5,12 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Mapping, Optional, Literal
+from typing import Any, Dict, List, Mapping, Optional, Literal, Union
 from pydantic import BaseModel, Field, ConfigDict
 
 from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.echo_detector import EchoDetectorReport
 from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.type import EchoDetectorType
+from pypnm.api.routes.common.classes.analysis.model.mod_profile_schema import ProfileAnalysisEntryModel
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.qam.types import CodeWordArray, QamModulation
@@ -17,6 +18,7 @@ from pypnm.lib.signal_processing.shan.series import ShannonSeriesModel
 from pypnm.lib.types import (ChannelId, ComplexArray, FloatSeries, 
     FrequencyHz, FrequencySeriesHz, IntSeries, MacAddressStr, ProfileId, TimestampSec)
 from pypnm.pnm.lib.signal_statistics import SignalStatisticsModel
+
 
 class BaseAnalysisModel(BaseModel):
     device_details: Mapping[str, Any]   = Field(default_factory=dict, description="Device Details SysDescr")
@@ -54,6 +56,8 @@ class ComplexDataAnalysisModel(BaseAnalysisModel):
 
 class RegressionModel(BaseModel):
     slope:FloatSeries                   = Field(..., description="")
+
+
 
 class ConstellationDisplayAnalysisModel(BaseAnalysisModel):
     """Canonical payload for a constellation display dataset. Use `from_measurement(...)` to build from a raw measurement dict."""
@@ -107,7 +111,6 @@ class OfdmFecSummaryAnalysisModel(BaseAnalysisModel):
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
     profiles: List[OfdmFecSummaryProfileModel] = Field(default_factory=list, description="All per-profile FEC summaries for the channel.")
 
-
 class RxMerCarrierValuesModel(BaseModel):
     carrier_status_map: Dict[str, Any]  = Field(..., description="Mapping of carrier states to numeric codes (e.g., exclusion=0, clipped=1, normal=2).")
     magnitude_unit: str                 = Field(default="dB", description="Unit for RxMER magnitudes.")
@@ -124,6 +127,37 @@ class DsRxMerAnalysisModel(BaseAnalysisModel):
     carrier_values: RxMerCarrierValuesModel     = Field(..., description="Per-subcarrier frequency, magnitude, and status values.")
     regression: RegressionModel                 = Field(..., description="Trend components derived from RxMER vs. frequency.")
     modulation_statistics: ShannonSeriesModel   = Field(..., description="Shannon-derived SNR, bits/symbol, modulation estimates, and summary counts.")
+
+class ChanEstCarrierModel(ComplexDataCarrierModel):
+    """"""
+
+class DsChannelEstAnalysisModel(ComplexDataAnalysisModel):
+    """"""
+
+class DsModulationProfileAnalysisModel(BaseAnalysisModel):
+    """
+    Downstream OFDM Modulation Profile analysis result.
+
+    Inherits header fields from BaseAnalysisModel:
+      - device_details, pnm_header, mac_address, channel_id.
+
+    The `profiles[*].carrier_values` field is a discriminated union:
+      * layout='split'  → `CarrierValuesSplitModel` (parallel arrays)
+      * layout='list'   → `CarrierValuesListModel`  (explicit records)
+    """
+    model_config = ConfigDict(extra="ignore")
+
+    frequency_unit: Literal["Hz"]     = Field("Hz", description="Frequency unit")
+    shannon_min_unit: Literal["dB"]   = Field("dB", description="Shannon minimum MER unit")
+    profiles: List[ProfileAnalysisEntryModel] = Field(default_factory=list, description="Per-profile results")
+
+
+ParserAnalysisModelReturn = Union[ConstellationDisplayAnalysisModel,
+                                  DsChannelEstAnalysisModel, 
+                                  DsHistogramAnalysisModel, 
+                                  DsRxMerAnalysisModel,
+                                  OfdmFecSummaryAnalysisModel,
+                                  DsModulationProfileAnalysisModel]
 
 class OfdmaUsPreEqCarrierModel(ComplexDataCarrierModel):
     """"""

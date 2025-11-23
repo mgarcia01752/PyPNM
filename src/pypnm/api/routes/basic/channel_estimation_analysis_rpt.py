@@ -14,7 +14,7 @@ from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport, Anal
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.basic.common.signal_capture_agg import SignalCaptureAggregator
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.api.routes.common.classes.analysis.model.chan_est_schema import ChanEstCarrierModel, DsChannelEstAnalysisModel
+from pypnm.api.routes.common.classes.analysis.model.schema import ChanEstCarrierModel, DsChannelEstAnalysisModel
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.db_linear_converter import DbLinearConverter
