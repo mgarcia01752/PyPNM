@@ -9,7 +9,9 @@ from typing import Any, Dict, List, Literal
 from pypnm.lib.constants import FEC_SUMMARY_TYPE_LABEL, INVALID_CHANNEL_ID
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.qam.types import CodeWordArray
-from pypnm.lib.types import ChannelId, FrequencyHz, ComplexArray, MacAddressStr, IntSeries, FloatSeries, FrequencySeriesHz, ProfileId, TimeStamp
+from pypnm.lib.types import (
+    ChannelId, FrequencyHz, ComplexArray, MacAddressStr, IntSeries, 
+    FloatSeries, FrequencySeriesHz, ProfileId, TimeStamp)
 from pydantic import Field, BaseModel, ConfigDict, computed_field, field_serializer, model_validator
 from pypnm.pnm.lib.signal_statistics import SignalStatisticsModel
 from pypnm.pnm.process.CmSpectrumAnalysisSnmp import SpecAnalysisSnmpConfigModel
