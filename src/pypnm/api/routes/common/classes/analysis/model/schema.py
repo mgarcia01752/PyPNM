@@ -151,16 +151,18 @@ class DsModulationProfileAnalysisModel(BaseAnalysisModel):
     shannon_min_unit: Literal["dB"]   = Field("dB", description="Shannon minimum MER unit")
     profiles: List[ProfileAnalysisEntryModel] = Field(default_factory=list, description="Per-profile results")
 
+class OfdmaUsPreEqCarrierModel(ComplexDataCarrierModel):
+    """"""
+
+class UsOfdmaUsPreEqAnalysisModel(ComplexDataAnalysisModel):
+    """"""
 
 ParserAnalysisModelReturn = Union[ConstellationDisplayAnalysisModel,
                                   DsChannelEstAnalysisModel, 
                                   DsHistogramAnalysisModel, 
                                   DsRxMerAnalysisModel,
                                   OfdmFecSummaryAnalysisModel,
-                                  DsModulationProfileAnalysisModel]
+                                  DsModulationProfileAnalysisModel,
+                                  UsOfdmaUsPreEqAnalysisModel]
 
-class OfdmaUsPreEqCarrierModel(ComplexDataCarrierModel):
-    """"""
 
-class UsOfdmaUsPreEqAnalysisModel(ComplexDataAnalysisModel):
-    """"""

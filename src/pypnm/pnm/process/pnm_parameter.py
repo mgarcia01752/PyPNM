@@ -187,11 +187,7 @@ class GetPnmParserAndParameters(PnmHeader):
             raise NotImplementedError(f"Handler not implemented for {file_type_enum.name}")
         return handler()
 
-    # Handlers in enum order:
-    def _process_symbol_capture(self) -> Any:
-        """Symbol capture parser (not implemented)."""
-        raise NotImplementedError("Symbol capture parsing not implemented.")
-
+    # Handlers in enum order
     def _process_ofdm_channel_estimate(self) -> CmDsOfdmChanEstimateCoef:
         """OFDM channel estimate coefficient parser."""
         return CmDsOfdmChanEstimateCoef(self.byte_stream)
@@ -209,20 +205,16 @@ class GetPnmParserAndParameters(PnmHeader):
         return CmDsHist(self.byte_stream)
 
     def _process_upstream_pre_eq(self) -> CmUsOfdmaPreEq:
-        """Upstream pre-equalizer coefficients parser."""
+        """OFDMA upstream pre-equalizer coefficients parser."""
         return CmUsOfdmaPreEq(self.byte_stream)
 
     def _process_upstream_pre_eq_update(self) -> Any:
-        """Latest upstream pre-equalizer update parser (not implemented)."""
-        raise NotImplementedError("Upstream pre-equalizer update parsing not implemented.")
+        """OFDMA upstream pre-equalizer last-update coefficients parser."""
+        return CmUsOfdmaPreEq(self.byte_stream)
 
     def _process_fec_summary(self) -> CmDsOfdmFecSummary:
         """OFDM FEC summary parser."""
         return CmDsOfdmFecSummary(self.byte_stream)
-
-    def _process_spectrum_analysis(self) -> Any:
-        """Spectrum analysis parser (not implemented)."""
-        raise NotImplementedError("Spectrum analysis parsing not implemented.")
 
     def _process_modulation_profile(self) -> CmDsOfdmModulationProfile:
         """OFDM modulation profile parser."""
@@ -231,3 +223,12 @@ class GetPnmParserAndParameters(PnmHeader):
     def _process_latency_report(self) -> Any:
         """Latency report parser (not implemented)."""
         raise NotImplementedError("Latency report parsing not implemented.")
+
+    def _process_spectrum_analysis(self) -> Any:
+        """Spectrum analysis parser (not implemented)."""
+        raise NotImplementedError("Spectrum analysis parsing not implemented.")
+    
+    """This method may never be implemented by CableLabs, no real intrest from operators"""
+    def _process_symbol_capture(self) -> Any:
+        """Symbol capture parser (not implemented)."""
+        raise NotImplementedError("Symbol capture parsing not implemented.")
