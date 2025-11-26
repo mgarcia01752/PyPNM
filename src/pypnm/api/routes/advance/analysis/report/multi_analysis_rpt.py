@@ -16,8 +16,7 @@ from pypnm.api.routes.advance.common.transactionsCollection import TransactionCo
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisOutputModel
 from pypnm.api.routes.docs.pnm.files.service import MacAddress
 from pypnm.config.system_config_settings import SystemConfigSettings
-from pypnm.docsis.cm_snmp_operation import SystemDescriptor
-from pypnm.docsis.data_type.sysDescr import SystemDescriptorModel
+from pypnm.docsis.data_type.sysDescr import SystemDescriptor, SystemDescriptorModel
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager

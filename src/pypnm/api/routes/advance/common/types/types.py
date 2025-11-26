@@ -7,8 +7,7 @@ from __future__ import annotations
 import enum
 from typing import Any, Dict, List, NewType, Optional, Tuple, TypedDict, Union
 from pypnm.api.routes.common.classes.file_capture.types import TransactionId
-from pypnm.docsis.cm_snmp_operation import SystemDescriptor
-from pypnm.docsis.data_type.sysDescr import SystemDescriptorModel
+from pypnm.docsis.data_type.sysDescr import SystemDescriptorModel, SystemDescriptor
 from pypnm.lib.types import FileName, MacAddressStr
 
 DeviceDetailsPayload = Union[

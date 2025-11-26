@@ -8,7 +8,7 @@ from typing import cast
 from fastapi import APIRouter, File, Path, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
-from pypnm.api.routes.advance.common.capture_service import OperationId
+from pypnm.api.routes.advance.common.types.types import OperationId
 from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
 from pypnm.api.routes.common.classes.file_capture.types import TransactionId
 from pypnm.api.routes.docs.pnm.files.schemas import (

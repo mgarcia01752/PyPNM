@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Tuple, cast
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 
-from pypnm.api.routes.advance.common.capture_service import OperationId
+from pypnm.api.routes.advance.common.types.types import OperationId
 from pypnm.api.routes.common.classes.analysis.model.schema import ParserAnalysisModelReturn
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
 from pypnm.api.routes.common.classes.file_capture.pnm_file_opearation import OperationCaptureGroupResolver
@@ -38,13 +38,8 @@ from pypnm.api.routes.docs.pnm.files.schemas import (
     FileAnalysisRequest, FileEntry, FileQueryRequest,
     FileQueryResponse, UploadFileResponse,)
 
-# TODO: Move this import inside method to avoid circular dependency
 if TYPE_CHECKING:
-    from pypnm.pnm.parser.pnm_parameter import PnmParsers
-    from pypnm.pnm.parser.pnm_parameter import GetPnmParserAndParameters
-    from pypnm.pnm.parser.pnm_parameter import PnmParserParametersModel
-    from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-
+    from pypnm.pnm.parser.pnm_parameter import PnmParsers, PnmParserParametersModel
 class PnmFileService:
     """
     Handles file storage, metadata registration, and high-level analysis

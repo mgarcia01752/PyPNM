@@ -14,7 +14,7 @@ from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.api.routes.common.classes.analysis.model.schema import BaseAnalysisModel
 from pypnm.api.routes.docs.pnm.files.service import MacAddress
 from pypnm.config.system_config_settings import SystemConfigSettings
-from pypnm.docsis.cm_snmp_operation import SystemDescriptor
+from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.csv.manager import CSVManager

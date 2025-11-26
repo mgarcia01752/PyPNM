@@ -15,15 +15,17 @@ from pypnm.api.routes.common.classes.analysis.model.mod_profile_schema import (
     CarrierItemModel, CarrierValuesListModel, CarrierValuesModel, CarrierValuesSplitModel, ProfileAnalysisEntryModel)
 from pypnm.api.routes.common.classes.analysis.model.process import AnalysisProcessParameters
 from pypnm.api.routes.common.classes.analysis.model.schema import (
-    BaseAnalysisModel, ChanEstCarrierModel, ConstellationDisplayAnalysisModel, DsChannelEstAnalysisModel, DsHistogramAnalysisModel, DsModulationProfileAnalysisModel, 
-    DsRxMerAnalysisModel, EchoDatasetModel, FecSummaryCodeWordModel, GrpDelayStatsModel, OfdmFecSummaryAnalysisModel, 
-    OfdmFecSummaryProfileModel, OfdmaUsPreEqCarrierModel, RegressionModel, RxMerCarrierValuesModel, UsOfdmaUsPreEqAnalysisModel)
+    BaseAnalysisModel, ChanEstCarrierModel, ConstellationDisplayAnalysisModel, DsChannelEstAnalysisModel, 
+    DsHistogramAnalysisModel, DsModulationProfileAnalysisModel, DsRxMerAnalysisModel, EchoDatasetModel, 
+    FecSummaryCodeWordModel, GrpDelayStatsModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel, 
+    OfdmaUsPreEqCarrierModel, RegressionModel, RxMerCarrierValuesModel, UsOfdmaUsPreEqAnalysisModel)
 from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema import (
     DEFAULT_POINT_AVG, MagnitudeSeries, SpecAnaAnalysisResults, SpectrumAnalyzerAnalysisModel, WindowAverage)
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
-from pypnm.api.routes.docs.pnm.files.service import SystemConfigSettings
+from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpecAnCapturePara
-from pypnm.docsis.cm_snmp_operation import SystemDescriptor, Utils
+from pypnm.docsis.cm_snmp_operation import  Utils
+from pypnm.docsis.data_type.sysDescr import SystemDescriptor 
 from pypnm.lib.constants import (CABLE_VF, INVALID_CHANNEL_ID, INVALID_PROFILE_ID, 
                                  INVALID_SCHEMA_TYPE, INVALID_START_VALUE, SPEED_OF_LIGHT, CableType)
 from pypnm.lib.file_processor import FileProcessor
@@ -43,11 +45,11 @@ from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import WindowFunction
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
 from pypnm.pnm.parser.model.process_rtn_models import (
-    CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel, 
-    CmDsOfdmFecSummaryModel, CmDsOfdmModulationProfileModel, CmDsOfdmRxMerModel, CmUsOfdmaPreEqModel)
+    CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel, CmDsOfdmFecSummaryModel, 
+    CmDsOfdmModulationProfileModel, CmDsOfdmRxMerModel, CmUsOfdmaPreEqModel)
 from pypnm.pnm.parser.CmDsOfdmModulationProfile import (
-    CmDsOfdmModulationProfile, ModulationOrderType, 
-    RangeModulationProfileSchemaModel, SkipModulationProfileSchemaModel)
+    CmDsOfdmModulationProfile, ModulationOrderType, RangeModulationProfileSchemaModel, 
+    SkipModulationProfileSchemaModel)
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
 
