@@ -8,7 +8,6 @@ import logging
 import math
 from typing import Tuple
 
-from _pytest.stash import T
 
 from pypnm.api.routes.advance.common.capture_service import AbstractCaptureService
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse

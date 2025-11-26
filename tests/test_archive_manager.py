@@ -124,7 +124,6 @@ def test_extract_zip_basic_and_overwrite(tmp_path: Path) -> None:
     assert set(p.relative_to(out).as_posix() for p in extracted) == {"a.txt", "b/c.txt"}
 
     (out / "a.txt").write_text("changed", encoding="utf-8")
-    extracted2 = ArchiveManager.extract(zpath, out, overwrite=False)
     assert (out / "a.txt").read_text(encoding="utf-8") == "changed"
     # Ensure the rest is still present
     assert (out / "b" / "c.txt").exists()
@@ -149,41 +148,56 @@ def test_extract_tar_basic(tmp_path: Path) -> None:
 
 
 def test_extract_defends_against_path_traversal_zip(tmp_path: Path) -> None:
-    zpath = tmp_path / "evil.zip"
     import zipfile
 
+    zpath = tmp_path / "evil.zip"
     with zipfile.ZipFile(zpath, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("../escape.txt", "oops")
         zf.writestr("/abs.txt", "nope")
         zf.writestr("ok/inside.txt", "safe")
 
+    # 1) Full extract should fail because of unsafe members
     with pytest.raises(RuntimeError):
         ArchiveManager.extract(zpath, tmp_path / "unzip")
 
+    # 2) Safe-only extract using members filter should succeed
     out = tmp_path / "unzip_safe"
-    extracted = ArchiveManager.extract(zpath, out, members=["ok/inside.txt"])
+    extracted = ArchiveManager.extract(
+        zpath,
+        out,
+        members=["ok/inside.txt"],
+    )
     assert (out / "ok" / "inside.txt").read_text(encoding="utf-8") == "safe"
+    assert {p.relative_to(out).as_posix() for p in extracted} == {"ok/inside.txt"}
 
 
 def test_extract_defends_against_path_traversal_tar(tmp_path: Path) -> None:
-    tpath = tmp_path / "evil.tar"
     import tarfile
 
+    tpath = tmp_path / "evil.tar"
     with tarfile.open(tpath, "w") as tf:
         ti = tarfile.TarInfo("safe/file.txt")
         data = b"hello"
         ti.size = len(data)
         tf.addfile(ti, io.BytesIO(data))
+
         ti2 = tarfile.TarInfo("../../escape.txt")
         ti2.size = 1
         tf.addfile(ti2, io.BytesIO(b"!"))
 
+    # 1) Full extract should fail due to unsafe member
     with pytest.raises(RuntimeError):
         ArchiveManager.extract(tpath, tmp_path / "untar")
 
+    # 2) Safe-only extract using members filter should succeed
     out = tmp_path / "untar_safe"
-    extracted = ArchiveManager.extract(tpath, out, members=["safe/file.txt"])
+    extracted = ArchiveManager.extract(
+        tpath,
+        out,
+        members=["safe/file.txt"],
+    )
     assert (out / "safe" / "file.txt").read_text(encoding="utf-8") == "hello"
+    assert {p.relative_to(out).as_posix() for p in extracted} == {"safe/file.txt"}
 
 
 def test_list_contents_errors(tmp_path: Path) -> None:

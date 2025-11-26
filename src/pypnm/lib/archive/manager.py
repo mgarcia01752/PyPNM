@@ -4,14 +4,16 @@
 from __future__ import annotations
 
 import logging
-from pypnm.lib.types import PathLike
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Literal
 
 import tarfile
 import zipfile
 
+from pypnm.lib.types import PathLike
+
 __all__ = ["ArchiveManager"]
+
 
 class ArchiveManager:
     """
@@ -24,7 +26,12 @@ class ArchiveManager:
 
     Security
     --------
-    - extract() defends against path traversal ("../" or absolute paths).
+    - extract() defends against path traversal ("../" or absolute paths) by:
+      * detecting unsafe members,
+      * extracting safe members,
+      * directing safe members to either dest_dir or dest_dir + "_safe",
+      * logging each unsafe member,
+      * and raising RuntimeError if any unsafe member was encountered.
     """
 
     _ZIP_COMP: Dict[str, int] = {
@@ -107,7 +114,7 @@ class ArchiveManager:
         ap.parent.mkdir(parents=True, exist_ok=True)
 
         if remove_duplicate_files:
-            files = ArchiveManager.__remove_duplicates(files)   
+            files = ArchiveManager.__remove_duplicates(files)
 
         with zipfile.ZipFile(ap, mode=mode, compression=comp) as zf:
             for f in files:
@@ -122,14 +129,13 @@ class ArchiveManager:
                     arcname = arcname_map[f]
                 elif preserve_tree and arcbase is not None:
                     try:
-                        arcname = str(Path(src).resolve().relative_to(Path(arcbase).resolve()))
+                        arcname = str(src.resolve().relative_to(Path(arcbase).resolve()))
                     except Exception:
                         arcname = src.name
                 else:
                     arcname = src.name
 
-                logging.debug(f'Archiving: {f} to {arcname}')
-
+                logging.debug("Archiving: %s to %s", f, arcname)
                 zf.write(src, arcname)
         return ap
 
@@ -156,7 +162,7 @@ class ArchiveManager:
         if overwrite and ap.exists():
             ap.unlink(missing_ok=True)
 
-        with tarfile.open(ap, str(mode)) as tf:
+        with tarfile.open(ap, mode) as tf:
             for f in files:
                 src = Path(f)
                 if not src.exists():
@@ -169,7 +175,7 @@ class ArchiveManager:
                     arcname = arcname_map[f]  # type: ignore[index]
                 elif preserve_tree and arcbase is not None:
                     try:
-                        arcname = str(Path(src).resolve().relative_to(Path(arcbase).resolve()))
+                        arcname = str(src.resolve().relative_to(Path(arcbase).resolve()))
                     except Exception:
                         arcname = src.name
                 else:
@@ -179,27 +185,26 @@ class ArchiveManager:
         return ap
 
     # ──────────────────────────────────────────────────────────────────────────
-    # Extraction
+    # Internal path-traversal helper
     # ──────────────────────────────────────────────────────────────────────────
     @staticmethod
-    def _is_safe_member(base_dir: Path, target_path: Path) -> bool:
+    def _is_unsafe_name(name: str) -> bool:
         """
-        Ensure target_path stays inside base_dir (prevents path traversal).
+        Basic path-traversal detection based on name components.
+
+        Rules:
+        - Leading '/' or '\\' => unsafe (absolute path).
+        - Any '..' path component => unsafe.
         """
-        try:
-            base_dir = base_dir.resolve(strict=False)
-            target_path = target_path.resolve(strict=False)
-            return str(target_path).startswith(str(base_dir))
-        except Exception:
-            return False
+        norm = name.replace("\\", "/")
+        if norm.startswith("/"):
+            return True
+        parts = [p for p in norm.split("/") if p not in ("", ".")]
+        return any(p == ".." for p in parts)
 
-    @staticmethod
-    def _safe_join(base: Path, name: str) -> Path:
-        # Avoid absolute paths and drive letters; normalize
-        name = name.replace("\\", "/")
-        name = name.lstrip("/")  # drop leading slash
-        return (base / name).resolve(strict=False)
-
+    # ──────────────────────────────────────────────────────────────────────────
+    # Extraction
+    # ──────────────────────────────────────────────────────────────────────────
     @staticmethod
     def extract(
         archive_path: PathLike,
@@ -212,53 +217,91 @@ class ArchiveManager:
         """
         Extract archive into dest_dir with path traversal protection.
 
+        Behavior
+        --------
         - fmt auto-detected if not provided.
         - members can filter which names to extract.
         - overwrite=True will replace existing files; otherwise skips them.
+        - For archives with no unsafe members:
+            * safe members are extracted under `dest_dir`.
+        - For archives with any unsafe members:
+            * safe members are extracted under `dest_dir + "_safe"`,
+            * unsafe members are skipped and logged,
+            * a RuntimeError is raised after extraction completes.
         """
         ap = Path(archive_path)
-        out = Path(dest_dir)
-        out.mkdir(parents=True, exist_ok=True)
+        dest = Path(dest_dir)
         fmt = fmt or ArchiveManager.detect_format(ap)
 
         extracted: List[Path] = []
 
+        # ── ZIP ───────────────────────────────────────────────────────────────
         if fmt == "zip":
             with zipfile.ZipFile(ap, "r") as zf:
-                names = members or zf.namelist()
-                for name in names:
-                    tgt = ArchiveManager._safe_join(out, name)
-                    if not ArchiveManager._is_safe_member(out, tgt):
-                        raise RuntimeError(f"Unsafe path in zip: {name}")
+                all_names = list(members) if members is not None else zf.namelist()
+
+                unsafe_present = any(ArchiveManager._is_unsafe_name(n) for n in all_names)
+                if unsafe_present:
+                    base_dir = dest.parent / f"{dest.name}_safe"
+                else:
+                    base_dir = dest
+
+                base_dir.mkdir(parents=True, exist_ok=True)
+
+                for name in all_names:
+                    if ArchiveManager._is_unsafe_name(name):
+                        ArchiveManager._LOG.warning("extract: skipping unsafe zip member: %s", name)
+                        continue
+
+                    tgt = base_dir / name
                     if tgt.exists() and not overwrite:
                         continue
+
                     if name.endswith("/"):
                         tgt.mkdir(parents=True, exist_ok=True)
                         continue
+
                     tgt.parent.mkdir(parents=True, exist_ok=True)
                     with zf.open(name) as src, open(tgt, "wb") as dst:
                         dst.write(src.read())
                     extracted.append(tgt)
+
+            if unsafe_present:
+                raise RuntimeError(f"Unsafe path(s) detected in zip archive: {ap}")
+
             return extracted
 
+        # ── TAR ───────────────────────────────────────────────────────────────
         if fmt in ArchiveManager._TAR_MODE:
             with tarfile.open(ap, "r:*") as tf:
                 all_members = tf.getmembers()
-                sel = (
-                    [m for m in all_members if m.name in set(members)]  # type: ignore[arg-type]
-                    if members
-                    else all_members
-                )
+                if members is not None:
+                    wanted = set(members)
+                    sel = [m for m in all_members if m.name in wanted]
+                else:
+                    sel = all_members
+
+                unsafe_present = any(ArchiveManager._is_unsafe_name(m.name) for m in sel)
+                if unsafe_present:
+                    base_dir = dest.parent / f"{dest.name}_safe"
+                else:
+                    base_dir = dest
+
+                base_dir.mkdir(parents=True, exist_ok=True)
+
                 for m in sel:
-                    # Normalize and validate
-                    tgt = ArchiveManager._safe_join(out, m.name)
-                    if not ArchiveManager._is_safe_member(out, tgt):
-                        raise RuntimeError(f"Unsafe path in tar: {m.name}")
+                    if ArchiveManager._is_unsafe_name(m.name):
+                        ArchiveManager._LOG.warning("extract: skipping unsafe tar member: %s", m.name)
+                        continue
+
+                    tgt = base_dir / m.name
                     if m.isdir():
                         tgt.mkdir(parents=True, exist_ok=True)
                         continue
+
                     if tgt.exists() and not overwrite:
                         continue
+
                     tgt.parent.mkdir(parents=True, exist_ok=True)
                     src_file = tf.extractfile(m)
                     if src_file is None:
@@ -266,6 +309,10 @@ class ArchiveManager:
                     with src_file as src, open(tgt, "wb") as dst:
                         dst.write(src.read())
                     extracted.append(tgt)
+
+            if unsafe_present:
+                raise RuntimeError(f"Unsafe path(s) detected in tar archive: {ap}")
+
             return extracted
 
         raise ValueError(f"Unsupported or undetected archive format for: {archive_path}")

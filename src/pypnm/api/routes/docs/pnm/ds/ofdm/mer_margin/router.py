@@ -5,7 +5,7 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import logging
-from typing import Dict, List, Union, cast
+from typing import Dict, List, Union
 from fastapi import APIRouter
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
     PnmAnalysisResponse, PnmRequest)

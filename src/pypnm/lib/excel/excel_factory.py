@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from openpyxl import Workbook
 from openpyxl.styles import Font
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 import os
 
 class ExcelWorkbookFactory:

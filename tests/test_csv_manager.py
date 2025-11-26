@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import List
 
 import csv
-import pandas as pd
 import pytest
 
 from pypnm.lib.csv.manager import (

@@ -9,7 +9,6 @@ from dataclasses import dataclass
 from typing import ClassVar, Dict
 
 from pydantic import BaseModel, Field
-from pydantic.types import T
 
 class SystemDescriptorModel(BaseModel):
     """

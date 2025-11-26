@@ -124,7 +124,6 @@ class CodeWordLutGenerator:
 
         # gray-seq: assign Gray(code) to sorted rank
         points = sorted(self.hard_decision, key=lambda t: (t[0], t[1]))
-        bits_total = max(1, math.ceil(math.log2(m)))
 
         lut: CodeWordLut = {}
         for rank, (I, Q0) in enumerate(points):

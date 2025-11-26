@@ -23,7 +23,6 @@ from pypnm.lib.types import (
     ArrayLike, ChannelId, FloatSeries, FrequencyHz, FrequencySeriesHz, ComplexArray, 
     ComplexSeries, MacAddressStr, Sequence, StringEnum,)
 from pypnm.lib.utils import TimeUnit, Utils
-from pypnm.pnm.lib.min_avg_max import MinAvgMax
 from pypnm.pnm.lib.min_avg_max_complex import MinAvgMaxComplex
 from pypnm.pnm.parser.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 

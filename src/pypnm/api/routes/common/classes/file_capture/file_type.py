@@ -5,7 +5,6 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 from enum import IntEnum
-from re import X
 
 class FileType(IntEnum):
     """

@@ -543,7 +543,6 @@ class Snmp_v2c:
         hour = data[4]
         minute = data[5]
         second = data[6]
-        decisecond = data[7]  # often ignored
 
         # Default: naive datetime (no timezone info)
         dt = datetime(year, month, day, hour, minute, second)

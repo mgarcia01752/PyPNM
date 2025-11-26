@@ -8,10 +8,8 @@ import struct
 from typing import Any, Dict, Final, List
 
 from pydantic import BaseModel, Field, ConfigDict
-from pydantic.functional_serializers import field_serializer
 
 from pypnm.lib.types import FloatSeries, FrequencyHz, FrequencySeriesHz
-from pypnm.pnm.parser.pnm_file_type import PnmFileType
 
 
 class SpecAnalysisSnmpConfigModel(BaseModel):

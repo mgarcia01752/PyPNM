@@ -47,6 +47,8 @@ dev = [
   "black>=24.0.0",
   "mypy>=1.10.0",
   "pydantic-settings>=2.6.0",
+  "ruff>=0.6.0",
+  "pycycle>=0.0.8,<0.1.0",
 ]
 docs = [
   "mkdocs>=1.6",
@@ -66,6 +68,7 @@ Bug-Tracker = "https://github.com/mgarcia01752/PyPNM/issues"
 pypnm      = "pypnm.cli:main"
 docs-serve = "mkdocs.__main__:serve"
 docs-build = "mkdocs.__main__:build"
+pypnm-software-qa-checker  = "pypnm.tools.qa_checker:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -132,3 +135,11 @@ pretty = true
 [tool.pydantic-mypy]
 init_forbid_extra = true
 warn_required_dynamic_aliases = true
+
+[tool.ruff]
+src            = ["src"]
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["F"]
+ignore = []

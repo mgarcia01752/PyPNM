@@ -85,7 +85,7 @@ class DocsFddCmFddBandEdgeCapabilities:
 
             return True
         except Exception as e:
-            self.logger.exception("Unexpected error during SNMP population")
+            self.logger.exception("Unexpected error during SNMP population, error: {e}")
             return False
 
     def is_start(self) -> bool:

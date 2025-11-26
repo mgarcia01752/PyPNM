@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import json
 import logging
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService

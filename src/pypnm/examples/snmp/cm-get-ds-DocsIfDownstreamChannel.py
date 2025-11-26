@@ -56,7 +56,7 @@ async def main():
             logging.info(f"✅ Output written to: {filename}")
 
     except Exception as e:
-        logging.exception("An error occurred while fetching downstream channel entries.")
+        logging.exception(f"An error occurred while fetching downstream channel entries, error: {e}")
 
 if __name__ == "__main__":
     asyncio.run(main())

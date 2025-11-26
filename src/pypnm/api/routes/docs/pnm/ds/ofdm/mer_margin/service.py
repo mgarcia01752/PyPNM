@@ -66,7 +66,7 @@ class CmDsOfdmMerMarginService:
                     template[str(index)].append(profile.model_dump())
 
         except Exception as e:
-            self.logger.exception("Failed to construct MER Margin measurement template")
+            self.logger.exception("Failed to construct MER Margin measurement template, error: %s", e)
 
         return template
 
@@ -83,5 +83,5 @@ class CmDsOfdmMerMarginService:
             return {"DS_MER_MARGIN": [e.model_dump() for e in entries]}
         
         except Exception as e:
-            self.logger.exception("Failed to retrieve MER Margin entries")
+            self.logger.exception("Failed to retrieve MER Margin entries, error: %s", e)
             return {"DS_MER_MARGIN": []}

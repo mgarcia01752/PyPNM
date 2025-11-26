@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import logging
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
 
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck

@@ -9,7 +9,7 @@ from typing import Any, Dict, List, cast
 
 from fastapi import APIRouter
 
-from pypnm.api.routes.basic.abstract.analysis_report import Analysis, AnalysisRptMatplotConfig
+from pypnm.api.routes.basic.abstract.analysis_report import Analysis
 from pypnm.api.routes.basic.constellation_display_analysis_rpt import ConstDisplayAnalysisRptMatplotConfig, ConstellationDisplayReport
 from pypnm.api.routes.common.classes.analysis.analysis import AnalysisType
 from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType

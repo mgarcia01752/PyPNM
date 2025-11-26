@@ -698,7 +698,7 @@ class CmSnmpOperation:
             return entries
 
         except Exception as e:
-            self.logger.exception("Failed to retrieve downstream SC-QAM channel entries")
+            self.logger.exception("Failed to retrieve downstream SC-QAM channel entries, error: %s", e)
             return []
 
     async def getDocsIfDownstreamChannelCwErrorRate(self, sample_time_elapsed: float = 5.0) -> \
@@ -819,7 +819,7 @@ class CmSnmpOperation:
             ofdm_chan_entry.extend(await DocsIf31CmDsOfdmChanChannelEntry.get(self._snmp, indices))
 
         except Exception as e:
-            self.logger.exception("Failed to retrieve DocsIf31CmDsOfdmChanEntry entries")
+            self.logger.exception("Failed to retrieve DocsIf31CmDsOfdmChanEntry entries, error: %s", e)
 
         return ofdm_chan_entry
     
@@ -1284,7 +1284,7 @@ class CmSnmpOperation:
             return entries
 
         except Exception as e:
-            self.logger.exception("Failed to retrieve ATDMA upstream channel entries")
+            self.logger.exception("Failed to retrieve ATDMA upstream channel entries, error: %s", e)
             return []
 
     async def getDocsIf31CmUsOfdmaChannelIdIndexStack(self) -> List[Tuple[InterfaceIndex, ChannelId]]:
@@ -1439,7 +1439,7 @@ class CmSnmpOperation:
             entries = await DocsPnmCmOfdmChanEstCoefEntry.get(snmp=self._snmp, indices=indices)
 
         except Exception as e:
-            self.logger.exception("Failed to retrieve DocsPnmCmOfdmChanEstCoefEntry entries")
+            self.logger.exception("Failed to retrieve DocsPnmCmOfdmChanEstCoefEntry entries, error: %s", e)
 
         return entries
 
@@ -1468,7 +1468,7 @@ class CmSnmpOperation:
             entries = await DocsPnmCmDsConstDispMeasEntry.get(snmp=self._snmp, indices=indices)
 
         except Exception as e:
-            self.logger.exception("Failed to retrieve DocsPnmCmDsConstDispMeasEntry entries")
+            self.logger.exception("Failed to retrieve DocsPnmCmDsConstDispMeasEntry entries, error: %s", e)
 
         return entries
 
@@ -1493,7 +1493,7 @@ class CmSnmpOperation:
             entries = await DocsPnmCmUsPreEqEntry.get(snmp=self._snmp, indices=indices)
 
         except Exception as e:
-            self.logger.exception("Failed to retrieve DocsPnmCmUsPreEqEntry entries")
+            self.logger.exception("Failed to retrieve DocsPnmCmUsPreEqEntry entries, error: %s", e)
 
         return entries
 
@@ -1521,7 +1521,7 @@ class CmSnmpOperation:
             self.logger.debug(f'Number of DocsPnmCmDsOfdmMerMarEntry Found: {len(entries)}')
             
         except Exception as e:
-            self.logger.exception("Failed to retrieve DocsPnmCmDsOfdmMerMarEntry entries")
+            self.logger.exception("Failed to retrieve DocsPnmCmDsOfdmMerMarEntry entries, error: %s", e)
 
         return entries
 
@@ -1549,7 +1549,7 @@ class CmSnmpOperation:
             self.logger.debug(f'Number of DocsPnmCmDsHistEntry Found: {len(entries)}')
 
         except Exception as e:
-            self.logger.exception("Failed to retrieve DocsPnmCmDsHistEntry entries")
+            self.logger.exception("Failed to retrieve DocsPnmCmDsHistEntry entries, error: %s", e)
 
         return entries
 
@@ -1675,7 +1675,7 @@ class CmSnmpOperation:
                 entries.append((index, profiles))
 
         except Exception as e:
-            self.logger.exception("Failed to retrieve OFDM profiles")
+            self.logger.exception("Failed to retrieve OFDM profiles, error: %s", e)
 
         return entries     
 

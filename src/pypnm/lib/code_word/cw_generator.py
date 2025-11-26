@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import List, Tuple
 
-from pypnm.lib.qam.types import CodeWordArray, QamModulation, SymbolArray
+from pypnm.lib.qam.types import CodeWordArray, QamModulation
 from pypnm.lib.types import ByteArray, Number
 
 

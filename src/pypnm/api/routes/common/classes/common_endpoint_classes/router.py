@@ -16,7 +16,6 @@ from fastapi.responses import FileResponse
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
     PnmAnalysisRequest, PnmAnalysisResponse, PnmMeasurementResponse, PnmRequest)
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
-from pypnm.api.routes.common.classes.common_endpoint_classes.types import AnalysisCommonResponse
 
 class BaseFastApiRouter(ABC):
 

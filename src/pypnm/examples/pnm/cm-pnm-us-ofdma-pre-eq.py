@@ -53,6 +53,8 @@ async def main():
                                             filename=filename, 
                                             last_pre_eq_filename=filename_last)
         
+        print(f'Waiting for Pre-Equalization OFDMA to complete,setDocsPnmCmUsPreEq returned: {dsce}')
+
         while (await cm.getDocsPnmCmCtlStatus() != DocsPnmCmCtlStatus.READY):
             print(f"Waiting for Pre-Equalization OFDMA to complete")
             

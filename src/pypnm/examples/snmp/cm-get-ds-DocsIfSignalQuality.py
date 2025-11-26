@@ -37,7 +37,11 @@ async def main():
 
     logging.info(f"Connected to: {await cm.getSysDescr()}")
     
-    sig_qual = await cm.getDocsIfSignalQuality()
+    try:
+        signal_quality = await cm.getDocsIfSignalQuality()
+        logging.info(f"DocsIfSignalQuality: {signal_quality}")
+    except Exception as e:
+        logging.exception(f"An error occurred while fetching DocsIfSignalQuality., reason: {e}")
 
 if __name__ == "__main__":
     asyncio.run(main())
