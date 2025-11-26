@@ -15,9 +15,9 @@ Usage: $(basename "$0") [OPTIONS] [ROOT_DIR]
 Options:
   --all         Clean logs, Python cache, build artifacts, PNM data, output
   --logs        Truncate logs/pypnm.log (preserve file and permissions)
-  --python      Clean only Python caches (__pycache__, *.pyc, .pytest_cache)
+  --python      Clean only Python caches (__pycache__, *.pyc, .pytest_cache, etc.)
   --build       Clean build/, dist/, *.egg-info
-  --pnm         Clean data/pnm/ and data/db/
+  --pnm         Clean .data/pnm/ and .data/db/
   --archive     Clean .data/archive/
   --excel       Clean .data/xlsx/ and .data/csv/
   --plot-data   Clean .data/png/, .data/csv/ and .data/archive/
@@ -70,7 +70,7 @@ echo "🔍 Cleaning in root directory: $ROOT_DIR"
 safe_rm() {
   local path
   for path in "$@"; do
-    if [[ -e $path ]]; then
+    if [[ -e $path || -L $path ]]; then
       rm -rf "$path"
       echo "🗑️  Removed: $path"
     fi
@@ -99,17 +99,34 @@ clean_archives() {
 }
 
 clean_python() {
-  echo "🐍 Cleaning Python caches..."
-  find "$ROOT_DIR" -type d -name '__pycache__' -print -exec rm -rf {} +
-  find "$ROOT_DIR" -type f -name '*.pyc'     -print -delete
-  safe_rm "$ROOT_DIR/.pytest_cache"
+  echo "🐍 Cleaning Python caches and test artifacts..."
+
+  # Skip virtualenv directory (.env) while cleaning caches
+  find "$ROOT_DIR" \
+    -path "$ROOT_DIR/.env" -prune -o \
+    -type d -name '__pycache__' -print -exec rm -rf {} +
+
+  find "$ROOT_DIR" \
+    -path "$ROOT_DIR/.env" -prune -o \
+    -type f -name '*.pyc' -print -exec rm -f {} +
+
+  # Common tool/test caches
+  safe_rm \
+    "$ROOT_DIR/.pytest_cache" \
+    "$ROOT_DIR/.mypy_cache" \
+    "$ROOT_DIR/.ruff_cache" \
+    "$ROOT_DIR/.hypothesis" \
+    "$ROOT_DIR/.coverage" \
+    "$ROOT_DIR/coverage.xml"
 }
 
 clean_build() {
   echo "🏗️  Cleaning build artifacts..."
-  safe_rm "$ROOT_DIR/build"
-  safe_rm "$ROOT_DIR/dist"
+  safe_rm "$ROOT_DIR/build" "$ROOT_DIR/dist"
+
+  # Top-level and src-level egg-info (e.g., src/pypnm.egg-info)
   safe_rm "$ROOT_DIR"/*.egg-info
+  safe_rm "$ROOT_DIR/src"/*.egg-info
 }
 
 clean_pnm() {
