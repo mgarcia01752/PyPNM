@@ -9,7 +9,7 @@ from pathlib import Path
 import math
 import pytest
 
-from pypnm.pnm.process.CmDsConstDispMeas import CmDsConstDispMeas
+from pypnm.pnm.parser.CmDsConstDispMeas import CmDsConstDispMeas
 
 DATA_DIR = Path(__file__).parent / "_data"
 CONST_PATH = DATA_DIR / "const_display.bin"

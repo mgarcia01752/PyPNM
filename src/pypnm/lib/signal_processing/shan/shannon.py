@@ -10,7 +10,7 @@ from typing import ClassVar, Dict, List, Union, cast
 import numpy as np
 
 from pypnm.lib.types import FloatSeries, SNRdB, SNRln
-from pypnm.pnm.process.CmDsOfdmModulationProfile import ModulationOrderType
+from pypnm.pnm.parser.CmDsOfdmModulationProfile import ModulationOrderType
 
 BitsPerSymbol       = int
 BitPerSymToQamMod   = Dict[BitsPerSymbol, str]

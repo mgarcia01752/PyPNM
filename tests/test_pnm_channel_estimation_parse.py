@@ -11,7 +11,7 @@ import pytest
 from typing_extensions import assert_type
 
 
-from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
+from pypnm.pnm.parser.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 from pypnm.lib.types import ComplexArray, ComplexSeries
 
 DATA_DIR = Path(__file__).parent / "_data"

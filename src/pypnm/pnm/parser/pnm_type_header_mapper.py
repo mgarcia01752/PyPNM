@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Optional
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
-from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.parser.pnm_file_type import PnmFileType
 
 
 class PnmFileTypeMapper:

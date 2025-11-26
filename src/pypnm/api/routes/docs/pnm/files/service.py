@@ -26,13 +26,13 @@ from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import FileName, MacAddressStr, PathLike
 from pypnm.lib.utils import Utils
-from pypnm.pnm.process.model.process_rtn_models import (
+from pypnm.pnm.parser.model.process_rtn_models import (
     CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel, 
     CmDsOfdmFecSummaryModel, CmDsOfdmModulationProfileModel, CmDsOfdmRxMerModel, CmUsOfdmaPreEqModel)
-from pypnm.pnm.process.pnm_file_type import PnmFileType
-from pypnm.pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.parser.pnm_file_type import PnmFileType
+from pypnm.pnm.parser.pnm_header import PnmHeader
 
-from pypnm.pnm.process.pnm_type_header_mapper import PnmFileTypeMapper
+from pypnm.pnm.parser.pnm_type_header_mapper import PnmFileTypeMapper
 
 from pypnm.api.routes.docs.pnm.files.schemas import (
     FileAnalysisRequest, FileEntry, FileQueryRequest,
@@ -40,9 +40,9 @@ from pypnm.api.routes.docs.pnm.files.schemas import (
 
 # TODO: Move this import inside method to avoid circular dependency
 if TYPE_CHECKING:
-    from pypnm.pnm.process.pnm_parameter import PnmParsers
-    from pypnm.pnm.process.pnm_parameter import GetPnmParserAndParameters
-    from pypnm.pnm.process.pnm_parameter import PnmParserParametersModel
+    from pypnm.pnm.parser.pnm_parameter import PnmParsers
+    from pypnm.pnm.parser.pnm_parameter import GetPnmParserAndParameters
+    from pypnm.pnm.parser.pnm_parameter import PnmParserParametersModel
     from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 
 class PnmFileService:
@@ -361,7 +361,7 @@ class PnmFileService:
         fp = FileProcessor(file_path).read_file()
 
         # Get PnmHeader to Determine PnmFileType
-        from pypnm.pnm.process.pnm_parameter import GetPnmParserAndParameters
+        from pypnm.pnm.parser.pnm_parameter import GetPnmParserAndParameters
         parser, model  = GetPnmParserAndParameters(fp).get_parser()
 
         self.logger.info(f"Performing {model.file_type.name} analysis for transaction {req.search.transaction_id} on file {filename}")

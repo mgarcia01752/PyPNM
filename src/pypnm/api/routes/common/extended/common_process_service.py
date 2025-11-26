@@ -14,15 +14,15 @@ from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.types import MacAddressStr
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
-from pypnm.pnm.process.CmDsConstDispMeas import CmDsConstDispMeas
-from pypnm.pnm.process.CmDsHist import CmDsHist
-from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
-from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
-from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
-from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
-from pypnm.pnm.process.CmSpectrumAnalysis import CmSpectrumAnalysis
-from pypnm.pnm.process.CmSpectrumAnalysisSnmp import CmSpectrumAnalysisSnmp
-from pypnm.pnm.process.CmUsOfdmaPreEq import CmUsOfdmaPreEq
+from pypnm.pnm.parser.CmDsConstDispMeas import CmDsConstDispMeas
+from pypnm.pnm.parser.CmDsHist import CmDsHist
+from pypnm.pnm.parser.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
+from pypnm.pnm.parser.CmDsOfdmFecSummary import CmDsOfdmFecSummary
+from pypnm.pnm.parser.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
+from pypnm.pnm.parser.CmDsOfdmRxMer import CmDsOfdmRxMer
+from pypnm.pnm.parser.CmSpectrumAnalysis import CmSpectrumAnalysis
+from pypnm.pnm.parser.CmSpectrumAnalysisSnmp import CmSpectrumAnalysisSnmp
+from pypnm.pnm.parser.CmUsOfdmaPreEq import CmUsOfdmaPreEq
 
 class CommonProcessService(CommonMessagingService):
     def __init__(self, message_response:MessageResponse, **extra_options):

@@ -7,7 +7,7 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pypnm.pnm.process.pnm_header import PnmHeaderParameters
+    from pypnm.pnm.parser.pnm_header import PnmHeaderParameters
 
 
 class PnmFileType(Enum):

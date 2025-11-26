@@ -66,7 +66,7 @@ Payload bytes immediately after the header contain `data_length` bytes: each sub
 ## Example
 
 ```python
-from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
+from pypnm.pnm.parser.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 from pypnm.pnm.lib.fixed_point_decoder import IntegerBits, FractionalBits
 
 # binary_bytes must contain a valid PNM OFDM Channel Estimation Coef payload.

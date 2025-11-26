@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
-from pypnm.pnm.process.model.process_rtn_models import CmDsOfdmModulationProfileModel
+from pypnm.pnm.parser.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
+from pypnm.pnm.parser.model.process_rtn_models import CmDsOfdmModulationProfileModel
 
 
 DATA_DIR = Path(__file__).parent / "_data"

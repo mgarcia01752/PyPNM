@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
+from pypnm.pnm.parser.CmDsOfdmRxMer import CmDsOfdmRxMer
 
 DATA_DIR = Path(__file__).parent / "_data"
 RXMER_PATH = DATA_DIR / "rxmer.bin"

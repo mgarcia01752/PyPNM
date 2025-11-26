@@ -10,8 +10,8 @@ from pydantic import BaseModel, Field, ConfigDict
 from pydantic.functional_serializers import field_serializer
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.types import ChannelId, FloatSeries, FrequencyHz, MacAddressStr
-from pypnm.pnm.process.pnm_file_type import PnmFileType
-from pypnm.pnm.process.pnm_header import PnmHeader, PnmHeaderParameters
+from pypnm.pnm.parser.pnm_file_type import PnmFileType
+from pypnm.pnm.parser.pnm_header import PnmHeader, PnmHeaderParameters
 
 class CmSpectrumAnalyzerModel(BaseModel):
     """

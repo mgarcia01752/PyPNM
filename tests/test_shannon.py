@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 from pypnm.lib.signal_processing.shan.shannon import Shannon
-from pypnm.pnm.process.CmDsOfdmModulationProfile import ModulationOrderType
+from pypnm.pnm.parser.CmDsOfdmModulationProfile import ModulationOrderType
 
 
 def test_snr_to_bits_examples() -> None:

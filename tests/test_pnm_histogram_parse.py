@@ -10,7 +10,7 @@ import re
 
 import pytest
 
-from pypnm.pnm.process.CmDsHist import CmDsHist
+from pypnm.pnm.parser.CmDsHist import CmDsHist
 
 DATA_DIR = Path(__file__).parent / "_data"
 HIST_PATH = DATA_DIR / "histogram.bin"

@@ -9,9 +9,9 @@ from typing import Dict, List, Optional, Union, cast, Tuple, Type, overload
 
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import CaptureTime, ChannelId, MacAddressStr, TimeStamp
-from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
-from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
-from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
+from pypnm.pnm.parser.CmDsOfdmFecSummary import CmDsOfdmFecSummary
+from pypnm.pnm.parser.CmDsOfdmRxMer import CmDsOfdmRxMer
+from pypnm.pnm.parser.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
 
 MultiPnmCollectionObject = Union[
     CmDsOfdmRxMer,

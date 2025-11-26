@@ -11,15 +11,15 @@ from pydantic import BaseModel, Field
 
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import MacAddressStr, Tuple
-from pypnm.pnm.process.CmDsHist import CmDsHist
-from pypnm.pnm.process.pnm_file_type import PnmFileType
-from pypnm.pnm.process.pnm_header import PnmHeader
-from pypnm.pnm.process.CmDsConstDispMeas import CmDsConstDispMeas
-from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
-from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
-from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
-from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
-from pypnm.pnm.process.CmUsOfdmaPreEq import CmUsOfdmaPreEq
+from pypnm.pnm.parser.CmDsHist import CmDsHist
+from pypnm.pnm.parser.pnm_file_type import PnmFileType
+from pypnm.pnm.parser.pnm_header import PnmHeader
+from pypnm.pnm.parser.CmDsConstDispMeas import CmDsConstDispMeas
+from pypnm.pnm.parser.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
+from pypnm.pnm.parser.CmDsOfdmFecSummary import CmDsOfdmFecSummary
+from pypnm.pnm.parser.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
+from pypnm.pnm.parser.CmDsOfdmRxMer import CmDsOfdmRxMer
+from pypnm.pnm.parser.CmUsOfdmaPreEq import CmUsOfdmaPreEq
 
 PnmParsers = Union[CmDsConstDispMeas,
                    CmDsOfdmChanEstimateCoef,

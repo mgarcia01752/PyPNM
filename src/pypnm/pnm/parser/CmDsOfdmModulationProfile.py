@@ -13,12 +13,12 @@ from pydantic import BaseModel, Field, ConfigDict
 
 from pypnm.lib.constants import KHZ
 from pypnm.lib.types import FrequencySeriesHz, ProfileId
-from pypnm.pnm.process.pnm_file_type import PnmFileType
-from pypnm.pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.parser.pnm_file_type import PnmFileType
+from pypnm.pnm.parser.pnm_header import PnmHeader
 
 # TODO: Need to fix circular import
 if TYPE_CHECKING:
-    from pypnm.pnm.process.model.process_rtn_models import CmDsOfdmModulationProfileModel
+    from pypnm.pnm.parser.model.process_rtn_models import CmDsOfdmModulationProfileModel
 
 
 class ModulationOrderType(IntEnum):
@@ -128,7 +128,7 @@ class CmDsOfdmModulationProfile(PnmHeader):
 
         profiles = self._parse_profiles(profile_blob)
 
-        from pypnm.pnm.process.model.process_rtn_models import CmDsOfdmModulationProfileModel
+        from pypnm.pnm.parser.model.process_rtn_models import CmDsOfdmModulationProfileModel
 
         self._model = CmDsOfdmModulationProfileModel(
             pnm_header                      =   self.getPnmHeaderParameterModel(),

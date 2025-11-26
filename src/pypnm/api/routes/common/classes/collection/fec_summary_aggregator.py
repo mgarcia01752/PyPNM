@@ -12,8 +12,8 @@ from pypnm.api.routes.common.classes.collection.abstract.multi_pnm_aggreator imp
     MultiPnmCollection, MultiPnmCollectionObject)
 from pypnm.docsis.cm_snmp_operation import FecSummaryType
 from pypnm.lib.types import ChannelId, TimeStamp
-from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
-from pypnm.pnm.process.CmDsOfdmModulationProfile import ProfileId
+from pypnm.pnm.parser.CmDsOfdmFecSummary import CmDsOfdmFecSummary
+from pypnm.pnm.parser.CmDsOfdmModulationProfile import ProfileId
 
 
 class CodewordSummaryTotalsModel(BaseModel):

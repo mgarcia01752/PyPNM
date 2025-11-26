@@ -23,9 +23,9 @@ from pypnm.lib.types import (ArrayLike, CaptureTime, ChannelId, FloatSeries,
                              FrequencySeriesHz, MacAddressStr, MagnitudeSeries, StringEnum, TimeStamp, 
                              TimestampSec)
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
-from pypnm.pnm.process.CmDsOfdmFecSummary import CmDsOfdmFecSummary
-from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ProfileId
-from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer, CmDsOfdmRxMerModel
+from pypnm.pnm.parser.CmDsOfdmFecSummary import CmDsOfdmFecSummary
+from pypnm.pnm.parser.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ProfileId
+from pypnm.pnm.parser.CmDsOfdmRxMer import CmDsOfdmRxMer, CmDsOfdmRxMerModel
 
 
 class MultiRxMerAnalysisType(StringEnum):

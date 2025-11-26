@@ -73,7 +73,7 @@ Let `spacing = subcarrier_spacing (Hz)`, `f0 = subcarrier_zero_frequency (Hz)`, 
 ## Example
 
 ```python
-from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
+from pypnm.pnm.parser.CmDsOfdmRxMer import CmDsOfdmRxMer
 
 # binary_bytes must contain a valid PNM RxMER payload.
 rxmer = CmDsOfdmRxMer(binary_bytes)

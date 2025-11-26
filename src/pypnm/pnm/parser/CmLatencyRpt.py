@@ -6,9 +6,9 @@ from __future__ import annotations
 
 import logging
 
-from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
-from pypnm.pnm.process.pnm_file_type import PnmFileType
-from pypnm.pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.parser.model.pnm_base_model import PnmBaseModel
+from pypnm.pnm.parser.pnm_file_type import PnmFileType
+from pypnm.pnm.parser.pnm_header import PnmHeader
 
 class CmLatencyModel(PnmBaseModel):
     ''' Pydantic model for Latency Report data -> PnmBaseModel'''

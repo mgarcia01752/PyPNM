@@ -42,13 +42,13 @@ from pypnm.lib.types import (
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import WindowFunction
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
-from pypnm.pnm.process.model.process_rtn_models import (
+from pypnm.pnm.parser.model.process_rtn_models import (
     CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel, 
     CmDsOfdmFecSummaryModel, CmDsOfdmModulationProfileModel, CmDsOfdmRxMerModel, CmUsOfdmaPreEqModel)
-from pypnm.pnm.process.CmDsOfdmModulationProfile import (
+from pypnm.pnm.parser.CmDsOfdmModulationProfile import (
     CmDsOfdmModulationProfile, ModulationOrderType, 
     RangeModulationProfileSchemaModel, SkipModulationProfileSchemaModel)
-from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
 
 

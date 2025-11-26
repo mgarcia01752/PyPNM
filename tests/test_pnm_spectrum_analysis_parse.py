@@ -7,7 +7,7 @@ from pathlib import Path
 import json
 import pytest
 
-from pypnm.pnm.process.CmSpectrumAnalysis import CmSpectrumAnalysis
+from pypnm.pnm.parser.CmSpectrumAnalysis import CmSpectrumAnalysis
 
 DATA_DIR = Path(__file__).parent / "_data"
 SPEC_PATH = DATA_DIR / "spectrum_analyzer.bin"

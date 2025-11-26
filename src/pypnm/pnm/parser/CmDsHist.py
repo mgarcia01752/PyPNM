@@ -8,10 +8,10 @@ import logging
 from struct import calcsize, unpack
 
 from pypnm.lib.types import IntSeries, MacAddressStr
-from pypnm.pnm.process.model.process_rtn_models import CmDsHistModel
-from pypnm.pnm.process.pnm_file_type import PnmFileType
+from pypnm.pnm.parser.model.process_rtn_models import CmDsHistModel
+from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
-from pypnm.pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.parser.pnm_header import PnmHeader
 
 class CmDsHist(PnmHeader):
     """

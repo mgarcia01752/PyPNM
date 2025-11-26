@@ -12,9 +12,9 @@ from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_SUB_CARRIER_ZERO_FRE
 from pypnm.lib.mac_address import MacAddressFormat
 from pypnm.lib.types import ChannelId, ComplexArray, ComplexSeries, FrequencyHz, MacAddressStr
 from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder, FractionalBits, IntegerBits
-from pypnm.pnm.process.model.process_rtn_models import CmDsOfdmChanEstimateCoefModel
-from pypnm.pnm.process.pnm_file_type import PnmFileType
-from pypnm.pnm.process.pnm_header import PnmHeader
+from pypnm.pnm.parser.model.process_rtn_models import CmDsOfdmChanEstimateCoefModel
+from pypnm.pnm.parser.pnm_file_type import PnmFileType
+from pypnm.pnm.parser.pnm_header import PnmHeader
 
 
 class CmDsOfdmChanEstimateCoef(PnmHeader):

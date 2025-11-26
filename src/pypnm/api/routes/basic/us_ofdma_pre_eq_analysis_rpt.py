@@ -20,7 +20,7 @@ from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
 from pypnm.lib.types import ArrayLike, ChannelId, ComplexArray, FloatSeries, FrequencyHz, MagnitudeSeries, PathLike
-from pypnm.pnm.process.pnm_header import PnmFileType, PnmHeader, PnmHeaderParameters
+from pypnm.pnm.parser.pnm_header import PnmFileType, PnmHeader, PnmHeaderParameters
 
 
 class OfdmaPreEqParameters(BaseModel):

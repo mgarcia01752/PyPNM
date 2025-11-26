@@ -25,7 +25,7 @@ from pypnm.lib.types import (
 from pypnm.lib.utils import TimeUnit, Utils
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
 from pypnm.pnm.lib.min_avg_max_complex import MinAvgMaxComplex
-from pypnm.pnm.process.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
+from pypnm.pnm.parser.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 
 
 # ──────────────────────────────────────────────────────────────

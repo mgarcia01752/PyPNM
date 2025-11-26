@@ -14,7 +14,7 @@ from pypnm.api.routes.common.classes.analysis.model.schema import DsModulationPr
 from pypnm.api.routes.common.classes.collection.abstract.multi_pnm_aggreator import MultiPnmCollection, MultiPnmCollectionObject
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import CaptureTime, ChannelId, FrequencySeriesHz, MacAddressStr
-from pypnm.pnm.process.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ModulationProfileModel, ProfileId
+from pypnm.pnm.parser.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ModulationProfileModel, ProfileId
 
 
 class ModulationCaptureModel(BaseModel):

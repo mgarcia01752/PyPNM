@@ -12,7 +12,7 @@ from pypnm.api.routes.common.classes.collection.abstract.multi_pnm_aggreator imp
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import CaptureTime, ChannelId, FrequencySeriesHz, MacAddressStr, MagnitudeSeries, Sequence
 from pypnm.pnm.lib.min_avg_max import MinAvgMax, MinAvgMaxModel
-from pypnm.pnm.process.CmDsOfdmRxMer import CmDsOfdmRxMer
+from pypnm.pnm.parser.CmDsOfdmRxMer import CmDsOfdmRxMer
 
 class RxMerCaptureModel(BaseModel):
     capture_time: CaptureTime    = Field(..., ge=0, description="Epoch seconds.")

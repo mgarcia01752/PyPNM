@@ -14,11 +14,11 @@ from pypnm.lib.types import (
     FloatSeries, FrequencySeriesHz, ProfileId, TimeStamp)
 from pydantic import Field, BaseModel, ConfigDict, computed_field, field_serializer, model_validator
 from pypnm.pnm.lib.signal_statistics import SignalStatisticsModel
-from pypnm.pnm.process.CmDsOfdmModulationProfile import ModulationProfileModel
-from pypnm.pnm.process.CmSpectrumAnalysisSnmp import SpecAnalysisSnmpConfigModel
-from pypnm.pnm.process.model.pnm_base_model import PnmBaseModel
-from pypnm.pnm.process.pnm_file_type import PnmFileType
-from pypnm.pnm.process.pnm_header import PnmHeaderParameters
+from pypnm.pnm.parser.CmDsOfdmModulationProfile import ModulationProfileModel
+from pypnm.pnm.parser.CmSpectrumAnalysisSnmp import SpecAnalysisSnmpConfigModel
+from pypnm.pnm.parser.model.pnm_base_model import PnmBaseModel
+from pypnm.pnm.parser.pnm_file_type import PnmFileType
+from pypnm.pnm.parser.pnm_header import PnmHeaderParameters
 
 
 class CmDsOfdmChanEstimateCoefModel(PnmBaseModel):
