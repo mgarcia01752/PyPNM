@@ -14,7 +14,7 @@ from pypnm.api.routes.advance.common.capture_data_aggregator import (
     CaptureDataAggregator, TransactionCollection)
 from pypnm.api.routes.advance.common.transactionsCollection import TransactionCollectionModel
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisOutputModel
-from pypnm.api.routes.docs.pnm.files.service import MacAddress
+from pypnm.lib.mac_address import MacAddress
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor, SystemDescriptorModel
 from pypnm.lib.archive.manager import ArchiveManager

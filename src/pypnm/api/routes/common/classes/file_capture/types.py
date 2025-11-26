@@ -7,7 +7,7 @@ from typing import Any, Dict, NewType
 
 from pydantic import BaseModel, Field
 
-from pypnm.docsis.cable_modem import MacAddress
+from pypnm.lib.mac_address import MacAddress
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor
 from pypnm.docsis.data_type.sysDescr import SystemDescriptorModel
 from pypnm.lib.types import FileName, MacAddressStr, TimestampSec

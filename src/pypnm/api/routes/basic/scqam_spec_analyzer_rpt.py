@@ -16,7 +16,7 @@ from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema imp
     BaseAnalysisModel, SpectrumAnalyzerAnalysisModel)
 from pypnm.api.routes.common.classes.analysis.multi_analysis import MultiAnalysis
 from pypnm.config.pnm_config_manager import SystemConfigSettings
-from pypnm.docsis.cable_modem import MacAddress
+from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
