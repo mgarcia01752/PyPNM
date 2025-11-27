@@ -47,9 +47,9 @@ class DocsDevRouter:
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
             self.logger.info(f"Retrieving event log for MAC: {mac}, IP: {ip}")            
-            status, msg = await CableModemServicePreCheck(mac_address   =   mac,
-                                                          ip_address    =   ip,
-                                                          snmp_config   =   request.cable_modem.snmp).run_precheck()
+            status, msg = await CableModemServicePreCheck(mac_address=mac,
+                                                          ip_address=ip,
+                                                          snmp_config=request.cable_modem.snmp).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 logger.error(msg)
