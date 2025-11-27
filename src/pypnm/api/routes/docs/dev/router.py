@@ -41,7 +41,7 @@ class DocsDevRouter:
             Entries typically include system-level events such as T3/T4 timeouts, partial service alerts, 
             reboots, and other diagnostic messages useful for proactive network maintenance.
 
-            [API Guide - Cable Modem Event Log](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/event-log.md)
+            [API Guide - Cable Modem Event Log](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/event-log.md)
 
             """
             mac = request.cable_modem.mac_address
@@ -70,10 +70,12 @@ class DocsDevRouter:
                 raise
             
             except Exception as e:
-                logger.exception("Failed to fetch event log, Mac: {mac}, IP: {ip}")
+                logger.exception(f"Failed to fetch event log, Mac: {mac}, IP: {ip}, error: {e}")
                 raise HTTPException(status_code=500, detail=str(e))
 
-        @self.router.post("/reset", response_model=SnmpResponse)
+        @self.router.post("/reset", 
+                          response_model=SnmpResponse,
+                          responses=FAST_API_RESPONSE,)
         async def reset_cable_modem(request: BaseDeviceConnectRequest):
             """
             **Reset a DOCSIS Cable Modem**
@@ -83,7 +85,7 @@ class DocsDevRouter:
             This is typically used for maintenance, recovery from fault states, or in automated diagnostics
             workflows to bring the device back to an operational state.
 
-            [API Guide - Reset DOCSIS Cable Modem](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/single/reset-cm.md)
+            [API Guide - Reset DOCSIS Cable Modem](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/reset-cm.md)
 
             """
             mac = request.cable_modem.mac_address
@@ -109,7 +111,7 @@ class DocsDevRouter:
             except HTTPException:
                 raise
             except Exception as e:
-                logger.exception(f"Failed to reset cable modem, Mac: {mac}, IP: {ip}")
+                logger.exception(f"Failed to reset cable modem, Mac: {mac}, IP: {ip}, error: {e}")
                 raise HTTPException(status_code=500, detail=str(e))
 
 router = DocsDevRouter().router
