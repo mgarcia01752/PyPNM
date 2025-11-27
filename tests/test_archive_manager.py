@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import io
 from pathlib import Path
-from typing import List
+from typing import List, Literal, cast
 
 import pytest
 
@@ -97,7 +97,7 @@ def test_tar_files_and_list(tmp_path: Path, fmt: str) -> None:
     ArchiveManager.tar_files(
         [src / "a.txt", src / "p" / "q.txt"],
         tar_path,
-        fmt=fmt,
+        fmt=cast(Literal["tar", "gztar", "bztar", "xztar"], fmt),
         preserve_tree=True,
         arcbase=src,
     )
