@@ -33,7 +33,7 @@ from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import FileName, MacAddressStr, PathLike
 from pypnm.lib.utils import Utils
-from pypnm.pnm.parser.model.process_rtn_models import (
+from pypnm.pnm.parser.model.parser_rtn_models import (
     CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel, 
     CmDsOfdmFecSummaryModel, CmDsOfdmModulationProfileModel, CmDsOfdmRxMerModel, CmUsOfdmaPreEqModel)
 from pypnm.pnm.parser.pnm_file_type import PnmFileType

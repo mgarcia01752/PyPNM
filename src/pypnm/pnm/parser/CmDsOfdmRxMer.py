@@ -11,7 +11,7 @@ from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_SUB_CARRIER_ZERO_FRE
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.signal_processing.shan.series import ShannonSeries
 from pypnm.pnm.lib.signal_statistics import SignalStatistics
-from pypnm.pnm.parser.model.process_rtn_models import CmDsOfdmRxMerModel
+from pypnm.pnm.parser.model.parser_rtn_models import CmDsOfdmRxMerModel
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.pnm.parser.pnm_header import PnmHeader
 from pypnm.lib.types import ChannelId, FloatSeries, FrequencyHz, FrequencySeriesHz, MacAddressStr

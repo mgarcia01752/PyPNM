@@ -18,7 +18,7 @@ from pypnm.pnm.parser.pnm_header import PnmHeader
 
 # TODO: Need to fix circular import
 if TYPE_CHECKING:
-    from pypnm.pnm.parser.model.process_rtn_models import CmDsOfdmModulationProfileModel
+    from pypnm.pnm.parser.model.parser_rtn_models import CmDsOfdmModulationProfileModel
 
 
 class ModulationOrderType(IntEnum):
@@ -128,7 +128,7 @@ class CmDsOfdmModulationProfile(PnmHeader):
 
         profiles = self._parse_profiles(profile_blob)
 
-        from pypnm.pnm.parser.model.process_rtn_models import CmDsOfdmModulationProfileModel
+        from pypnm.pnm.parser.model.parser_rtn_models import CmDsOfdmModulationProfileModel
 
         self._model = CmDsOfdmModulationProfileModel(
             pnm_header                      =   self.getPnmHeaderParameterModel(),

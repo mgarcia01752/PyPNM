@@ -44,7 +44,7 @@ from pypnm.lib.types import (
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import WindowFunction
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
-from pypnm.pnm.parser.model.process_rtn_models import (
+from pypnm.pnm.parser.model.parser_rtn_models import (
     CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel, CmDsOfdmFecSummaryModel, 
     CmDsOfdmModulationProfileModel, CmDsOfdmRxMerModel, CmUsOfdmaPreEqModel)
 from pypnm.pnm.parser.CmDsOfdmModulationProfile import (

@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from pypnm.pnm.parser.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
-from pypnm.pnm.parser.model.process_rtn_models import CmDsOfdmModulationProfileModel
+from pypnm.pnm.parser.model.parser_rtn_models import CmDsOfdmModulationProfileModel
 
 
 DATA_DIR = Path(__file__).parent / "_data"

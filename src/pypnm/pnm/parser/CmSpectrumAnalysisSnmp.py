@@ -9,7 +9,7 @@ from typing import Any, Dict, Final, List
 
 from pypnm.lib.types import FloatSeries, FrequencyHz, FrequencySeriesHz
 from pypnm.pnm.parser.model.configuration.spect_config_model import SpecAnalysisSnmpConfigModel
-from pypnm.pnm.parser.model.process_rtn_models import CmSpectrumAnalysisSnmpModel
+from pypnm.pnm.parser.model.parser_rtn_models import CmSpectrumAnalysisSnmpModel
 
 class CmSpectrumAnalysisSnmp:
     """

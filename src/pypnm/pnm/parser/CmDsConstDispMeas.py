@@ -11,7 +11,7 @@ from typing import Optional, Dict, Tuple, cast
 from pypnm.lib.constants import KHZ
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder, FractionalBits, IntegerBits
-from pypnm.pnm.parser.model.process_rtn_models import CmDsConstDispMeasModel
+from pypnm.pnm.parser.model.parser_rtn_models import CmDsConstDispMeasModel
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.pnm.parser.pnm_header import PnmHeader
 from pypnm.lib.types import ChannelId, ComplexArray, FrequencyHz, MacAddressStr
