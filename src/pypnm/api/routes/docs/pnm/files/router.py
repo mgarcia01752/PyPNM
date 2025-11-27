@@ -176,6 +176,8 @@ class PnmFileManager:
             - Constellation Diagram
             - Downstream Histogram
             - OFDMA Pre-equalization
+            - Fec Summary
+            - Modulation Profile
 
             [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file-manager/file-manager-api.md#6-analyze-pnm-file-via-transaction-id)
             """
@@ -191,6 +193,9 @@ class PnmFileManager:
                         status          =   "success",
                         analysis        =   analysis_result.model_dump(),
                     )
+            
+            elif output_type == OutputType.ARCHIVE:
+                return  PnmFileService().get_matplot(request)
 
             return JSONResponse(content="Not implemented yet")
 

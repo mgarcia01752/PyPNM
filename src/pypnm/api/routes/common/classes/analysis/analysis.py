@@ -381,6 +381,77 @@ class Analysis:
     def __add_pnmType(self, pft:PnmFileType):
         self._processed_pnm_type.append(pft)
 
+    @classmethod
+    def get_analysis_from_model(
+        cls,
+        model: BaseAnalysisModel,
+        analysis_type: AnalysisType = AnalysisType.BASIC,
+        cable_type: CableType = CableType.RG6,
+    ) -> "Analysis":
+        """
+        Construct an Analysis instance from an existing analysis model.
+
+        The returned Analysis is equivalent to an already-processed BASIC analysis
+        for a single measurement. The internal result caches are populated so that
+        get_model(), get_results(), and get_dicts() can be used directly.
+
+        Parameters
+        ----------
+        model : BaseAnalysisModel
+            A concrete analysis model instance such as
+            DsRxMerAnalysisModel, DsChannelEstAnalysisModel, etc.
+        analysis_type : AnalysisType, default AnalysisType.BASIC
+            Logical analysis mode to tag on the Analysis instance.
+        cable_type : CableType, default CableType.RG6
+            Cable type metadata retained on the Analysis instance.
+
+        Returns
+        -------
+        Analysis
+            An Analysis object whose result caches are populated from `model`.
+        """
+        # Infer the corresponding PNM file type from the model class
+        pnm_type: Optional[PnmFileType]
+        if isinstance(model, DsChannelEstAnalysisModel):
+            pnm_type = PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT
+        elif isinstance(model, ConstellationDisplayAnalysisModel):
+            pnm_type = PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY
+        elif isinstance(model, DsRxMerAnalysisModel):
+            pnm_type = PnmFileType.RECEIVE_MODULATION_ERROR_RATIO
+        elif isinstance(model, DsHistogramAnalysisModel):
+            pnm_type = PnmFileType.DOWNSTREAM_HISTOGRAM
+        elif isinstance(model, UsOfdmaUsPreEqAnalysisModel):
+            pnm_type = PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS
+        elif isinstance(model, OfdmFecSummaryAnalysisModel):
+            pnm_type = PnmFileType.OFDM_FEC_SUMMARY
+        elif isinstance(model, DsModulationProfileAnalysisModel):
+            pnm_type = PnmFileType.OFDM_MODULATION_PROFILE
+        else:
+            pnm_type = None
+
+        # Bypass __init__ so we don't need a MessageResponse; populate internals manually.
+        analysis = object.__new__(cls)  # type: ignore[call-arg]
+
+        analysis.logger                  = logging.getLogger(f"{cls.__name__}")
+        analysis.analysis_type           = analysis_type
+        analysis.msg_response            = None
+        analysis._cable_type             = cable_type
+        analysis._skip_automatic_process = True
+        analysis._analysis_para          = AnalysisProcessParameters()
+
+        # No raw measurement data when constructed from a model
+        analysis.measurement_data        = []
+
+        # Populate result caches from the provided model
+        analysis._result_model           = [model]
+        analysis._analysis_dict          = [
+            model.model_dump()
+        ] if hasattr(model, "model_dump") else [dict(model)]
+
+        analysis._processed_pnm_type     = [pnm_type] if pnm_type is not None else []
+
+        return analysis
+
     #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 
     @classmethod
@@ -2087,7 +2158,6 @@ class Analysis:
             )
 
         return result_model
-
 
     @classmethod
     def basic_analysis_echo_detection_ifft(cls, model: CmDsOfdmChanEstimateCoefModel, cable_type: CableType = CableType.RG6, ) -> EchoDetectorReport:

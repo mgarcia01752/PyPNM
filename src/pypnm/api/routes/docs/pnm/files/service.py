@@ -13,6 +13,13 @@ from fastapi import HTTPException
 from fastapi.responses import FileResponse
 
 from pypnm.api.routes.advance.common.types.types import OperationId
+from pypnm.api.routes.basic.abstract.analysis_report import AnalysisRptMatplotConfig
+from pypnm.api.routes.basic.channel_estimation_analysis_rpt import ChanEstimationReport
+from pypnm.api.routes.basic.constellation_display_analysis_rpt import ConstDisplayAnalysisRptMatplotConfig, ConstellationDisplayReport
+from pypnm.api.routes.basic.fec_summary_analysis_rpt import FecSummaryAnalysisReport
+from pypnm.api.routes.basic.modulation_profile_analysis_rpt import ModulationProfileReport
+from pypnm.api.routes.basic.rxmer_analysis_rpt import RxMerAnalysisReport
+from pypnm.api.routes.basic.us_ofdma_pre_eq_analysis_rpt import CmUsOfdmaPreEqReport
 from pypnm.api.routes.common.classes.analysis.model.schema import ParserAnalysisModelReturn
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
 from pypnm.api.routes.common.classes.file_capture.pnm_file_opearation import OperationCaptureGroupResolver
@@ -397,5 +404,49 @@ class PnmFileService:
             detail=f"Analysis not implemented for file type: {model.file_type.name}"
         )
 
+    def get_matplot(self, request: FileAnalysisRequest) -> FileResponse:
+        rpt: Path = Path()
+
+        theme = request.analysis.plot.ui.theme
+        plot_config = AnalysisRptMatplotConfig(theme = theme)
+        analysis_model, pnm_ftype = self.get_analysis(request)
+
+        # TODO: Need to clean up circlar import at next major release 
+        from pypnm.api.routes.common.classes.analysis.analysis import Analysis
+        analysis = Analysis.get_analysis_from_model(analysis_model)
+
+        if pnm_ftype == PnmFileType.RECEIVE_MODULATION_ERROR_RATIO:
+            analysis_rpt = RxMerAnalysisReport(analysis, plot_config)
+            rpt: Path = cast(Path, analysis_rpt.build_report())
         
+        elif pnm_ftype == PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT:
+            analysis_rpt = ChanEstimationReport(analysis, plot_config)
+            rpt: Path = cast(Path, analysis_rpt.build_report())
+
+        elif pnm_ftype == PnmFileType.OFDM_MODULATION_PROFILE:
+            analysis_rpt = ModulationProfileReport(analysis, plot_config)
+            rpt: Path = cast(Path, analysis_rpt.build_report())
+
+        elif pnm_ftype == PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY:
+            plot_config = ConstDisplayAnalysisRptMatplotConfig(theme = theme)
+            analysis_rpt = ConstellationDisplayReport(analysis, plot_config)
+            rpt: Path = cast(Path, analysis_rpt.build_report())
+
+        elif pnm_ftype == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS:
+            plot_config = ConstDisplayAnalysisRptMatplotConfig(theme = theme)
+            analysis_rpt = CmUsOfdmaPreEqReport(analysis)
+            rpt: Path = cast(Path, analysis_rpt.build_report())
+
+        elif pnm_ftype == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE:
+            plot_config = ConstDisplayAnalysisRptMatplotConfig(theme = theme)
+            analysis_rpt = CmUsOfdmaPreEqReport(analysis)
+            rpt: Path = cast(Path, analysis_rpt.build_report())
+
+        elif pnm_ftype == PnmFileType.OFDM_FEC_SUMMARY:
+            plot_config = ConstDisplayAnalysisRptMatplotConfig(theme = theme)
+            analysis_rpt = FecSummaryAnalysisReport(analysis, plot_config)
+            rpt: Path = cast(Path, analysis_rpt.build_report())
+
+        return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)        
+    
         

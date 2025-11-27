@@ -105,7 +105,7 @@ class AbstractCaptureService(ABC):
             "duration":         self.duration,
             "interval":         self.interval,
             "time_remaining":   self.time_remaining,
-            "samples":          []  # type: List[CaptureSample]
+            "samples":          []
         }
 
         self.setOperationFinalInvocation(operation_id, False)

@@ -13,6 +13,7 @@ from time import sleep
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.docs.pnm.ds.ofdm.modulation_profile.service import CmDsOfdmModProfileService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
