@@ -10,7 +10,6 @@ from fastapi.responses import JSONResponse
 from pypnm.api.routes.pypmn.system.config.schemas import SystemConfigModel
 from pypnm.config.config_manager import ConfigManager
 from pypnm.config.pnm_config_manager import PnmConfigManager
-from fastapi import HTTPException
 
 class PyPnmSystemConfigAPI:
     """

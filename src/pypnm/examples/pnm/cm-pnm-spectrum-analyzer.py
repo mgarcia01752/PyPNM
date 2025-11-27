@@ -10,7 +10,7 @@ import argparse
 import asyncio
 import logging
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus
+from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus, SpectrumRetrievalType
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import DocsIf3CmSpectrumAnalysisCtrlCmd
@@ -44,7 +44,7 @@ async def main():
                                                  SpectrumRetrievalType.SNMP )
     
     while (await cm.getDocsPnmCmCtlStatus() != DocsPnmCmCtlStatus.READY):
-        print(f"Waiting for Spectrum Analyzer to complete")
+        print("Waiting for Spectrum Analyzer to complete")
         
 if __name__ == "__main__":
     asyncio.run(main())

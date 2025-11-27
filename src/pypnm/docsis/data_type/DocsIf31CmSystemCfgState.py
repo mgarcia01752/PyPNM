@@ -86,7 +86,7 @@ class DocsIf31CmSystemCfgDiplexState:
             return True
 
         except Exception as e:
-            self.logger.exception("Unexpected error during SNMP population, error: {e}")
+            self.logger.exception(f"Unexpected error during SNMP population, error: {e}")
             return False
 
     def to_dict(self, nested: bool = True) -> dict:

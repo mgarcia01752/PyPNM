@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-from asyncio.log import logger
 import json
 import logging
 from time import sleep
@@ -43,9 +42,9 @@ async def main():
 
     while not await cm.isAmplitudeDataPresent():
         sleep(1)
-        logger.info(f'Waiting for AmplitudeData is Present')
+        logging.info('Waiting for AmplitudeData is Present')
     
-    logger.info(f'AmplitudeData is Present....Processing')
+    logging.info('AmplitudeData is Present....Processing')
         
     amplitude_byte_stream = await cm.getSpectrumAmplitudeData()
     amplitude_data = CmSpectrumAnalysisSnmp(amplitude_byte_stream)

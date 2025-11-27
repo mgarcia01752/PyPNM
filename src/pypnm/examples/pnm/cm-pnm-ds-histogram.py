@@ -48,7 +48,7 @@ async def main():
                     
     while (True):
         if await cm.getDocsPnmCmCtlStatus() == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
-            logging.info(f'Tesing in progress...')
+            logging.info('Measurement in progress...')
             continue
         break
         

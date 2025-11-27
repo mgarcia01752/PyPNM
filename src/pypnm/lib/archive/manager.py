@@ -63,13 +63,13 @@ class ArchiveManager:
     # Detection / Listing
     # ──────────────────────────────────────────────────────────────────────────
     @staticmethod
-    def detect_format(archive_path: PathLike) -> Optional[ArchiveFormatKey]:
+    def detect_format(archive_path: PathLike) -> Optional[str]:
         """
         Guess format from file suffix.
 
         Returns
         -------
-        Optional[ArchiveFormatKey]
+        Optional[str]
             One of "zip", "tar", "gztar", "bztar", "xztar", or None if the
             suffix does not look like a supported archive type.
         """
@@ -238,7 +238,7 @@ class ArchiveManager:
         if overwrite and ap.exists():
             ap.unlink(missing_ok=True)
 
-        with tarfile.open(ap, mode) as tf:  # pyright: ignore[reportCallIssue]
+        with tarfile.open(ap, mode) as tf:  # pyright: ignore[reportArgumentType, reportCallIssue]
             for f in files:
                 src = Path(f)
                 if not src.exists():
@@ -341,7 +341,7 @@ class ArchiveManager:
         """
         ap   = Path(archive_path)
         dest = Path(dest_dir)
-        fmt  = fmt or ArchiveManager.detect_format(ap)
+        fmt  = fmt or ArchiveManager.detect_format(ap) # pyright: ignore[reportAssignmentType]
 
         if fmt is None:
             raise ValueError(f"Unsupported or undetected archive format for: {archive_path}")

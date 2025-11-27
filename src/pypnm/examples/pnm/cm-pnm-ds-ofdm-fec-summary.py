@@ -10,7 +10,7 @@ import argparse
 import asyncio
 import logging
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus
+from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus, FecSummaryType
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.utils import Utils
@@ -47,7 +47,7 @@ async def main():
     oce_list = await cm.getDocsIf31CmDsOfdmChanEntry()
     
     if not oce_list:
-        logging.error(f'Unable to get DocsIf31CmDsOfdmChanEntry')
+        logging.error('Unable to get DocsIf31CmDsOfdmChanEntry')
         exit(1)
     
     # Set TFTP server and path

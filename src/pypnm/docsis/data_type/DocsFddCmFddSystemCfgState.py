@@ -80,7 +80,7 @@ class DocsFddCmFddSystemCfgState:
 
             return True
         except Exception as e:
-            self.logger.exception("Unexpected error during SNMP population")
+            self.logger.exception("Unexpected error during SNMP population, error: %s", e)
             return False
 
     def to_dict(self) -> dict:

@@ -39,7 +39,7 @@ async def main():
     obj:DocsFddCmFddSystemCfgState = await cm.getDocsFddCmFddSystemCfgState()
 
     if not obj:
-        logging.error(f'ERROR with DocsFddCmFddSystemCfgState')
+        logging.error('ERROR with DocsFddCmFddSystemCfgState')
         exit(1)
     
     logging.info(f"{obj.to_dict()}")

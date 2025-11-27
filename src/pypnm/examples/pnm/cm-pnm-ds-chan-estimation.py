@@ -45,7 +45,7 @@ async def main():
     ofdm_idx_list = await cm.getDocsIf31CmDsOfdmChannelIdIndex()
     
     if not ofdm_idx_list:
-        logging.error(f'Unable to get DocsIf31CmDsOfdmChanEntry')
+        logging.error('Unable to get DocsIf31CmDsOfdmChanEntry')
         exit(1)
     
     if not await cm.setDocsPnmBulk(tftp_server=args.tftp_ipv4, tftp_path=args.tftp_dest_dir):
@@ -56,11 +56,11 @@ async def main():
 
         filename = f"ds-chan-est_{idx}_{Utils.time_stamp()}.bin"
         print(f"Setting Channel Estimation for OFDM index {idx} with filename {filename}")
-        dsce = await cm.setDocsPnmCmOfdmChEstCoef(ofdm_idx=idx, chan_est_file_name=filename)
+        await cm.setDocsPnmCmOfdmChEstCoef(ofdm_idx=idx, chan_est_file_name=filename)
         
         while (True):
             if await cm.getDocsPnmCmCtlStatus() == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
-                logging.info(f'Tesing in progress...')
+                logging.info('Measurement in progress...')
                 continue
             break
 

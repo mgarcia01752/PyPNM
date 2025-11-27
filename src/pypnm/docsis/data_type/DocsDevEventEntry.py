@@ -65,7 +65,7 @@ class DocsDevEventEntry:
                     setattr(self, attr, None)
 
         except Exception as e:
-            self.logger.exception("Unexpected error during SNMP population, error: {e}")
+            self.logger.exception(f"Unexpected error during SNMP population, error: {e}")
             return False
 
         return True

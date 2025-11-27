@@ -12,7 +12,9 @@ import logging
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.docs.pnm.ds.ofdm.fec_summary.service import CmDsOfdmFecSummaryService
 from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.cm_snmp_operation import FecSummaryType
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress

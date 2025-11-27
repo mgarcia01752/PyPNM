@@ -39,7 +39,7 @@ from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdm
 from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOfdmChanEstCoefEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEntry
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
-from pypnm.docsis.lib.pnm_bulk_data import DocsPnmBulkDataGroup, DocsPnmBulkFileEntry
+from pypnm.docsis.lib.pnm_bulk_data import DocsPnmBulkDataGroup
 from pypnm.lib.constants import DEFAULT_SPECTRUM_ANALYZER_INDICES
 from pypnm.lib.types import ChannelId, EntryIndex, FrequencyHz, InterfaceIndex
 from pypnm.pnm.data_type.DocsEqualizerData import DocsEqualizerData
@@ -382,43 +382,7 @@ class CmSnmpOperation:
             docsPnmBulkDestPath         =   await self._get_value("docsPnmBulkDestPath", str),
             docsPnmBulkUploadControl    =   await self._get_value("docsPnmBulkUploadControl", int)
         )
-  
-    async def _get_docs_pnm_bulk_file_group(self) -> List[DocsPnmBulkFileEntry]:
-        """
-        Asynchronously retrieves a bulk list of PNM file entries from SNMP.
-
-        This method performs an SNMP walk on the OID specified by `"docsPnmBulkFileEntry"` 
-        and processes the resulting entries. Each entry is fetched using the SNMP `walk` operation, 
-        and its value is extracted using the `Snmp_v2c.snmp_get_result_value()` function.
-
-        Currently, this method does not return the processed results. The functionality is a placeholder
-        and needs further implementation for handling the results properly. 
-
-        TODO:
-            - Implement result handling for SNMP entries.
-            - Return a list of processed `DocsPnmBulkFileEntry` objects.
-
-        Returns:
-            List[DocsPnmBulkFileEntry]: An empty list is returned for now, as result handling is pending.
-        """
-        
-        # Perform SNMP walk to retrieve the bulk file entries
-        result = self._snmp.walk(f'{"docsPnmBulkFileEntry"}')
-        
-        # Initialize a list to store processed entries (for future use)
-        entries = []
-        
-        for entry in result:
-            
-            # Extract the value from the SNMP entry
-            value = Snmp_v2c.snmp_get_result_value(entry)
-            
-            # Future code will process the value into a DocsPnmBulkFileEntry instance
-            # entries.append(DocsPnmBulkFileEntry(...))
-        
-        # TODO: Return processed list of entries once functionality is implemented
-        return entries
-        
+          
     async def getDocsPnmCmCtlStatus(self, max_retry:int=1) -> DocsPnmCmCtlStatus:
         """
         Fetches the current Docs PNM CmCtlStatus.
@@ -788,7 +752,7 @@ class CmSnmpOperation:
                 event_entries.append(entry.to_dict() if to_dict else entry)
 
         except Exception as e:
-            self.logger.exception("Failed to retrieve DocsDevEventEntry entries")
+            self.logger.exception("Failed to retrieve DocsDevEventEntry entries, error: %s", e)
 
         return event_entries
 
@@ -864,7 +828,7 @@ class CmSnmpOperation:
                 ofdm_profile_entry.append(entry)
 
         except Exception as e:
-            self.logger.exception("Failed to retrieve DocsIf31CmDsOfdmProfileStatsEntry entries")        
+            self.logger.exception("Failed to retrieve DocsIf31CmDsOfdmProfileStatsEntry entries, error: %s", e)        
                 
         return ofdm_profile_entry
 
@@ -1700,7 +1664,7 @@ class CmSnmpOperation:
         """
         results = await self._snmp.walk('docsFddCmFddSystemCfgState')
         if not results:
-            self.logger.warning(f"No results found during SNMP walk for OID {oid}")
+            self.logger.warning(f"No results found during SNMP walk for OID {'docsFddCmFddSystemCfgState'}")
             return None
 
         obj = DocsFddCmFddSystemCfgState(index, self._snmp)
@@ -1727,7 +1691,7 @@ class CmSnmpOperation:
         """
         results = await self._snmp.walk('docsFddDiplexerUsUpperBandEdgeCapability')
         if not results:
-            self.logger.warning(f"No results found during SNMP walk for OID {oid}")
+            self.logger.warning("No results found during SNMP walk for OID 'docsFddDiplexerUsUpperBandEdgeCapability'")
             return None
 
         entries = []

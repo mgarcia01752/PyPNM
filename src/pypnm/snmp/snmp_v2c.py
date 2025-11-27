@@ -15,6 +15,7 @@ from pysnmp.hlapi.v3arch.asyncio import (
 
 from pysnmp.proto.rfc1902 import (OctetString)
 from pypnm.config.pnm_config_manager import SystemConfigSettings
+from pypnm.lib.constants import T
 from pypnm.lib.inet import Inet
 from pypnm.lib.inet_utils import InetUtils
 from pypnm.snmp.compiled_oids import COMPILED_OIDS

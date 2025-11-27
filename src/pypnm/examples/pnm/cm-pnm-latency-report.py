@@ -46,12 +46,12 @@ async def main():
     filename = f"latency_rpt_{Utils.time_stamp()}.bin"        
    
     if not cm.setDocsCmLatencyRptCfg(latency_rpt_file_name=filename):
-        logging.error(f'Unable to set Latency Report, exitting...')
+        logging.error('Unable to set Latency Report, exiting...')
         exit(1)
         
     while (True):
         if cm.getDocsPnmCmCtlStatus() == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
-            logging.info(f'Tesing in progress...')
+            logging.info('Measurement in progress...')
             continue
         break
         

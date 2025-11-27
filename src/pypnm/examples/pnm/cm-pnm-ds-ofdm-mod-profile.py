@@ -41,7 +41,7 @@ async def main():
     ofdm_idx_list = await cm.getDocsIf31CmDsOfdmChannelIdIndex()
     
     if not ofdm_idx_list:
-        logging.error(f'Unable to get OFDM SNMP indexes')
+        logging.error('Unable to get OFDM SNMP indexes')
         exit(1)
     
     if not await cm.setDocsPnmBulk(tftp_server=args.tftp_ipv4, tftp_path=args.tftp_dest_dir):
@@ -56,7 +56,7 @@ async def main():
         
         while (True):
             if await cm.getDocsPnmCmCtlStatus() == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
-                logging.info(f'Tesing in progress...')
+                logging.info('Measurement in progress...')
                 continue
             break
         
