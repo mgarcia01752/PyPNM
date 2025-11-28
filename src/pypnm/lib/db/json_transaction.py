@@ -152,11 +152,11 @@ class JsonTransactionDb:
             )
 
         return JsonReturnModel(
-            timestamp=record.timestamp,
-            filename=str(record.filename),
-            byte_size=record.byte_size,
-            sha256=record.sha256,
-            data=payload_text,
+            timestamp   =   record.timestamp,
+            filename    =   record.filename,
+            byte_size   =   record.byte_size,
+            sha256      =   record.sha256,
+            data        =   payload_text,
         )
 
     def write_json(self, data: JsonPayload) -> JsonTransactionDbModel:
