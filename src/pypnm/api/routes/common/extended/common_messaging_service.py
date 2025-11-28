@@ -7,6 +7,7 @@ from __future__ import annotations
 from enum import Enum
 import json
 from typing import Any, Dict, List, Optional, Tuple, Union
+from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import TransactionId
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.pnm_config_manager import SystemConfigSettings
 from pypnm.lib.log_files import LogFile
@@ -195,7 +196,7 @@ class CommonMessagingService:
         self.build_msg(status, data)
         return self.send_msg()
 
-    def build_transaction_msg(self, transaction_id: str, filename: str,
+    def build_transaction_msg(self, transaction_id: TransactionId, filename: str,
                               status: ServiceStatusCode = ServiceStatusCode.SUCCESS):
         """
         Adds a transaction message with an ID and filename to the message queue.

@@ -10,6 +10,12 @@ from typing import Any, Dict, List, NewType, Sequence, Tuple, Union, TypeAlias
 import numpy as np
 from numpy.typing import NDArray
 
+# TODO: New home for these
+GroupId             = NewType("GroupId", str)
+TransactionId = NewType("TransactionId", str)
+
+HashStr = NewType("HashStr", str)
+
 # Enum String Type
 class StringEnum(str, Enum):
     """Py3.10-compatible StrEnum shim."""
@@ -143,10 +149,17 @@ IfftTimeResponse: TypeAlias = Tuple[NDArrayF64, NDArrayC128]
 # ────────────────────────────────────────────────────────────────────────────────
 HttpRtnCode = NewType("HttpRtnCode", int)
 
+
+
+
+
 # ────────────────────────────────────────────────────────────────────────────────
 # Explicit public surface
 # ────────────────────────────────────────────────────────────────────────────────
 __all__ = [
+    "HashStr",
+    "TransactionId",
+    "GroupId",
     "ByteArray",
     # numerics
     "Number", "Float64", "ArrayLike", "ArrayLikeF64", "NDArrayF64", "NDArrayI64",

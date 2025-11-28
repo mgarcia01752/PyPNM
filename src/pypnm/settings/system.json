@@ -52,6 +52,7 @@
         "capture_group_db": ".data/db/capture_group.json",
         "session_group_db": ".data/db/session_group.json",
         "operation_db": ".data/db/operation_capture.json",
+        "json_transaction_db" : ".data/db/json_transactions.json",
         "retries": 5,
         "retrival_method": {
             "method": "local",

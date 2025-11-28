@@ -10,10 +10,8 @@ from pydantic import BaseModel, Field
 from pypnm.lib.mac_address import MacAddress
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor
 from pypnm.docsis.data_type.sysDescr import SystemDescriptorModel
-from pypnm.lib.types import FileName, MacAddressStr, TimestampSec
+from pypnm.lib.types import FileName, MacAddressStr, TimestampSec, TransactionId, GroupId
 
-GroupId             = NewType("GroupId", str)
-TransactionId       = NewType("TransactionId", str)
 
 Record              = Dict[str, Any]
 TransactionRecord   = Dict[TransactionId, Record]

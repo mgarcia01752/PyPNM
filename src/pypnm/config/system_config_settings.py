@@ -160,6 +160,10 @@ class SystemConfigSettings:
         return cls._cfg.get("PnmFileRetrieval", "operation_db")
 
     @classproperty
+    def json_db(cls) -> str:
+        return cls._cfg.get("PnmFileRetrieval", "json_transaction_db")
+
+    @classproperty
     def file_retrieval_retries(cls) -> int:
         return int(cls._cfg.get("PnmFileRetrieval", "retries"))
 
