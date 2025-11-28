@@ -281,7 +281,7 @@ class RxMerAnalysisReport(AnalysisReport):
                                         modulation_count    =   mod_count
                                     ))
                 
-                # Must register Model
+                # MUST register Model
                 self.register_common_analysis_model(channel_id, model)
 
                 # Add to Signal Capture Aggregator

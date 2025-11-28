@@ -8,15 +8,16 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Any, Dict, Mapping, Optional, cast
-from uuid import uuid4
+from typing import Any, Dict, Mapping, cast
 
 from pydantic import ValidationError
 
 from pypnm.config.pnm_config_manager import SystemConfigSettings
-from pypnm.lib.db.model.json_trans_model import JsonReturnModel, JsonTransactionDbModel, JsonTransactionRecordModel
+from pypnm.lib.db.model.json_trans_model import (
+    JsonReturnModel, JsonTransactionDbModel, JsonTransactionRecordModel)
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.types import HashStr, PathLike, TimeStamp, TransactionId
+from pypnm.lib.utils import Utils
 
 
 JsonPayload = Mapping[str, Any]
@@ -29,8 +30,8 @@ class JsonTransactionDb:
     This class provides configuration-aware helpers for reading and writing
     JSON database files that track transaction metadata. It delegates all
     filesystem operations to ``FileProcessor`` while using
-    ``SystemConfigSettings`` to resolve relative paths against the configured
-    PyPNM data layout. The on-disk JSON layout is expected to have transaction
+    ``SystemConfigSettings`` to resolve paths against the configured PyPNM
+    data layout. The on-disk JSON layout is expected to have transaction
     identifiers as top-level keys:
 
     .. code-block:: json
@@ -45,27 +46,21 @@ class JsonTransactionDb:
         }
     """
 
-    def __init__(self, settings: SystemConfigSettings, base_path: Optional[PathLike] = None) -> None:
+    def __init__(self) -> None:
         """
         Initialize The JSON Transaction Database Manager.
 
-        Parameters
-        ----------
-        settings:
-            System configuration settings instance used to discover default
-            paths for transaction database storage (for example, dedicated
-            transaction DB roots or general data roots).
-        base_path:
-            Optional filesystem root for all JSON DB files managed by this
-            instance. When omitted, a default base path is derived from
-            ``SystemConfigSettings`` attributes such as ``transaction_db_root``,
-            ``json_dir``, or a general data root path.
+        Configuration is obtained directly from ``SystemConfigSettings`` using
+        class-level attributes such as ``json_db`` and ``json_dir``. The JSON
+        DB file path and JSON payload directory are taken as-is from these
+        settings; no additional base-directory inference is performed.
         """
-        self.settings   = settings
-        self._json_db   = settings.json_db
-        self._json_dir  = settings.json_dir
-        self.base_path  = Path(base_path) if base_path else self._default_base_path()
+        self._json_db   = Path(SystemConfigSettings.json_db)
+        self._json_dir  = Path(SystemConfigSettings.json_dir)
         self.logger     = logging.getLogger(f"{self.__class__.__name__}")
+        self.logger.info(
+            f"Initialized JSON Transaction DB Manager with json_db={self._json_db}, json_dir={self._json_dir}"
+        )
 
     def read_json(self, transaction_id: TransactionId) -> JsonReturnModel:
         """
@@ -75,7 +70,7 @@ class JsonTransactionDb:
 
         * Loads the JSON transaction database file.
         * Looks up the record associated with ``transaction_id``.
-        * Reads the referenced JSON payload file from disk.
+        * Reads the referenced JSON payload file from disk (under ``json_dir``).
         * Recomputes the SHA-256 hash over the file contents plus the
           record's timestamp and verifies it against the stored value.
         * Returns a ``JsonReturnModel`` containing the metadata fields and
@@ -102,25 +97,25 @@ class JsonTransactionDb:
         if not record:
             self.logger.error(f"Transaction '{transaction_id}' not found in JSON DB")
             return JsonReturnModel(
-                timestamp=TimeStamp(0),
-                filename="",
-                byte_size=0,
-                sha256=cast(HashStr, ""),
-                data="",
+                timestamp   =   TimeStamp(0),
+                filename    =   "",
+                byte_size   =   0,
+                sha256      =   cast(HashStr, ""),
+                data        =   "",
             )
 
-        payload_path      = self.base_path / str(record.filename)
+        payload_path      = self._json_dir / str(record.filename)
         payload_processor = FileProcessor(payload_path)
         raw_bytes         = payload_processor.read_file()
 
         if not raw_bytes:
             self.logger.error(f"Failed to read payload for transaction '{transaction_id}' at {payload_path}")
             return JsonReturnModel(
-                timestamp=TimeStamp(0),
-                filename=str(record.filename),
-                byte_size=0,
-                sha256=record.sha256,
-                data="",
+                timestamp   =   TimeStamp(0),
+                filename    =   record.filename,
+                byte_size   =   0,
+                sha256      =   record.sha256,
+                data        =   "",
             )
 
         recalculated_hash = self._calculate_file_hash(payload_path, record.timestamp)
@@ -130,11 +125,11 @@ class JsonTransactionDb:
                 f"expected={record.sha256}, got={recalculated_hash}"
             )
             return JsonReturnModel(
-                timestamp=TimeStamp(int(record.timestamp)),
-                filename=str(record.filename),
-                byte_size=record.byte_size,
-                sha256=record.sha256,
-                data="",
+                timestamp   =   record.timestamp,
+                filename    =   record.filename,
+                byte_size   =   record.byte_size,
+                sha256      =   record.sha256,
+                data        =   "",
             )
 
         try:
@@ -144,11 +139,11 @@ class JsonTransactionDb:
                 f"Failed to decode JSON payload for transaction '{transaction_id}' at {payload_path}: {exc}"
             )
             return JsonReturnModel(
-                timestamp=TimeStamp(int(record.timestamp)),
-                filename=str(record.filename),
-                byte_size=record.byte_size,
-                sha256=record.sha256,
-                data="",
+                timestamp   =   record.timestamp,
+                filename    =   record.filename,
+                byte_size   =   record.byte_size,
+                sha256      =   record.sha256,
+                data        =   "",
             )
 
         return JsonReturnModel(
@@ -159,7 +154,7 @@ class JsonTransactionDb:
             data        =   payload_text,
         )
 
-    def write_json(self, data: JsonPayload) -> JsonTransactionDbModel:
+    def write_json(self, data: JsonPayload, fname: PathLike, extension: str = "") -> JsonTransactionDbModel:
         """
         Persist A New Transaction Payload And Update The JSON Transaction Database.
 
@@ -167,8 +162,9 @@ class JsonTransactionDb:
 
         * Validates that ``data`` is JSON-serializable.
         * Allocates a new transaction identifier via ``_generate_transaction_id``.
-        * Generates a payload filename (``<transaction_id>.json``) and writes
-          the JSON payload to disk using ``FileProcessor``.
+        * Generates a payload filename (``<fname>.<extension>``) and writes
+          the JSON payload to disk inside the configured ``json_dir`` using
+          ``FileProcessor``.
         * Measures the payload file size in bytes.
         * Computes a SHA-256 hash over the file contents and the current
           timestamp.
@@ -182,6 +178,10 @@ class JsonTransactionDb:
         ----------
         data:
             JSON-serializable mapping representing the transaction payload.
+        fname:
+            Base filename (without extension) to use for the payload file.
+        extension:
+            File extension to use for the payload file (default: "").
 
         Returns
         -------
@@ -201,11 +201,13 @@ class JsonTransactionDb:
         except (TypeError, ValueError) as exc:
             raise ValueError(f"Provided data is not JSON-serializable: {exc}") from exc
 
+        if extension:
+            fname = f"{fname}.{extension.lstrip('.')}"
+
         timestamp: TimeStamp    = TimeStamp(int(time.time()))
         transaction_id          = self._generate_transaction_id()
-        filename: str           = f"{transaction_id}.json"
-
-        payload_path            = self.base_path / filename
+        filename: PathLike      = fname
+        payload_path            = self._json_dir / filename
         payload_processor       = FileProcessor(payload_path)
 
         write_ok = payload_processor.write_file(dict(data), append=False)
@@ -222,10 +224,10 @@ class JsonTransactionDb:
             raise RuntimeError(f"Failed to calculate hash for payload file at {payload_path}")
 
         record = JsonTransactionRecordModel(
-            timestamp=timestamp,
-            filename=filename,
-            byte_size=byte_size,
-            sha256=sha256_hash,
+            timestamp   =   timestamp,
+            filename    =   filename,
+            byte_size   =   byte_size,
+            sha256      =   sha256_hash,
         )
 
         db_model = self._load_db_model()
@@ -244,7 +246,7 @@ class JsonTransactionDb:
         (for example, a dedicated TransactionId factory) without changing
         call sites.
         """
-        return TransactionId(str(uuid4()))
+        return Utils.generate_transaction_id()
 
     def _calculate_file_hash(self, filename: PathLike, timestamp: TimeStamp) -> HashStr:
         """
@@ -262,9 +264,9 @@ class JsonTransactionDb:
 
         Returns
         -------
-        str
-            Hex-encoded SHA-256 digest. Returns an empty string if the file
-            cannot be opened or read.
+        HashStr
+            Hex-Encoded SHA-256 Digest. Returns An Empty Hash String If The
+            File Cannot Be Opened Or Read.
         """
         path = Path(filename)
         if not path.exists():
@@ -314,9 +316,10 @@ class JsonTransactionDb:
         """
         Load The JSON Transaction Database Model From Disk.
 
-        This helper resolves the configured JSON DB path, reads and parses the
-        JSON file, and converts it into a ``JsonTransactionDbModel``. Invalid
-        entries are skipped with errors logged.
+        This helper reads and parses the JSON DB file defined in
+        ``SystemConfigSettings.json_db`` and converts it into a
+        ``JsonTransactionDbModel``. Invalid entries are skipped with errors
+        logged.
 
         Returns
         -------
@@ -324,7 +327,7 @@ class JsonTransactionDb:
             Parsed JSON transaction database model, or an empty model when the
             DB file is missing or invalid.
         """
-        db_path    = self._resolve_path(self._json_db)
+        db_path    = self._json_db
         processor  = FileProcessor(db_path)
         raw_bytes  = processor.read_file()
 
@@ -376,7 +379,7 @@ class JsonTransactionDb:
         RuntimeError
             If the underlying file write operation fails.
         """
-        db_path   = self._resolve_path(self._json_db)
+        db_path   = self._json_db
         processor = FileProcessor(db_path)
 
         payload = {
@@ -387,62 +390,3 @@ class JsonTransactionDb:
         success = processor.write_file(payload, append=False)
         if not success:
             raise RuntimeError(f"Failed to write JSON DB to {db_path}")
-
-    def _default_base_path(self) -> Path:
-        """
-        Determine The Default Base Path For JSON DB Files.
-
-        This helper inspects common attributes on ``SystemConfigSettings`` to
-        discover a suitable root for transaction database files. The first
-        non-empty attribute found is used:
-
-        * ``transaction_db_root``
-        * ``transaction_db_path``
-        * ``json_dir``
-        * ``data_root``
-        * ``pnm_data_root``
-
-        If none of these attributes exist or contain a value, the current
-        working directory is used as a fallback.
-
-        Returns
-        -------
-        Path
-            Filesystem root for JSON DB operations.
-        """
-        candidate_attrs = (
-            "transaction_db_root",
-            "transaction_db_path",
-            "json_dir",
-            "data_root",
-            "pnm_data_root",
-        )
-
-        for attr in candidate_attrs:
-            value = getattr(self.settings, attr, None)
-            if value:
-                return Path(value)
-
-        return Path(".")
-
-    def _resolve_path(self, file_path: str) -> Path:
-        """
-        Resolve A JSON DB Or Payload File Path Against The Base Path.
-
-        Absolute paths are returned unchanged. Relative paths are interpreted
-        as children of the configured base path for this manager.
-
-        Parameters
-        ----------
-        file_path:
-            File path to resolve.
-
-        Returns
-        -------
-        Path
-            Resolved absolute or base-relative path.
-        """
-        path = Path(file_path)
-        if path.is_absolute():
-            return path
-        return self.base_path / path

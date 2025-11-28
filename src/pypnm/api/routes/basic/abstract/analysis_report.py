@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.api.routes.common.classes.analysis.model.schema import BaseAnalysisModel
+from pypnm.lib.db.json_transaction import JsonTransactionDb
 from pypnm.lib.mac_address import MacAddress
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
@@ -39,6 +40,7 @@ class AnalysisOutputModel(BaseModel):
     time: TimeStamp         = Field(..., description="Ephoc Time")
     csv_files: PathArray    = Field(..., description="List of CSV file(s)")
     plot_files: PathArray   = Field(..., description="List of PNG Matplot file(s)")
+    json_files: PathArray   = Field(..., description="List of JSON file(s)")
     archive_file: PathLike  = Field(..., description="File name of archive file containging analysis files")
 
 
@@ -69,6 +71,7 @@ class AnalysisReport(ABC):
         
         self.csv_files: List[PathLike]  = []
         self.plot_files: List[PathLike] = []
+        self.json_files: List[PathLike] = []
 
     def getAnalysisRptMatplotConfig(self) -> AnalysisRptMatplotConfig:
         return self._armc
@@ -103,6 +106,7 @@ class AnalysisReport(ABC):
             time         =   self._group_time,
             csv_files    =   self.csv_files,
             plot_files   =   self.plot_files,
+            json_files   =   self.json_files,
             archive_file =   self.archive_file,
         )
 
@@ -125,6 +129,16 @@ class AnalysisReport(ABC):
             fname = self.create_png_fname(tags=["spectrum"])
         '''        
         return f"{self._png_dir}/{self.create_generic_fname(tags=tags, ext='png')}"
+
+    def create_json_fname(self, tags: List[str] = []) -> PathLike:
+        '''
+        Build a PNG filename of the form:
+            <json_dir>/<mac>_<model>_<timestamp>[_TAGS].png
+
+        Example:
+            fname = self.create_png_fname(tags=["spectrum"])
+        '''        
+        return f"{self._json_dir}/{self.create_generic_fname(tags=tags, ext='json')}"
 
     def create_archive_fname(self, tags: List[str] = []) -> PathLike:
         '''
@@ -200,6 +214,9 @@ class AnalysisReport(ABC):
                 len(bucket),
             )
 
+        # Create JSON file representation for archiving
+        self._build_common_analysis_json(channel_id, model)
+
         bucket.append(model)
 
     def get_common_analysis_model(self, channel_id: ChannelId = INVALID_CHANNEL_ID) -> List[CommonAnalysis]:
@@ -271,6 +288,9 @@ class AnalysisReport(ABC):
                 self.logger.debug(f'Wrote Matplotlib Figure: {fn}')
                 self.plot_files.append(fn)
                 f.append(fn)
+        
+        # Add JSON files if any
+        f.extend(self.json_files)
 
         try:
             self.archive_file = ArchiveManager().zip_files(files=f, archive_path=self.create_archive_fname())
@@ -282,7 +302,7 @@ class AnalysisReport(ABC):
 
     def get_all_generated_files(self, include_archive:bool=False) -> List[PathLike]:
         """
-        Return a flat list of generated file paths (CSVs and plots).
+        Return a flat list of generated file paths (CSVs, plots, and JSON files).
 
         Note:
             `include_archive` is accepted for API symmetry but ignored; the
@@ -291,7 +311,20 @@ class AnalysisReport(ABC):
         _:List[PathLike] = []
         _.extend(self.csv_files)
         _.extend(self.plot_files)
+        _.extend(self.json_files)
         return _
+
+    def _build_common_analysis_json(self, channel_id: ChannelId, common_analysis:CommonAnalysis):
+        """
+        Build a JSON-serializable payload from the analysis results.
+
+        Implement in subclasses as needed.
+        """
+
+        full_path_fname = self.create_json_fname(tags=[str(channel_id), "analysis", str(Utils.time_stamp())])
+        self.json_files.append(full_path_fname)
+        JsonTransactionDb().write_json(data  = common_analysis.model_dump(), 
+                                       fname = Path(full_path_fname).parts[-1])
 
     @abstractmethod
     def _process(self) -> None:
@@ -340,6 +373,7 @@ class AnalysisReport(ABC):
         # Directories / session metadata
         self._png_dir: PathLike       = SystemConfigSettings.png_dir
         self._csv_dir: PathLike       = SystemConfigSettings.csv_dir
+        self._json_dir: PathLike      = SystemConfigSettings.json_dir
         self._archive_dir: PathLike   = SystemConfigSettings.archive_dir
 
         self._group_time: TimeStamp         = TimeStamp(Utils.time_stamp())

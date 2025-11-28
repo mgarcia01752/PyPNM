@@ -20,6 +20,7 @@ Options:
   --pnm         Clean .data/pnm/ and .data/db/
   --archive     Clean .data/archive/
   --excel       Clean .data/xlsx/ and .data/csv/
+  --json        Clean .data/json/
   --plot-data   Clean .data/png/, .data/csv/ and .data/archive/
   --msg-rsp     Clean .data/msg_rsp (Message Response)
   --output      Clean output/
@@ -41,7 +42,7 @@ declare -a ACTIONS=()
 # -----------------------------------------------------------------------------
 while (( $# )); do
   case "$1" in
-    --all|--logs|--python|--build|--pnm|--output|--plot-data|--msg-rsp|--archive|--excel)
+    --all|--logs|--python|--build|--pnm|--output|--plot-data|--msg-rsp|--archive|--excel|--json)
       ACTIONS+=("$1")
       shift
       ;;
@@ -141,6 +142,11 @@ clean_excel() {
   safe_rm "$ROOT_DIR/.data/csv/"*
 }
 
+clean_json() {
+  echo "🧾 Cleaning JSON data..."
+  safe_rm "$ROOT_DIR/.data/json/"*
+}
+
 clean_png() {
   echo "🖼️  Cleaning PNG data..."
   safe_rm "$ROOT_DIR/.data/png/"*
@@ -177,6 +183,7 @@ for action in "${ACTIONS[@]}"; do
       clean_build
       clean_pnm
       clean_excel
+      clean_json
       clean_output
       clean_png
       clean_plot_data
@@ -205,6 +212,10 @@ for action in "${ACTIONS[@]}"; do
 
     --excel)
       clean_excel
+      ;;
+
+    --json)
+      clean_json
       ;;
 
     --plot-data)
