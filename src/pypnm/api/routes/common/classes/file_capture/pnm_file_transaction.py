@@ -11,12 +11,12 @@ from typing import Dict, List
 from pathlib import Path
 
 from pypnm.api.routes.common.classes.file_capture.transaction_record_parser import TransactionRecordParser
-from pypnm.api.routes.common.classes.file_capture.types import TransactionId, TransactionRecordModel
+from pypnm.api.routes.common.classes.file_capture.types import TransactionRecordModel
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import FileName
+from pypnm.lib.types import FileName, TransactionId
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 
 

@@ -6,7 +6,6 @@ from __future__ import annotations
 import logging
 from typing import List, Optional, Union, Dict, cast
 
-
 from pydantic import BaseModel, Field
 
 from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.ifft import IfftEchoDetector, IfftMultiEchoDetectionModel
@@ -17,12 +16,10 @@ from pypnm.api.routes.advance.common.capture_data_aggregator import CaptureDataA
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.api.routes.common.classes.analysis.model.schema import DsChannelEstAnalysisModel
 from pypnm.lib.csv.manager import CSVManager
-from pypnm.lib.log_files import LogFile
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.types import (
-    ArrayLike, ChannelId, FloatSeries, FrequencyHz, FrequencySeriesHz, ComplexArray, 
-    ComplexSeries, MacAddressStr, Sequence, StringEnum,)
-from pypnm.lib.utils import TimeUnit, Utils
+    ArrayLike, ChannelId, FileName, FloatSeries, FrequencyHz, FrequencySeriesHz, ComplexArray, 
+    ComplexSeries, Sequence, StringEnum,)
 from pypnm.pnm.lib.min_avg_max_complex import MinAvgMaxComplex
 from pypnm.pnm.parser.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 
@@ -41,6 +38,12 @@ ChannelComplexSeriesMap     = Dict[ChannelId, List[ComplexSeries]]
 # Models
 # ──────────────────────────────────────────────────────────────
 class MinAvgMaxModel(BaseModel):
+    """
+    Per-Channel Min/Avg/Max Amplitude Statistics.
+
+    Captures per-subcarrier minimum, average, and maximum amplitude derived
+    from one or more ChannelEstimation captures for a single OFDM channel.
+    """
     channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
     frequency: FrequencySeriesHz    = Field(..., description="Subcarrier frequency bins (Hz)")
     min: FloatSeries                = Field(..., description="Minimum amplitude (dB) per subcarrier")
@@ -49,12 +52,25 @@ class MinAvgMaxModel(BaseModel):
 
 
 class GroupDelayAnalysisModel(BaseModel):
+    """
+    Per-Channel Group Delay Profile.
+
+    Holds the subcarrier frequency bins and corresponding group-delay values
+    (in microseconds) computed from averaged complex ChannelEstimation data.
+    """
     channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
     frequency: FrequencySeriesHz    = Field(..., description="Subcarrier frequency bins (Hz)")
     group_delay_us: FloatSeries     = Field(..., description="Per-subcarrier group delay (µs)")
 
 
 class LteDetectionModel(BaseModel):
+    """
+    LTE Anomaly Detection Summary From Group-Delay Ripple.
+
+    Encapsulates anomaly magnitudes or indices, the configured detection
+    threshold, and the bin widths used when segmenting group-delay data
+    for LTE-style interference detection.
+    """
     channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
     anomalies: FloatSeries          = Field(..., description="Detected LTE interference magnitudes/indices")
     threshold: float                = Field(..., description="Group-delay ripple threshold")
@@ -62,18 +78,37 @@ class LteDetectionModel(BaseModel):
 
 
 class EchoDetectionPhaseSlopeModel(BaseModel):
+    """
+    Phase-Slope Derived Echo Detection Metrics.
+
+    Stores the phase-slope profile and associated subcarrier frequency bins
+    used for phase-slope based echo or anomaly interpretation.
+    """
     channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
     slope_profile: FloatSeries      = Field(..., description="Phase-slope values (radians/Hz)")
     frequency: FrequencySeriesHz    = Field(..., description="Subcarrier frequency bins (Hz)")
 
 
 class EchoDetectionIfftModel(BaseModel):
+    """
+    Single-Channel IFFT-Based Echo Detection Result.
+
+    Represents the impulse-response magnitude versus delay obtained from
+    inverse FFT processing of ChannelEstimation data, along with the
+    effective sample rate used.
+    """
     channel_id: ChannelId           = Field(..., description="OFDM downstream channel ID")
     impulse_response: FloatSeries   = Field(..., description="Impulse-response magnitude vs delay")
     sample_rate: float              = Field(..., description="Sample rate used for IFFT (Hz)")
 
 
 class MultiChanEstimationResult(BaseModel):
+    """
+    Aggregate Multi-ChannelEstimation Analysis Result.
+
+    Wraps the executed analysis type, per-channel result models for that
+    analysis, and an optional error string when processing fails.
+    """
     analysis_type: str = Field(..., description="Name of executed analysis type")
     results: List[
         Union[
@@ -87,12 +122,27 @@ class MultiChanEstimationResult(BaseModel):
     error: Optional[str] = Field(default=None, description="Error message if analysis failed")
 
     def to_json(self, indent: int = 2) -> str:
+        """
+        Serialize The Multi-ChannelEstimation Result To JSON.
+
+        Parameters
+        ----------
+        indent:
+            Number of spaces used when pretty-printing the JSON payload.
+
+        Returns
+        -------
+        str
+            JSON-encoded representation of this result model.
+        """
         return self.model_dump_json(indent=indent)
+
 
 # ──────────────────────────────────────────────────────────────
 # Enum
 # ──────────────────────────────────────────────────────────────
 class MultiChanEstAnalysisType(StringEnum):
+    """Enumeration Of Supported Multi-ChannelEstimation Analysis Types."""
     MIN_AVG_MAX                 = "min-avg-max"
     GROUP_DELAY                 = "group-delay"
     ECHO_DETECTION_IFFT         = "echo-detection-ifft"
@@ -106,24 +156,57 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
     """Performs signal-quality analyses on grouped Multi-ChannelEstimation captures."""
 
     def __init__(self, capt_data_agg: CaptureDataAggregator, analysis_type: MultiChanEstAnalysisType) -> None:
+        """
+        Initialize Multi-ChannelEstimation Signal Analysis.
+
+        Parameters
+        ----------
+        capt_data_agg:
+            Aggregator providing access to one or more ChannelEstimation
+            capture groups and their associated metadata.
+        analysis_type:
+            Requested analysis mode to run across the aggregated captures
+            (for example, min/avg/max, group delay, LTE detection, or
+            IFFT-based echo detection).
+        """
         super().__init__(capt_data_agg)
         self.logger = logging.getLogger(self.__class__.__name__)
         self._analysis_type = analysis_type
         self._results: Optional[MultiChanEstimationResult] = None
 
-    # ──────────────────────────────────────────────────────────
-    # Internals
-    # ──────────────────────────────────────────────────────────
-    def _log_result(self, tag: str, mac: MacAddressStr, data: List[BaseModel]) -> None:
-        fname = f"{tag}_{mac}_{Utils.time_stamp(TimeUnit.NANOSECONDS)}.dict"
-        for r in data:
-            LogFile().write(fname, r)
-
     def _process(self):
+        """
+        Execute The Configured Analysis And Register JSON Archive Models.
+
+        This internal entry point ensures that the analysis is run exactly
+        once, caches the resulting ``MultiChanEstimationResult`` instance,
+        then builds per-channel JSON-ready models and registers them with
+        the JSON archive machinery for downstream export.
+        """
         if self._results is None:
             self._results = self.__process()
 
+        models: Dict[FileName, BaseModel] = self._build_json_archive_models()
+
+        for fname, model in models.items():
+            self.register_models_for_json_archive_files(
+                model,
+                [str(fname)],
+                append_timestamp=False)
+
     def __process(self) -> MultiChanEstimationResult:
+        """
+        Core Analysis Dispatcher For Multi-ChannelEstimation Data.
+
+        Selects and runs the appropriate analysis routine based on
+        ``self._analysis_type`` and wraps the per-channel results into a
+        ``MultiChanEstimationResult`` model.
+
+        Returns
+        -------
+        MultiChanEstimationResult
+            Aggregated results for the requested analysis type.
+        """
         mac = self.getMacAddresses()[0]
         self.logger.info(f"[_process] {self._analysis_type.name} for MAC={mac}")
 
@@ -138,10 +221,25 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                 data = self._analyze_echo_detection_ifft()
             case _:
                 raise ValueError(f"Unsupported analysis type: {self._analysis_type}")
-
+            
         return MultiChanEstimationResult(analysis_type=self._analysis_type.name, results=data)
 
     def to_model(self) -> MultiChanEstimationResult:
+        """
+        Return The Cached Multi-ChannelEstimation Result Model.
+
+        When called for the first time, this method triggers the underlying
+        analysis pipeline and populates ``self._results``. On subsequent
+        calls, the cached result is returned. If the analysis raises an
+        exception, the error is captured in the ``error`` field and an
+        otherwise empty result set is returned.
+
+        Returns
+        -------
+        MultiChanEstimationResult
+            Completed analysis result or an error-bearing placeholder
+            when processing fails.
+        """
         if self._results is None:
             try:
                 self._results = self.__process()
@@ -153,10 +251,26 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                 )
         return self._results
 
-    # ──────────────────────────────────────────────────────────
-    # CSV
-    # ──────────────────────────────────────────────────────────
     def create_csv(self, **kwargs) -> List[CSVManager]:
+        """
+        Materialize Per-Channel Analysis Results As CSV Files.
+
+        For each result in the aggregated analysis model, this method emits
+        a CSV file with a schema tailored to the selected analysis type
+        (min/avg/max, group delay, LTE detection, or IFFT echo detection).
+        Generated files are written using ``CSVManager`` instances, which
+        are returned to the caller for further inspection or testing.
+
+        Parameters
+        ----------
+        **kwargs:
+            Reserved for future extensions; currently unused.
+
+        Returns
+        -------
+        List[CSVManager]
+            List of CSV managers, one per successfully exported result.
+        """
         csvs: List[CSVManager] = []
         model = self.to_model()
 
@@ -234,11 +348,25 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                         csvs.append(csv)
         return csvs
 
-    # ──────────────────────────────────────────────────────────
-    # Matplot
-    # ──────────────────────────────────────────────────────────
-
     def create_matplot(self, **kwargs) -> List[MatplotManager]:
+        """
+        Generate Matplotlib Plots For Multi-ChannelEstimation Results.
+
+        Creates one or more ``MatplotManager`` instances per analysis result
+        and dispatches to the appropriate plotting helper depending on the
+        configured analysis type. Each plot is written to disk with a filename
+        derived from the channel identifier and analysis tag.
+
+        Parameters
+        ----------
+        **kwargs:
+            Reserved for future extensions; currently unused.
+
+        Returns
+        -------
+        List[MatplotManager]
+            List of plot managers corresponding to the generated figures.
+        """
         plots: List[MatplotManager] = []
         model = self.to_model()
 
@@ -336,6 +464,14 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         return plots
     
     def _analyze_min_avg_max(self) -> List[MinAvgMaxModel]:
+        """
+        Compute Per-Channel Min/Avg/Max Amplitude Statistics.
+
+        Aggregates complex carrier values per channel from all available
+        ChannelEstimation captures, computes magnitude statistics using
+        ``MinAvgMaxComplex``, and returns a list of ``MinAvgMaxModel``
+        instances keyed by OFDM channel id.
+        """
         channel_data: ChannelComplexMap = {}
         freqs: ChannelFrequencyMap = {}
 
@@ -459,6 +595,14 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         return out
 
     def _analyze_lte_detection(self) -> List[LteDetectionModel]:
+        """
+        Detect LTE-Style Interference Using Group-Delay Anomalies.
+
+        Aggregates complex carrier values per channel, derives group-delay
+        behavior via ``GroupDelayAnomalyDetector``, and returns a list of
+        ``LteDetectionModel`` instances summarizing anomalies, threshold,
+        and bin-width configuration for each channel.
+        """
         channel_data: ChannelComplexMap = {}
         freqs: ChannelFrequencyMap = {}
         threshold = 1e-9
@@ -484,3 +628,46 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                 )
             )
         return out
+
+    def _build_json_archive_models(self) -> Dict[FileName, BaseModel]:
+        """
+        Build JSON Archive Models For Each Analysis Result.
+
+        Iterates over the aggregated result set and constructs a mapping
+        from a logical filename stem (channel id plus analysis type) to the
+        corresponding Pydantic model instance. The caller is responsible for
+        handing these models off to the JSON transaction/archive pipeline.
+
+        Returns
+        -------
+        Dict[FileName, BaseModel]
+            Mapping of partial filenames to analysis result models suitable
+            for JSON archival.
+        """
+        models: Dict[FileName, BaseModel] = {}
+        model = self.to_model()
+        for r in model.results:
+            match self._analysis_type:
+                case MultiChanEstAnalysisType.MIN_AVG_MAX:
+                    if not isinstance(r, MinAvgMaxModel):
+                        continue
+                    models[FileName(f"{r.channel_id}_{self._analysis_type.name}")] = r
+
+                case MultiChanEstAnalysisType.GROUP_DELAY:
+                    if not isinstance(r, GroupDelayAnalysisModel):
+                        continue
+                    models[FileName(f"{r.channel_id}_{self._analysis_type.name}")] = r
+
+                case MultiChanEstAnalysisType.LTE_DETECTION_PHASE_SLOPE:
+                    if not isinstance(r, LteDetectionModel):
+                        continue
+                    models[FileName(f"{r.channel_id}_{self._analysis_type.name}")] = r
+
+                case MultiChanEstAnalysisType.ECHO_DETECTION_IFFT:
+                    if isinstance(r, EchoDetectionIfftModel):
+                        models[FileName(f"{r.channel_id}_{self._analysis_type.name}")] = r
+                        continue
+
+                    if isinstance(r, IfftMultiEchoDetectionModel):
+                        models[FileName(f"{r.channel_id}_{self._analysis_type.name}")] = r
+        return models

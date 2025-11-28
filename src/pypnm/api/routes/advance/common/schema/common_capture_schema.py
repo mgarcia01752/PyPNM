@@ -8,6 +8,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import CableModemPnmConfig
 from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_response import BaseDeviceResponse
+from pypnm.lib.types import OperationId
 
 class CaptureParameters(BaseModel):
     """Parameters controlling a multi-sample RxMER capture operation."""
@@ -25,7 +26,7 @@ class MultiCaptureRequest(BaseModel):
 
 class MultiCaptureParametersResponse(BaseDeviceResponse):
     """Details about a multi-capture operation’s current state."""
-    operation_id:   str  = Field(..., description="Unique identifier for this multi-capture operation.")
+    operation_id:   OperationId  = Field(..., description="Unique identifier for this multi-capture operation.")
     state:          str  = Field(..., description="Current state of the operation (e.g., 'running', 'completed', 'stopped').")
     collected:      int  = Field(..., description="Number of samples collected so far.")
     time_remaining: int  = Field(..., description="Remaining time in seconds.")

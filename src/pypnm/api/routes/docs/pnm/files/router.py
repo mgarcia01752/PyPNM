@@ -8,9 +8,7 @@ from typing import cast
 from fastapi import APIRouter, File, Path, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
-from pypnm.api.routes.advance.common.types.types import OperationId
 from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
-from pypnm.api.routes.common.classes.file_capture.types import TransactionId
 from pypnm.api.routes.docs.pnm.files.schemas import (
     AnalysisJsonResponse, FileAnalysisRequest, FileQueryRequest, 
     FileQueryResponse, UploadFileResponse,)
@@ -18,7 +16,7 @@ from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
-from pypnm.lib.types import FileName, MacAddressStr
+from pypnm.lib.types import FileName, MacAddressStr, OperationId, TransactionId
 
 
 class PnmFileManager:
@@ -195,7 +193,7 @@ class PnmFileManager:
                     )
             
             elif output_type == OutputType.ARCHIVE:
-                return  PnmFileService().get_matplot(request)
+                return  PnmFileService().get_archive(request)
 
             return JSONResponse(content="Not implemented yet")
 

@@ -11,8 +11,8 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 from json import JSONDecodeError
 
-from pypnm.api.routes.common.classes.file_capture.types import GroupId, TransactionId
 from pypnm.config.system_config_settings import SystemConfigSettings
+from pypnm.lib.types import GroupId, TransactionId
 
 class CaptureGroup:
     """

@@ -9,8 +9,8 @@ from typing import TypeVar, Type, Any, Tuple, Dict
 
 from pypnm.api.routes.advance.common.capture_service import AbstractCaptureService
 from pypnm.api.routes.advance.common.operation_state import OperationState
-from pypnm.api.routes.advance.common.types.types import OperationId
-from pypnm.api.routes.common.classes.file_capture.types import GroupId
+from pypnm.lib.types import GroupId, OperationId
+
 
 T = TypeVar("T", bound=AbstractCaptureService)
 

@@ -5,12 +5,10 @@ from __future__ import annotations
 
 from typing import Optional, Dict, Any
 
-from pypnm.api.routes.advance.common.types.types import TransactionId
-
 from pypnm.api.routes.common.classes.file_capture.types import DeviceDetailsModel, TransactionRecordModel
 from pypnm.docsis.cable_modem import MacAddress
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
-from pypnm.lib.types import FileName, MacAddressStr, TimestampSec
+from pypnm.lib.types import FileName, MacAddressStr, TimestampSec, TransactionId
 
 class TransactionRecordParser:
     """

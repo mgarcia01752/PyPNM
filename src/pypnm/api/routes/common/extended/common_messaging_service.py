@@ -7,11 +7,11 @@ from __future__ import annotations
 from enum import Enum
 import json
 from typing import Any, Dict, List, Optional, Tuple, Union
-from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import TransactionId
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.pnm_config_manager import SystemConfigSettings
 from pypnm.lib.log_files import LogFile
 from pypnm.lib.utils import TimeUnit, Utils
+from pypnm.lib.types import TransactionId
 
 class MessageResponseType(Enum):
     """

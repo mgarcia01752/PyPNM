@@ -13,14 +13,12 @@ from typing import Any, Dict, List, Tuple, cast
 
 from pypnm.api.routes.advance.common.operation_manager import OperationManager
 from pypnm.api.routes.advance.common.operation_state import OperationState
-from pypnm.api.routes.advance.common.types.types import OperationId
 from pypnm.api.routes.common.classes.file_capture.capture_group import CaptureGroup
 from pypnm.api.routes.common.classes.file_capture.capture_sample import CaptureSample
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
-from pypnm.api.routes.common.classes.file_capture.types import GroupId
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse, MessageResponseType
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.lib.types import TimeStamp
+from pypnm.lib.types import TimeStamp, OperationId, GroupId
 from pypnm.lib.utils import Utils
 
 

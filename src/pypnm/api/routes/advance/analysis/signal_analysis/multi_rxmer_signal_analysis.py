@@ -19,9 +19,9 @@ from pypnm.lib.constants import INVALID_CAPTURE_TIME
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.shan.series import ShannonSeries
-from pypnm.lib.types import (ArrayLike, CaptureTime, ChannelId, FloatSeries, 
-                             FrequencySeriesHz, MacAddressStr, MagnitudeSeries, StringEnum, TimeStamp, 
-                             TimestampSec)
+from pypnm.lib.types import (
+    ArrayLike, CaptureTime, ChannelId, FloatSeries, FrequencySeriesHz, MacAddressStr, MagnitudeSeries, 
+    StringEnum, TimeStamp, TimestampSec)
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
 from pypnm.pnm.parser.CmDsOfdmFecSummary import CmDsOfdmFecSummary
 from pypnm.pnm.parser.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ProfileId
@@ -78,12 +78,13 @@ class MultiRxMerAnalysisResult(BaseModel):
 
 class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
-    def __init__(self, capt_data_agg: CaptureDataAggregator, analysis_type: MultiRxMerAnalysisType) -> None:
+    def __init__(self, capt_data_agg: CaptureDataAggregator, 
+                 analysis_type: MultiRxMerAnalysisType) -> None:
         super().__init__(capt_data_agg)
         self.logger = logging.getLogger(self.__class__.__name__)
         self.analysis_type = analysis_type
         self._model: Optional[MultiRxMerAnalysisResult] = None
-        self._mac: Optional[str] = None
+        self._mac: Optional[MacAddressStr] = None
 
         self._sorted_temporal_mapping: List[TemporalMapping] = []
         self._analysis_map: MultiRxMerAnalysisMap = {}
@@ -408,6 +409,8 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 dorm = CmDsOfdmRxMer(tcm.data)
                 capture_time: CaptureTime = dorm.getPnmHeaderModel().pnm_header.capture_time or INVALID_CAPTURE_TIME
                 temporal_mapping[capture_time] = dorm
+                model = dorm.to_model()
+                self.register_models_for_json_archive_files(model, [str(model.channel_id) , "CmDsOfdmRxMer" ])
                 continue
 
             except Exception as e:
@@ -417,6 +420,8 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 dofs = CmDsOfdmFecSummary(tcm.data)
                 capture_time: CaptureTime = dofs.getPnmHeaderModel().pnm_header.capture_time or INVALID_CAPTURE_TIME
                 temporal_mapping[capture_time] = dofs
+                model = dofs.to_model()
+                self.register_models_for_json_archive_files(model, [str(model.channel_id) , "CmDsOfdmFecSummary"])
                 continue
 
             except Exception as e:
@@ -426,6 +431,8 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 domp = CmDsOfdmModulationProfile(tcm.data)
                 capture_time: CaptureTime = domp.getPnmHeaderModel().pnm_header.capture_time or INVALID_CAPTURE_TIME
                 temporal_mapping[capture_time] = domp
+                model = domp.to_model()
+                self.register_models_for_json_archive_files(model, [str(model.channel_id) , "CmDsOfdmModulationProfile"])
                 continue
 
             except Exception as e:

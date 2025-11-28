@@ -15,7 +15,6 @@ from pypnm.api.routes.advance.analysis.signal_analysis.multi_rxmer_signal_analys
     MultiRxMerAnalysisResult, MultiRxMerAnalysisType, MultiRxMerSignalAnalysis)
 from pypnm.api.routes.advance.common.abstract.service import AbstractService
 from pypnm.api.routes.advance.common.capture_data_aggregator import CaptureDataAggregator
-from pypnm.api.routes.advance.common.capture_service import OperationId
 from pypnm.api.routes.advance.common.operation_manager import OperationManager
 from pypnm.api.routes.advance.common.operation_state import OperationState
 from pypnm.api.routes.advance.multi_rxmer.schemas import (
@@ -24,7 +23,6 @@ from pypnm.api.routes.advance.multi_rxmer.schemas import (
 from pypnm.api.routes.advance.multi_rxmer.service import MultiRxMer_Ofdm_Performance_1_Service, MultiRxMerService
 from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
-from pypnm.api.routes.common.classes.file_capture.types import GroupId
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.files.service import FileType, PnmFileService
@@ -33,7 +31,7 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet, InetAddressStr
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import MacAddressStr
+from pypnm.lib.types import MacAddressStr, OperationId, GroupId
 
 class MultiRxMerRouter(AbstractService):
     """
@@ -70,7 +68,8 @@ class MultiRxMerRouter(AbstractService):
     def _add_routes(self) -> None:
         @self.router.post("/start",
             response_model=Union[MultiRxMerStartResponse, SnmpResponse],
-            summary="Start a Multi-RxMER capture",)
+            summary="Start a Multi-RxMER capture",
+            responses=FAST_API_RESPONSE,)
         async def start_multi_rxmer(request: MultiRxMerRequest):
             """
             Start Multi-RxMER Capture
@@ -159,7 +158,8 @@ class MultiRxMerRouter(AbstractService):
 
         @self.router.get("/status/{operation_id}",
             response_model=MultiRxMerStatusResponse,
-            summary="Get status of a Multi-RxMER capture",)
+            summary="Get status of a Multi-RxMER capture",
+            responses=FAST_API_RESPONSE,)
         def get_status(operation_id: OperationId) -> MultiRxMerStatusResponse:
             """
             Check Multi-RxMER Capture Status
@@ -261,7 +261,8 @@ class MultiRxMerRouter(AbstractService):
 
         @self.router.delete("/stop/{operation_id}",
             response_model=MultiRxMerStatusResponse,
-            summary="Stop a running Multi-RxMER capture early",)
+            summary="Stop a running Multi-RxMER capture early",
+            responses=FAST_API_RESPONSE,)
         def stop_capture(operation_id: OperationId) -> MultiRxMerStatusResponse:
             """
             Stop Multi-RxMER Capture
@@ -309,7 +310,8 @@ class MultiRxMerRouter(AbstractService):
 
         @self.router.post("/analysis",
             response_model=MultiRxMerAnalysisResponse,
-            summary="Perform signal analysis on a previously executed Multi-RxMER captures",)
+            summary="Perform signal analysis on a previously executed Multi-RxMER captures",
+            responses=FAST_API_RESPONSE,)
         def analysis(request: MultiRxMerAnalysisRequest) -> Union[MultiRxMerAnalysisResponse, FileResponse]:
             """
             Multi-RxMER Analysis

@@ -8,11 +8,10 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from pypnm.api.routes.advance.common.capture_service import OperationId
-from pypnm.api.routes.advance.common.operation_manager import GroupId
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
-from pypnm.api.routes.common.classes.file_capture.types import TransactionId, TransactionRecordModel
+from pypnm.api.routes.common.classes.file_capture.types import TransactionRecordModel
 from pypnm.config.system_config_settings import SystemConfigSettings
+from pypnm.lib.types import OperationId, GroupId, TransactionId
 
 
 class OperationCaptureGroupResolver:

@@ -11,8 +11,9 @@ import numpy as np
 from numpy.typing import NDArray
 
 # TODO: New home for these
-GroupId             = NewType("GroupId", str)
-TransactionId = NewType("TransactionId", str)
+GroupId         = NewType("GroupId", str)
+TransactionId   = NewType("TransactionId", str)
+OperationId     = NewType("OperationId", str)
 
 HashStr = NewType("HashStr", str)
 
@@ -90,6 +91,8 @@ CaptureTime   = NewType("CaptureTime", int)
 TimeStamp     = NewType("TimeStamp", int)
 TimestampSec  = NewType("TimestampSec", int)
 TimestampMs   = NewType("TimestampMs", int)
+TimeStampUs   = NewType("TimeStampUs", int)
+TimeStampNs   = NewType("TimeStampNs", int)
 SampleIndex   = NewType("SampleIndex", int)
 
 # RF / PHY units (keep as scalars with units)
@@ -149,10 +152,6 @@ IfftTimeResponse: TypeAlias = Tuple[NDArrayF64, NDArrayC128]
 # ────────────────────────────────────────────────────────────────────────────────
 HttpRtnCode = NewType("HttpRtnCode", int)
 
-
-
-
-
 # ────────────────────────────────────────────────────────────────────────────────
 # Explicit public surface
 # ────────────────────────────────────────────────────────────────────────────────
@@ -171,7 +170,8 @@ __all__ = [
     # JSON
     "JSONScalar", "JSONDict", "JSONList", "JSONValue",
     # unit-tagged scalars
-    "CaptureTime", "TimeStamp", "TimestampSec", "TimestampMs", "SampleIndex",
+    "CaptureTime", "TimeStamp", "TimestampSec", "TimestampMs", "TimeStampUs", "TimeStampNs",
+    "SampleIndex",
     "FrequencyHz", "BandwidthHz", "PowerdBmV", "PowerdB", "MERdB", "SNRdB", "SNRln",
     "ChannelId", "SubcarrierId",
     "OidStr", "OidNumTuple",

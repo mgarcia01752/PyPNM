@@ -11,8 +11,9 @@ from pypnm.api.routes.advance.common.transactionsCollection import TransactionCo
 from pypnm.api.routes.advance.common.types.types import TransactionFileCollection
 from pypnm.api.routes.common.classes.file_capture.capture_group import CaptureGroup
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
-from pypnm.api.routes.common.classes.file_capture.types import GroupId, TransactionId, TransactionRecordModel
+from pypnm.api.routes.common.classes.file_capture.types import TransactionRecordModel
 from pypnm.config.system_config_settings import SystemConfigSettings
+from pypnm.lib.types import GroupId, TransactionId
     
 class CaptureDataAggregator:
     """
@@ -33,7 +34,7 @@ class CaptureDataAggregator:
         """
         self.logger = logging.getLogger(self.__class__.__name__)
         self._capture_group_id:GroupId = capture_group_id
-        self._save_dir = Path(SystemConfigSettings.pnm_dir)
+        self._pnm_dir = Path(SystemConfigSettings.pnm_dir)
         self._trans_file_bin_entries: TransactionFileCollection = []
         self._trans_collection: TransactionCollection = TransactionCollection()
 
@@ -55,7 +56,7 @@ class CaptureDataAggregator:
         for file_count, txn_id in enumerate(txn_ids, 1):
 
             record: TransactionRecordModel = PnmFileTransaction().getRecordModel(txn_id)
-            file_path = self._safe_join(self._save_dir, record.filename)
+            file_path = self._safe_join(self._pnm_dir, record.filename)
             
             try:
                 bin:bytes = file_path.read_bytes()

@@ -7,8 +7,7 @@ from __future__ import annotations
 from typing import Optional
 from pydantic import BaseModel, Field
 
-from pypnm.api.routes.common.classes.file_capture.types import TransactionId
-from pypnm.lib.types import TimeStamp
+from pypnm.lib.types import TimeStamp, TransactionId
 
 class CaptureSample(BaseModel):
     """

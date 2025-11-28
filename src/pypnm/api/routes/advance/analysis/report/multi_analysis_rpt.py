@@ -14,14 +14,15 @@ from pypnm.api.routes.advance.common.capture_data_aggregator import (
     CaptureDataAggregator, TransactionCollection)
 from pypnm.api.routes.advance.common.transactionsCollection import TransactionCollectionModel
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisOutputModel
+from pypnm.lib.db.json_transaction import JsonTransactionDb
 from pypnm.lib.mac_address import MacAddress
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor, SystemDescriptorModel
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager
-from pypnm.lib.types import PathArray, PathLike
-from pypnm.lib.utils import Utils
+from pypnm.lib.types import ChannelId, PathArray, PathLike, TimeStamp
+from pypnm.lib.utils import TimeUnit, Utils
 
 
 class MultiAnalysisRpt(ABC):
@@ -38,18 +39,20 @@ class MultiAnalysisRpt(ABC):
         
         self._png_dir: PathLike       = SystemConfigSettings.png_dir
         self._csv_dir: PathLike       = SystemConfigSettings.csv_dir
+        self._json_dir: PathLike      = SystemConfigSettings.json_dir
         self._archive_dir: PathLike   = SystemConfigSettings.archive_dir
 
-        self._group_time              = Utils.time_stamp()
-        self._base_filename: str      = ""
-        self._common_analysis_model: Dict[int, BaseModel] = {}
+        self._group_time:TimeStamp    = Utils.time_stamp()
+        self._base_filename: PathLike = ""
+        self._common_analysis_model: Dict[ChannelId, BaseModel] = {}
 
         self._mac_addresses: Set[MacAddress]  = set()
         self._cmts_mac_address: MacAddress = MacAddress(MacAddress.null())
         self._sys_descr_model: SystemDescriptorModel  = tcm.device_details.system_description
 
         self.csv_files: List[PathLike]  = []
-        self.plot_files: List[PathLike] = [] 
+        self.plot_files: List[PathLike] = []
+        self.json_files: List[PathLike] = [] 
 
         self.logger.info(f"MultiAnalysisRpt: MAC: {self._mac_addresses}, "
                          f"Model: {self._sys_descr_model.model_dump()}, "
@@ -77,6 +80,7 @@ class MultiAnalysisRpt(ABC):
             time         =   self._group_time,
             csv_files    =   self.csv_files,
             plot_files   =   self.plot_files,
+            json_files   =   self.json_files,
             archive_file =   self.archive_file,)
 
     def create_csv_fname(self, tags: List[str] = []) -> PathLike:
@@ -99,6 +103,16 @@ class MultiAnalysisRpt(ABC):
         '''        
         return f"{self._png_dir}/{self.create_generic_fname(tags=tags, ext='png')}"
 
+    def create_json_fname(self, tags: List[str] = []) -> PathLike:
+        '''
+        Build a PNG filename of the form:
+            <json_dir>/<mac>_<model>_<timestamp>[_TAGS].json
+
+        Example:
+            fname = self.create_json_fname(tags=["spectrum"])
+        '''        
+        return f"{self._json_dir}/{self.create_generic_fname(tags=tags, ext='json')}"
+    
     def create_archive_fname(self, tags: List[str] = []) -> PathLike:
         '''
         Build a ZIP archive filename of the form:
@@ -168,6 +182,11 @@ class MultiAnalysisRpt(ABC):
                 self.plot_files.append(fn)
                 f.append(fn)
 
+        if not self.json_files:
+            self.logger.warning("No JSON files were registered for the report archive.")
+        else:
+            f.extend(self.json_files)
+
         try:
             self.archive_file = ArchiveManager().zip_files(files=f, archive_path=self.create_archive_fname())
 
@@ -214,7 +233,25 @@ class MultiAnalysisRpt(ABC):
     def getTransactionCollection(self) -> TransactionCollection:
         """Return the `TransactionCollection` instance used to collect capture files."""
         return self._trans_collect
-  
+
+    def register_models_for_json_archive_files(self, model:BaseModel, filename_tags: List[str], append_timestamp: bool = True) -> None:
+        """Register a Pydantic model to be serialized as JSON and included in the report archive."""
+
+        # model is a Pydantic BaseModel instance, but it can be any subclass
+        # We need to make sure its initial derive is from BaseModel
+        if not isinstance(model, BaseModel):
+            raise TypeError("model must be a Pydantic BaseModel instance")
+
+        if append_timestamp:
+            filename_tags.append(str(Utils.time_stamp(TimeUnit.NANOSECONDS)))
+
+        full_path_fname = self.create_json_fname(tags=filename_tags)
+        
+        JsonTransactionDb().write_json(data  = model.model_dump(), 
+                                       fname = Path(full_path_fname).parts[-1])
+        
+        self.json_files.append(full_path_fname)
+
     @abstractmethod
     def _process(self) -> None:
         """
@@ -248,4 +285,3 @@ class MultiAnalysisRpt(ABC):
             - Return the list of configured `MatplotManager` instances.
         """
         return []
-

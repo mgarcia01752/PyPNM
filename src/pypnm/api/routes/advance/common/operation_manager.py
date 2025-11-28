@@ -11,8 +11,7 @@ import logging
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
-from pypnm.api.routes.advance.common.types.types import OperationId
-from pypnm.api.routes.common.classes.file_capture.types import GroupId
+from pypnm.lib.types import OperationId, GroupId
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.constants import cast
 

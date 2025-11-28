@@ -10,8 +10,7 @@ from fastapi import APIRouter, Path
 from fastapi.responses import JSONResponse
 
 from pypnm.api.routes.advance.common.abstract.service import AbstractService
-from pypnm.api.routes.advance.common.capture_service import OperationId
-
+from pypnm.lib.types import OperationId
 
 class PyPnmOperationsAPI(AbstractService):
     """

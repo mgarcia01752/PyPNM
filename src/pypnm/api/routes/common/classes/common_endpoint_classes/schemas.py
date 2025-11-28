@@ -5,10 +5,9 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 from pydantic import Field, field_validator
-from pypnm.api.routes.advance.common.types.types import TransactionId
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
     CommonAnalysisRequest, CommonRequest, CommonResponse, CommonSingleCaptureAnalysisRequest)
-from pypnm.lib.types import ChannelId
+from pypnm.lib.types import ChannelId, TransactionId
 
 class PnmRequest(CommonRequest):
     """Request model used to trigger measurement-related operations on a cable modem."""

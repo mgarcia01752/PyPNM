@@ -7,7 +7,7 @@ import time
 import hashlib
 from enum import Enum
 
-from pypnm.lib.types import TransactionId
+from pypnm.lib.types import TimeStamp, TransactionId
 
 
 class TimeUnit(Enum):
@@ -19,7 +19,7 @@ class TimeUnit(Enum):
 class Utils:
 
     @staticmethod
-    def time_stamp(unit: TimeUnit = TimeUnit.SECONDS) -> int:
+    def time_stamp(unit: TimeUnit = TimeUnit.SECONDS) -> TimeStamp:
         """
         Return The Current Timestamp In The Specified Unit.
 

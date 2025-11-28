@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING, Tuple, cast
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 
-from pypnm.api.routes.advance.common.types.types import OperationId
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisRptMatplotConfig
 from pypnm.api.routes.basic.channel_estimation_analysis_rpt import ChanEstimationReport
 from pypnm.api.routes.basic.constellation_display_analysis_rpt import ConstDisplayAnalysisRptMatplotConfig, ConstellationDisplayReport
@@ -24,14 +23,13 @@ from pypnm.api.routes.common.classes.analysis.model.schema import ParserAnalysis
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
 from pypnm.api.routes.common.classes.file_capture.pnm_file_opearation import OperationCaptureGroupResolver
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
-from pypnm.api.routes.common.classes.file_capture.types import TransactionId
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlTest
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.constants import MediaType
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import FileName, MacAddressStr, PathLike
+from pypnm.lib.types import FileName, MacAddressStr, OperationId, PathLike, TransactionId
 from pypnm.lib.utils import Utils
 from pypnm.pnm.parser.model.parser_rtn_models import (
     CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel, 
@@ -404,7 +402,7 @@ class PnmFileService:
             detail=f"Analysis not implemented for file type: {model.file_type.name}"
         )
 
-    def get_matplot(self, request: FileAnalysisRequest) -> FileResponse:
+    def get_archive(self, request: FileAnalysisRequest) -> FileResponse:
         rpt: Path = Path()
 
         theme = request.analysis.plot.ui.theme
