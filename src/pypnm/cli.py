@@ -8,15 +8,19 @@ import os
 import uvicorn
 
 def main():
+
+    HOST_DEFAULT = "127.0.0.1"
+    PORT_DEFAULT = 8000
+
     parser = argparse.ArgumentParser(
         description="Launch the PyPNM FastAPI service with optional HTTPS support."
     )
 
-    parser.add_argument("--host", default="127.0.0.1", help="Host to bind (default: 127.0.0.1)")
-    parser.add_argument("--port", default=8000, type=int, help="Port to bind (default: 8000)")
-    parser.add_argument("--ssl", action="store_true", help="Enable HTTPS (requires cert and key)")
-    parser.add_argument("--cert", default="./certs/cert.pem", help="Path to SSL certificate")
-    parser.add_argument("--key", default="./certs/key.pem", help="Path to SSL private key")
+    parser.add_argument("--host",   default=HOST_DEFAULT, help=f"Host to bind (default: {HOST_DEFAULT})")
+    parser.add_argument("--port",   default=PORT_DEFAULT, type=int, help=f"Port to bind (default: {PORT_DEFAULT})")
+    parser.add_argument("--ssl",    action="store_true", help="Enable HTTPS (requires cert and key)")
+    parser.add_argument("--cert",   default="./certs/cert.pem", help="Path to SSL certificate")
+    parser.add_argument("--key",    default="./certs/key.pem", help="Path to SSL private key")
 
     # 🔁 Hot-reload controls
     parser.add_argument(

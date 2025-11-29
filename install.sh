@@ -9,6 +9,25 @@ set -euo pipefail
 VENV_DIR="${1:-.env}"
 PROJECT_ROOT="$(pwd)"
 
+backup_system_settings() {
+  echo "🗂  Creating backup of system settings…"
+  local backup_root
+  backup_root="${PROJECT_ROOT}/backup"
+  local src_path
+  src_path="${PROJECT_ROOT}/src/pypnm/settings/system.json"
+  local dst_path
+  dst_path="${backup_root}/src/pypnm/settings/system.json"
+
+  if [[ ! -f "$src_path" ]]; then
+    echo "⚠️  System settings file not found at '$src_path'; skipping backup."
+    return
+  fi
+
+  mkdir -p "$(dirname "$dst_path")"
+  cp "$src_path" "$dst_path"
+  echo "✅ Backup created at '$dst_path'."
+}
+
 echo "🔍 Detecting package manager..."
 PM="none"; PM_UPDATE=""; PM_INSTALL=""
 if command -v apt-get >/dev/null 2>&1; then
@@ -132,6 +151,8 @@ echo "🔧 Configuring PYTHONPATH…"
 echo "🧪 Running unit tests…"
 cd "$PROJECT_ROOT"
 pytest -v
+
+backup_system_settings
 
 echo "✅ Bootstrap complete."
 echo "👉 Next: source '$VENV_DIR/bin/activate' and run: mkdocs serve"
