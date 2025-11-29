@@ -11,9 +11,17 @@ from pathlib import Path
 from typing import Final
 
 
-VERSION_FILE_PATH: Final[Path]   = Path("src/pypnm/version.py")
-BUMP_SCRIPT_PATH: Final[Path]    = Path("tools") / "bump_version.py"
-PYPROJECT_FILE_PATH: Final[Path] = Path("pyproject.toml")
+VERSION_FILE_PATH: Final[Path]           = Path("src/pypnm/version.py")
+BUMP_SCRIPT_PATH: Final[Path]            = Path("tools") / "bump_version.py"
+PYPROJECT_FILE_PATH: Final[Path]         = Path("pyproject.toml")
+
+VERSION_PART_SEPARATOR: Final[str]       = "."
+EXPECTED_VERSION_PARTS: Final[int]       = 4
+
+MAJOR_INDEX: Final[int]                  = 0
+MINOR_INDEX: Final[int]                  = 1
+MAINTENANCE_INDEX: Final[int]            = 2
+BUILD_INDEX: Final[int]                  = 3
 
 
 def _run(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -102,6 +110,52 @@ def _read_pyproject_version() -> str:
     sys.exit(1)
 
 
+def _validate_version_string(version: str) -> None:
+    """Validate that the version string matches MAJOR.MINOR.MAINTENANCE.BUILD."""
+    parts = version.split(VERSION_PART_SEPARATOR)
+    if len(parts) != EXPECTED_VERSION_PARTS:
+        print(
+            f"ERROR: Version '{version}' has {len(parts)} parts, expected {EXPECTED_VERSION_PARTS}.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    if not all(part.isdigit() for part in parts):
+        print(
+            f"ERROR: Invalid version '{version}'. Expected numeric MAJOR.MINOR.MAINTENANCE.BUILD.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def _compute_next_version(current_version: str, mode: str) -> str:
+    """Compute the next version string by incrementing the requested component."""
+    _validate_version_string(current_version)
+    parts_str = current_version.split(VERSION_PART_SEPARATOR)
+    parts_int = [int(part) for part in parts_str]
+
+    match mode:
+        case "major":
+            parts_int[MAJOR_INDEX]       = parts_int[MAJOR_INDEX] + 1
+            parts_int[MINOR_INDEX]       = 0
+            parts_int[MAINTENANCE_INDEX] = 0
+            parts_int[BUILD_INDEX]       = 0
+        case "minor":
+            parts_int[MINOR_INDEX]       = parts_int[MINOR_INDEX] + 1
+            parts_int[MAINTENANCE_INDEX] = 0
+            parts_int[BUILD_INDEX]       = 0
+        case "maintenance":
+            parts_int[MAINTENANCE_INDEX] = parts_int[MAINTENANCE_INDEX] + 1
+            parts_int[BUILD_INDEX]       = 0
+        case "build":
+            parts_int[BUILD_INDEX]       = parts_int[BUILD_INDEX] + 1
+        case _:
+            print(f"ERROR: Unsupported next mode '{mode}'.", file=sys.stderr)
+            sys.exit(1)
+
+    return VERSION_PART_SEPARATOR.join(str(part) for part in parts_int)
+
+
 def _bump_version(new_version: str) -> None:
     """Invoke tools/bump_version.py to update the version string."""
     if not BUMP_SCRIPT_PATH.exists():
@@ -144,27 +198,36 @@ def main() -> None:
 
     Typical flows
     -------------
-    1) Release a specific version from main:
-       tools/release.py 0.1.0.0
+    1) Let the script compute the next maintenance version:
+       tools/release.py
 
-    2) Release from stable:
-       tools/release.py 0.1.0.0 --branch stable
+    2) Let the script compute the next version by mode:
+       tools/release.py --next minor
+       tools/release.py --next major
+       tools/release.py --next maintenance
+       tools/release.py --next build
 
-    3) Release without running tests (not recommended):
-       tools/release.py 0.1.0.0 --skip-tests
+    3) Release an explicit version:
+       tools/release.py --version 0.2.1.0
 
     4) Show what would happen without changing anything:
-       tools/release.py 0.1.0.0 --dry-run
+       tools/release.py --next maintenance --dry-run
+       tools/release.py --dry-run
     """
     parser = argparse.ArgumentParser(
         description=(
-            "Automate a PyPNM release: bump version using tools/bump_version.py, "
+            "Automate a PyPNM release: compute or apply a version using tools/bump_version.py, "
             "run tests, commit, tag, and push."
         )
     )
     parser.add_argument(
-        "version",
-        help="Release version in MAJOR.MINOR.MAINTENANCE.BUILD format (e.g. 0.1.0.0).",
+        "--version",
+        help="Explicit release version in MAJOR.MINOR.MAINTENANCE.BUILD format (e.g. 0.1.0.0).",
+    )
+    parser.add_argument(
+        "--next",
+        choices=["major", "minor", "maintenance", "build"],
+        help="Compute the next version from the current one (default: maintenance if omitted).",
     )
     parser.add_argument(
         "--branch",
@@ -188,11 +251,12 @@ def main() -> None:
     )
 
     args = parser.parse_args()
-    new_version: str  = args.version
-    branch: str       = args.branch
-    tag_prefix: str   = args.tag_prefix
-    skip_tests: bool  = args.skip_tests
-    dry_run: bool     = args.dry_run
+    explicit_version: str | None = args.version
+    next_mode: str | None        = args.next
+    branch: str                  = args.branch
+    tag_prefix: str              = args.tag_prefix
+    skip_tests: bool             = args.skip_tests
+    dry_run: bool                = args.dry_run
 
     current_version   = _read_current_version()
     pyproject_version = _read_pyproject_version()
@@ -205,6 +269,17 @@ def main() -> None:
             file=sys.stderr,
         )
         sys.exit(1)
+
+    if explicit_version is not None and next_mode is not None:
+        print("ERROR: --version and --next cannot be used together.", file=sys.stderr)
+        sys.exit(1)
+
+    if explicit_version is not None:
+        new_version = explicit_version
+        _validate_version_string(new_version)
+    else:
+        mode       = next_mode or "maintenance"
+        new_version = _compute_next_version(current_version, mode)
 
     if new_version == current_version:
         print(f"No change: version is already {current_version}.")
@@ -221,6 +296,14 @@ def main() -> None:
         print(f"  6) Create annotated tag '{tag_prefix}{new_version}'")
         print(f"  7) Push branch '{branch}' and tag to origin")
         sys.exit(0)
+
+    if explicit_version is None:
+        print(f"Current version: {current_version}")
+        print(f"Planned version bump: {current_version} -> {new_version}")
+        answer = input("Proceed with release? [y/N]: ").strip().lower()
+        if answer not in ("y", "yes"):
+            print("Aborted: release was not confirmed.")
+            sys.exit(1)
 
     _ensure_clean_worktree()
     _checkout_and_pull(branch)
