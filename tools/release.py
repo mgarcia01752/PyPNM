@@ -206,6 +206,10 @@ def main() -> None:
         )
         sys.exit(1)
 
+    if new_version == current_version:
+        print(f"No change: version is already {current_version}.")
+        sys.exit(0)
+
     if dry_run:
         print("Dry run: the following actions would be performed:")
         print("  1) Ensure git working tree is clean")
