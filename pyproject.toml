@@ -141,5 +141,14 @@ src            = ["src"]
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["F"]
-ignore = []
+# Common, high-signal rulesets:
+# F   = Pyflakes (real errors)
+# E,W = pycodestyle
+# I   = import sorting
+# B   = flake8-bugbear
+# UP  = pyupgrade
+select = ["F", "E", "W", "I", "B", "UP"]
+
+ignore = [
+  # Add codes here as they become noisy
+]

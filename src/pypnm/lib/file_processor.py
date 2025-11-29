@@ -24,7 +24,7 @@ class FileProcessor:
         Args:
             filepath: Path to the primary file to manage (the file you read/write and can archive).
         """
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger   = logging.getLogger(self.__class__.__name__)
         self.filepath = Path(filepath)
         self.logger.debug(f"Initialized FileProcessor with path: {self.filepath}")
 
@@ -73,7 +73,6 @@ class FileProcessor:
         """
         mode = "ab" if append else "wb"
         try:
-            # Ensure parent dir exists
             self.filepath.parent.mkdir(parents=True, exist_ok=True)
 
             with open(self.filepath, mode) as file:
@@ -89,12 +88,12 @@ class FileProcessor:
                 file.write(data_bytes)
                 self.logger.debug(f"Wrote {len(data_bytes)} bytes to {self.filepath}")
 
-            # Optional archive step
             if archive_path:
                 self.archive_file(
                     archive_path=archive_path,
                     archive_format=archive_format,
-                    arcname=arcname,)
+                    arcname=arcname,
+                )
 
             return True
         except Exception as e:
@@ -131,10 +130,9 @@ class FileProcessor:
             True on success (CSV + optional archive), False otherwise.
         """
         target = Path(filepath) if filepath else self.filepath
-        mode = "a" if append else "w"
+        mode   = "a" if append else "w"
 
         try:
-            # Ensure parent dir exists
             target.parent.mkdir(parents=True, exist_ok=True)
 
             if not data:
@@ -143,10 +141,9 @@ class FileProcessor:
 
             with open(target, mode, newline="", encoding="utf-8") as csvfile:
                 first = data[0]
-                # Dict rows
                 if isinstance(first, dict):
                     fieldnames = list(first.keys())
-                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                    writer     = csv.DictWriter(csvfile, fieldnames=fieldnames)
                     if not append:
                         writer.writeheader()
                     writer.writerows(data)  # type: ignore
@@ -158,7 +155,6 @@ class FileProcessor:
 
             self.logger.debug(f"Wrote {len(data)} rows to CSV at {target}")
 
-            # Optional archive step
             if archive_path:
                 self.archive_file(
                     archive_path=archive_path,
@@ -188,8 +184,7 @@ class FileProcessor:
         Add the current file (or a provided file) to an archive.
 
         - For 'zip': append or create using ZipFile (compression=ZIP_DEFLATED).
-        - For tar formats: creates a NEW archive containing only the file (no append),
-          using shutil.make_archive (base name derived from archive_path without extension).
+        - For tar formats: creates a NEW archive containing only the file (no append).
 
         Args:
             archive_path: Target archive path. For tar formats, extension should match the format.
@@ -206,30 +201,25 @@ class FileProcessor:
             raise FileNotFoundError(f"Cannot archive missing file: {src}")
 
         archive_path = Path(archive_path)
-        arcname = arcname or src.name
+        arcname      = arcname or src.name
 
         if archive_format == "zip":
             archive_path.parent.mkdir(parents=True, exist_ok=True)
-            # Append or create zip
             mode = "a" if archive_path.exists() else "w"
             with zipfile.ZipFile(archive_path, mode=mode, compression=zipfile.ZIP_DEFLATED) as zf:
                 zf.write(src, arcname=arcname)
             self.logger.debug(f"Added {src} as {arcname} to zip: {archive_path}")
             return archive_path
 
-        # Tar formats: make a fresh archive containing only this file
-        # shutil.make_archive writes to base_name + proper extension
         if overwrite and archive_path.exists():
             archive_path.unlink(missing_ok=True)
 
-        # Create a temporary staging dir with a symlink/copy? We can add file directly using tarfile.
-        # Use tarfile to precisely control single-file add.
         if archive_format in {"gztar", "bztar", "xztar", "tar"}:
             mode_map = {
                 "gztar": "w:gz",
                 "bztar": "w:bz2",
                 "xztar": "w:xz",
-                "tar": "w",
+                "tar":   "w",
             }
             mode = mode_map[archive_format]
             archive_path.parent.mkdir(parents=True, exist_ok=True)
@@ -263,7 +253,12 @@ class FileProcessor:
             self.logger.error(f"Invalid hex data: {e}")
             return b""
 
-    def hexdump(self, *, bytes_per_line: int = DEFAULT_HEXDUMP_BYTES_PER_LINE, limit_bytes: Optional[int] = None) -> List[str]:
+    def hexdump(
+        self,
+        *,
+        bytes_per_line: int = DEFAULT_HEXDUMP_BYTES_PER_LINE,
+        limit_bytes: Optional[int] = None,
+    ) -> List[str]:
         """
         Generate a hexdump view of the file contents as text lines.
 
@@ -271,8 +266,8 @@ class FileProcessor:
         ----------
         bytes_per_line:
             Number of bytes per output line in the hexdump view. Typical values
-            are 8, 16, or 32. Non-positive values are coerced to the module
-            default DEFAULT_HEXDUMP_BYTES_PER_LINE.
+            are 8, 16, or 32. Non-positive values are coerced to
+            DEFAULT_HEXDUMP_BYTES_PER_LINE.
         limit_bytes:
             Optional maximum number of bytes to render from the start of the
             file. If None, the entire file is dumped.
@@ -318,12 +313,14 @@ class FileProcessor:
     def print_hex(self, limit: int = 64) -> None:
         """Prints the first N characters of the hex file content."""
         hex_data = self.to_hex()
-        if hex_data:
+        if not hex_data:
+            self.logger.warning("No hex data to display.")
+            snippet = ""
+        else:
             snippet = hex_data[:limit]
             self.logger.debug(f"Hex preview: {snippet}")
-            self.logger.debug(f"Hex Preview: {snippet}")
-        else:
-            self.logger.warning("No hex data to display.")
+
+        print("Hex Preview:", snippet)
 
     # ──────────────────────────────────────────────────────────────────────
     # Lifecycle
