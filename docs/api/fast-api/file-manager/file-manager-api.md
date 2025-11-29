@@ -12,6 +12,7 @@ REST API For Searching, Downloading, Uploading, And Analyzing PNM Capture Files.
 - [Download Files By Operation ID (ZIP Archive)](#4-download-files-by-operation-id-zip-archive)
 - [Upload PNM File](#5-upload-pnm-file)
 - [Analyze PNM File](#6-analyze-pnm-file)
+- [Hexdump Of A PNM File Via Transaction ID](#7-hexdump-of-a-pnm-file-via-transaction-id)
 - [Request And Response Examples](#request-and-response-examples)
 
 ## Overview
@@ -22,6 +23,7 @@ The PNM File Manager API exposes a small set of endpoints that allow clients to:
 - Download individual PNM files or grouped archives.
 - Upload external PNM capture files into the PyPNM transaction database.
 - Trigger analysis on a stored PNM file.
+- Generate a hexdump view of any stored PNM file by transaction ID.
 
 Endpoints live under the FastAPI router:
 
@@ -35,6 +37,7 @@ Typical workflow:
 2. Query the list of files by MAC address.
 3. Download single files or archive groups (MAC or operation-wide).
 4. Optionally invoke analysis on a specific transaction.
+5. Use the hexdump endpoint for low-level inspection of any stored PNM file.
 
 ## Endpoints
 
@@ -43,7 +46,7 @@ Typical workflow:
 **Endpoint**
 
 ```text
-POST /docs/pnm/files/searchFiles/{mac_address}
+GET /docs/pnm/files/searchFiles/{mac_address}
 ```
 
 **Description**
@@ -226,7 +229,7 @@ Upload a PNM capture file (for example, RxMER, constellation, histogram, spectru
 
 ```json
 {
-  "mac_address": "00:00:00:00:00:00",
+  "mac_address": "aa:bb:cc:dd:ee:ff",
   "filename": "ds_ofdm_rxmer_per_subcar_example.bin",
   "transaction_id": "ea18519a572e2487"
 }
@@ -252,30 +255,60 @@ POST /docs/pnm/files/getAnalysis
 
 **Description**
 
-Trigger an analysis run for a specific PNM file identified by transaction ID. The backend resolves the transaction, locates the PNM file, inspects its header, and routes it to the appropriate analysis pipeline. Current implementation returns a stubbed analysis response and plot URL.
+Trigger an analysis run for a specific PNM file identified by transaction ID. The backend resolves the transaction, locates the PNM file, inspects its header, and routes it to the appropriate analysis pipeline.
+
+The exact request/response schema is defined by `FileAnalysisRequest` and `AnalysisJsonResponse` in the FastAPI OpenAPI documentation. At a high level, the request specifies the transaction ID, analysis type, and output format (JSON or archive).
 
 **Request**
 
 - Content type: `application/json`
 - Body schema: `FileAnalysisRequest`
 
+Example (JSON output):
+
 ```json
 {
-  "transaction_id": "ea18519a572e2487",
-  "analysis_type": "auto"
+  "search": {
+    "transaction_id": "ea18519a572e2487"
+  },
+  "analysis": {
+    "type": "BASIC",
+    "output": {
+      "type": "JSON"
+    }
+  }
 }
 ```
 
 **Successful Response (200)**
 
 - Content type: `application/json`
-- Body schema: `AnalysisResponse`
+- Body schema: `AnalysisJsonResponse`
+
+Example (truncated):
 
 ```json
 {
-  "analysis_type": "auto",
-  "plot_url": "/static/plots/ds_ofdm_rxmer_per_subcar_example.png",
-  "summary": "Auto analysis placeholder for transaction ea18519a572e2487"
+  "mac_address": "aa:bb:cc:dd:ee:ff",
+  "pnm_file_type": "RECEIVE_MODULATION_ERROR_RATIO",
+  "status": "success",
+  "analysis": {
+    "device_details": {
+      "HW_REV": "1.0",
+      "VENDOR": "LANCity",
+      "BOOTR": "NONE",
+      "SW_REV": "1.0.0",
+      "MODEL": "LCPET-3"
+    },
+    "pnm_header": {
+      "file_type": "PNN5",
+      "file_type_version": 5,
+      "major_version": 1,
+      "minor_version": 0,
+      "capture_time": 1495481
+    },
+    "...": "analysis fields omitted for brevity"
+  }
 }
 ```
 
@@ -288,6 +321,76 @@ If the transaction is not found:
 ```
 
 with HTTP 404 status.
+
+### 7) Hexdump Of A PNM File Via Transaction ID
+
+**Endpoint**
+
+```text
+GET /docs/pnm/files/getHexdump/transactionID/{transaction_id}
+```
+
+**Description**
+
+Generate a textual hexdump view of the raw PNM file associated with a given transaction ID. This is useful for low-level inspection, debugging binary parsing issues, or forensic analysis of the PNM header and payload.
+
+The hexdump is returned as JSON: each line includes a byte offset, hex-encoded bytes, and an ASCII representation.
+
+**Path Parameter**
+
+| Name           | Type   | Description                                              |
+| -------------- | ------ | -------------------------------------------------------- |
+| transaction_id | string | Unique transaction identifier for the PNM file to dump. |
+
+**Query Parameter**
+
+| Name           | Type | Description                                                                                  |
+| -------------- | ---- | -------------------------------------------------------------------------------------------- |
+| bytes_per_line | int  | Optional bytes-per-line for each hexdump row. If omitted or non-positive, a default is used.|
+
+**Successful Response (200)**
+
+- Content type: `application/json`
+- Body schema: `HexDumpResponse`
+
+Example:
+
+```json
+{
+  "transaction_id": "8f17fcdd4c0138ef",
+  "bytes_per_line": 16,
+  "lines": [
+    "00000000  50 4e 4d 00 05 01 00 00  00 00 00 00 00 00 00 00  |PNM.............|",
+    "00000010  01 23 45 67 89 ab cd ef  00 11 22 33 44 55 66 77  |.#Eg......\"3DUfw|"
+  ]
+}
+```
+
+If the transaction ID or file cannot be resolved, typical errors include:
+
+```json
+{
+  "detail": "Transaction ID not found."
+}
+```
+
+or
+
+```json
+{
+  "detail": "PNM file not found on disk."
+}
+```
+
+with HTTP 404 status, or:
+
+```json
+{
+  "detail": "Failed to generate hexdump for PNM file."
+}
+```
+
+with HTTP 500 status.
 
 ## Request And Response Examples
 
@@ -321,18 +424,35 @@ This section summarizes the core JSON shapes used by the PNM File Manager endpoi
 
 ```json
 {
-  "mac_address": "00:00:00:00:00:00",
+  "mac_address": "aa:bb:cc:dd:ee:ff",
   "filename": "ds_ofdm_rxmer_per_subcar_example.bin",
   "transaction_id": "ea18519a572e2487"
 }
 ```
 
-### AnalysisResponse (Analyze PNM File)
+### AnalysisJsonResponse (Analyze PNM File)
 
 ```json
 {
-  "analysis_type": "auto",
-  "plot_url": "/static/plots/ds_ofdm_rxmer_per_subcar_example.png",
-  "summary": "Auto analysis placeholder for transaction ea18519a572e2487"
+  "mac_address": "aa:bb:cc:dd:ee:ff",
+  "pnm_file_type": "RECEIVE_MODULATION_ERROR_RATIO",
+  "status": "success",
+  "analysis": {
+    "device_details": {
+      "HW_REV": "1.0",
+      "VENDOR": "LANCity",
+      "BOOTR": "NONE",
+      "SW_REV": "1.0.0",
+      "MODEL": "LCPET-3"
+    },
+    "pnm_header": {
+      "file_type": "PNN5",
+      "file_type_version": 5,
+      "major_version": 1,
+      "minor_version": 0,
+      "capture_time": 1495481
+    },
+    "...": "analysis fields omitted for brevity"
+  }
 }
 ```

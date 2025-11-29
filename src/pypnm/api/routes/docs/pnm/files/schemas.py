@@ -1,13 +1,11 @@
-# pypnm/api/routes/docs/pnm/files/schemas.py
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
 
 from typing import Dict, List, Optional
-
 from pydantic import BaseModel, Field
-
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import CommonSingleCaptureAnalysisType
 from pypnm.lib.types import FileName, MacAddressStr, TimeStamp, TransactionId
 
@@ -53,3 +51,8 @@ class AnalysisJsonResponse(BaseModel):
     pnm_file_type: str          = Field(..., description="PNM file type")
     status: str                   = Field(..., description="Status of the analysis operation")
     analysis: Dict                = Field(..., description="Analysis result in JSON format")
+
+class HexDumpResponse(BaseModel):
+    transaction_id: TransactionId = Field(..., description="Transaction ID associated with the PNM file.")
+    bytes_per_line: int           = Field(..., description="Number of bytes rendered per hexdump output line.")
+    lines: List[str]              = Field(default_factory=list, description="Hexdump lines with offset, hex bytes, and ASCII text.")

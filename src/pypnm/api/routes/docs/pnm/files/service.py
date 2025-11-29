@@ -41,7 +41,7 @@ from pypnm.pnm.parser.pnm_type_header_mapper import PnmFileTypeMapper
 
 from pypnm.api.routes.docs.pnm.files.schemas import (
     FileAnalysisRequest, FileEntry, FileQueryRequest,
-    FileQueryResponse, UploadFileResponse,)
+    FileQueryResponse, HexDumpResponse, UploadFileResponse,)
 
 if TYPE_CHECKING:
     from pypnm.pnm.parser.pnm_parameter import PnmParsers, PnmParserParametersModel
@@ -367,7 +367,96 @@ class PnmFileService:
         self.logger.info(f"Performing {model.file_type.name} analysis for transaction {req.search.transaction_id} on file {filename}")
 
         return self.__get_analysis(parser, model)
-    
+
+    def get_pnm_path_for_transaction(self, transaction_id: TransactionId) -> Path:
+        """
+        Resolve The Filesystem Path For A PNM File From A Transaction ID.
+
+        Parameters
+        ----------
+        transaction_id:
+            Transaction identifier associated with the PNM capture file.
+
+        Returns
+        -------
+        Path
+            Fully-resolved path to the PNM file on disk.
+
+        Raises
+        ------
+        HTTPException
+            If the transaction record does not exist, the filename is missing,
+            or the file is not present on disk.
+        """
+        txn_data = PnmFileTransaction().get_record(transaction_id)
+        if not txn_data:
+            raise HTTPException(status_code=404, detail="Transaction ID not found.")
+
+        filename = txn_data.get("filename")
+        if not filename:
+            raise HTTPException(status_code=404, detail="Filename not found in transaction record.")
+
+        full_path = Path(self.pnm_dir) / str(filename)
+
+        self.logger.info(
+            "Resolving PNM file for transaction %s at %s",
+            transaction_id,
+            full_path,
+        )
+
+        if not full_path.exists() or not full_path.is_file():
+            self.logger.warning(
+                "PNM file not found on disk for transaction %s at %s",
+                transaction_id,
+                full_path,
+            )
+            raise HTTPException(status_code=404, detail="PNM file not found on disk.")
+
+        return full_path
+
+    def get_hexdump_by_transaction_id(self, transaction_id: TransactionId, bytes_per_line: int) -> HexDumpResponse:
+        """
+        Generate A Structured Hexdump For A PNM File Identified By Transaction ID.
+
+        Parameters
+        ----------
+        transaction_id:
+            Transaction identifier associated with the PNM capture file.
+        bytes_per_line:
+            Number of bytes per output line in the hexdump view. Typical values
+            are 8, 16, or 32. Non-positive values are coerced to the default
+            configured via DEFAULT_HEXDUMP_BYTES_PER_LINE.
+
+        Returns
+        -------
+        HexDumpResponse
+            Structured hexdump payload including the transaction ID, the
+            effective bytes-per-line setting, and formatted hexdump lines
+            containing offset, hex bytes, and ASCII representation.
+        """
+        DEFAULT_HEXDUMP_BYTES_PER_LINE = 16
+        
+        if bytes_per_line <= 0:
+            bytes_per_line = DEFAULT_HEXDUMP_BYTES_PER_LINE
+
+        file_path  = self.get_pnm_path_for_transaction(transaction_id)
+        processor  = FileProcessor(file_path)
+        lines      = processor.hexdump(bytes_per_line=bytes_per_line)
+
+        if not lines:
+            self.logger.error(
+                "Hexdump generation failed or produced no data for transaction %s at %s",
+                transaction_id,
+                file_path,
+            )
+            raise HTTPException(status_code=500, detail="Failed to generate hexdump for PNM file.")
+
+        return HexDumpResponse(
+            transaction_id = transaction_id,
+            bytes_per_line = bytes_per_line,
+            lines          = lines,
+        )
+
     def __get_analysis(self, parser: PnmParsers, model:PnmParserParametersModel) -> Tuple[ParserAnalysisModelReturn, PnmFileType]:
         """
         Internal method to instantiate the Analysis class with the given parser and model.

@@ -3,18 +3,20 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
+import logging
 from typing import cast
 
-from fastapi import APIRouter, File, Path, UploadFile
+from fastapi import APIRouter, File, HTTPException, Path, Query, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
 from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
 from pypnm.api.routes.docs.pnm.files.schemas import (
     AnalysisJsonResponse, FileAnalysisRequest, FileQueryRequest, 
-    FileQueryResponse, UploadFileResponse,)
+    FileQueryResponse, HexDumpResponse, UploadFileResponse,)
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
+from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.types import FileName, MacAddressStr, OperationId, TransactionId
 
@@ -29,7 +31,10 @@ class PnmFileManager:
     - Analyze an uploaded or retrieved file
     """
 
+    DEFAULT_HEXDUMP_BYTES_PER_LINE = 16
+
     def __init__(self):
+        self.logger = logging.getLogger(f'PnmFileManager.{self.__class__.__name__}')
         self.router = APIRouter(
             prefix="/docs/pnm/files",
             tags=["PNM File Manager"],
@@ -197,6 +202,35 @@ class PnmFileManager:
 
             return JSONResponse(content="Not implemented yet")
 
+        @self.router.get(
+            "/getHexdump/transactionID/{transaction_id}",
+            response_model=HexDumpResponse,
+            summary="Hexdump Of A PNM File By Transaction ID",
+            responses=FAST_API_RESPONSE,
+        )
+        def get_hexdump_via_transaction_id(
+            transaction_id: TransactionId = Path(..., description="Transaction ID of the PNM file to hexdump"),
+            bytes_per_line: int | None    = Query(
+                default=None,
+                description="Optional bytes-per-line for hexdump; if omitted, the service default is used.",
+            ),
+        ):
+            """
+            **Hexdump Of A PNM File**
+
+            Generates a hexadecimal dump of the raw binary contents of a PNM file
+            associated with the specified transactionID.
+
+            This is useful for low-level inspection, debugging, or forensic analysis
+            of the file structure and data.
+
+            [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file-manager/file-manager-api.md#7-hexdump-of-a-pnm-file-via-transaction-id)
+            """
+            hexdump_result = PnmFileService().get_hexdump_by_transaction_id(
+                transaction_id = transaction_id,
+                bytes_per_line = bytes_per_line if bytes_per_line is not None else 0,
+            )
+            return hexdump_result
 
 # Required for auto-discovery via dynamic router loading
 router = PnmFileManager().router

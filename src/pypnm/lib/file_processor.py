@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
@@ -13,6 +12,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union, Literal
 
 from pypnm.lib.types import PathLike
+
+DEFAULT_HEXDUMP_BYTES_PER_LINE: int = 16
+
 
 class FileProcessor:
     def __init__(self, filepath: PathLike):
@@ -260,6 +262,58 @@ class FileProcessor:
         except ValueError as e:
             self.logger.error(f"Invalid hex data: {e}")
             return b""
+
+    def hexdump(self, *, bytes_per_line: int = DEFAULT_HEXDUMP_BYTES_PER_LINE, limit_bytes: Optional[int] = None) -> List[str]:
+        """
+        Generate a hexdump view of the file contents as text lines.
+
+        Parameters
+        ----------
+        bytes_per_line:
+            Number of bytes per output line in the hexdump view. Typical values
+            are 8, 16, or 32. Non-positive values are coerced to the module
+            default DEFAULT_HEXDUMP_BYTES_PER_LINE.
+        limit_bytes:
+            Optional maximum number of bytes to render from the start of the
+            file. If None, the entire file is dumped.
+
+        Returns
+        -------
+        List[str]
+            List of hexdump lines, each including the offset, hex bytes, and
+            ASCII representation. Returns an empty list when the file cannot
+            be read or is empty.
+        """
+        if bytes_per_line <= 0:
+            bytes_per_line = DEFAULT_HEXDUMP_BYTES_PER_LINE
+
+        data = self.read_file()
+        if not data:
+            self.logger.warning("No data available for hexdump.")
+            return []
+
+        if limit_bytes is not None and limit_bytes > 0:
+            data = data[:limit_bytes]
+
+        lines: List[str] = []
+        offset: int      = 0
+        total_len: int   = len(data)
+
+        while offset < total_len:
+            chunk = data[offset : offset + bytes_per_line]
+
+            hex_bytes    = " ".join(f"{b:02x}" for b in chunk)
+            ascii_repr   = "".join(chr(b) if 32 <= b <= 126 else "." for b in chunk)
+            padding_size = bytes_per_line - len(chunk)
+
+            if padding_size > 0:
+                hex_bytes = f"{hex_bytes}{'   ' * padding_size}"
+
+            line = f"{offset:08x}  {hex_bytes}  |{ascii_repr}|"
+            lines.append(line)
+            offset += len(chunk)
+
+        return lines
 
     def print_hex(self, limit: int = 64) -> None:
         """Prints the first N characters of the hex file content."""
