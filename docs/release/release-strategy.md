@@ -1,6 +1,6 @@
-# PyPNM Release And Versioning Guide (Single-Branch Model)
+# PyPNM Release Guide (Single-Branch Model Using `tools/release.py`)
 
-This guide describes how to manage versions, branches, and releases for the PyPNM project using a single primary branch and GitHub Actions. It also explains how the version helper scripts keep `src/pypnm/version.py` and `pyproject.toml` in sync.
+This guide describes how to manage versions and releases for the PyPNM project using a single primary branch and the `tools/release.py` helper script. The `release` script is the primary entry point for bumping versions, running tests, creating tags, and pushing changes.
 
 ## 1. Branch Model
 
@@ -21,7 +21,7 @@ When in doubt, work directly on `main`, create tags for each release, and use Gi
 
 ## 2. Version Source Of Truth And Mirrored Locations
 
-The canonical version string is defined in a single Python module and mirrored into `pyproject.toml` by tooling.
+The canonical version string is defined in a single Python module and mirrored into `pyproject.toml` by the release tooling.
 
 Canonical source:
 
@@ -37,14 +37,14 @@ from __future__ import annotations
 __all__ = ["__version__"]
 
 # MAJOR.MINOR.MAINTENANCE.BUILD
-__version__: str = "0.1.2.0"
+__version__: str = "0.2.1.0"
 ```
 
 Rules:
 
 - Treat `src/pypnm/version.py` as the **single source of truth**.  
 - The `[project].version` field in `pyproject.toml` is a **mirror** that must always match `__version__`.  
-- Do not hand-edit the version in `pyproject.toml`; let the helper scripts maintain it.
+- Do not hand-edit the version in `pyproject.toml`; let the release script maintain it.
 
 Example FastAPI wiring:
 
@@ -62,15 +62,17 @@ app = FastAPI(
 )
 ```
 
-### 2.1 Files Touched By Version Changes
+### 2.1 Files Touched By A Release
 
-When you run the helper scripts, they update or validate these locations:
+When you run the release script, it updates or validates these locations:
 
 - `src/pypnm/version.py`  
-  Canonical `__version__` definition. Always updated by `tools/bump_version.py` when a new version is applied.
+  Canonical `__version__` definition. Updated to the new four-part version string.
 
 - `pyproject.toml`  
-  `[project].version` is kept in lockstep with `__version__`. It is updated by `tools/bump_version.py` and validated by `tools/release.py`.
+  `[project].version` is kept in lockstep with `__version__`. Updated to the same value as in `src/pypnm/version.py`.
+
+The release script also performs git operations (commit, tag, push) once the version is updated and tests pass.
 
 ## 3. Versioning Scheme
 
@@ -96,108 +98,169 @@ Guidelines:
 
 Examples:
 
-- `0.1.2.0` – Minor feature set with maintenance updates.  
-- `0.2.0.0` – Next minor release.  
+- `0.2.1.0` – Minor feature set with maintenance updates.  
+- `0.2.2.0` – Next maintenance release.  
+- `0.3.0.0` – Next minor release.  
 - `1.0.0.0` – First major release.
 
-All four segments must be numeric. Both `src/pypnm/version.py` and `pyproject.toml` must carry the same four-part string.
+All four segments must be numeric. Both `src/pypnm/version.py` and `pyproject.toml` must carry the same four-part string after a release.
 
-## 4. Version Helper Scripts
+## 4. Release Script Overview (`tools/release.py`)
 
-Two main tools are used to manage versions and releases:
+The `tools/release.py` script is the primary entry point for performing a release. It is responsible for:
 
-- `tools/bump_version.py`  
-  Reads and updates `__version__` in `src/pypnm/version.py` and updates `[project].version` in `pyproject.toml` to match.
+- Computing or accepting a target version.  
+- Updating version strings in both version files.  
+- Running the test suite.  
+- Creating a release commit.  
+- Tagging the release.  
+- Pushing branch and tags to `origin`.
 
-- `tools/release.py`  
-  Wraps `bump_version.py` and performs git operations (tests, commit, tag, push). It also ensures that both version locations are already in sync before running the release.
+You typically run this script directly; it internally handles all version file changes.
 
-### 4.1 `tools/bump_version.py` – Version Management
+### 4.1 High Level Release Steps
 
-This script can:
+When you run `tools/release.py` (and confirm the prompt when applicable), it performs the following:
 
-1. Show the current version.  
-2. Compute and apply the next version.  
-3. Set a specific version explicitly.
+1. Read the current version from `src/pypnm/version.py`.  
+2. Read the `[project].version` from `pyproject.toml` and verify they match.  
+3. Compute the target version, either:
+   - From an explicit `--version` argument, or  
+   - From a `--next` mode (major, minor, maintenance, build), or  
+   - From an implicit **maintenance bump** when neither `--version` nor `--next` is provided.  
+4. Display the planned version bump (for auto-computed versions) and wait for a `y` / `yes` confirmation.  
+5. Ensure the git working tree is clean.  
+6. Checkout the target branch (default `main`) and pull with `--ff-only`.  
+7. Update both version files to the target version.  
+8. Optionally run `pytest` (unless `--skip-tests` is used).  
+9. Commit the version bump.  
+10. Create an annotated git tag.  
+11. Push the branch and tag to `origin`.
 
-Examples:
+If any step fails (for example, tests fail or versions do not match), the script prints an error and exits without completing the release.
+
+## 5. Release Modes And Examples
+
+You can run the release script in different ways depending on how you want to control the version.
+
+### 5.1 Automatic Maintenance Release (Default)
+
+If you run `tools/release.py` with no version arguments, it computes the **next maintenance version** automatically.
+
+Example:
 
 ```bash
-# Show current version (from src/pypnm/version.py)
-tools/bump_version.py --current
-
-# Compute and apply the next MAINTENANCE version
-tools/bump_version.py --next maintenance
-
-# Compute and apply the next BUILD version
-tools/bump_version.py --next build
-
-# Explicitly set the version
-tools/bump_version.py 0.1.3.0
+tools/release.py
 ```
 
 Behavior:
 
-- Validates that the version string uses four numeric parts (`MAJOR.MINOR.MAINTENANCE.BUILD`).  
-- Reads the current version from `src/pypnm/version.py`.  
-- When applying a new version (via `--next` or explicit value), it updates:
-  - `src/pypnm/version.py` (`__version__`)  
-  - `pyproject.toml` (`[project].version`)  
-- If the requested version is the same as the current one, it prints a message and exits without modifying any files.
+- Reads `current_version` (for example `0.2.1.0`).  
+- Computes `next_version` as the next maintenance version (for example `0.2.2.0`).  
+- Prints:
 
-You should normally use this script instead of manually editing version strings.
+  ```text
+  Current version: 0.2.1.0
+  Planned version bump: 0.2.1.0 -> 0.2.2.0
+  Proceed with release? [y/N]:
+  ```
 
-### 4.2 `tools/release.py` – Full Release Automation
+- Only proceeds with the release if you respond with `y` or `yes`. Any other input aborts.
 
-This script automates the release flow from a branch (by default `main`) and enforces version consistency.
+This mode is convenient for routine maintenance updates.
 
-High-level steps:
+### 5.2 Automatic Next Version By Mode (`--next`)
 
-1. Verify that `src/pypnm/version.py` and `pyproject.toml` report the **same** version.  
-2. Ensure the git working tree is clean.  
-3. Check out the target branch and pull with `--ff-only`.  
-4. Invoke `tools/bump_version.py` with the target version.  
-5. Optionally run `pytest` (unless `--skip-tests` is used).  
-6. Commit the version bump with both files staged.  
-7. Create an annotated git tag for the new version.  
-8. Push the branch and tag to `origin`.
-
-Common usage patterns:
+You can ask the script to compute the next version using a specific mode:
 
 ```bash
-# Dry run: see what would happen, but do not change anything
-tools/release.py 0.1.3.0 --dry-run
-
-# Release from main (single-branch model, default branch)
-tools/release.py 0.1.3.0
-
-# Release without running tests (not recommended)
-tools/release.py 0.1.3.0 --skip-tests
-
-# Use a different tag prefix (for example, pypnm-0.1.3.0)
-tools/release.py 0.1.3.0 --tag-prefix pypnm-
+tools/release.py --next major
+tools/release.py --next minor
+tools/release.py --next maintenance
+tools/release.py --next build
 ```
 
-Notes:
+Behavior:
 
-- Before doing anything non-dry-run, `tools/release.py` checks that:
-  - `src/pypnm/version.py` and `pyproject.toml` carry the same version.  
-  - The git working tree is clean (`git status --porcelain` is empty).  
-- During the version bump commit, both `src/pypnm/version.py` and `pyproject.toml` are staged and included in the `Release X.Y.Z.W` commit.
+- Reads the current version.  
+- Computes the next version using the requested mode.  
+- Shows the current and proposed version, then waits for a `y` / `yes` confirmation.  
+- Runs the release flow after you confirm.
 
-The `--branch` option is available (for example, `--branch stable`) but is optional and only needed if you introduce additional long-lived branches in the future.
+Use this when you want to clearly indicate the type of release (major, minor, maintenance, build) without manually typing the version string.
 
-## 5. Tag-Based Release Flow On `main`
+### 5.3 Explicit Version (`--version`)
 
-In the single-branch model, releases are created from `main` and marked with tags, for example:
+If you want complete control of the target version, you can pass it explicitly:
 
-- `v0.1.2.0`  
-- `v0.1.3.0`  
-- `v0.2.0.0`
+```bash
+tools/release.py --version 0.3.0.0
+```
 
-### 5.1 Standard Release Flow From `main`
+Behavior:
 
-Use this flow for each new release:
+- Validates the explicit version string.  
+- Skips auto-computation since you already chose the version.  
+- Does not ask for version confirmation (you have already decided the version).  
+- Proceeds with the release steps directly.
+
+This mode is helpful when you have a predefined release version (for example, aligning with external documentation or planning notes).
+
+### 5.4 Dry Run (`--dry-run`)
+
+You can preview what the script would do without performing any changes:
+
+```bash
+tools/release.py --dry-run
+tools/release.py --next minor --dry-run
+tools/release.py --version 0.3.0.0 --dry-run
+```
+
+Behavior:
+
+- Computes the target version (if needed).  
+- Prints a step-by-step list of planned actions, including the version bump and git operations.  
+- Exits without touching any files, running tests, committing, tagging, or pushing.
+
+Use this to sanity-check a release before running it for real.
+
+### 5.5 Skipping Tests (`--skip-tests`)
+
+You can skip running `pytest` during a release (not recommended for normal use):
+
+```bash
+tools/release.py --skip-tests
+tools/release.py --next minor --skip-tests
+tools/release.py --version 0.3.0.0 --skip-tests
+```
+
+The release flow remains the same except the test step is skipped.
+
+### 5.6 Target Branch (`--branch`) And Tag Prefix (`--tag-prefix`)
+
+By default, the release script operates on `main` and uses `v` as the tag prefix.
+
+You can override these:
+
+```bash
+# Release from stable
+tools/release.py --branch stable
+
+# Release from stable with minor bump
+tools/release.py --branch stable --next minor
+
+# Use a custom tag prefix, for example pypnm-0.3.0.0
+tools/release.py --version 0.3.0.0 --tag-prefix pypnm-
+```
+
+The tag name is always built as `<tag-prefix><version>`, for example:
+
+- `v0.2.2.0`  
+- `pypnm-0.3.0.0`
+
+## 6. Standard Release Flow On `main`
+
+Below is an example of a typical release workflow using automatic maintenance bumping on `main`:
 
 ```bash
 # 1) Make sure main is up to date and clean
@@ -205,149 +268,68 @@ git checkout main
 git pull origin main
 git status
 
-# 2) Sanity check current version (from src/pypnm/version.py)
-tools/bump_version.py --current
+# 2) Optional: inspect the current version
+tools/release.py --dry-run
 
-# 3) Dry run the release to confirm steps
-tools/release.py 0.1.3.0 --dry-run
-
-# 4) Run the real release
-tools/release.py 0.1.3.0
+# 3) Run the real release (auto maintenance bump)
+tools/release.py
 ```
 
 Results:
 
-- `src/pypnm/version.py` is updated (for example `0.1.2.0` -> `0.1.3.0`).  
+- `src/pypnm/version.py` is updated (for example `0.2.1.0` -> `0.2.2.0`).  
 - `pyproject.toml` `[project].version` is updated to the same value.  
-- A commit `Release 0.1.3.0` is added on `main`.  
-- Tag `v0.1.3.0` is created and pushed to `origin`.  
+- A commit `Release 0.2.2.0` is added on `main`.  
+- Tag `v0.2.2.0` is created and pushed to `origin`.  
 - You can later reproduce this release with:
 
   ```bash
-  git checkout v0.1.3.0
+  git checkout v0.2.2.0
   ```
 
-### 5.2 Optional Future: Introducing `stable`
-
-If, in the future, you want stricter separation between development and GA releases, you can introduce a `stable` branch without changing the scripts:
+If you prefer to explicitly control version semantics, replace the last step with:
 
 ```bash
-# Create or update stable from main
-git checkout main
-git pull origin main
+# Minor release
+tools/release.py --next minor
 
-git checkout stable
-git pull origin stable || true    # if stable is new, this may fail and can be ignored
-git merge main
-git push origin stable
+# Or a fully explicit version
+tools/release.py --version 0.3.0.0
 ```
-
-Then release from `stable` instead of `main`:
-
-```bash
-tools/release.py 0.2.0.0 --branch stable --dry-run
-tools/release.py 0.2.0.0 --branch stable
-```
-
-The same rules still apply: `src/pypnm/version.py` remains the canonical definition and `pyproject.toml` stays in sync via the helper scripts.
-
-## 6. Daily Build And Online Checks (GitHub Actions)
-
-PyPNM uses GitHub Actions to run tests on a schedule. This acts as an online “daily build” confirming that `main` is still healthy.
-
-The workflow file lives in:
-
-```text
-.github/workflows/daily-build.yml
-```
-
-Example content:
-
-```yaml
-name: Daily Build
-
-on:
-  schedule:
-    - cron: "0 8 * * *"     # Every day at 08:00 UTC
-  workflow_dispatch:         # Allow manual triggering from GitHub UI
-
-jobs:
-  daily-test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e .[dev]
-
-      - name: Run tests
-        run: |
-          pytest
-```
-
-Notes:
-
-- This file must be committed on the default branch (typically `main`) for the scheduled `cron` to run.  
-- You can also trigger the workflow manually from the GitHub Actions tab (because of `workflow_dispatch`).
 
 ## 7. Quick Reference
 
-### 7.1 Show Current Version
+- Automatic maintenance release (prompted):
 
-```bash
-tools/bump_version.py --current
-```
+  ```bash
+  tools/release.py
+  ```
 
-### 7.2 Bump Version Only (Without Tagging)
+- Automatic next version by mode (prompted):
 
-```bash
-# Next maintenance version from current
-tools/bump_version.py --next maintenance
+  ```bash
+  tools/release.py --next major
+  tools/release.py --next minor
+  tools/release.py --next maintenance
+  tools/release.py --next build
+  ```
 
-# Explicit version
-tools/bump_version.py 0.1.3.0
-```
+- Explicit version (no version prompt):
 
-### 7.3 Full Release From `main` (Single-Branch Model)
+  ```bash
+  tools/release.py --version 0.3.0.0
+  ```
 
-```bash
-git checkout main
-git pull origin main
-git status
+- Dry run only:
 
-tools/bump_version.py --current
-tools/release.py 0.1.3.0 --dry-run
-tools/release.py 0.1.3.0
-```
+  ```bash
+  tools/release.py --dry-run
+  ```
 
-### 7.4 Optional Future Release From `stable`
+- Release from another branch (for example future `stable`):
 
-```bash
-git checkout main
-git pull origin main
+  ```bash
+  tools/release.py --branch stable --next minor
+  ```
 
-git checkout stable
-git pull origin stable || true
-git merge main
-git push origin stable
-
-tools/release.py 0.2.0.0 --branch stable --dry-run
-tools/release.py 0.2.0.0 --branch stable
-```
-
-With these steps, PyPNM gains a repeatable software release strategy based on a single primary branch with tags:
-
-- A single canonical version source in `src/pypnm/version.py`.  
-- Mirrored `[project].version` in `pyproject.toml`, kept in sync by helper scripts.  
-- Scripts that manage version bumps, validation, and tagging.  
-- Clear release points via git tags on `main`.  
-- Automated daily tests via GitHub Actions.
+With this model, the `tools/release.py` script is the primary entry point for PyPNM releases. It computes or accepts the version, updates all necessary version files, runs tests, commits, tags, and pushes the result, giving you a repeatable and controlled release process.
