@@ -5,6 +5,7 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import ipaddress
+import logging
 from typing import Optional
 
 class InetGenerate:
@@ -63,7 +64,7 @@ class InetGenerate:
             return str(ip_obj)
         except ValueError:
             # If the binary data is invalid, return None
-            print(f"Invalid binary address: {binary_address}")
+            logging.error(f"Invalid binary address: {binary_address}")
             return None
 
     @staticmethod

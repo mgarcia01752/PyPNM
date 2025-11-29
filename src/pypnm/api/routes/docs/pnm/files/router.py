@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 from typing import cast
 
-from fastapi import APIRouter, File, HTTPException, Path, Query, UploadFile
+from fastapi import APIRouter, File, Path, Query, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
 from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
@@ -16,7 +16,6 @@ from pypnm.api.routes.docs.pnm.files.schemas import (
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
-from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.types import FileName, MacAddressStr, OperationId, TransactionId
 

@@ -1723,8 +1723,13 @@ class CmSnmpOperation:
             self.logger.debug(f'Sending device reset via SNMP SET: {oid} = 1')
 
             response = await self._snmp.set(oid, Snmp_v2c.TRUE, Integer32)
+            
+            if response is None:
+                self.logger.error('Device reset command returned None')
+                return False
+            
             result = Snmp_v2c.snmp_set_result_value(response)
-            print(result)
+
             self.logger.debug(f'Device reset command issued. SNMP response: {result}')
             return True
 
@@ -1752,8 +1757,11 @@ class CmSnmpOperation:
                                           DocsPnmBulkUploadControl.AUTO_UPLOAD.value, Integer32)
             self.logger.debug(f'docsPnmBulkUploadControl set: {set_response}')
 
-            set_response = await self._snmp.set(f'{"docsPnmBulkDestIpAddr"}.0', 
-                                          InetGenerate.inet_to_binary(tftp_server), OctetString)
+            ip_binary = InetGenerate.inet_to_binary(tftp_server)
+            if ip_binary is None:
+                self.logger.error(f"Failed to convert IP address to binary: {tftp_server}")
+                return False
+            set_response = await self._snmp.set('docsPnmBulkDestIpAddr.0', int(ip_binary), OctetString)
             self.logger.debug(f'docsPnmBulkDestIpAddr set: {set_response}')
 
             tftp_path = tftp_path or ""

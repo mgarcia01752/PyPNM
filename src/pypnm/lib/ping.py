@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import platform
 import subprocess
+import logging
 
 class Ping:
     """
@@ -38,5 +39,5 @@ class Ping:
             )
             return result.returncode == 0
         except Exception as e:
-            print(f"[Ping Error] {e}")
+            logging.error(f"[Ping Error] {e}")
             return False
