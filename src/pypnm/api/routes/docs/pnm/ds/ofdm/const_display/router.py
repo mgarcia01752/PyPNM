@@ -24,7 +24,7 @@ from pypnm.api.routes.docs.pnm.ds.ofdm.const_display.service import CmDsOfdmCons
 from pypnm.api.routes.docs.pnm.files.service import FileType, PnmFileService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
-from pypnm.lib.dict_utils import DictUtils
+from pypnm.lib.dict_utils import DictGenerate
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -110,11 +110,11 @@ class ConstellationDisplayRouter:
                 payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
                 payload.update(msg_rsp.payload_to_dict())
 
-                DictUtils.pop_keys_recursive(payload, ["pnm_header", "data"])
+                DictGenerate.pop_keys_recursive(payload, ["pnm_header", "data"])
                 primative = msg_rsp.payload_to_dict('primative')
-                DictUtils.pop_keys_recursive(primative, ["device_details"])
+                DictGenerate.pop_keys_recursive(primative, ["device_details"])
                 payload.update(primative)
-                payload.update(DictUtils.models_to_nested_dict(measurement_stats, 'measurement_stats',))
+                payload.update(DictGenerate.models_to_nested_dict(measurement_stats, 'measurement_stats',))
 
                 return PnmAnalysisResponse(
                     mac_address =   mac,

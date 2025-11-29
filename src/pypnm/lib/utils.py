@@ -6,6 +6,7 @@ from __future__ import annotations
 import time
 import hashlib
 from enum import Enum
+from typing_extensions import deprecated
 
 from pypnm.lib.types import TimeStamp, TransactionId
 
@@ -16,64 +17,38 @@ class TimeUnit(Enum):
     NANOSECONDS  = "ns"
 
 
-class Utils:
+@deprecated("Generate is deprecated; use Generate instead.")
+class Generate:
+    """
+    Legacy Time And TransactionId Utilities.
+
+    This class is deprecated in favor of the Generate helper functions and is
+    retained only for backward compatibility. New code should use Generate.
+    """
 
     @staticmethod
+    @deprecated("Use Generate.time_stamp() instead.")
     def time_stamp(unit: TimeUnit = TimeUnit.SECONDS) -> TimeStamp:
         """
         Return The Current Timestamp In The Specified Unit.
 
-        Parameters
-        ----------
-        unit:
-            Time unit used for the returned timestamp. Defaults to
-            ``TimeUnit.SECONDS``.
-
-        Returns
-        -------
-        int
-            Current time since the Unix epoch expressed in the requested
-            unit.
+        Deprecated In Favor Of ``Generate.time_stamp``.
         """
         if unit == TimeUnit.NANOSECONDS:
-            return time.time_ns()
+            return TimeStamp(time.time_ns())
         if unit == TimeUnit.MILLISECONDS:
-            return time.time_ns() // 1_000_000
-        return int(time.time())
+            return TimeStamp(time.time_ns() // 1_000_000)
+        return TimeStamp(int(time.time()))
 
     @staticmethod
-    def generate_transaction_id(seed: int | None = None, length: int = 24) -> TransactionId:
+    @deprecated("Use Generate.transaction_id() instead.")
+    def transaction_id(seed: int | None = None, length: int = 24) -> TransactionId:
         """
         Generate A Hashed Time-Based Transaction Identifier.
 
-        The identifier is derived from the current time in nanoseconds using
-        ``Utils.time_stamp(unit=TimeUnit.NANOSECONDS)`` and then hashed with
-        SHA-256. When ``seed`` is provided, it is concatenated with the
-        timestamp as ``"<timestamp_ns>:<seed>"`` before hashing, allowing
-        deterministic diversification of IDs for a given timestamp source.
-
-        The resulting hex digest is truncated to ``length`` characters. The
-        effective length is clamped to the range ``[1, len(digest)]`` so that
-        values less than or equal to zero or greater than the digest length
-        fall back to the full digest length.
-
-        Parameters
-        ----------
-        seed:
-            Optional integer seed that is combined with the nanosecond
-            timestamp prior to hashing. When omitted, only the timestamp
-            is hashed.
-        length:
-            Desired length of the returned hexadecimal transaction identifier.
-            Defaults to ``24`` characters.
-
-        Returns
-        -------
-        TransactionId
-            Hash-based transaction identifier with the requested (clamped)
-            length.
+        Deprecated In Favor Of ``Generate.transaction_id``.
         """
-        base_value: int = Utils.time_stamp(unit=TimeUnit.NANOSECONDS)
+        base_value: int = Generate.time_stamp(unit=TimeUnit.NANOSECONDS)
         if seed is not None:
             raw_value: str = f"{base_value}:{seed}"
         else:
@@ -88,3 +63,64 @@ class Utils:
 
         truncated: str = digest_full[:effective_length]
         return TransactionId(truncated)
+
+
+class Generate:
+
+    @staticmethod
+    def time_stamp(unit: TimeUnit = TimeUnit.SECONDS) -> TimeStamp:
+        """
+        Return The Current Timestamp In The Specified Unit.
+        """
+        return TimeStamp(
+            time.time_ns()
+            if unit == TimeUnit.NANOSECONDS
+            else time.time_ns() // 1_000_000
+            if unit == TimeUnit.MILLISECONDS
+            else int(time.time())
+        )
+
+    @staticmethod
+    def transaction_id(seed: int | None = None, length: int = 24) -> TransactionId:
+        """
+        Generate A Hashed Time-Based Transaction Identifier.
+
+        Uses a nanosecond timestamp plus an optional seed, hashed with SHA-256
+        and truncated to ``length`` hex characters.
+        """
+        base_value: int = Generate.time_stamp(unit=TimeUnit.NANOSECONDS)
+        raw_value: str  = f"{base_value}:{seed}" if seed is not None else str(base_value)
+
+        digest_full: str = hashlib.sha256(raw_value.encode("utf-8")).hexdigest()
+        max_length: int  = len(digest_full)
+
+        effective_length: int = length
+        if effective_length <= 0 or effective_length > max_length:
+            effective_length = max_length
+
+        truncated: str = digest_full[:effective_length]
+        return TransactionId(truncated)
+
+    @staticmethod
+    def group_id(count: int, seed: int | None = None, length: int = 24) -> list[TransactionId]:
+        """
+        Generate A Group Of Related Transaction Identifiers.
+
+        Each ID is derived from the base nanosecond timestamp plus an optional
+        incrementing seed offset, then hashed and truncated as in
+        ``transaction_id``.
+        """
+        ids: list[TransactionId] = []
+        for i in range(count):
+            current_seed: int | None = seed + i if seed is not None else None
+            ids.append(Generate.transaction_id(seed=current_seed, length=length))
+        return ids
+
+    @staticmethod
+    def operation_id(seed: int | None = None, length: int = 24) -> TransactionId:
+        """
+        Generate A Transaction Identifier For An Operation.
+
+        Thin wrapper around ``transaction_id`` for semantic clarity.
+        """
+        return Generate.transaction_id(seed=seed, length=length)

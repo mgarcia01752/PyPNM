@@ -24,7 +24,7 @@ from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema imp
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpecAnCapturePara
-from pypnm.docsis.cm_snmp_operation import  Utils
+from pypnm.docsis.cm_snmp_operation import  Generate
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor 
 from pypnm.lib.constants import (CABLE_VF, INVALID_CHANNEL_ID, INVALID_PROFILE_ID, 
                                  INVALID_SCHEMA_TYPE, INVALID_START_VALUE, SPEED_OF_LIGHT, CableType)
@@ -189,7 +189,7 @@ class Analysis:
 
             if not pnm_file_type:
                 self.logger.error('PNM FileType not Found')
-                LogFile.write(fname=f'unknown-pnm-filetype-{Utils.time_stamp()}.dict' , data=measurement)
+                LogFile.write(fname=f'unknown-pnm-filetype-{Generate.time_stamp()}.dict' , data=measurement)
                 pass
 
             if self.analysis_type == AnalysisType.BASIC:
@@ -351,7 +351,7 @@ class Analysis:
         """
         msg_rsp_dict:Dict[Any, Any] = msg_response.payload_to_dict()
         mac = msg_rsp_dict.get('mac_address')
-        fname = f'{SystemConfigSettings().message_response_dir}/{mac}_{Utils.time_stamp()}.msg'
+        fname = f'{SystemConfigSettings().message_response_dir}/{mac}_{Generate.time_stamp()}.msg'
         self.logger.debug(f'Saving Message Response: {fname}')
 
         fp = FileProcessor(fname)

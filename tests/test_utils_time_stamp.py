@@ -5,7 +5,7 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 
 import time
-from pypnm.lib.utils import TimeUnit, Utils
+from pypnm.lib.utils import TimeUnit, Generate
 
 def test_time_unit_values() -> None:
     """
@@ -33,7 +33,7 @@ def test_time_stamp_default_is_seconds(monkeypatch) -> None:
     monkeypatch.setattr(time, "time", fake_time)
     monkeypatch.setattr(time, "time_ns", fake_time_ns)
 
-    ts = Utils.time_stamp()
+    ts = Generate.time_stamp()
     assert ts == 1_234
     assert calls["time"] == 1
     assert calls["time_ns"] == 0
@@ -56,7 +56,7 @@ def test_time_stamp_seconds(monkeypatch) -> None:
     monkeypatch.setattr(time, "time", fake_time)
     monkeypatch.setattr(time, "time_ns", fake_time_ns)
 
-    ts = Utils.time_stamp(TimeUnit.SECONDS)
+    ts = Generate.time_stamp(TimeUnit.SECONDS)
     assert ts == 2_000
     assert calls["time"] == 1
     assert calls["time_ns"] == 0
@@ -79,7 +79,7 @@ def test_time_stamp_milliseconds(monkeypatch) -> None:
     monkeypatch.setattr(time, "time", fake_time)
     monkeypatch.setattr(time, "time_ns", fake_time_ns)
 
-    ts = Utils.time_stamp(TimeUnit.MILLISECONDS)
+    ts = Generate.time_stamp(TimeUnit.MILLISECONDS)
     assert ts == 1_234_567_890 // 1_000_000
     assert calls["time_ns"] == 1
     # time() is never used in this branch
@@ -103,7 +103,7 @@ def test_time_stamp_nanoseconds(monkeypatch) -> None:
     monkeypatch.setattr(time, "time", fake_time)
     monkeypatch.setattr(time, "time_ns", fake_time_ns)
 
-    ts = Utils.time_stamp(TimeUnit.NANOSECONDS)
+    ts = Generate.time_stamp(TimeUnit.NANOSECONDS)
     assert ts == 987_654_321
     assert calls["time_ns"] == 1
     # time() is never used in this branch

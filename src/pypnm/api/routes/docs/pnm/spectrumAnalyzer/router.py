@@ -38,7 +38,7 @@ from pypnm.api.routes.docs.pnm.spectrumAnalyzer.service import (
 )
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.pnm.DocsIf3CmSpectrumAnalysisEntry import DocsIf3CmSpectrumAnalysisEntry
-from pypnm.lib.dict_utils import DictUtils
+from pypnm.lib.dict_utils import DictGenerate
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -121,16 +121,16 @@ class SpectrumAnalyzerRouter:
 
             if request.analysis.output.type == OutputType.JSON:
                 payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
-                DictUtils.pop_keys_recursive(payload, ["pnm_header", "mac_address", "channel_id"])
+                DictGenerate.pop_keys_recursive(payload, ["pnm_header", "mac_address", "channel_id"])
 
                 primative = msg_rsp.payload_to_dict("primative")
-                DictUtils.pop_keys_recursive(
+                DictGenerate.pop_keys_recursive(
                     primative,
                     ["device_details", "channel_id", "amplitude_bin_segments_float"],
                 )
                 payload.update(primative)
                 payload.update(
-                    DictUtils.models_to_nested_dict(
+                    DictGenerate.models_to_nested_dict(
                         measurement_stats,
                         "measurement_stats",
                     )
@@ -229,7 +229,7 @@ class SpectrumAnalyzerRouter:
                 analyzer_rpt_dict = analyzer_rpt.to_dict()
                 analyzer_rpt_dict.update(primative)
                 analyzer_rpt_dict.update(
-                    DictUtils.models_to_nested_dict(measurement_stats, "measurement_stats",))
+                    DictGenerate.models_to_nested_dict(measurement_stats, "measurement_stats",))
 
                 return OfdmSpecAnaAnalysisResponse(
                     mac_address =   mac,
@@ -327,7 +327,7 @@ class SpectrumAnalyzerRouter:
                 analyzer_rpt_dict = analyzer_rpt.to_dict()
                 analyzer_rpt_dict.update(primative)
                 analyzer_rpt_dict.update(
-                    DictUtils.models_to_nested_dict(measurement_stats, "measurement_stats",))
+                    DictGenerate.models_to_nested_dict(measurement_stats, "measurement_stats",))
 
                 return ScQamSpecAnaAnalysisResponse(
                     mac_address =   mac,

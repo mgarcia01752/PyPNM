@@ -4,7 +4,7 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-from pypnm.lib.inet_utils import InetUtils
+from pypnm.lib.inet_utils import InetGenerate
 from pypnm.lib.types import InetAddressStr
 
 class Inet:
@@ -25,7 +25,7 @@ class Inet:
         Raises:
             ValueError: If the IP address is invalid.
         """
-        if not InetUtils.get_inet_version(inet):  # Assuming it returns version or raises
+        if not InetGenerate.get_inet_version(inet):  # Assuming it returns version or raises
             raise ValueError(f"Invalid IP address: {inet}")
         self._inet = inet
 
@@ -44,7 +44,7 @@ class Inet:
         Returns:
             bool: True if both IPs are of the same version (IPv4/IPv6).
         """
-        return InetUtils.are_inets_same_version(self._inet, other._inet)
+        return InetGenerate.are_inets_same_version(self._inet, other._inet)
 
     def __eq__(self, other: object) -> bool:
         """Equality comparison for two Inet objects."""

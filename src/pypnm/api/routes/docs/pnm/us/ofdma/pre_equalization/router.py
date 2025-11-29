@@ -26,7 +26,7 @@ from pypnm.api.routes.docs.pnm.us.ofdma.pre_equalization.service import (
     CmUsOfdmaPreEqService,)
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEntry
-from pypnm.lib.dict_utils import DictUtils
+from pypnm.lib.dict_utils import DictGenerate
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -93,11 +93,11 @@ class UsOfdmaPreEqualizationRouter:
                 payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
 
                 # Clean up payload by removing unneeded or redundant sections
-                DictUtils.pop_keys_recursive(payload, ["pnm_header"])
+                DictGenerate.pop_keys_recursive(payload, ["pnm_header"])
                 primative:Dict[Any,Any] = msg_rsp.payload_to_dict('primative')
-                DictUtils.pop_keys_recursive(primative, ["device_details"])
+                DictGenerate.pop_keys_recursive(primative, ["device_details"])
                 payload.update(primative)
-                payload.update(DictUtils.models_to_nested_dict(measurement_stats, 'measurement_stats',))
+                payload.update(DictGenerate.models_to_nested_dict(measurement_stats, 'measurement_stats',))
 
                 return PnmAnalysisResponse(
                     mac_address =   mac,

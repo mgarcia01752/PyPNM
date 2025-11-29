@@ -22,7 +22,7 @@ from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager
 from pypnm.lib.types import ChannelId, PathArray, PathLike, TimeStamp
-from pypnm.lib.utils import TimeUnit, Utils
+from pypnm.lib.utils import TimeUnit, Generate
 
 
 class MultiAnalysisRpt(ABC):
@@ -42,7 +42,7 @@ class MultiAnalysisRpt(ABC):
         self._json_dir: PathLike      = SystemConfigSettings.json_dir
         self._archive_dir: PathLike   = SystemConfigSettings.archive_dir
 
-        self._group_time:TimeStamp    = Utils.time_stamp()
+        self._group_time:TimeStamp    = Generate.time_stamp()
         self._base_filename: PathLike = ""
         self._common_analysis_model: Dict[ChannelId, BaseModel] = {}
 
@@ -243,7 +243,7 @@ class MultiAnalysisRpt(ABC):
             raise TypeError("model must be a Pydantic BaseModel instance")
 
         if append_timestamp:
-            filename_tags.append(str(Utils.time_stamp(TimeUnit.NANOSECONDS)))
+            filename_tags.append(str(Generate.time_stamp(TimeUnit.NANOSECONDS)))
 
         full_path_fname = self.create_json_fname(tags=filename_tags)
         

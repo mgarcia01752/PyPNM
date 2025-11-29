@@ -42,7 +42,7 @@ from pypnm.lib.inet import Inet
 from pypnm.lib.ssh.ssh_connector import SSHConnector, SecureTransferMode
 from pypnm.lib.tftp.tftp_connector import TFTPConnector
 from pypnm.lib.types import ChannelId, InterfaceIndex
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
     DocsIf3CmSpectrumAnalysisCtrlCmd, SpectrumRetrievalType, WindowFunction)
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
@@ -1178,7 +1178,7 @@ class CommonMeasureService(CommonMessagingService):
         if suffix:
             suffix = f'_{suffix}'
 
-        file_name = f"{test_prefix}_{self.cm.get_mac_address.to_mac_format()}{suffix}_{Utils.time_stamp()}{ext}"
+        file_name = f"{test_prefix}_{self.cm.get_mac_address.to_mac_format()}{suffix}_{Generate.time_stamp()}{ext}"
 
         transaction_id = await PnmFileTransaction().insert(self.cm, test_type, file_name)
         

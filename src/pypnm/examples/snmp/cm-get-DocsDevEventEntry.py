@@ -14,7 +14,7 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import TimeUnit, Utils
+from pypnm.lib.utils import TimeUnit, Generate
 
 logging.basicConfig(
     level=logging.INFO,
@@ -39,7 +39,7 @@ async def main():
     event_list = await cm.getDocsDevEventEntry()
     
     for event in event_list:
-        filename = f'DocsDevEventEntry_{Utils.time_stamp(TimeUnit.NANOSECONDS)}.json'
+        filename = f'DocsDevEventEntry_{Generate.time_stamp(TimeUnit.NANOSECONDS)}.json'
         FileProcessor(f'../output/{filename}').write_file(json.dumps(event.to_dict()))
 
 if __name__ == "__main__":

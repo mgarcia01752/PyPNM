@@ -30,7 +30,7 @@ from pypnm.lib.constants import MediaType
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import FileName, MacAddressStr, OperationId, PathLike, TransactionId
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 from pypnm.pnm.parser.model.parser_rtn_models import (
     CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel, 
     CmDsOfdmFecSummaryModel, CmDsOfdmModulationProfileModel, CmDsOfdmRxMerModel, CmUsOfdmaPreEqModel)
@@ -161,7 +161,7 @@ class PnmFileService:
         archive_dir = Path(SystemConfigSettings.archive_dir)
         archive_dir.mkdir(parents=True, exist_ok=True)
 
-        archive_name = f"pnm_operation_{operation_id}_{Utils.time_stamp()}.zip"
+        archive_name = f"pnm_operation_{operation_id}_{Generate.time_stamp()}.zip"
         archive_path = archive_dir / archive_name
 
         ArchiveManager.zip_files(
@@ -218,7 +218,7 @@ class PnmFileService:
         archive_dir.mkdir(parents=True, exist_ok=True)
 
         safe_mac = str(MacAddress(mac_address).to_mac_format())
-        archive_name = f"pnm_files_{safe_mac}_{Utils.time_stamp()}.zip"
+        archive_name = f"pnm_files_{safe_mac}_{Generate.time_stamp()}.zip"
         archive_path = archive_dir / archive_name
 
         ArchiveManager.zip_files(

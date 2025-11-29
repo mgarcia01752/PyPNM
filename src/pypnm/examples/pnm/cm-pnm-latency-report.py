@@ -13,7 +13,7 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 
 # Configure logging
 logging.basicConfig(
@@ -43,7 +43,7 @@ async def main():
         logging.error(f'Unable to set TFTP Server: {args.tftp_ipv4} and/or TFTP Path: {args.tftp_dest_dir}')
         exit(1)
     
-    filename = f"latency_rpt_{Utils.time_stamp()}.bin"        
+    filename = f"latency_rpt_{Generate.time_stamp()}.bin"        
    
     if not cm.setDocsCmLatencyRptCfg(latency_rpt_file_name=filename):
         logging.error('Unable to set Latency Report, exiting...')

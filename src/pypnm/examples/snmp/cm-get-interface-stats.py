@@ -14,7 +14,7 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,7 +41,7 @@ async def main():
     
     json_out = json.dumps(dict, indent=2)
     
-    FileProcessor(f".data/pnm/InterfaceStats-{Utils.time_stamp()}.json").write_file(json_out)
+    FileProcessor(f".data/pnm/InterfaceStats-{Generate.time_stamp()}.json").write_file(json_out)
 
 if __name__ == "__main__":
     asyncio.run(main())

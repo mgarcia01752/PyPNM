@@ -17,7 +17,7 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import TimeUnit, Utils
+from pypnm.lib.utils import TimeUnit, Generate
 
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import SpectrumRetrievalType, WindowFunction
 
@@ -88,7 +88,7 @@ async def main():
     msg_rsp = cps.process()
 
     for payload in msg_rsp.payload:  # type: ignore
-        timestamp = Utils.time_stamp(TimeUnit.MILLISECONDS)
+        timestamp = Generate.time_stamp(TimeUnit.MILLISECONDS)
         file_path = f"../output/spectrum-analyzer-{timestamp}.json"
         FileProcessor(file_path).write_file(payload)
         logging.info(f"Saved result to: {file_path}")

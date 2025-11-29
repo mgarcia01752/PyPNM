@@ -8,7 +8,7 @@ from typing import Any, Iterable, MutableMapping, Mapping, Optional, Union, Dict
 from pydantic import BaseModel
 
 
-class DictUtils:
+class DictGenerate:
     """
     A small collection of dictionary helpers:
       - rename_key / pop_key for shallow dicts

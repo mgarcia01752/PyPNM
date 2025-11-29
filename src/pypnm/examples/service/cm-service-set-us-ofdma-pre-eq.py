@@ -17,7 +17,7 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import TimeUnit, Utils
+from pypnm.lib.utils import TimeUnit, Generate
 
 
 
@@ -56,7 +56,7 @@ async def main():
     msg_rsp:MessageResponse = cps.process()
 
     for payload in msg_rsp.payload: # type: ignore
-        FileProcessor(f"output/pre-eq-{str(Utils.time_stamp(TimeUnit.MILLISECONDS))}.json").write_file(payload)
+        FileProcessor(f"output/pre-eq-{str(Generate.time_stamp(TimeUnit.MILLISECONDS))}.json").write_file(payload)
 
 
 if __name__ == "__main__":

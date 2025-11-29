@@ -23,7 +23,7 @@ from pypnm.api.routes.docs.pnm.ds.histogram.schemas import PnmHistogramAnalysisR
 from pypnm.api.routes.docs.pnm.ds.histogram.service import CmDsHistogramService
 from pypnm.api.routes.docs.pnm.files.service import FileType, PnmFileService
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsHistEntry import DocsPnmCmDsHistEntry
-from pypnm.lib.dict_utils import DictUtils
+from pypnm.lib.dict_utils import DictGenerate
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
@@ -104,8 +104,8 @@ class DsHistogramRouter:
 
             if request.analysis.output.type == OutputType.JSON:
                 payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
-                DictUtils.pop_keys_recursive(payload, ["channel_id"])
-                payload.update(DictUtils.models_to_nested_dict(measurement_stats, 'measurement_stats',))
+                DictGenerate.pop_keys_recursive(payload, ["channel_id"])
+                payload.update(DictGenerate.models_to_nested_dict(measurement_stats, 'measurement_stats',))
                  
                 return PnmAnalysisResponse(
                     mac_address =   mac,

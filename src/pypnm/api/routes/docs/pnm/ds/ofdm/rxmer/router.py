@@ -26,7 +26,7 @@ from pypnm.api.routes.docs.pnm.ds.ofdm.rxmer.service import CmDsOfdmRxMerService
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmDsOfdmRxMerEntry
-from pypnm.lib.dict_utils import DictUtils
+from pypnm.lib.dict_utils import DictGenerate
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -90,11 +90,11 @@ class RxMerRouter:
                 payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
                 
                 # Clean up payload by removing unneeded or redundant sections
-                DictUtils.pop_keys_recursive(payload, ["pnm_header", "modulations", "snr_db_values"])
+                DictGenerate.pop_keys_recursive(payload, ["pnm_header", "modulations", "snr_db_values"])
                 primative = msg_rsp.payload_to_dict('primative')
-                DictUtils.pop_keys_recursive(primative, ["device_details", "modulation_statistics"])
+                DictGenerate.pop_keys_recursive(primative, ["device_details", "modulation_statistics"])
                 payload.update(primative)
-                payload.update(DictUtils.models_to_nested_dict(measurement_stats, 'measurement_stats',))
+                payload.update(DictGenerate.models_to_nested_dict(measurement_stats, 'measurement_stats',))
 
                 return PnmAnalysisResponse(
                     mac_address =   mac,

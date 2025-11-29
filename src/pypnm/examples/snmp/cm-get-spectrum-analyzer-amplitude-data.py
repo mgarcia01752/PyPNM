@@ -15,7 +15,7 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import TimeUnit, Utils
+from pypnm.lib.utils import TimeUnit, Generate
 from pypnm.pnm.parser.CmSpectrumAnalysisSnmp import CmSpectrumAnalysisSnmp
 
 logging.basicConfig(
@@ -49,7 +49,7 @@ async def main():
     amplitude_byte_stream = await cm.getSpectrumAmplitudeData()
     amplitude_data = CmSpectrumAnalysisSnmp(amplitude_byte_stream)
 
-    filename = f'spec_amplitude_data_{Utils.time_stamp(TimeUnit.MILLISECONDS)}.json'
+    filename = f'spec_amplitude_data_{Generate.time_stamp(TimeUnit.MILLISECONDS)}.json'
     FileProcessor(f'../output/{filename}').write_file(json.dumps(amplitude_data.to_dict()))
 
 if __name__ == "__main__":

@@ -17,7 +17,7 @@ from pypnm.lib.db.model.json_trans_model import (
     JsonReturnModel, JsonTransactionDbModel, JsonTransactionRecordModel)
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.types import HashStr, PathLike, TimeStamp, TransactionId
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 
 
 JsonPayload = Mapping[str, Any]
@@ -161,7 +161,7 @@ class JsonTransactionDb:
         This method performs the following steps:
 
         * Validates that ``data`` is JSON-serializable.
-        * Allocates a new transaction identifier via ``_generate_transaction_id``.
+        * Allocates a new transaction identifier via ``_transaction_id``.
         * Generates a payload filename (``<fname>.<extension>``) and writes
           the JSON payload to disk inside the configured ``json_dir`` using
           ``FileProcessor``.
@@ -205,7 +205,7 @@ class JsonTransactionDb:
             fname = f"{fname}.{extension.lstrip('.')}"
 
         timestamp: TimeStamp    = TimeStamp(int(time.time()))
-        transaction_id          = self._generate_transaction_id()
+        transaction_id          = self._transaction_id()
         filename: PathLike      = fname
         payload_path            = self._json_dir / filename
         payload_processor       = FileProcessor(payload_path)
@@ -236,7 +236,7 @@ class JsonTransactionDb:
 
         return db_model
 
-    def _generate_transaction_id(self) -> TransactionId:
+    def _transaction_id(self) -> TransactionId:
         """
         Allocate A New Transaction Identifier.
 
@@ -246,7 +246,7 @@ class JsonTransactionDb:
         (for example, a dedicated TransactionId factory) without changing
         call sites.
         """
-        return Utils.generate_transaction_id()
+        return Generate.transaction_id()
 
     def _calculate_file_hash(self, filename: PathLike, timestamp: TimeStamp) -> HashStr:
         """

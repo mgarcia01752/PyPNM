@@ -7,7 +7,7 @@ from __future__ import annotations
 import ipaddress
 from typing import Optional
 
-class InetUtils:
+class InetGenerate:
     """
     A utility class for operations related to IP addresses, such as conversion and version checking.
     """

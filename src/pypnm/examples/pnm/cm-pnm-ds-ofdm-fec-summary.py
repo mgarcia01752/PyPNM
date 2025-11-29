@@ -13,7 +13,7 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus, FecSummaryType
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 
 # Configure logging
 logging.basicConfig(
@@ -58,7 +58,7 @@ async def main():
     # Loop over OFDM channels and set FEC summary
     for oce in oce_list:
         idx = oce.index
-        filename = f"fec_summary_{idx}_{Utils.time_stamp()}.bin"
+        filename = f"fec_summary_{idx}_{Generate.time_stamp()}.bin"
         logging.info(f"Setting FEC Summary for OFDM index {idx} with filename {filename}")
 
         # Determine FEC summary type based on user input

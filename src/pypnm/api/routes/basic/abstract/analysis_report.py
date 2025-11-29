@@ -21,7 +21,7 @@ from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, ThemeType
 from pypnm.lib.types import ChannelId, FileNameStr, MacAddressStr, PathArray, PathLike, TimeStamp
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 
 AnalysisData    = List[Dict[str, Any]]
 
@@ -321,7 +321,7 @@ class AnalysisReport(ABC):
         Implement in subclasses as needed.
         """
 
-        full_path_fname = self.create_json_fname(tags=[str(channel_id), "analysis", str(Utils.time_stamp())])
+        full_path_fname = self.create_json_fname(tags=[str(channel_id), "analysis", str(Generate.time_stamp())])
         self.json_files.append(full_path_fname)
         JsonTransactionDb().write_json(data  = common_analysis.model_dump(), 
                                        fname = Path(full_path_fname).parts[-1])
@@ -376,7 +376,7 @@ class AnalysisReport(ABC):
         self._json_dir: PathLike      = SystemConfigSettings.json_dir
         self._archive_dir: PathLike   = SystemConfigSettings.archive_dir
 
-        self._group_time: TimeStamp         = TimeStamp(Utils.time_stamp())
+        self._group_time: TimeStamp         = TimeStamp(Generate.time_stamp())
         self._base_filename: FileNameStr    = FileNameStr("")
         self._common_analysis_model: Dict[ChannelId, List[CommonAnalysis]] = {}
         

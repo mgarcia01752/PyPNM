@@ -13,7 +13,7 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 
 # Configure logging
 logging.basicConfig(
@@ -45,7 +45,7 @@ async def main():
             
     for idx in await cm.getDocsIf31CmDsOfdmChannelIdIndex():
         
-        filename = f"ds-symbol-capture_{idx}_{Utils.time_stamp()}.bin"
+        filename = f"ds-symbol-capture_{idx}_{Generate.time_stamp()}.bin"
         print(f"Setting Symbol Capture for OFDM index {idx} with filename {filename}")
         await cm.setDocsPnmCmDsOfdmSymTrig(ofdm_idx=idx, symbol_trig_file_name=filename)
         

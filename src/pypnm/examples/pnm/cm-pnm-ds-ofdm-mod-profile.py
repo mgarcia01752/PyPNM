@@ -13,7 +13,7 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 
 logging.basicConfig(
     level=logging.INFO,
@@ -50,7 +50,7 @@ async def main():
             
     for idx in ofdm_idx_list:
 
-        filename = f"mod_profile_{idx}_{Utils.time_stamp()}.bin"
+        filename = f"mod_profile_{idx}_{Generate.time_stamp()}.bin"
         print(f"Setting Modulation Profile OFDM index {idx} with filename {filename}")
         await cm.setDocsPnmCmDsOfdmModProf(ofdm_idx=idx, mod_prof_file_name=filename)
         

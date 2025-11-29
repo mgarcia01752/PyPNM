@@ -21,7 +21,7 @@ from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.types import ArrayLike, FloatSeries, FrequencySeriesHz, Path, PathLike
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 
 
 class OfdmSpecAnalysisRptModel(BaseModel):
@@ -135,7 +135,7 @@ class OfdmSpecAnalyzerAnalysisReport():
         """
         mac = self.get_mac_address().to_mac_format()
 
-        return Path(self._archive_path) / f"scqam_report_{mac}_{Utils.time_stamp()}.zip"
+        return Path(self._archive_path) / f"scqam_report_{mac}_{Generate.time_stamp()}.zip"
 
     def get_mac_address(self) -> MacAddress:
         """Return the MAC address associated with the report.

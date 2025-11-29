@@ -15,7 +15,7 @@ from pypnm.docsis.data_type.DocsIf31CmUsOfdmaChanEntry import DocsIf31CmUsOfdmaC
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 
 # Configure logging
 logging.basicConfig(
@@ -53,7 +53,7 @@ async def main():
             json_out = json.dumps(entry_dicts, indent=2)
 
             # Write to file
-            filename = f".data/pnm/DocsIf31CmUsOfdmaChanEntry-{Utils.time_stamp()}.json"
+            filename = f".data/pnm/DocsIf31CmUsOfdmaChanEntry-{Generate.time_stamp()}.json"
             FileProcessor(filename).write_file(json_out)
             logging.info(f"✅ Output written to: {filename}")
 

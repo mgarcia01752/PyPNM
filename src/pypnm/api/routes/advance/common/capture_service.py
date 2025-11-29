@@ -19,7 +19,7 @@ from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import Pn
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse, MessageResponseType
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.lib.types import TimeStamp, OperationId, GroupId
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 
 
 class AbstractCaptureService(ABC):
@@ -121,7 +121,7 @@ class AbstractCaptureService(ABC):
                 now = time.time()
                 remaining = max(0, int(end_time - now))
                 self._ops[operation_id]["time_remaining"] = remaining
-                iteration_ts = Utils.time_stamp()
+                iteration_ts = Generate.time_stamp()
                 
                 # Add a waitup front so that it can goto the next function
                 await asyncio.sleep(self.interval)
@@ -273,7 +273,7 @@ class AbstractCaptureService(ABC):
             A list of CaptureSample. On payload/type/parsing errors, returns
             a list with a single CaptureSample indicating the error.
         """
-        ts = cast(TimeStamp, Utils.time_stamp())
+        ts = cast(TimeStamp, Generate.time_stamp())
         payload = msg_rsp.payload
         if not isinstance(payload, list):
             err = f"Unexpected payload type: {type(payload).__name__}"

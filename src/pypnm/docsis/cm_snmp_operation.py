@@ -48,9 +48,9 @@ from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 from pypnm.lib.format_string import Format
 from pypnm.lib.inet import Inet
-from pypnm.lib.inet_utils import InetUtils
+from pypnm.lib.inet_utils import InetGenerate
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 from pypnm.snmp.compiled_oids import COMPILED_OIDS
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 from pypnm.snmp.modules import DocsPnmBulkUploadControl, DocsisIfType
@@ -378,7 +378,7 @@ class CmSnmpOperation:
         
         return DocsPnmBulkDataGroup(
             docsPnmBulkDestIpAddrType   =   await self._get_value("docsPnmBulkDestIpAddrType", int),
-            docsPnmBulkDestIpAddr       =   InetUtils.binary_to_inet(await self._get_value("docsPnmBulkDestIpAddr", bytes)),
+            docsPnmBulkDestIpAddr       =   InetGenerate.binary_to_inet(await self._get_value("docsPnmBulkDestIpAddr", bytes)),
             docsPnmBulkDestPath         =   await self._get_value("docsPnmBulkDestPath", str),
             docsPnmBulkUploadControl    =   await self._get_value("docsPnmBulkUploadControl", int)
         )
@@ -1753,7 +1753,7 @@ class CmSnmpOperation:
             self.logger.debug(f'docsPnmBulkUploadControl set: {set_response}')
 
             set_response = await self._snmp.set(f'{"docsPnmBulkDestIpAddr"}.0', 
-                                          InetUtils.inet_to_binary(tftp_server), OctetString)
+                                          InetGenerate.inet_to_binary(tftp_server), OctetString)
             self.logger.debug(f'docsPnmBulkDestIpAddr set: {set_response}')
 
             tftp_path = tftp_path or ""
@@ -1867,7 +1867,7 @@ class CmSnmpOperation:
                     file_name = getattr(spec_ana_cmd, field_name)
                     
                     if not file_name:
-                        setattr(spec_ana_cmd, field_name,f'snmp-amplitude-get-flag-{Utils.time_stamp()}')
+                        setattr(spec_ana_cmd, field_name,f'snmp-amplitude-get-flag-{Generate.time_stamp()}')
                     
                     await __snmp_set(field_name, getattr(spec_ana_cmd, field_name) , snmp_type)
                     

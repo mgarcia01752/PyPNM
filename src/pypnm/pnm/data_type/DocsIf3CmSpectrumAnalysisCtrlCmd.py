@@ -9,7 +9,7 @@ import json
 import logging
 from enum import IntEnum
 from typing import Any, Dict
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 
 class SpectrumRetrievalType(IntEnum):
     """
@@ -169,7 +169,7 @@ class DocsIf3CmSpectrumAnalysisCtrlCmd:
     docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages: int = SpectrumAnalysisDefaults.NUM_AVERAGES
     docsIf3CmSpectrumAnalysisCtrlCmdFileEnable: int = SpectrumAnalysisDefaults.FILE_ENABLE
     docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus: int = -1
-    docsIf3CmSpectrumAnalysisCtrlCmdFileName: str = f"spectrum_analysis_{Utils.time_stamp()}.bin"
+    docsIf3CmSpectrumAnalysisCtrlCmdFileName: str = f"spectrum_analysis_{Generate.time_stamp()}.bin"
 
     def __post_init__(self):
         self.logger = logging.getLogger(__name__)

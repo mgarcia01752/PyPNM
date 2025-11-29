@@ -16,7 +16,7 @@ from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 
 # Configure logging
 logging.basicConfig(
@@ -50,7 +50,7 @@ async def main():
             
     for idx in ofdm_idx_list:
         
-        filename = f"rxmer_{idx}_{Utils.time_stamp()}.bin"
+        filename = f"rxmer_{idx}_{Generate.time_stamp()}.bin"
         print(f"Setting RxMER for OFDM index {idx} with filename {filename}")
         await cm.setDocsPnmCmDsOfdmRxMer(ofdm_idx=idx, rxmer_file_name=filename)
         
@@ -65,7 +65,7 @@ async def main():
     for entry in await cm.getDocsPnmCmDsOfdmRxMerEntry():
         results.append(entry.model_dump())
 
-    filename = f".data/pnm/DocsPnmCmDsOfdmRxMerEntry-{args.mac}-{Utils.time_stamp()}.json"
+    filename = f".data/pnm/DocsPnmCmDsOfdmRxMerEntry-{args.mac}-{Generate.time_stamp()}.json"
     json_data = json.dumps(results, indent=2)
 
     FileProcessor(filename).write_file(json_data)

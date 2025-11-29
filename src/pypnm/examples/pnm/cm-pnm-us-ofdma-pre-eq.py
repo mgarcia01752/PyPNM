@@ -13,7 +13,7 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 
 logging.basicConfig(
     level=logging.INFO,
@@ -46,8 +46,8 @@ async def main():
                 
     for idx in ofdma_idx_list:
         
-        filename = f"us-ofdma-pre-eq_{idx}_{Utils.time_stamp()}.bin"
-        filename_last = f"us-ofdma-pre-eq-last_{idx}_{Utils.time_stamp()}.bin"
+        filename = f"us-ofdma-pre-eq_{idx}_{Generate.time_stamp()}.bin"
+        filename_last = f"us-ofdma-pre-eq-last_{idx}_{Generate.time_stamp()}.bin"
         print(f"Setting Pre-Equalization OFDMA index {idx} with filename {filename}")
         dsce = await cm.setDocsPnmCmUsPreEq(ofdma_idx=idx, 
                                             filename=filename, 

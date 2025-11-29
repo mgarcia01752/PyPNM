@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.pnm_config_manager import SystemConfigSettings
 from pypnm.lib.log_files import LogFile
-from pypnm.lib.utils import TimeUnit, Utils
+from pypnm.lib.utils import TimeUnit, Generate
 from pypnm.lib.types import TransactionId
 
 class MessageResponseType(Enum):
@@ -114,7 +114,7 @@ class MessageResponse:
         if filename_prefix:
             prefix = f'{filename_prefix}_'
 
-        LogFile.write(f'{prefix}payload_{Utils.time_stamp(TimeUnit.MILLISECONDS)}.msgrsp', 
+        LogFile.write(f'{prefix}payload_{Generate.time_stamp(TimeUnit.MILLISECONDS)}.msgrsp', 
                       self.payload_to_dict(),
                       log_dir = SystemConfigSettings.message_response_dir)
 

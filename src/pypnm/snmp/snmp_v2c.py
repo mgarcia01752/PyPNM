@@ -17,7 +17,7 @@ from pysnmp.proto.rfc1902 import (OctetString)
 from pypnm.config.pnm_config_manager import SystemConfigSettings
 from pypnm.lib.constants import T
 from pypnm.lib.inet import Inet
-from pypnm.lib.inet_utils import InetUtils
+from pypnm.lib.inet_utils import InetGenerate
 from pypnm.snmp.compiled_oids import COMPILED_OIDS
 from pypnm.snmp.modules import InetAddressType
 
@@ -516,7 +516,7 @@ class Snmp_v2c:
         Raises:
             ValueError: If the IP address is invalid.
         """
-        binary = InetUtils.inet_to_binary(inet_address)
+        binary = InetGenerate.inet_to_binary(inet_address)
 
         if not binary:
             raise ValueError(f"Invalid IP address: {inet_address}")

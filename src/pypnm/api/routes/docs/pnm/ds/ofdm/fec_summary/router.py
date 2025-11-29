@@ -26,7 +26,7 @@ from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import FecSummaryType
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmFecEntry import DocsPnmCmDsOfdmFecEntry
-from pypnm.lib.dict_utils import DictUtils
+from pypnm.lib.dict_utils import DictGenerate
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
@@ -93,13 +93,13 @@ class FecSummaryRouter:
 
             if request.analysis.output.type == OutputType.JSON:
                 payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
-                DictUtils.pop_keys_recursive(payload, ["pnm_header", "mac_address"])
+                DictGenerate.pop_keys_recursive(payload, ["pnm_header", "mac_address"])
 
                 primative = msg_rsp.payload_to_dict('primative')
-                DictUtils.pop_keys_recursive(primative, ["device_details"])
+                DictGenerate.pop_keys_recursive(primative, ["device_details"])
                 payload.update(msg_rsp.payload_to_dict("primative"))
 
-                payload.update(DictUtils.models_to_nested_dict(measurement_stats, 'measurement_stats',))
+                payload.update(DictGenerate.models_to_nested_dict(measurement_stats, 'measurement_stats',))
 
                 return PnmAnalysisResponse(
                     mac_address =   mac,

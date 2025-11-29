@@ -13,7 +13,7 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 
 logging.basicConfig(
     level=logging.INFO,
@@ -51,7 +51,7 @@ async def main():
             
     for idx in ofdm_idx_list:
 
-        filename = f"const_display_{idx}_{Utils.time_stamp()}.bin"
+        filename = f"const_display_{idx}_{Generate.time_stamp()}.bin"
         print(f"Setting Downstream Constellation Display OFDM index {idx} with filename {filename}")
         await cm.setDocsPnmCmDsConstDisp(ofdm_idx=idx, const_disp_name=filename)
         

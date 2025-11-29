@@ -356,7 +356,7 @@ class MultiRxMerRouter(AbstractService):
                     status      =   ServiceStatusCode.CAPTURE_GROUP_NOT_FOUND,
                     message     =   f"No capture group found for operation {request.operation_id}",
                     data        =   {})
-
+            
             cda = CaptureDataAggregator(capture_group_id)
             
             try:

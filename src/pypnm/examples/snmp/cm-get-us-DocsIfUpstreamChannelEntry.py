@@ -16,7 +16,7 @@ from pypnm.docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChan
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import Utils
+from pypnm.lib.utils import Generate
 
 logging.basicConfig(
     level=logging.INFO,
@@ -52,7 +52,7 @@ async def main():
             json_out = json.dumps(entry_dicts, indent=2)
 
             # Write to file
-            filename = f".data/pnm/DocsIfUpstreamChannelEntry-{Utils.time_stamp()}.json"
+            filename = f".data/pnm/DocsIfUpstreamChannelEntry-{Generate.time_stamp()}.json"
             FileProcessor(filename).write_file(json_out)
             logging.info(f"✅ Output written to: {filename}")
 
