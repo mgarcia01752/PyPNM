@@ -321,7 +321,7 @@ class FileProcessor:
         if hex_data:
             snippet = hex_data[:limit]
             self.logger.debug(f"Hex preview: {snippet}")
-            print("Hex Preview:", snippet)
+            self.logger.debug(f"Hex Preview: {snippet}")
         else:
             self.logger.warning("No hex data to display.")
 
