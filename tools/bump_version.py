@@ -11,6 +11,7 @@ from typing import Final, List
 
 
 VERSION_FILE_PATH: Final[Path]               = Path("src/pypnm/version.py")
+PYPROJECT_FILE_PATH: Final[Path]             = Path("pyproject.toml")
 VERSION_PART_SEPARATOR: Final[str]           = "."
 EXPECTED_VERSION_PARTS: Final[int]           = 4
 
@@ -96,7 +97,51 @@ def _write_new_version(version_file: Path, new_version: str) -> None:
         )
         sys.exit(1)
 
-    version_file.write_text("\n".join(updated_lines) + ("\n" if text.endswith("\n") else ""), encoding="utf-8")
+    version_file.write_text(
+        "\n".join(updated_lines) + ("\n" if text.endswith("\n") else ""),
+        encoding="utf-8",
+    )
+
+
+def _write_new_pyproject_version(pyproject_file: Path, new_version: str) -> None:
+    """Write the new version into pyproject.toml [project].version."""
+    if not pyproject_file.exists():
+        print(f"ERROR: pyproject.toml not found: {pyproject_file}", file=sys.stderr)
+        sys.exit(1)
+
+    text = pyproject_file.read_text(encoding="utf-8")
+    lines: List[str] = text.splitlines()
+    updated_lines: List[str] = []
+    replaced = False
+
+    for line in lines:
+        stripped = line.lstrip()
+        if stripped.startswith("version") and "=" in line and '"' in line:
+            first_quote = line.find('"')
+            second_quote = line.find('"', first_quote + 1)
+            if first_quote == -1 or second_quote == -1:
+                print(
+                    f"ERROR: Malformed version line in {pyproject_file}: {line!r}",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            new_line = line[: first_quote + 1] + new_version + line[second_quote:]
+            updated_lines.append(new_line)
+            replaced = True
+        else:
+            updated_lines.append(line)
+
+    if not replaced:
+        print(
+            f"ERROR: Could not find [project].version assignment to replace in {pyproject_file}.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    pyproject_file.write_text(
+        "\n".join(updated_lines) + ("\n" if text.endswith("\n") else ""),
+        encoding="utf-8",
+    )
 
 
 def _compute_next_version(current_version: str, mode: str) -> str:
@@ -128,7 +173,9 @@ def _compute_next_version(current_version: str, mode: str) -> str:
 
 
 def main() -> None:
-    """CLI entry point for inspecting or updating the PyPNM version in src/pypnm/version.py.
+    """CLI entry point for inspecting or updating the PyPNM version.
+
+    This updates both src/pypnm/version.py and pyproject.toml [project].version.
 
     Modes
     -----
@@ -146,7 +193,8 @@ def main() -> None:
     """
     parser = argparse.ArgumentParser(
         description=(
-            "Inspect or update the __version__ string in src/pypnm/version.py. "
+            "Inspect or update the __version__ string in src/pypnm/version.py and "
+            "the [project].version field in pyproject.toml. "
             "Version format: MAJOR.MINOR.MAINTENANCE.BUILD (e.g. 1.3.1.0)."
         )
     )
@@ -193,6 +241,7 @@ def main() -> None:
             sys.exit(0)
 
         _write_new_version(VERSION_FILE_PATH, next_version)
+        _write_new_pyproject_version(PYPROJECT_FILE_PATH, next_version)
         print(f"Updated version: {current} -> {next_version}")
         sys.exit(0)
 
@@ -212,6 +261,7 @@ def main() -> None:
         sys.exit(0)
 
     _write_new_version(VERSION_FILE_PATH, new_version)
+    _write_new_pyproject_version(PYPROJECT_FILE_PATH, new_version)
     print(f"Updated version: {current} -> {new_version}")
 
 

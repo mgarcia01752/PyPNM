@@ -11,8 +11,9 @@ from pathlib import Path
 from typing import Final
 
 
-VERSION_FILE_PATH: Final[Path] = Path("src/pypnm/version.py")
-BUMP_SCRIPT_PATH: Final[Path]  = Path("tools") / "bump_version.py"
+VERSION_FILE_PATH: Final[Path]   = Path("src/pypnm/version.py")
+BUMP_SCRIPT_PATH: Final[Path]    = Path("tools") / "bump_version.py"
+PYPROJECT_FILE_PATH: Final[Path] = Path("pyproject.toml")
 
 
 def _run(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -64,6 +65,43 @@ def _read_current_version() -> str:
     return text[start_index:end_index]
 
 
+def _read_pyproject_version() -> str:
+    """Read the [project].version value from pyproject.toml."""
+    if not PYPROJECT_FILE_PATH.exists():
+        print(f"ERROR: pyproject.toml not found: {PYPROJECT_FILE_PATH}", file=sys.stderr)
+        sys.exit(1)
+
+    text = PYPROJECT_FILE_PATH.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    in_project_section = False
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped == "[project]":
+            in_project_section = True
+            continue
+
+        if in_project_section and stripped.startswith("[") and stripped.endswith("]"):
+            break
+
+        if in_project_section and stripped.startswith("version") and "=" in stripped and '"' in stripped:
+            first_quote = line.find('"')
+            second_quote = line.find('"', first_quote + 1)
+            if first_quote == -1 or second_quote == -1:
+                print(
+                    f"ERROR: Malformed [project].version line in {PYPROJECT_FILE_PATH}: {line!r}",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            return line[first_quote + 1 : second_quote]
+
+    print(
+        f"ERROR: Could not find [project].version in {PYPROJECT_FILE_PATH}.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
+
 def _bump_version(new_version: str) -> None:
     """Invoke tools/bump_version.py to update the version string."""
     if not BUMP_SCRIPT_PATH.exists():
@@ -84,7 +122,7 @@ def _run_tests() -> None:
 
 def _commit_version_bump(new_version: str) -> None:
     """Commit the version bump change."""
-    _run(["git", "add", str(VERSION_FILE_PATH)])
+    _run(["git", "add", str(VERSION_FILE_PATH), str(PYPROJECT_FILE_PATH)])
     _run(["git", "commit", "-m", f"Release {new_version}"])
 
 
@@ -156,7 +194,17 @@ def main() -> None:
     skip_tests: bool  = args.skip_tests
     dry_run: bool     = args.dry_run
 
-    current_version = _read_current_version()
+    current_version   = _read_current_version()
+    pyproject_version = _read_pyproject_version()
+
+    if current_version != pyproject_version:
+        print(
+            "ERROR: Version mismatch between src/pypnm/version.py "
+            f"({current_version}) and pyproject.toml [project].version "
+            f"({pyproject_version}). Run tools/bump_version.py or fix manually.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     if dry_run:
         print("Dry run: the following actions would be performed:")
