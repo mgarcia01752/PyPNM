@@ -42,7 +42,7 @@ class ComplexCollector:
         """
         if not self._values:
             return [], []
-        reals, imags = zip(*self._values, strict=False)  # unzip tuples
+        reals, imags = zip(*self._values)  # unzip tuples
         return list(reals), list(imags)
 
     def __len__(self) -> int:

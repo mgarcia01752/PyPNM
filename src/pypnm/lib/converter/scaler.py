@@ -93,7 +93,7 @@ class AutoUnitScaler:
 
     @staticmethod
     def format_units(pvr: PerValueRescaled, fmt: str = ".6g") -> List[str]:
-        return [f"{v:{fmt}} {u}" for v, u in zip(pvr.values.tolist(), pvr.units.tolist(), strict=False)]
+        return [f"{v:{fmt}} {u}" for v, u in zip(pvr.values.tolist(), pvr.units.tolist())]
 
 
 def axis_unit_label(base_label: str, scale: FreqScale) -> str:

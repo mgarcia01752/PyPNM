@@ -464,7 +464,7 @@ class MatplotManager:
                 else:
                     labels = labels[:len(ys)]
                 colors = self._resolve_colors(len(ys), cfg)
-                for Y, lab, col in zip(ys, labels, colors, strict=False):
+                for Y, lab, col in zip(ys, labels, colors):
                     x_i, y_i = self._coerce_xy(X, Y)
                     ax.plot(x_i, y_i, label=lab, linewidth=linewidth, marker=marker, color=col)
                 self._apply_x_ticks(ax, cfg)
@@ -476,7 +476,7 @@ class MatplotManager:
                 ser = list(series)
                 colors = self._resolve_colors(len(ser), cfg)
                 cfg_labels = list(cfg.y_multi_label or [])
-                for idx, ((sx, sy, slabel), col) in enumerate(zip(ser, colors, strict=False)):
+                for idx, ((sx, sy, slabel), col) in enumerate(zip(ser, colors)):
                     label = cfg_labels[idx] if idx < len(cfg_labels) else slabel
                     x_src = X_override if override_x else sx
                     x_i, y_i = self._coerce_xy(x_src, sy)
@@ -510,7 +510,7 @@ class MatplotManager:
 
         with self._theme_context(cfg):
             fig, ax = self._new_fig()
-            for Y, lab, col in zip(ys, labels, colors, strict=False):
+            for Y, lab, col in zip(ys, labels, colors):
                 x_i, y_i = self._coerce_xy(X, Y)
                 ax.plot(x_i, y_i, label=lab, color=col)
             self._apply_x_ticks(ax, cfg)
@@ -616,7 +616,7 @@ class MatplotManager:
                 hy = half_step(levels_q)
                 lw = 0.3
 
-                for xi, yi in zip(x_hard[:n], y_hard[:n], strict=False):
+                for xi, yi in zip(x_hard[:n], y_hard[:n]):
                     rect = mpatches.Rectangle(
                         (xi - hx, yi - hy),
                         2.0 * hx,

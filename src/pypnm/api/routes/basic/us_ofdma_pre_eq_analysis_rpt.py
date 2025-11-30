@@ -107,7 +107,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                 csv_mgr.set_path_fname(csv_fname)
 
                 csv_mgr.set_header(["ChannelID", "Frequency(Hz)", "Magnitude(dB)", "Regression(dB)", "Real(Linear)", "Imaginary(Linear)"])
-                for rx, ry, reg, cmp in zip(x, y, rl, ca, strict=False):
+                for rx, ry, reg, cmp in zip(x, y, rl, ca):
                     real, img = cmp
                     csv_mgr.insert_row([channel_id, rx, ry, reg, real, img])
 

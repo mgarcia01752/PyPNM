@@ -75,7 +75,7 @@ class ConstellationDisplayReport(AnalysisReport):
                                     "Hard(I)",      "Hard(Q)",
                                     "Soft(I)",      "Soft(Q)"])
 
-                for h, s in zip(hard, soft, strict=False):
+                for h, s in zip(hard, soft):
                     hard_real, hard_img = h
                     soft_real, soft_img = s
                     csv_mgr.insert_row([channel_id, modulation,

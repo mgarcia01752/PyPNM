@@ -95,7 +95,7 @@ class SignalCaptureAggregator:
         if not mask.any():
             self.logger.warning("add_series: no finite points to add")
             return
-        for xf, yf in zip(xa[mask], ya[mask], strict=False):
+        for xf, yf in zip(xa[mask], ya[mask]):
             self.add_coordinate(xf, yf)
 
     def reconstruct(
