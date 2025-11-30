@@ -4,11 +4,10 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
-
 import argparse
 import asyncio
 import logging
+
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress

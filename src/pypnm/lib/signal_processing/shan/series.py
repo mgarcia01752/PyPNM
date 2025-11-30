@@ -3,12 +3,20 @@
 
 from __future__ import annotations
 
-from typing import List, Dict, Any, cast
+from typing import Any, Dict, List, cast
 
 from pydantic import BaseModel, Field
 
-from pypnm.lib.types import BitsPerSymbol, BitsPerSymbolSeries, FloatSequence, SNRdB, StringArray
+from pypnm.lib.types import (
+    BitsPerSymbol,
+    BitsPerSymbolSeries,
+    FloatSequence,
+    SNRdB,
+    StringArray,
+)
+
 from .shannon import Shannon
+
 
 class ShannonSeriesModel(BaseModel):
     snr_db_values: List[SNRdB]                  = Field(..., description="Input SNR values in dB per subcarrier.")

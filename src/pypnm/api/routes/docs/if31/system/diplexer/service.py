@@ -3,16 +3,19 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import (
+    SNMPConfig,
+)
 from pypnm.api.routes.docs.if31.system.diplexer.schemas import DiplexerConfigResult
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.docsis.data_type.DocsIf31CmSystemCfgState import DocsIf31CmSystemCfgDiplexState
+from pypnm.docsis.data_type.DocsIf31CmSystemCfgState import (
+    DocsIf31CmSystemCfgDiplexState,
+)
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import MacAddressStr, InetAddressStr
-from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
+from pypnm.lib.types import InetAddressStr, MacAddressStr
 
 logger = logging.getLogger(__name__)
 

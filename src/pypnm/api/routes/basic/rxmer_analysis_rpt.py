@@ -6,11 +6,14 @@ from __future__ import annotations
 import logging
 import math
 import re
-
 from typing import Dict, List, Mapping, Tuple, cast
+
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport, AnalysisRptMatplotConfig
+from pypnm.api.routes.basic.abstract.analysis_report import (
+    AnalysisReport,
+    AnalysisRptMatplotConfig,
+)
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.basic.common.signal_capture_agg import SignalCaptureAggregator
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
@@ -20,6 +23,7 @@ from pypnm.lib.format_string import Format
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.shan.series import Shannon
 from pypnm.lib.types import ArrayLike, FloatSeries, FrequencySeriesHz, IntSeries
+
 
 class RxMerParametersAnalysisRpt(BaseModel):
     """

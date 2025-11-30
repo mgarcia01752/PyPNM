@@ -3,9 +3,9 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import string
-from typing import Iterable, Optional, Any
+from typing import Any, Iterable, Optional
+
 
 class Format:
 

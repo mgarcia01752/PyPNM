@@ -2,7 +2,6 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, cast
@@ -12,16 +11,28 @@ from fastapi import APIRouter
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisRptMatplotConfig
 from pypnm.api.routes.basic.fec_summary_analysis_rpt import FecSummaryAnalysisReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
-from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmAnalysisResponse
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import (
+    OutputType,
+)
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
+    PnmAnalysisResponse,
+)
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import (
+    SnmpResponse,
+)
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
-from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import (
+    CableModemServicePreCheck,
+)
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.api.routes.docs.pnm.ds.ofdm.fec_summary.schemas import PnmFecSummaryAnalysisRequest
-from pypnm.api.routes.docs.pnm.ds.ofdm.fec_summary.service import CmDsOfdmFecSummaryService
+from pypnm.api.routes.docs.pnm.ds.ofdm.fec_summary.schemas import (
+    PnmFecSummaryAnalysisRequest,
+)
+from pypnm.api.routes.docs.pnm.ds.ofdm.fec_summary.service import (
+    CmDsOfdmFecSummaryService,
+)
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import FecSummaryType

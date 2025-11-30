@@ -10,51 +10,77 @@ from enum import Enum, IntEnum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union, cast
 
 from pysnmp.proto.rfc1902 import Gauge32, Integer32, OctetString
+
 from pypnm.config.pnm_config_manager import SystemConfigSettings
 from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
 from pypnm.docsis.data_type.DocsDevEventEntry import DocsDevEventEntry
-from pypnm.docsis.data_type.DocsFddCmFddCapabilities import DocsFddCmFddBandEdgeCapabilities
+from pypnm.docsis.data_type.DocsFddCmFddCapabilities import (
+    DocsFddCmFddBandEdgeCapabilities,
+)
 from pypnm.docsis.data_type.DocsFddCmFddSystemCfgState import DocsFddCmFddSystemCfgState
 from pypnm.docsis.data_type.DocsIf31CmDsOfdmChanEntry import (
-    DocsIf31CmDsOfdmChanChannelEntry,DocsIf31CmDsOfdmChanEntry,)
-from pypnm.docsis.data_type.DocsIf31CmDsOfdmProfileStatsEntry import DocsIf31CmDsOfdmProfileStatsEntry
-from pypnm.docsis.data_type.DocsIf31CmSystemCfgState import DocsIf31CmSystemCfgDiplexState
+    DocsIf31CmDsOfdmChanChannelEntry,
+    DocsIf31CmDsOfdmChanEntry,
+)
+from pypnm.docsis.data_type.DocsIf31CmDsOfdmProfileStatsEntry import (
+    DocsIf31CmDsOfdmProfileStatsEntry,
+)
+from pypnm.docsis.data_type.DocsIf31CmSystemCfgState import (
+    DocsIf31CmSystemCfgDiplexState,
+)
 from pypnm.docsis.data_type.DocsIf31CmUsOfdmaChanEntry import DocsIf31CmUsOfdmaChanEntry
 from pypnm.docsis.data_type.DocsIfDownstreamChannel import DocsIfDownstreamChannelEntry
 from pypnm.docsis.data_type.DocsIfDownstreamChannelCwErrorRate import (
-    DocsIfDownstreamChannelCwErrorRate, DocsIfDownstreamCwErrorRateEntry,)
+    DocsIfDownstreamChannelCwErrorRate,
+    DocsIfDownstreamCwErrorRateEntry,
+)
 from pypnm.docsis.data_type.DocsIfSignalQualityEntry import DocsIfSignalQuality
 from pypnm.docsis.data_type.DocsIfUpstreamChannelEntry import DocsIfUpstreamChannelEntry
 from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst
+from pypnm.docsis.data_type.enums import MeasStatusType
 from pypnm.docsis.data_type.InterfaceStats import InterfaceStats
 from pypnm.docsis.data_type.OfdmProfiles import OfdmProfiles
-from pypnm.docsis.data_type.enums import MeasStatusType
-from pypnm.docsis.data_type.pnm.DocsIf3CmSpectrumAnalysisEntry import DocsIf3CmSpectrumAnalysisEntry
-from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
+from pypnm.docsis.data_type.pnm.DocsIf3CmSpectrumAnalysisEntry import (
+    DocsIf3CmSpectrumAnalysisEntry,
+)
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import (
+    DocsPnmCmDsConstDispMeasEntry,
+)
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsHistEntry import DocsPnmCmDsHistEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmFecEntry import DocsPnmCmDsOfdmFecEntry
-from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmMerMarEntry import DocsPnmCmDsOfdmMerMarEntry
-from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmModProfEntry import DocsPnmCmDsOfdmModProfEntry
-from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
-from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOfdmChanEstCoefEntry
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmMerMarEntry import (
+    DocsPnmCmDsOfdmMerMarEntry,
+)
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmModProfEntry import (
+    DocsPnmCmDsOfdmModProfEntry,
+)
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import (
+    DocsPnmCmDsOfdmRxMerEntry,
+)
+from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import (
+    DocsPnmCmOfdmChanEstCoefEntry,
+)
 from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEntry
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.docsis.lib.pnm_bulk_data import DocsPnmBulkDataGroup
 from pypnm.lib.constants import DEFAULT_SPECTRUM_ANALYZER_INDICES
-from pypnm.lib.types import ChannelId, EntryIndex, FrequencyHz, InterfaceIndex
-from pypnm.pnm.data_type.DocsEqualizerData import DocsEqualizerData
-from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
-    DocsIf3CmSpectrumAnalysisCtrlCmd, SpectrumRetrievalType,)
-from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 from pypnm.lib.format_string import Format
 from pypnm.lib.inet import Inet
 from pypnm.lib.inet_utils import InetGenerate
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import ChannelId, EntryIndex, FrequencyHz, InterfaceIndex
 from pypnm.lib.utils import Generate
+from pypnm.pnm.data_type.DocsEqualizerData import DocsEqualizerData
+from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
+    DocsIf3CmSpectrumAnalysisCtrlCmd,
+    SpectrumRetrievalType,
+)
+from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 from pypnm.snmp.compiled_oids import COMPILED_OIDS
+from pypnm.snmp.modules import DocsisIfType, DocsPnmBulkUploadControl
 from pypnm.snmp.snmp_v2c import Snmp_v2c
-from pypnm.snmp.modules import DocsPnmBulkUploadControl, DocsisIfType
 from pypnm.snmp.snmp_v3 import Snmp_v3
+
 
 class DocsPnmBulkFileUploadStatus(Enum):
     """Represents the upload status of a DOCSIS PNM bulk data file."""

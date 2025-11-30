@@ -6,24 +6,45 @@ from __future__ import annotations
 import io
 import logging
 import os
-from typing import Union, cast
 import zipfile
+from typing import Union, cast
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
 
 from pypnm.api.routes.advance.analysis.signal_analysis.multi_rxmer_signal_analysis import (
-    MultiRxMerAnalysisResult, MultiRxMerAnalysisType, MultiRxMerSignalAnalysis)
+    MultiRxMerAnalysisResult,
+    MultiRxMerAnalysisType,
+    MultiRxMerSignalAnalysis,
+)
 from pypnm.api.routes.advance.common.abstract.service import AbstractService
-from pypnm.api.routes.advance.common.capture_data_aggregator import CaptureDataAggregator
+from pypnm.api.routes.advance.common.capture_data_aggregator import (
+    CaptureDataAggregator,
+)
 from pypnm.api.routes.advance.common.operation_manager import OperationManager
 from pypnm.api.routes.advance.common.operation_state import OperationState
 from pypnm.api.routes.advance.multi_rxmer.schemas import (
-    MultiRxMerMeasureModes, MultiRxMerAnalysisRequest, MultiRxMerAnalysisResponse, MultiRxMerRequest,
-    MultiRxMerResponseStatus, MultiRxMerStartResponse, MultiRxMerStatusResponse)
-from pypnm.api.routes.advance.multi_rxmer.service import MultiRxMer_Ofdm_Performance_1_Service, MultiRxMerService
-from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
-from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
+    MultiRxMerAnalysisRequest,
+    MultiRxMerAnalysisResponse,
+    MultiRxMerMeasureModes,
+    MultiRxMerRequest,
+    MultiRxMerResponseStatus,
+    MultiRxMerStartResponse,
+    MultiRxMerStatusResponse,
+)
+from pypnm.api.routes.advance.multi_rxmer.service import (
+    MultiRxMer_Ofdm_Performance_1_Service,
+    MultiRxMerService,
+)
+from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import (
+    OutputType,
+)
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import (
+    SnmpResponse,
+)
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import (
+    CableModemServicePreCheck,
+)
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.files.service import FileType, PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
@@ -31,7 +52,8 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet, InetAddressStr
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import MacAddressStr, OperationId, GroupId
+from pypnm.lib.types import GroupId, MacAddressStr, OperationId
+
 
 class MultiRxMerRouter(AbstractService):
     """

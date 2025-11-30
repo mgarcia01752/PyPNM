@@ -4,25 +4,46 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, Union, Dict, cast
+from typing import Dict, List, Optional, Union, cast
 
 from pydantic import BaseModel, Field
 
-from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.ifft import IfftEchoDetector, IfftMultiEchoDetectionModel
-from pypnm.api.routes.advance.analysis.signal_analysis.detection.lte.phase_slope_lte_detection import GroupDelayAnomalyDetector
-from pypnm.api.routes.advance.analysis.signal_analysis.group_delay_calculator import GroupDelayCalculator
-from pypnm.api.routes.advance.analysis.signal_analysis.multi_rxmer_signal_analysis import MultiAnalysisRpt
-from pypnm.api.routes.advance.common.capture_data_aggregator import CaptureDataAggregator
+from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.ifft import (
+    IfftEchoDetector,
+    IfftMultiEchoDetectionModel,
+)
+from pypnm.api.routes.advance.analysis.signal_analysis.detection.lte.phase_slope_lte_detection import (
+    GroupDelayAnomalyDetector,
+)
+from pypnm.api.routes.advance.analysis.signal_analysis.group_delay_calculator import (
+    GroupDelayCalculator,
+)
+from pypnm.api.routes.advance.analysis.signal_analysis.multi_rxmer_signal_analysis import (
+    MultiAnalysisRpt,
+)
+from pypnm.api.routes.advance.common.capture_data_aggregator import (
+    CaptureDataAggregator,
+)
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.api.routes.common.classes.analysis.model.schema import DsChannelEstAnalysisModel
+from pypnm.api.routes.common.classes.analysis.model.schema import (
+    DsChannelEstAnalysisModel,
+)
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.types import (
-    ArrayLike, ChannelId, FileName, FloatSeries, FrequencyHz, FrequencySeriesHz, ComplexArray,
-    ComplexSeries, Sequence, StringEnum,)
+    ArrayLike,
+    ChannelId,
+    ComplexArray,
+    ComplexSeries,
+    FileName,
+    FloatSeries,
+    FrequencyHz,
+    FrequencySeriesHz,
+    Sequence,
+    StringEnum,
+)
 from pypnm.pnm.lib.min_avg_max_complex import MinAvgMaxComplex
 from pypnm.pnm.parser.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
-
 
 # ──────────────────────────────────────────────────────────────
 # Aliases

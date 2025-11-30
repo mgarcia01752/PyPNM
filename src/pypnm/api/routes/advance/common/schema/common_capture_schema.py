@@ -6,9 +6,15 @@ from __future__ import annotations
 from typing import Optional
 
 from pydantic import BaseModel, Field
-from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import CableModemPnmConfig
-from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_response import BaseDeviceResponse
+
+from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
+    CableModemPnmConfig,
+)
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_response import (
+    BaseDeviceResponse,
+)
 from pypnm.lib.types import OperationId
+
 
 class CaptureParameters(BaseModel):
     """Parameters controlling a multi-sample RxMER capture operation."""

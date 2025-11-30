@@ -1,13 +1,13 @@
 
 from __future__ import annotations
 
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
-
-from pathlib import Path
 import logging
 import sys
 from logging.handlers import RotatingFileHandler
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+from pathlib import Path
 
 
 class LoggerConfigurator:

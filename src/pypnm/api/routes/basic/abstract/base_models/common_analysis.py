@@ -3,11 +3,12 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from typing import Union
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from pypnm.lib.types import ChannelId, ComplexArray, FloatSeries, IntSeries
+
 
 class CommonAnalysis(BaseModel):
     """

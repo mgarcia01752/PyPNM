@@ -3,7 +3,8 @@
 
 from __future__ import annotations
 
-from typing import Tuple, Dict, Final, Optional
+from typing import Dict, Final, Optional, Tuple
+
 import numpy as np
 from pydantic import BaseModel, Field
 

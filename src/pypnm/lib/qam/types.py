@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import math
 from enum import IntEnum
-from typing import Dict, List, Mapping, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, Mapping, Union
 
 from pypnm.lib.types import Complex
 

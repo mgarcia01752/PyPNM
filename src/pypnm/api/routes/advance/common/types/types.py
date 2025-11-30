@@ -3,12 +3,17 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import enum
 from typing import Any, Dict, List, Optional, Tuple, TypedDict, Union
-from pypnm.lib.types import CaptureTime, ChannelId, TransactionId
-from pypnm.docsis.data_type.sysDescr import SystemDescriptorModel, SystemDescriptor
-from pypnm.lib.types import FileName, MacAddressStr
+
+from pypnm.docsis.data_type.sysDescr import SystemDescriptor, SystemDescriptorModel
+from pypnm.lib.types import (
+    CaptureTime,
+    ChannelId,
+    FileName,
+    MacAddressStr,
+    TransactionId,
+)
 
 DeviceDetailsPayload = Union[
     SystemDescriptorModel,

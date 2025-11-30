@@ -4,13 +4,22 @@
 from __future__ import annotations
 
 from pydantic import BaseModel, Field
+
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
-    CableModemPnmConfig, CommonSingleCaptureAnalysisType)
+    CableModemPnmConfig,
+    CommonSingleCaptureAnalysisType,
+)
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
+    PnmAnalysisResponse,
+    PnmDataResponse,
+    PnmSingleCaptureRequest,
+)
 from pypnm.lib.types import FrequencyHz
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
-    SpectrumRetrievalType, WindowFunction)
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
-    PnmAnalysisResponse, PnmDataResponse, PnmSingleCaptureRequest)
+    SpectrumRetrievalType,
+    WindowFunction,
+)
+
 
 class SpecAnMovingAvgParameters(BaseModel):
     points:int                                          = Field(default=10, description="")

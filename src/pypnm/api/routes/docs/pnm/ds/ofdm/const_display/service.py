@@ -3,15 +3,18 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from typing import Tuple
+
 from pypnm.api.routes.common.extended.common_measure_service import CommonMeasureService
-from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayConst as ConstelDisplayConst
 from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
+from pypnm.docsis.data_type.DsCmConstDisplay import (
+    CmDsConstellationDisplayConst as ConstelDisplayConst,
+)
 from pypnm.lib.inet import Inet
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
+
 
 class CmDsOfdmConstDisplayService(CommonMeasureService):
     """

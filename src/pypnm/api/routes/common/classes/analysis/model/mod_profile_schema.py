@@ -3,10 +3,12 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from typing import Annotated, List, Literal, Union
+
 from pydantic import BaseModel, Field
+
 from pypnm.lib.types import FloatSeries, FrequencyHz, FrequencySeriesHz, ProfileId
+
 
 class CarrierItemModel(BaseModel):
     """Per-carrier record."""

@@ -4,8 +4,18 @@
 from __future__ import annotations
 
 from typing import Dict, List, Literal, TypeVar, cast
+
 from typing_extensions import Final, TypeAlias
-from pypnm.lib.types import CaptureTime, ChannelId, FloatEnum, FrequencyHz, Number, ProfileId, StringEnum
+
+from pypnm.lib.types import (
+    CaptureTime,
+    ChannelId,
+    FloatEnum,
+    FrequencyHz,
+    Number,
+    ProfileId,
+    StringEnum,
+)
 
 HZ:  Final[int] = 1
 KHZ: Final[int] = 1_000

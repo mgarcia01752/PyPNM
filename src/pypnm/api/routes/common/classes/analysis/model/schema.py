@@ -5,18 +5,34 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Mapping, Optional, Literal, Union
-from pydantic import BaseModel, Field, ConfigDict
+from typing import Any, Dict, List, Literal, Mapping, Optional, Union
 
-from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.echo_detector import EchoDetectorReport
-from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.type import EchoDetectorType
-from pypnm.api.routes.common.classes.analysis.model.mod_profile_schema import ProfileAnalysisEntryModel
-from pypnm.lib.mac_address import MacAddress
+from pydantic import BaseModel, ConfigDict, Field
+
+from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.echo_detector import (
+    EchoDetectorReport,
+)
+from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.type import (
+    EchoDetectorType,
+)
+from pypnm.api.routes.common.classes.analysis.model.mod_profile_schema import (
+    ProfileAnalysisEntryModel,
+)
 from pypnm.lib.constants import INVALID_CHANNEL_ID
+from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.qam.types import CodeWordArray, QamModulation
 from pypnm.lib.signal_processing.shan.series import ShannonSeriesModel
-from pypnm.lib.types import (ChannelId, ComplexArray, FloatSeries,
-    FrequencyHz, FrequencySeriesHz, IntSeries, MacAddressStr, ProfileId, TimestampSec)
+from pypnm.lib.types import (
+    ChannelId,
+    ComplexArray,
+    FloatSeries,
+    FrequencyHz,
+    FrequencySeriesHz,
+    IntSeries,
+    MacAddressStr,
+    ProfileId,
+    TimestampSec,
+)
 from pypnm.pnm.lib.signal_statistics import SignalStatisticsModel
 
 

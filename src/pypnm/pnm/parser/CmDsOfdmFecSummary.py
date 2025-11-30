@@ -3,18 +3,21 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025
 # Maurice Garcia
-
 import logging
-from typing import Any, Dict, List, Optional, cast
 from struct import Struct
+from typing import Any, Dict, List, Optional, cast
 
 from pypnm.lib.constants import FEC_SUMMARY_TYPE_LABEL, FEC_SUMMARY_TYPE_STEP_SECONDS
+from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.qam.types import CodeWordArray
 from pypnm.lib.types import CaptureTime, ChannelId, MacAddressStr, ProfileId, TimeStamp
-from pypnm.pnm.parser.model.parser_rtn_models import CmDsOfdmFecSummaryModel, OfdmFecSumCodeWordEntryModel, OfdmFecSumDataModel
+from pypnm.pnm.parser.model.parser_rtn_models import (
+    CmDsOfdmFecSummaryModel,
+    OfdmFecSumCodeWordEntryModel,
+    OfdmFecSumDataModel,
+)
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.pnm.parser.pnm_header import PnmHeader
-from pypnm.lib.mac_address import MacAddress
 
 SUMMARY_HDR: Struct = Struct("!B6sBB")
 PROFILE_HDR: Struct = Struct("!BH")

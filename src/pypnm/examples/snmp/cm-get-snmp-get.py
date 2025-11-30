@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+import argparse
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import asyncio
-import argparse
 import logging
 
 from pypnm.docsis.cable_modem import CableModem

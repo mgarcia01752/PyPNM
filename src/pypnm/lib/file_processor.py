@@ -2,14 +2,13 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import csv
 import json
 import logging
 import tarfile
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, Literal
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from pypnm.lib.types import PathLike
 

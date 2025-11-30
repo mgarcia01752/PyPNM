@@ -5,11 +5,14 @@ from __future__ import annotations
 
 import logging
 from typing import Dict, List, Optional
-from typing_extensions import override
+
 from pydantic import BaseModel, Field
+from typing_extensions import override
 
 from pypnm.api.routes.common.classes.collection.abstract.multi_pnm_aggreator import (
-    MultiPnmCollection, MultiPnmCollectionObject)
+    MultiPnmCollection,
+    MultiPnmCollectionObject,
+)
 from pypnm.docsis.cm_snmp_operation import FecSummaryType
 from pypnm.lib.types import ChannelId, TimeStamp
 from pypnm.pnm.parser.CmDsOfdmFecSummary import CmDsOfdmFecSummary

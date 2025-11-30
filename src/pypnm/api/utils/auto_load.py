@@ -3,13 +3,14 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import importlib
+import logging
 import pathlib
 import sys
 import traceback
-import logging
+
 from fastapi import FastAPI
+
 
 class RouterRegistrar:
     """

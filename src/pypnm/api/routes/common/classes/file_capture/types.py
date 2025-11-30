@@ -4,10 +4,12 @@
 from __future__ import annotations
 
 from typing import Any, Dict
+
 from pydantic import BaseModel, Field
-from pypnm.lib.mac_address import MacAddress
+
 from pypnm.docsis.cm_snmp_operation import SystemDescriptor
 from pypnm.docsis.data_type.sysDescr import SystemDescriptorModel
+from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import FileName, MacAddressStr, TimestampSec, TransactionId
 
 Record              = Dict[str, Any]

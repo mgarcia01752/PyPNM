@@ -10,16 +10,29 @@ from typing import Dict, List, cast
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.echo_detector import EchoDetector
+from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.echo_detector import (
+    EchoDetector,
+)
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.basic.common.signal_capture_agg import SignalCaptureAggregator
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.api.routes.common.classes.analysis.model.schema import ComplexDataCarrierModel, UsOfdmaUsPreEqAnalysisModel
+from pypnm.api.routes.common.classes.analysis.model.schema import (
+    ComplexDataCarrierModel,
+    UsOfdmaUsPreEqAnalysisModel,
+)
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
-from pypnm.lib.types import ArrayLike, ChannelId, ComplexArray, FloatSeries, FrequencyHz, MagnitudeSeries, PathLike
+from pypnm.lib.types import (
+    ArrayLike,
+    ChannelId,
+    ComplexArray,
+    FloatSeries,
+    FrequencyHz,
+    MagnitudeSeries,
+    PathLike,
+)
 from pypnm.pnm.parser.pnm_header import PnmFileType, PnmHeader, PnmHeaderParameters
 
 

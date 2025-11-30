@@ -4,7 +4,8 @@
 # pypnm/lib/dict_utils.py
 from __future__ import annotations
 
-from typing import Any, Iterable, MutableMapping, Mapping, Optional, Union, Dict, Set
+from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional, Set, Union
+
 from pydantic import BaseModel
 
 

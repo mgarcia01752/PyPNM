@@ -3,9 +3,9 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import math
 from typing import List, Tuple
+
 
 class EqualizerMetrics:
     def __init__(self, coefficients: List[Tuple[int, int]], nominal_amplitude: int = 2047, main_tap_index: int = 7):

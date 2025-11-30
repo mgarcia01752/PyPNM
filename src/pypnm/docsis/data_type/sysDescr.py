@@ -3,12 +3,13 @@
 
 from __future__ import annotations
 
-import re
 import json
+import re
 from dataclasses import dataclass
 from typing import ClassVar, Dict
 
 from pydantic import BaseModel, Field
+
 
 class SystemDescriptorModel(BaseModel):
     """

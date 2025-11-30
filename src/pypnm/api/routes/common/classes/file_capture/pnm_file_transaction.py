@@ -1,16 +1,18 @@
 from __future__ import annotations
 
+import hashlib
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import json
-import hashlib
 import logging
 import time
-from typing import Dict, List
 from pathlib import Path
+from typing import Dict, List
 
-from pypnm.api.routes.common.classes.file_capture.transaction_record_parser import TransactionRecordParser
+from pypnm.api.routes.common.classes.file_capture.transaction_record_parser import (
+    TransactionRecordParser,
+)
 from pypnm.api.routes.common.classes.file_capture.types import TransactionRecordModel
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem

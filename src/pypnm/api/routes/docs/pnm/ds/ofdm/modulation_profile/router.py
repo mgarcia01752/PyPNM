@@ -2,7 +2,6 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, cast
@@ -10,20 +9,34 @@ from typing import Any, Dict, List, cast
 from fastapi import APIRouter
 
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisRptMatplotConfig
-from pypnm.api.routes.basic.modulation_profile_analysis_rpt import ModulationProfileReport
+from pypnm.api.routes.basic.modulation_profile_analysis_rpt import (
+    ModulationProfileReport,
+)
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
-from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
+from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import (
+    OutputType,
+)
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
-    PnmAnalysisResponse, PnmSingleCaptureRequest,)
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
-from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
+    PnmAnalysisResponse,
+    PnmSingleCaptureRequest,
+)
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import (
+    SnmpResponse,
+)
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import (
+    CableModemServicePreCheck,
+)
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.api.routes.docs.pnm.ds.ofdm.modulation_profile.service import CmDsOfdmModProfileService
+from pypnm.api.routes.docs.pnm.ds.ofdm.modulation_profile.service import (
+    CmDsOfdmModProfileService,
+)
 from pypnm.api.routes.docs.pnm.files.service import FileType, PnmFileService
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmModProfEntry import DocsPnmCmDsOfdmModProfEntry
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmModProfEntry import (
+    DocsPnmCmDsOfdmModProfEntry,
+)
 from pypnm.lib.dict_utils import DictGenerate
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet

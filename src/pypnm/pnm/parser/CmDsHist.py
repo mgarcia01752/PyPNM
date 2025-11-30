@@ -3,15 +3,15 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from struct import calcsize, unpack
 
+from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.types import IntSeries, MacAddressStr
 from pypnm.pnm.parser.model.parser_rtn_models import CmDsHistModel
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
-from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.pnm.parser.pnm_header import PnmHeader
+
 
 class CmDsHist(PnmHeader):
     """

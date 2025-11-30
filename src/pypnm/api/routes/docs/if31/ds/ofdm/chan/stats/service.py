@@ -3,14 +3,19 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from typing import Dict, List
+
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import (
+    SNMPConfig,
+)
 from pypnm.docsis.cable_modem import CableModem, InetAddressStr
-from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
-from pypnm.docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanChannelEntry
+from pypnm.docsis.data_type.DocsIf31CmDsOfdmChanEntry import (
+    DocsIf31CmDsOfdmChanChannelEntry,
+)
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress, MacAddressStr
+
 
 class DsOfdmChannelService:
 

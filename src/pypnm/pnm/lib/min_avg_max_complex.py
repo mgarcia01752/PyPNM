@@ -3,12 +3,13 @@
 
 from __future__ import annotations
 
-import numpy as np
 from typing import Any, Dict
+
+import numpy as np
 from pydantic import BaseModel, Field
 
-from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
 from pypnm.lib.types import ComplexMatrix, FloatSeries, NDArrayF64
+from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Type aliases

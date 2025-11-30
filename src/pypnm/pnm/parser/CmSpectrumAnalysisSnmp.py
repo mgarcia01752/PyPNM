@@ -2,14 +2,16 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 import struct
 from typing import Any, Dict, Final, List
 
 from pypnm.lib.types import FloatSeries, FrequencyHz, FrequencySeriesHz
-from pypnm.pnm.parser.model.configuration.spect_config_model import SpecAnalysisSnmpConfigModel
+from pypnm.pnm.parser.model.configuration.spect_config_model import (
+    SpecAnalysisSnmpConfigModel,
+)
 from pypnm.pnm.parser.model.parser_rtn_models import CmSpectrumAnalysisSnmpModel
+
 
 class CmSpectrumAnalysisSnmp:
     """

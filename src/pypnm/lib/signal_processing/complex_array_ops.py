@@ -6,9 +6,11 @@
 from __future__ import annotations
 
 from typing import Optional
+
 import numpy as np
 
-from pypnm.lib.types import ComplexArray, ArrayLikeF64, Number, FloatSeries
+from pypnm.lib.types import ArrayLikeF64, ComplexArray, FloatSeries, Number
+
 
 class ComplexArrayOps:
     """

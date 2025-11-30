@@ -1,11 +1,11 @@
 
 from __future__ import annotations
 
+import logging
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from binascii import unhexlify
-import logging
 
 from pypnm.snmp.compiled_oids import COMPILED_OIDS
 from pypnm.snmp.snmp_v2c import Snmp_v2c

@@ -3,10 +3,11 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from typing import Any, Dict, List, Tuple
+
 from pydantic import BaseModel, Field
+
 from pypnm.docsis.cm_snmp_operation import DocsIfDownstreamChannelEntry
 
 

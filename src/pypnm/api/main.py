@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import pathlib
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import sys
-import pathlib
+
 from fastapi import FastAPI
-from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+
 from pypnm.api.utils.auto_load import RouterRegistrar
 from pypnm.startup.startup import StartUp
 from pypnm.version import __version__

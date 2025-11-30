@@ -4,36 +4,53 @@
 from __future__ import annotations
 
 import io
+import logging
 import os
 import zipfile
-import logging
-from typing import Union, Dict, Callable, cast
+from typing import Callable, Dict, Union, cast
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
 
 from pypnm.api.routes.advance.analysis.signal_analysis.multi_chan_est_singnal_analysis import (
-    MultiChanEstAnalysisType, MultiChanEstimationSignalAnalysis)
+    MultiChanEstAnalysisType,
+    MultiChanEstimationSignalAnalysis,
+)
 from pypnm.api.routes.advance.common.abstract.service import AbstractService
-from pypnm.api.routes.advance.common.capture_data_aggregator import CaptureDataAggregator
+from pypnm.api.routes.advance.common.capture_data_aggregator import (
+    CaptureDataAggregator,
+)
 from pypnm.api.routes.advance.common.operation_manager import OperationManager
 from pypnm.api.routes.advance.common.operation_state import OperationState
 from pypnm.api.routes.advance.multi_ds_chan_est.schemas import (
-    MultiChanEstAnalysisRequest, MultiChanEstimationAnalysisResponse,
-    MultiChanEstRequest, MultiChanEstimationResponseStatus,
-    MultiChanEstimationStartResponse, MultiChanEstStatusResponse,
-    AnalysisDataModel)
-from pypnm.api.routes.advance.multi_ds_chan_est.service import MultiChannelEstimationService
-from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
+    AnalysisDataModel,
+    MultiChanEstAnalysisRequest,
+    MultiChanEstimationAnalysisResponse,
+    MultiChanEstimationResponseStatus,
+    MultiChanEstimationStartResponse,
+    MultiChanEstRequest,
+    MultiChanEstStatusResponse,
+)
+from pypnm.api.routes.advance.multi_ds_chan_est.service import (
+    MultiChannelEstimationService,
+)
+from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import (
+    OutputType,
+)
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import (
+    SnmpResponse,
+)
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
-from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import (
+    CableModemServicePreCheck,
+)
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet, InetAddressStr
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import MacAddressStr, OperationId, GroupId
+from pypnm.lib.types import GroupId, MacAddressStr, OperationId
 
 
 class MultiDsChanEstRouter(AbstractService):

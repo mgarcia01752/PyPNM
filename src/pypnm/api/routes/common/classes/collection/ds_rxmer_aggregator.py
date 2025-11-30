@@ -2,17 +2,29 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from typing import Any, List, Optional, overload
-from typing_extensions import override
+
 from pydantic import BaseModel, Field, model_validator
+from typing_extensions import override
+
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.api.routes.common.classes.collection.abstract.multi_pnm_aggreator import MultiPnmCollection, MultiPnmCollectionObject
+from pypnm.api.routes.common.classes.collection.abstract.multi_pnm_aggreator import (
+    MultiPnmCollection,
+    MultiPnmCollectionObject,
+)
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import CaptureTime, ChannelId, FrequencySeriesHz, MacAddressStr, MagnitudeSeries, Sequence
+from pypnm.lib.types import (
+    CaptureTime,
+    ChannelId,
+    FrequencySeriesHz,
+    MacAddressStr,
+    MagnitudeSeries,
+    Sequence,
+)
 from pypnm.pnm.lib.min_avg_max import MinAvgMax, MinAvgMaxModel
 from pypnm.pnm.parser.CmDsOfdmRxMer import CmDsOfdmRxMer
+
 
 class RxMerCaptureModel(BaseModel):
     capture_time: CaptureTime    = Field(..., ge=0, description="Epoch seconds.")

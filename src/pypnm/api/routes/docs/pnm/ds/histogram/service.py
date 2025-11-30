@@ -3,14 +3,13 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from typing import Tuple
 
 from pypnm.api.routes.common.extended.common_measure_service import CommonMeasureService
 from pypnm.config.pnm_config_manager import PnmConfigManager
-from pypnm.lib.inet import Inet
 from pypnm.docsis.cable_modem import CableModem
+from pypnm.lib.inet import Inet
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 
 

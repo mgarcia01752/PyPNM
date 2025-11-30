@@ -3,8 +3,8 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from typing import Optional, Union
+
 from pydantic import BaseModel, Field, field_validator
 
 from pypnm.api.routes.advance.common.operation_state import OperationState

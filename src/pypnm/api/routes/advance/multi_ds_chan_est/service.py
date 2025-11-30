@@ -3,16 +3,18 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from typing import Tuple
 
 from pypnm.api.routes.advance.common.capture_service import AbstractCaptureService
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.api.routes.docs.pnm.ds.ofdm.chan_est_coeff.service import CmDsOfdmChanEstCoefService
+from pypnm.api.routes.docs.pnm.ds.ofdm.chan_est_coeff.service import (
+    CmDsOfdmChanEstCoefService,
+)
 from pypnm.docsis.cable_modem import CableModem, PnmConfigManager
 from pypnm.lib.inet import Inet
+
 
 class MultiChannelEstimationService(AbstractCaptureService):
     """

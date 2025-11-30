@@ -1,13 +1,14 @@
 
 from __future__ import annotations
 
+import os
+from typing import Any, Dict, List
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from openpyxl import Workbook
 from openpyxl.styles import Font
-from typing import List, Dict, Any
-import os
+
 
 class ExcelWorkbookFactory:
     """

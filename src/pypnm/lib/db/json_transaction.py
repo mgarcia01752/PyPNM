@@ -2,7 +2,6 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import hashlib
 import json
 import logging
@@ -14,11 +13,13 @@ from pydantic import ValidationError
 
 from pypnm.config.pnm_config_manager import SystemConfigSettings
 from pypnm.lib.db.model.json_trans_model import (
-    JsonReturnModel, JsonTransactionDbModel, JsonTransactionRecordModel)
+    JsonReturnModel,
+    JsonTransactionDbModel,
+    JsonTransactionRecordModel,
+)
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.types import HashStr, PathLike, TimeStamp, TransactionId
 from pypnm.lib.utils import Generate
-
 
 JsonPayload = Mapping[str, Any]
 

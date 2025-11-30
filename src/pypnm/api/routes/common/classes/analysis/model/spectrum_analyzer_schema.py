@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from pydantic import BaseModel, Field
+
 from pypnm.api.routes.common.classes.analysis.model.schema import BaseAnalysisModel
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpecAnCapturePara
 from pypnm.lib.types import FrequencySeriesHz, MagnitudeSeries

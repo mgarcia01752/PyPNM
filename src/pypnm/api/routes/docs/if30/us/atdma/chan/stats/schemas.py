@@ -1,11 +1,12 @@
 
 from __future__ import annotations
 
+from typing import Any, Dict
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from pydantic import BaseModel, Field
-from typing import Dict, Any
+
 
 class UsScQamChannelRequest(BaseModel):
     mac_address: str = Field(..., example="a0:b1:c2:d3:e4:f5")

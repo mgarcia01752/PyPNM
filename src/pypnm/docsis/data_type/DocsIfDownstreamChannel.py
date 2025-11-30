@@ -2,9 +2,9 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
-from typing import Optional, Callable, Union, List
+from typing import Callable, List, Optional, Union
+
 from pydantic import BaseModel
 
 from pypnm.lib.constants import INVALID_CHANNEL_ID

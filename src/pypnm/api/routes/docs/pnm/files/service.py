@@ -14,37 +14,63 @@ from fastapi.responses import FileResponse
 
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisRptMatplotConfig
 from pypnm.api.routes.basic.channel_estimation_analysis_rpt import ChanEstimationReport
-from pypnm.api.routes.basic.constellation_display_analysis_rpt import ConstDisplayAnalysisRptMatplotConfig, ConstellationDisplayReport
+from pypnm.api.routes.basic.constellation_display_analysis_rpt import (
+    ConstDisplayAnalysisRptMatplotConfig,
+    ConstellationDisplayReport,
+)
 from pypnm.api.routes.basic.fec_summary_analysis_rpt import FecSummaryAnalysisReport
-from pypnm.api.routes.basic.modulation_profile_analysis_rpt import ModulationProfileReport
+from pypnm.api.routes.basic.modulation_profile_analysis_rpt import (
+    ModulationProfileReport,
+)
 from pypnm.api.routes.basic.rxmer_analysis_rpt import RxMerAnalysisReport
 from pypnm.api.routes.basic.us_ofdma_pre_eq_analysis_rpt import CmUsOfdmaPreEqReport
-from pypnm.api.routes.common.classes.analysis.model.schema import ParserAnalysisModelReturn
+from pypnm.api.routes.common.classes.analysis.model.schema import (
+    ParserAnalysisModelReturn,
+)
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
-from pypnm.api.routes.common.classes.file_capture.pnm_file_opearation import OperationCaptureGroupResolver
-from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
+from pypnm.api.routes.common.classes.file_capture.pnm_file_opearation import (
+    OperationCaptureGroupResolver,
+)
+from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import (
+    PnmFileTransaction,
+)
+from pypnm.api.routes.docs.pnm.files.schemas import (
+    FileAnalysisRequest,
+    FileEntry,
+    FileQueryRequest,
+    FileQueryResponse,
+    HexDumpResponse,
+    UploadFileResponse,
+)
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlTest
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.constants import MediaType
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import FileName, MacAddressStr, OperationId, PathLike, TransactionId
+from pypnm.lib.types import (
+    FileName,
+    MacAddressStr,
+    OperationId,
+    PathLike,
+    TransactionId,
+)
 from pypnm.lib.utils import Generate
 from pypnm.pnm.parser.model.parser_rtn_models import (
-    CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel,
-    CmDsOfdmFecSummaryModel, CmDsOfdmModulationProfileModel, CmDsOfdmRxMerModel, CmUsOfdmaPreEqModel)
+    CmDsConstDispMeasModel,
+    CmDsHistModel,
+    CmDsOfdmChanEstimateCoefModel,
+    CmDsOfdmFecSummaryModel,
+    CmDsOfdmModulationProfileModel,
+    CmDsOfdmRxMerModel,
+    CmUsOfdmaPreEqModel,
+)
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.pnm.parser.pnm_header import PnmHeader
-
 from pypnm.pnm.parser.pnm_type_header_mapper import PnmFileTypeMapper
 
-from pypnm.api.routes.docs.pnm.files.schemas import (
-    FileAnalysisRequest, FileEntry, FileQueryRequest,
-    FileQueryResponse, HexDumpResponse, UploadFileResponse,)
-
 if TYPE_CHECKING:
-    from pypnm.pnm.parser.pnm_parameter import PnmParsers, PnmParserParametersModel
+    from pypnm.pnm.parser.pnm_parameter import PnmParserParametersModel, PnmParsers
 class PnmFileService:
     """
     Handles file storage, metadata registration, and high-level analysis

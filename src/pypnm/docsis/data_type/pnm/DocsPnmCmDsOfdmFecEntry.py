@@ -85,7 +85,9 @@ class DocsPnmCmDsOfdmFecEntry(BaseModel):
         sum_type_s: str
         try:
             # Prefer project enum if available (keeps single source of truth)
-            from pypnm.docsis.cm_snmp_operation import FecSummaryType as _FecSummaryType  # type: ignore
+            from pypnm.docsis.cm_snmp_operation import (
+                FecSummaryType as _FecSummaryType,  # type: ignore
+            )
             try:
                 if hasattr(_FecSummaryType, "from_value"):
                     sum_type_s = str(_FecSummaryType.from_value(int(sum_type_i)))  # e.g., "24-hour interval"

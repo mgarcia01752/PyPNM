@@ -1,12 +1,13 @@
 
 from __future__ import annotations
 
+import logging
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import platform
 import subprocess
-import logging
+
 
 class Ping:
     """

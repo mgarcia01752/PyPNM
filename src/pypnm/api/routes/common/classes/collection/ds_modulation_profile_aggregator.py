@@ -5,16 +5,25 @@ from __future__ import annotations
 
 import logging
 from typing import Dict, List, Optional, overload
-from typing_extensions import override
 
 from pydantic import BaseModel, Field
+from typing_extensions import override
 
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.api.routes.common.classes.analysis.model.schema import DsModulationProfileAnalysisModel
-from pypnm.api.routes.common.classes.collection.abstract.multi_pnm_aggreator import MultiPnmCollection, MultiPnmCollectionObject
+from pypnm.api.routes.common.classes.analysis.model.schema import (
+    DsModulationProfileAnalysisModel,
+)
+from pypnm.api.routes.common.classes.collection.abstract.multi_pnm_aggreator import (
+    MultiPnmCollection,
+    MultiPnmCollectionObject,
+)
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import CaptureTime, ChannelId, FrequencySeriesHz, MacAddressStr
-from pypnm.pnm.parser.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ModulationProfileModel, ProfileId
+from pypnm.pnm.parser.CmDsOfdmModulationProfile import (
+    CmDsOfdmModulationProfile,
+    ModulationProfileModel,
+    ProfileId,
+)
 
 
 class ModulationCaptureModel(BaseModel):

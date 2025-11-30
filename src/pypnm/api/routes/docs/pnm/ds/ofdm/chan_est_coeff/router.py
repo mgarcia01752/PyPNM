@@ -12,26 +12,37 @@ from fastapi import APIRouter
 from pypnm.api.routes.basic.channel_estimation_analysis_rpt import ChanEstimationReport
 from pypnm.api.routes.basic.rxmer_analysis_rpt import AnalysisRptMatplotConfig
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
-from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
+from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import (
+    OutputType,
+)
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
-    PnmAnalysisResponse, PnmSingleCaptureRequest,)
+    PnmAnalysisResponse,
+    PnmSingleCaptureRequest,
+)
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import (
-    SnmpResponse,)
+    SnmpResponse,
+)
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import (
-    CableModemServicePreCheck,)
+    CableModemServicePreCheck,
+)
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.api.routes.docs.pnm.ds.ofdm.chan_est_coeff.service import CmDsOfdmChanEstCoefService
+from pypnm.api.routes.docs.pnm.ds.ofdm.chan_est_coeff.service import (
+    CmDsOfdmChanEstCoefService,
+)
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOfdmChanEstCoefEntry
+from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import (
+    DocsPnmCmOfdmChanEstCoefEntry,
+)
 from pypnm.lib.dict_utils import DictGenerate
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import InetAddressStr, MacAddressStr
+
 
 class ChannelEstimationCoefficientRouter:
     def __init__(self):

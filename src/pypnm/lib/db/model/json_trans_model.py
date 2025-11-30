@@ -1,12 +1,14 @@
 
 from __future__ import annotations
 
+from typing import Dict
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from pydantic import BaseModel, Field
-from typing import Dict
+
 from pypnm.lib.types import HashStr, PathLike, TimeStamp, TransactionId
+
 
 class JsonTransactionRecordModel(BaseModel):
     timestamp: TimeStamp    = Field(..., description="Unix Timestamp In Seconds For Transaction Creation")

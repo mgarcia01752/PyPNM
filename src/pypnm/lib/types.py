@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, NewType, Sequence, Tuple, Union, TypeAlias
+from typing import Any, Dict, List, NewType, Sequence, Tuple, TypeAlias, Union
 
 import numpy as np
 from numpy.typing import NDArray

@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import numpy as np
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from pypnm.lib.types import ArrayLikeF64
 

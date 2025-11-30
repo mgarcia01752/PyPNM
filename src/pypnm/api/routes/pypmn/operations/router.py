@@ -4,13 +4,14 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
 
 from fastapi import APIRouter, Path
 from fastapi.responses import JSONResponse
 
 from pypnm.api.routes.advance.common.abstract.service import AbstractService
 from pypnm.lib.types import OperationId
+
 
 class PyPnmOperationsAPI(AbstractService):
     """

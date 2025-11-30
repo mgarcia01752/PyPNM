@@ -1,23 +1,32 @@
 
 from __future__ import annotations
 
+import logging
+from enum import Enum
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from http import HTTPStatus
-import logging
 from typing import List, Union
-from enum import Enum
 
 from fastapi import APIRouter, HTTPException
 
-from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
-from pypnm.lib.types import MacAddressStr, InetAddressStr
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
-from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import (
+    SnmpResponse,
+)
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import (
+    CableModemServicePreCheck,
+)
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.api.routes.system.schemas import SysDescrResponse, SysRequest, SysUpTimeResponse
+from pypnm.api.routes.system.schemas import (
+    SysDescrResponse,
+    SysRequest,
+    SysUpTimeResponse,
+)
 from pypnm.api.routes.system.service import SystemSnmpService
+from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
+from pypnm.lib.types import InetAddressStr, MacAddressStr
+
 
 class SystemRouter:
     """

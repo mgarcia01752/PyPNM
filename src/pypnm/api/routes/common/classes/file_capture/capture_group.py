@@ -4,15 +4,16 @@
 from __future__ import annotations
 
 import json
-import uuid
-import time
 import logging
-from pathlib import Path
-from typing import List, Optional, Dict, Any
+import time
+import uuid
 from json import JSONDecodeError
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.types import GroupId, TransactionId
+
 
 class CaptureGroup:
     """

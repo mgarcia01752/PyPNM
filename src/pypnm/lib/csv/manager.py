@@ -1,14 +1,16 @@
 
 from __future__ import annotations
 
+import csv
+from enum import Enum
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from pathlib import Path
-from typing import List, Union, Any
-from enum import Enum
-import csv
+from typing import Any, List, Union
+
 import pandas as pd
+
 
 class CSVOrientation(Enum):
     """CSV data orientation"""

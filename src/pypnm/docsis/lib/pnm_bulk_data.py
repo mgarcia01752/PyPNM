@@ -1,12 +1,13 @@
 
 from __future__ import annotations
 
+import ipaddress
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from dataclasses import dataclass
 from typing import Optional
-import ipaddress
+
 
 @dataclass
 class DocsPnmBulkDataGroup:

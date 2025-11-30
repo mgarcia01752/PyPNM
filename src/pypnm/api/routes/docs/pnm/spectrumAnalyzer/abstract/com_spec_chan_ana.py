@@ -1,17 +1,19 @@
 
 from __future__ import annotations
 
+import logging
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from abc import ABC, abstractmethod
 from typing import Dict, List, Tuple, Union
-import logging
 
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import DocsPnmCmCtlTest
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.docsis.data_type.pnm.DocsIf3CmSpectrumAnalysisEntry import DocsIf3CmSpectrumAnalysisEntry
+from pypnm.docsis.data_type.pnm.DocsIf3CmSpectrumAnalysisEntry import (
+    DocsIf3CmSpectrumAnalysisEntry,
+)
 from pypnm.lib.types import ChannelId, FrequencyHz
 
 StartFrequency      = FrequencyHz

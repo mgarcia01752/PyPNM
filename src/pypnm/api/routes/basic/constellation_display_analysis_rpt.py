@@ -8,7 +8,10 @@ from typing import Any, Dict, List, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport, AnalysisRptMatplotConfig
+from pypnm.api.routes.basic.abstract.analysis_report import (
+    AnalysisReport,
+    AnalysisRptMatplotConfig,
+)
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.basic.common.signal_capture_agg import SignalCaptureAggregator
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
@@ -17,6 +20,7 @@ from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.qam.types import QamModulation
 from pypnm.lib.types import ChannelId, ComplexArray
+
 
 class ConstDisplayAnalysisRptMatplotConfig(AnalysisRptMatplotConfig):
     display_crosshair: bool = Field(default=True, description="Enable or disable crosshair on the constellation plot")

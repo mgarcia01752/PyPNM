@@ -6,22 +6,27 @@ from __future__ import annotations
 import logging
 from typing import List, Tuple, cast
 
+from pypnm.api.routes.common.classes.analysis.analysis import WindowFunction
 from pypnm.api.routes.common.extended.common_measure_service import CommonMeasureService
+from pypnm.api.routes.common.extended.common_process_service import MessageResponse
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.abstract.com_spec_chan_ana import (
-    CommonSpectrumBw, CommonSpectrumChannelAnalyzer, CommonChannelSpectumBwLut, OfdmSpectrumBwLut, ScQamSpectrumBwLut)
+    CommonChannelSpectumBwLut,
+    CommonSpectrumBw,
+    CommonSpectrumChannelAnalyzer,
+    OfdmSpectrumBwLut,
+    ScQamSpectrumBwLut,
+)
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpecAnCapturePara
 from pypnm.config.pnm_config_manager import PnmConfigManager
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.lib.inet import Inet
-from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
-
-from pypnm.api.routes.common.classes.analysis.analysis import WindowFunction
-from pypnm.api.routes.common.extended.common_process_service import MessageResponse
-
 from pypnm.docsis.cm_snmp_operation import (
-    DocsIf31CmDsOfdmChanChannelEntry, DocsIfDownstreamChannelEntry, SpectrumRetrievalType,)
-
+    DocsIf31CmDsOfdmChanChannelEntry,
+    DocsIfDownstreamChannelEntry,
+    SpectrumRetrievalType,
+)
+from pypnm.lib.inet import Inet
 from pypnm.lib.types import ChannelId, FrequencyHz, SubcarrierIdx
+from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 
 
 class CmSpectrumAnalysisService(CommonMeasureService):

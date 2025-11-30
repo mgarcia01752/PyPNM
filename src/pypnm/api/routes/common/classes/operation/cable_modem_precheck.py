@@ -10,7 +10,7 @@ verifying reachability via ping, SNMP, and optional DOCSIS version compatibility
 from __future__ import annotations
 
 import logging
-from typing import Iterable, List, Tuple, Optional
+from typing import Iterable, List, Optional, Tuple
 
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.dev.service import SNMPConfig

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import math
 from typing import ClassVar, Dict, List, Union, cast
 

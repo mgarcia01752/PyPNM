@@ -10,15 +10,20 @@ from pydantic import BaseModel
 
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport
 from pypnm.api.routes.basic.spec_analyzer_analysis_rpt import (
-    SpecAnaWindowAvgRptModel, SpectrumAnalyzerAnalysisRptModel, SpectrumAnalyzerSignalProcessRptModel)
+    SpecAnaWindowAvgRptModel,
+    SpectrumAnalyzerAnalysisRptModel,
+    SpectrumAnalyzerSignalProcessRptModel,
+)
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema import (
-    BaseAnalysisModel, SpectrumAnalyzerAnalysisModel)
+    BaseAnalysisModel,
+    SpectrumAnalyzerAnalysisModel,
+)
 from pypnm.api.routes.common.classes.analysis.multi_analysis import MultiAnalysis
 from pypnm.config.pnm_config_manager import SystemConfigSettings
-from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.csv.manager import CSVManager
+from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.types import ArrayLike, FloatSeries, FrequencySeriesHz, Path, PathLike
 from pypnm.lib.utils import Generate

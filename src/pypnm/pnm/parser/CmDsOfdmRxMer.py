@@ -5,16 +5,27 @@ from __future__ import annotations
 
 import logging
 import struct
-from typing import  Dict, cast
+from typing import Dict, cast
 
-from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_SUB_CARRIER_ZERO_FREQ, KHZ, ZERO_FREQUENCY
+from pypnm.lib.constants import (
+    INVALID_CHANNEL_ID,
+    INVALID_SUB_CARRIER_ZERO_FREQ,
+    KHZ,
+    ZERO_FREQUENCY,
+)
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.signal_processing.shan.series import ShannonSeries
+from pypnm.lib.types import (
+    ChannelId,
+    FloatSeries,
+    FrequencyHz,
+    FrequencySeriesHz,
+    MacAddressStr,
+)
 from pypnm.pnm.lib.signal_statistics import SignalStatistics
 from pypnm.pnm.parser.model.parser_rtn_models import CmDsOfdmRxMerModel
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.pnm.parser.pnm_header import PnmHeader
-from pypnm.lib.types import ChannelId, FloatSeries, FrequencyHz, FrequencySeriesHz, MacAddressStr
 
 
 class CmDsOfdmRxMer(PnmHeader):

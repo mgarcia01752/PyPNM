@@ -5,7 +5,11 @@ from __future__ import annotations
 
 from pydantic import ConfigDict, Field
 
-from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_SUB_CARRIER_ZERO_FREQ, ZERO_FREQUENCY
+from pypnm.lib.constants import (
+    INVALID_CHANNEL_ID,
+    INVALID_SUB_CARRIER_ZERO_FREQ,
+    ZERO_FREQUENCY,
+)
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import ChannelId, FrequencyHz, MacAddressStr
 from pypnm.pnm.parser.pnm_header import PnmHeaderModel, PnmHeaderParameters

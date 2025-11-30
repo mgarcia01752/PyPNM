@@ -6,15 +6,22 @@ from __future__ import annotations
 
 __skip_autoregister__ = True
 
-from enum import Enum
 import logging
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import List
+
 from fastapi import APIRouter, HTTPException
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import BaseDeviceConnectRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import (
+    BaseDeviceConnectRequest,
+)
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import (
-    SnmpAnalysisRequest, SnmpAnalysisResponse, SnmpResponse)
+    SnmpAnalysisRequest,
+    SnmpAnalysisResponse,
+    SnmpResponse,
+)
+
 
 class SnmpFastApiRouter(ABC):
     """

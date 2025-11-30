@@ -1,12 +1,12 @@
 
 from __future__ import annotations
 
+import binascii
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 import struct
-import binascii
 from pathlib import Path
 from typing import Optional, Union
 

@@ -3,9 +3,8 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
-
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpectrumAnalysisExtention
+
 
 class SpectrumAnalysisProcess(SpectrumAnalysisExtention):
     pass

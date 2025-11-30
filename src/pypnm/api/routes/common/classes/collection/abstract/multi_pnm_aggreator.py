@@ -5,13 +5,13 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Union, cast, Tuple, Type, overload
+from typing import Dict, List, Optional, Tuple, Type, Union, cast, overload
 
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import CaptureTime, ChannelId, MacAddressStr, TimeStamp
 from pypnm.pnm.parser.CmDsOfdmFecSummary import CmDsOfdmFecSummary
-from pypnm.pnm.parser.CmDsOfdmRxMer import CmDsOfdmRxMer
 from pypnm.pnm.parser.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
+from pypnm.pnm.parser.CmDsOfdmRxMer import CmDsOfdmRxMer
 
 MultiPnmCollectionObject = Union[
     CmDsOfdmRxMer,

@@ -3,11 +3,17 @@
 
 from __future__ import annotations
 
-import numpy as np
 from typing import Any, Dict
+
+import numpy as np
 from pydantic import BaseModel, Field
+
+from pypnm.lib.types import (
+    FloatSeries,
+    NDArrayF64,
+    TwoDFloatSeries,
+)
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
-from pypnm.lib.types import (FloatSeries,TwoDFloatSeries, NDArrayF64,)
 
 # ---------------------------------------------------------------------
 # Type aliases for clarity and consistency

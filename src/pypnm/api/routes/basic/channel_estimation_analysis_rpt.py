@@ -10,17 +10,31 @@ from typing import Dict, List, cast
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport, AnalysisRptMatplotConfig
+from pypnm.api.routes.basic.abstract.analysis_report import (
+    AnalysisReport,
+    AnalysisRptMatplotConfig,
+)
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.basic.common.signal_capture_agg import SignalCaptureAggregator
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.api.routes.common.classes.analysis.model.schema import ChanEstCarrierModel, DsChannelEstAnalysisModel
+from pypnm.api.routes.common.classes.analysis.model.schema import (
+    ChanEstCarrierModel,
+    DsChannelEstAnalysisModel,
+)
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.db_linear_converter import DbLinearConverter
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
 from pypnm.lib.signal_processing.magnitude_metrics import compute_magnitude_summary
-from pypnm.lib.types import ArrayLike, ChannelId, ComplexArray, FloatSeries, FrequencyHz, PathLike
+from pypnm.lib.types import (
+    ArrayLike,
+    ChannelId,
+    ComplexArray,
+    FloatSeries,
+    FrequencyHz,
+    PathLike,
+)
+
 
 class ChanEstimationParametersRptModel(BaseModel):
     """
@@ -101,7 +115,9 @@ class ChanEstimationReport(AnalysisReport):
         Generate per-channel line and multi-line plots from validated models.
         """
         # Lazy import to avoid changing module-level imports
-        from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.echo_detector import EchoDetector
+        from pypnm.api.routes.advance.analysis.signal_analysis.detection.echo.echo_detector import (
+            EchoDetector,
+        )
 
         matplot_mgr: List[MatplotManager] = []
         any_models: bool = False

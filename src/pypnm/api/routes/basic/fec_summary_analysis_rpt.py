@@ -9,13 +9,18 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple, cast
 
 from pydantic import Field
 
-from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport, AnalysisRptMatplotConfig
+from pypnm.api.routes.basic.abstract.analysis_report import (
+    AnalysisReport,
+    AnalysisRptMatplotConfig,
+)
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.api.routes.common.classes.analysis.model.schema import OfdmFecSummaryAnalysisModel
-from pypnm.lib.types import ArrayLike, ChannelId
+from pypnm.api.routes.common.classes.analysis.model.schema import (
+    OfdmFecSummaryAnalysisModel,
+)
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
+from pypnm.lib.types import ArrayLike, ChannelId
 
 
 class FecSummaryAnalysisRptModel(CommonAnalysis):

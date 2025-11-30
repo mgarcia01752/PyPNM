@@ -8,13 +8,18 @@ from typing import Optional, Union
 from pydantic import BaseModel, Field, field_validator
 
 from pypnm.api.routes.advance.common.operation_state import OperationState
-from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import AnalysisType, OutputType
-from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_snmp import SNMPConfig
+from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import (
+    AnalysisType,
+    OutputType,
+)
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_snmp import (
+    SNMPConfig,
+)
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.matplot.manager import ThemeType
-from pypnm.lib.types import IPv4Str, IPv6Str, InetAddressStr, MacAddressStr
+from pypnm.lib.types import InetAddressStr, IPv4Str, IPv6Str, MacAddressStr
 
 default_mac: MacAddressStr = SystemConfigSettings.default_mac_address
 default_ip: InetAddressStr = SystemConfigSettings.default_ip_address

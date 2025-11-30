@@ -3,14 +3,19 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
-from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder, IntegerBits, FractionalBits, ComplexSeries
+from struct import calcsize, unpack
+from typing import Optional, Tuple
+
+from pypnm.pnm.lib.fixed_point_decoder import (
+    ComplexSeries,
+    FixedPointDecoder,
+    FractionalBits,
+    IntegerBits,
+)
 from pypnm.pnm.parser.model.pnm_base_model import PnmBaseModel
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.pnm.parser.pnm_header import PnmHeader
-from struct import calcsize, unpack
-from typing import Optional, Tuple
 
 
 class CmSymbolCaptureModel(PnmBaseModel):

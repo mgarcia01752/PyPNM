@@ -3,14 +3,16 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, List, Optional, Union, ClassVar, cast
-from pydantic import BaseModel
 import logging
+from typing import Any, Callable, ClassVar, List, Optional, Union, cast
+
+from pydantic import BaseModel
 
 from pypnm.docsis.data_type.enums import MeasStatusType
 from pypnm.lib.types import FrequencyHz
+from pypnm.snmp.casts import as_bool, as_float2, as_int, as_str  # freq stays int
 from pypnm.snmp.snmp_v2c import Snmp_v2c
-from pypnm.snmp.casts import as_bool, as_int, as_str, as_float2  # freq stays int
+
 
 class DocsPnmCmDsOfdmRxMerFields(BaseModel):
     docsPnmCmDsOfdmRxMerFileEnable: bool

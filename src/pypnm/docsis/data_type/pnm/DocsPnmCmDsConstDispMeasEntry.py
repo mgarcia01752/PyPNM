@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
-
-from typing import Optional, Callable, Union, List
-from pydantic import BaseModel
 import logging
 
-from pypnm.docsis.data_type.enums import MeasStatusType
-from pypnm.snmp.snmp_v2c import Snmp_v2c
-from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+from typing import Callable, List, Optional, Union
 
+from pydantic import BaseModel
+
+from pypnm.docsis.data_type.enums import MeasStatusType
+from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
+from pypnm.snmp.snmp_v2c import Snmp_v2c
 
 
 class DocsPnmCmDsConstDispFields(BaseModel):

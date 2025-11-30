@@ -4,9 +4,13 @@
 # (c) 2025 Maurice Garcia
 
 from __future__ import annotations
-from typing import Tuple, Dict, Any, Optional
-from pypnm.lib.types import ArrayLike
+
+from typing import Any, Dict, Optional, Tuple
+
 import numpy as np
+
+from pypnm.lib.types import ArrayLike
+
 
 class NumericScaler:
     """

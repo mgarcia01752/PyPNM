@@ -4,11 +4,10 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Literal
-
 import tarfile
 import zipfile
+from pathlib import Path
+from typing import Dict, Iterable, List, Literal, Optional
 
 from pypnm.lib.types import PathLike
 

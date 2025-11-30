@@ -5,8 +5,12 @@
 from __future__ import annotations
 
 from typing import Dict, List, Optional
+
 from pydantic import BaseModel, Field
-from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import CommonSingleCaptureAnalysisType
+
+from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
+    CommonSingleCaptureAnalysisType,
+)
 from pypnm.lib.types import FileName, MacAddressStr, TimeStamp, TransactionId
 
 

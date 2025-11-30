@@ -5,11 +5,13 @@
 
 from __future__ import annotations
 
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
+
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.lib.types import Number, ArrayLikeF64, ComplexArray
+from pypnm.lib.types import ArrayLikeF64, ComplexArray, Number
+
 
 class GroupDelayResult(BaseModel):
     """

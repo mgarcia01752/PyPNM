@@ -3,13 +3,21 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from typing import Any, Dict, Optional, Union
+
 from pydantic import BaseModel, Field
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import CommonRequest, CommonResponse
-from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import BaseDeviceConnectRequest
-from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_response import BaseDeviceResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
+    CommonRequest,
+    CommonResponse,
+)
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import (
+    BaseDeviceConnectRequest,
+)
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_response import (
+    BaseDeviceResponse,
+)
+
 
 class SnmpRequest(BaseDeviceConnectRequest):
     """

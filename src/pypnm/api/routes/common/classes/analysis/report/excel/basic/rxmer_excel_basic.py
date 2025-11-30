@@ -1,13 +1,13 @@
 
 from __future__ import annotations
 
+import json
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple, Union
-import json
+from typing import Dict, List, Optional, Tuple, Union
 
 from openpyxl import Workbook
 from openpyxl.chart import LineChart, Reference
@@ -16,7 +16,6 @@ from openpyxl.utils import get_column_letter
 
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.lib.mac_address import MacAddress
-
 
 # Constants for chart positioning
 CHART_START_COLUMN_INDEX = 4  # 'D'

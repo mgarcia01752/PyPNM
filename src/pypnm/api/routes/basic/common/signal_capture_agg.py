@@ -3,14 +3,12 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
-from typing import Dict, List, Callable, Optional, Tuple, Literal
+from typing import Callable, Dict, List, Literal, Optional, Tuple
 
 import numpy as np
 
-from pypnm.lib.types import Number, ArrayLike, NDArrayF64
-
+from pypnm.lib.types import ArrayLike, NDArrayF64, Number
 
 __all__ = ["SignalCaptureAggregator"]
 

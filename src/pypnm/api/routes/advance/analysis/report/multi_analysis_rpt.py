@@ -4,25 +4,29 @@
 from __future__ import annotations
 
 import logging
-
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Dict, List, Set
+
 from pydantic import BaseModel
 
 from pypnm.api.routes.advance.common.capture_data_aggregator import (
-    CaptureDataAggregator, TransactionCollection)
-from pypnm.api.routes.advance.common.transactionsCollection import TransactionCollectionModel
+    CaptureDataAggregator,
+    TransactionCollection,
+)
+from pypnm.api.routes.advance.common.transactionsCollection import (
+    TransactionCollectionModel,
+)
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisOutputModel
-from pypnm.lib.db.json_transaction import JsonTransactionDb
-from pypnm.lib.mac_address import MacAddress
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor, SystemDescriptorModel
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.csv.manager import CSVManager
+from pypnm.lib.db.json_transaction import JsonTransactionDb
+from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.matplot.manager import MatplotManager
 from pypnm.lib.types import ChannelId, PathArray, PathLike, TimeStamp
-from pypnm.lib.utils import TimeUnit, Generate
+from pypnm.lib.utils import Generate, TimeUnit
 
 
 class MultiAnalysisRpt(ABC):

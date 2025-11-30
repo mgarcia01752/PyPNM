@@ -1,21 +1,38 @@
 
 from __future__ import annotations
+
 from typing import Any, Dict, List, Literal
+
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    computed_field,
+    field_serializer,
+    model_validator,
+)
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
-
 from pypnm.lib.constants import FEC_SUMMARY_TYPE_LABEL, INVALID_CHANNEL_ID
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.qam.types import CodeWordArray
 from pypnm.lib.types import (
-    ChannelId, FrequencyHz, ComplexArray, MacAddressStr, IntSeries,
-    FloatSeries, FrequencySeriesHz, ProfileId, TimeStamp)
-from pydantic import Field, BaseModel, ConfigDict, computed_field, field_serializer, model_validator
+    ChannelId,
+    ComplexArray,
+    FloatSeries,
+    FrequencyHz,
+    FrequencySeriesHz,
+    IntSeries,
+    MacAddressStr,
+    ProfileId,
+    TimeStamp,
+)
 from pypnm.pnm.lib.signal_statistics import SignalStatisticsModel
 from pypnm.pnm.parser.CmDsOfdmModulationProfile import ModulationProfileModel
-from pypnm.pnm.parser.model.configuration.spect_config_model import SpecAnalysisSnmpConfigModel
+from pypnm.pnm.parser.model.configuration.spect_config_model import (
+    SpecAnalysisSnmpConfigModel,
+)
 from pypnm.pnm.parser.model.pnm_base_model import PnmBaseModel
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.pnm.parser.pnm_header import PnmHeaderParameters

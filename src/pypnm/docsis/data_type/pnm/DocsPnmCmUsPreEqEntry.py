@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import logging
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from enum import Enum
-from typing import Any, Optional, Callable, Union, List
+from typing import Any, Callable, List, Optional, Union
+
 from pydantic import BaseModel
-import logging
 
 from pypnm.lib.types import ChannelId
 from pypnm.snmp.casts import measurement_status

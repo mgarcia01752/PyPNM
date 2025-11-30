@@ -1,14 +1,16 @@
 
 from __future__ import annotations
 
+import logging
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import os
-import logging
+
 from tftpy import TftpClient
 
 from pypnm.lib.inet import Inet
+
 
 class TFTPConnector:
     """

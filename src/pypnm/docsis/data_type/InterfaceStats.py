@@ -1,15 +1,16 @@
 
 from __future__ import annotations
 
+from enum import IntEnum
+from typing import Callable, List, Optional, Union
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from pydantic import BaseModel
-from typing import Callable, Optional, List, Union
-from enum import IntEnum
 
 from pypnm.snmp.modules import DocsisIfType
 from pypnm.snmp.snmp_v2c import Snmp_v2c
+
 
 class IfAdminStatus(IntEnum):
     up = 1

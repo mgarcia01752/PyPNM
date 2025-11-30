@@ -3,10 +3,13 @@
 
 from __future__ import annotations
 
-from typing import Iterable, List, Literal, Optional, Iterator
+from typing import Iterable, Iterator, List, Literal, Optional
+
 import numpy as np
+
 from pypnm.lib.qam.types import CodeWordLut
 from pypnm.lib.types import Complex
+
 
 class QamByteToSymbolMapper:
     """

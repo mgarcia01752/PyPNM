@@ -3,10 +3,11 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from pathlib import Path
+
 from pypnm.config.config_manager import ConfigManager
-from pypnm.lib.types import IPv4Str, IPv6Str, InetAddressStr, MacAddressStr
+from pypnm.lib.types import InetAddressStr, IPv4Str, IPv6Str, MacAddressStr
+
 
 class classproperty:
     """Descriptor for class-level properties that reload config on each access."""

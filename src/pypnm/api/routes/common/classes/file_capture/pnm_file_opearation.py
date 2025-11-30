@@ -2,16 +2,17 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import json
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
+from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import (
+    PnmFileTransaction,
+)
 from pypnm.api.routes.common.classes.file_capture.types import TransactionRecordModel
 from pypnm.config.system_config_settings import SystemConfigSettings
-from pypnm.lib.types import OperationId, GroupId, TransactionId
+from pypnm.lib.types import GroupId, OperationId, TransactionId
 
 
 class OperationCaptureGroupResolver:

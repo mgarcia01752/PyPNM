@@ -3,8 +3,8 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from typing import Optional
+
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 

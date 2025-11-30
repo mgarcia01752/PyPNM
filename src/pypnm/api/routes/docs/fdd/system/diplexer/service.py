@@ -3,10 +3,11 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import (
+    SNMPConfig,
+)
 from pypnm.docsis.cable_modem import CableModem, InetAddressStr
 from pypnm.docsis.data_type.DocsFddCmFddSystemCfgState import DocsFddCmFddSystemCfgState
 from pypnm.lib.inet import Inet

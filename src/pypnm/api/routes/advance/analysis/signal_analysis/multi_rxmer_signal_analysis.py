@@ -10,21 +10,44 @@ import numpy as np
 from pydantic import BaseModel, Field
 
 from pypnm.api.routes.advance.analysis.report.multi_analysis_rpt import MultiAnalysisRpt
-from pypnm.api.routes.advance.common.capture_data_aggregator import CaptureDataAggregator
-from pypnm.api.routes.advance.common.transactionsCollection import TransactionCollectionModel
-from pypnm.api.routes.common.classes.collection.ds_modulation_profile_aggregator import DsModulationProfileAggregator
-from pypnm.api.routes.common.classes.collection.ds_rxmer_aggregator import DsRxMerAggregator
-from pypnm.api.routes.common.classes.collection.fec_summary_aggregator import FecSummaryAggregator, FecSummaryTotalsModel
+from pypnm.api.routes.advance.common.capture_data_aggregator import (
+    CaptureDataAggregator,
+)
+from pypnm.api.routes.advance.common.transactionsCollection import (
+    TransactionCollectionModel,
+)
+from pypnm.api.routes.common.classes.collection.ds_modulation_profile_aggregator import (
+    DsModulationProfileAggregator,
+)
+from pypnm.api.routes.common.classes.collection.ds_rxmer_aggregator import (
+    DsRxMerAggregator,
+)
+from pypnm.api.routes.common.classes.collection.fec_summary_aggregator import (
+    FecSummaryAggregator,
+    FecSummaryTotalsModel,
+)
 from pypnm.lib.constants import INVALID_CAPTURE_TIME
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.shan.series import ShannonSeries
 from pypnm.lib.types import (
-    ArrayLike, CaptureTime, ChannelId, FloatSeries, FrequencySeriesHz, MacAddressStr, MagnitudeSeries,
-    StringEnum, TimeStamp, TimestampSec)
+    ArrayLike,
+    CaptureTime,
+    ChannelId,
+    FloatSeries,
+    FrequencySeriesHz,
+    MacAddressStr,
+    MagnitudeSeries,
+    StringEnum,
+    TimeStamp,
+    TimestampSec,
+)
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
 from pypnm.pnm.parser.CmDsOfdmFecSummary import CmDsOfdmFecSummary
-from pypnm.pnm.parser.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile, ProfileId
+from pypnm.pnm.parser.CmDsOfdmModulationProfile import (
+    CmDsOfdmModulationProfile,
+    ProfileId,
+)
 from pypnm.pnm.parser.CmDsOfdmRxMer import CmDsOfdmRxMer, CmDsOfdmRxMerModel
 
 

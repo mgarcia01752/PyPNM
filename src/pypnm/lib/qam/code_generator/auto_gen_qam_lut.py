@@ -3,21 +3,20 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 import math
+import pprint
 from datetime import datetime, timezone
 from pathlib import Path
-import pprint
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel
 
 from pypnm.lib.collector.complex import ComplexCollector
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.qam.code_generator.codeword_gen_lut import CodeWordLutGenerator
-from pypnm.lib.types import Complex, ComplexArray, PathArray, PathLike
 from pypnm.lib.qam.types import QamModulation
+from pypnm.lib.types import Complex, ComplexArray, PathArray, PathLike
 
 BitLoad         = int
 QamScale        = float

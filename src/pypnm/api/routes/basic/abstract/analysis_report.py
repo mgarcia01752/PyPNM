@@ -4,23 +4,31 @@
 from __future__ import annotations
 
 import logging
-
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Union, cast
+
 from pydantic import BaseModel, Field
+
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.api.routes.common.classes.analysis.model.schema import BaseAnalysisModel
-from pypnm.lib.db.json_transaction import JsonTransactionDb
-from pypnm.lib.mac_address import MacAddress
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.csv.manager import CSVManager
+from pypnm.lib.db.json_transaction import JsonTransactionDb
+from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.matplot.manager import MatplotManager, ThemeType
-from pypnm.lib.types import ChannelId, FileNameStr, MacAddressStr, PathArray, PathLike, TimeStamp
+from pypnm.lib.types import (
+    ChannelId,
+    FileNameStr,
+    MacAddressStr,
+    PathArray,
+    PathLike,
+    TimeStamp,
+)
 from pypnm.lib.utils import Generate
 
 AnalysisData    = List[Dict[str, Any]]

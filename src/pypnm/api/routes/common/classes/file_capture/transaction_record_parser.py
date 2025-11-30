@@ -3,12 +3,16 @@
 
 from __future__ import annotations
 
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
-from pypnm.api.routes.common.classes.file_capture.types import DeviceDetailsModel, TransactionRecordModel
+from pypnm.api.routes.common.classes.file_capture.types import (
+    DeviceDetailsModel,
+    TransactionRecordModel,
+)
 from pypnm.docsis.cable_modem import MacAddress
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.lib.types import FileName, MacAddressStr, TimestampSec, TransactionId
+
 
 class TransactionRecordParser:
     """
@@ -20,7 +24,9 @@ class TransactionRecordParser:
         self.transaction_id:TransactionId = transaction_id
 
         # TODO: Refactor to use PnmFileTransaction internally, this is causing circular imports
-        from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
+        from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import (
+            PnmFileTransaction,
+        )
         self.record: Optional[Dict[str, Any]] = PnmFileTransaction().get_record(transaction_id)
 
         if not self.record:

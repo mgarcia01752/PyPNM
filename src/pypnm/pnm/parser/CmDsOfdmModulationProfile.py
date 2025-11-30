@@ -6,10 +6,10 @@ from __future__ import annotations
 import logging
 from enum import IntEnum
 from struct import calcsize, unpack
-from typing import TYPE_CHECKING, Any, Dict, List, Union, Annotated, cast
-from typing_extensions import Literal
+from typing import TYPE_CHECKING, Annotated, Any, Dict, List, Union, cast
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+from typing_extensions import Literal
 
 from pypnm.lib.constants import KHZ
 from pypnm.lib.types import FrequencySeriesHz, ProfileId
@@ -128,7 +128,9 @@ class CmDsOfdmModulationProfile(PnmHeader):
 
         profiles = self._parse_profiles(profile_blob)
 
-        from pypnm.pnm.parser.model.parser_rtn_models import CmDsOfdmModulationProfileModel
+        from pypnm.pnm.parser.model.parser_rtn_models import (
+            CmDsOfdmModulationProfileModel,
+        )
 
         self._model = CmDsOfdmModulationProfileModel(
             pnm_header                      =   self.getPnmHeaderParameterModel(),

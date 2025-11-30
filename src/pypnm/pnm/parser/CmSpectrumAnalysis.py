@@ -3,15 +3,17 @@
 from __future__ import annotations
 
 import logging
-from struct import unpack, calcsize
-from typing import List, Dict
+from struct import calcsize, unpack
+from typing import Dict, List
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.functional_serializers import field_serializer
+
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.types import ChannelId, FloatSeries, FrequencyHz, MacAddressStr
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.pnm.parser.pnm_header import PnmHeader, PnmHeaderParameters
+
 
 class CmSpectrumAnalyzerModel(BaseModel):
     """

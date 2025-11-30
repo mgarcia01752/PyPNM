@@ -2,10 +2,11 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import argparse
 import os
+
 import uvicorn
+
 
 def main():
 

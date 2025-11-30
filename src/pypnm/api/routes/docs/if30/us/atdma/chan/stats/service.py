@@ -3,14 +3,17 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from typing import List
-from pypnm.lib.types import MacAddressStr, InetAddressStr
-from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
+
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import (
+    SNMPConfig,
+)
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import InetAddressStr, MacAddressStr
 from pypnm.pnm.data_type.DocsEqualizerData import DocsEqualizerData
+
 
 class UsScQamChannelService:
     """

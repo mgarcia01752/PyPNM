@@ -1,14 +1,16 @@
 
 from __future__ import annotations
 
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
-
-from typing import Optional, List, Callable, Union
-from pydantic import BaseModel
 import logging
 
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+from typing import Callable, List, Optional, Union
+
+from pydantic import BaseModel
+
 from pypnm.snmp.snmp_v2c import Snmp_v2c
+
 
 class DocsPnmCmDsOfdmMerMarFields(BaseModel):
     docsPnmCmDsOfdmMerMarProfileId: Optional[int] = None

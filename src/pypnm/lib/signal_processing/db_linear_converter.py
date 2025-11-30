@@ -3,11 +3,11 @@
 
 from __future__ import annotations
 
-from typing import Optional, Union, Literal
+from typing import Literal, Optional, Union
 
 import numpy as np
 
-from pypnm.lib.types import FloatSeries, ComplexArray
+from pypnm.lib.types import ComplexArray, FloatSeries
 
 
 class DbLinearConverter:

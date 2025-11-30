@@ -4,17 +4,28 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Iterable, List,  TypeVar, cast
+from typing import Any, Dict, Iterable, List, TypeVar, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport, AnalysisRptMatplotConfig
+from pypnm.api.routes.basic.abstract.analysis_report import (
+    AnalysisReport,
+    AnalysisRptMatplotConfig,
+)
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_PROFILE_ID
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
-from pypnm.lib.types import ArrayLike, ChannelId, FloatSeries, FrequencyHz, FrequencySeriesHz, ProfileId, StringArray
+from pypnm.lib.types import (
+    ArrayLike,
+    ChannelId,
+    FloatSeries,
+    FrequencyHz,
+    FrequencySeriesHz,
+    ProfileId,
+    StringArray,
+)
 
 
 class ModulationProfileRptModel(BaseModel):
@@ -189,7 +200,7 @@ class ModulationProfileReport(AnalysisReport):
 
                 # 3) Modulation vs Frequency with preloaded M-QAM scale (linear spacing via log₂(M), labels show M)
                 try:
-                    from math import log2, isfinite
+                    from math import isfinite, log2
 
                     # Convert M to positions (bits per symbol) for linear spacing
                     mod_bits: List[int] = []
@@ -347,7 +358,7 @@ class ModulationProfileReport(AnalysisReport):
             return 0
         try:
             order = int(digits)
-            from math import log2, isfinite
+            from math import isfinite, log2
             val = log2(order)
             return int(val) if isfinite(val) else 0
         except Exception:

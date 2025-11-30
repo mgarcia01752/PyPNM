@@ -5,15 +5,22 @@ from __future__ import annotations
 
 import logging
 from typing import Any, Dict, List, cast
+
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport, AnalysisRptMatplotConfig
+from pypnm.api.routes.basic.abstract.analysis_report import (
+    AnalysisReport,
+    AnalysisRptMatplotConfig,
+)
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
-from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema import SpectrumAnalyzerAnalysisModel
+from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema import (
+    SpectrumAnalyzerAnalysisModel,
+)
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.types import ArrayLike, FloatSeries, FrequencySeriesHz
+
 
 class SpecAnaWindowAvgRptModel(BaseModel):
     """Window-average metadata and values."""

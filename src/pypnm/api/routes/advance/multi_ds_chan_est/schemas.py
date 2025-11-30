@@ -2,15 +2,27 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
+
 from typing import Any, Dict, List
+
 from pydantic import BaseModel, Field
-from pypnm.api.routes.advance.analysis.signal_analysis.multi_chan_est_singnal_analysis import MultiChanEstAnalysisType
+
+from pypnm.api.routes.advance.analysis.signal_analysis.multi_chan_est_singnal_analysis import (
+    MultiChanEstAnalysisType,
+)
 from pypnm.api.routes.advance.common.schema.common_capture_schema import (
-    MultiCaptureParametersResponse, MultiCaptureRequest)
+    MultiCaptureParametersResponse,
+    MultiCaptureRequest,
+)
 from pypnm.api.routes.advance.multi_rxmer.schemas import ChanEstMeasureParameters
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
-    CommonAnalysisResponse, CommonMatPlotConfigRequest, CommonOutput, CommonResponse)
-from pypnm.lib.types import OperationId, GroupId
+    CommonAnalysisResponse,
+    CommonMatPlotConfigRequest,
+    CommonOutput,
+    CommonResponse,
+)
+from pypnm.lib.types import GroupId, OperationId
+
 
 ################################# HELPER MODEL ############################
 class AnalysisDataModel(BaseModel):

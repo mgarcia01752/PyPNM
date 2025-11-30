@@ -3,13 +3,14 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
-from typing import Optional, Callable, Union, List
+from typing import Callable, List, Optional, Union
+
 from pydantic import BaseModel
 
 from pypnm.lib.types import ChannelId, FrequencyHz
 from pypnm.snmp.snmp_v2c import Snmp_v2c
+
 
 class DocsIf31CmUsOfdmaChan(BaseModel):
     docsIf31CmUsOfdmaChanChannelId: Optional[ChannelId] = None

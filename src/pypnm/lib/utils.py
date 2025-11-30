@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import hashlib
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import time
-import hashlib
 from enum import Enum
+
 from typing_extensions import deprecated
 
 from pypnm.lib.types import TimeStamp, TransactionId

@@ -3,12 +3,12 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from typing import Optional
 
 from pypnm.snmp.compiled_oids import COMPILED_OIDS
 from pypnm.snmp.snmp_v2c import Snmp_v2c
+
 
 class DocsFddCmFddSystemCfgState:
     """

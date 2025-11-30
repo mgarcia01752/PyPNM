@@ -3,11 +3,14 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 
-from pypnm.api.routes.system.schemas import SysRequest, SysDescrResponse, SysUpTimeResponse
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.api.routes.system.schemas import (
+    SysDescrResponse,
+    SysRequest,
+    SysUpTimeResponse,
+)
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.lib.inet import Inet

@@ -8,9 +8,15 @@ from typing import Any, Iterable, List, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from pypnm.api.routes.basic.abstract.analysis_report import AnalysisReport, AnalysisRptMatplotConfig
+from pypnm.api.routes.basic.abstract.analysis_report import (
+    AnalysisReport,
+    AnalysisRptMatplotConfig,
+)
 from pypnm.api.routes.basic.abstract.base_models.common_analysis import CommonAnalysis
-from pypnm.api.routes.common.classes.analysis.analysis import Analysis, DsHistogramAnalysisModel
+from pypnm.api.routes.common.classes.analysis.analysis import (
+    Analysis,
+    DsHistogramAnalysisModel,
+)
 from pypnm.lib.constants import INVALID_CHANNEL_ID, T
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig

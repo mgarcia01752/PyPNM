@@ -4,7 +4,6 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import argparse
 import asyncio
 import json
@@ -15,7 +14,7 @@ from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.utils import TimeUnit, Generate
+from pypnm.lib.utils import Generate, TimeUnit
 from pypnm.pnm.parser.CmSpectrumAnalysisSnmp import CmSpectrumAnalysisSnmp
 
 logging.basicConfig(

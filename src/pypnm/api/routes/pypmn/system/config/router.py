@@ -3,13 +3,13 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 
 from pypnm.api.routes.pypmn.system.config.schemas import SystemConfigModel
 from pypnm.config.config_manager import ConfigManager
 from pypnm.config.pnm_config_manager import PnmConfigManager
+
 
 class PyPnmSystemConfigAPI:
     """

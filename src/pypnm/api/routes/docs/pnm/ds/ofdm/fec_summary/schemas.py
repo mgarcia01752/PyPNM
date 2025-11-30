@@ -3,11 +3,15 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from pydantic import BaseModel, Field
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmDataResponse, PnmRequest, PnmSingleCaptureRequest
+from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
+    PnmDataResponse,
+    PnmRequest,
+    PnmSingleCaptureRequest,
+)
 from pypnm.docsis.cm_snmp_operation import FecSummaryType
+
 
 class PnmFecSummaryRequest(PnmRequest):
     """Request model used to trigger measurement-related operations on a cable modem."""

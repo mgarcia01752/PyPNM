@@ -2,19 +2,19 @@
 
 from __future__ import annotations
 
+import argparse
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import asyncio
-import argparse
 import logging
 
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-
-from pypnm.snmp.snmp_v2c import Snmp_v2c
 from pypnm.snmp.compiled_oids import COMPILED_OIDS
+from pypnm.snmp.snmp_v2c import Snmp_v2c
+
 
 async def main():
     parser = argparse.ArgumentParser(description="SNMP Get Next")

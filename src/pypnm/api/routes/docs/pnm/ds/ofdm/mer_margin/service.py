@@ -3,13 +3,16 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from typing import Dict, List, Tuple
 
-from pypnm.api.routes.docs.pnm.ds.ofdm.mer_margin.schemas import MerMarginMeasurementProfile, MerMarginParams
+from pypnm.api.routes.docs.pnm.ds.ofdm.mer_margin.schemas import (
+    MerMarginMeasurementProfile,
+    MerMarginParams,
+)
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.OfdmProfiles import OfdmProfiles
+
 
 class CmDsOfdmMerMarginService:
     """

@@ -3,14 +3,14 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import enum
-import os
-import subprocess
-import shutil
 import logging
+import os
+import shutil
+import subprocess
+from typing import List, Optional, Tuple
+
 import paramiko
-from typing import Optional, Tuple, List
 
 
 class SecureTransferMode(enum.Enum):

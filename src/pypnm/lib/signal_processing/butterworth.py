@@ -7,11 +7,10 @@ import logging
 from typing import ClassVar, cast
 
 import numpy as np
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from scipy.signal import butter, filtfilt
 
 from pypnm.lib.types import FrequencyHz, NDArrayC128, NDArrayF64
-
 
 DEFAULT_BUTTERWORTH_ORDER: int       = 4
 NYQUIST_DENOMINATOR: float           = 2.0

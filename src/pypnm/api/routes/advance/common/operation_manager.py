@@ -3,17 +3,17 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import json
-import uuid
-import time
 import logging
+import time
+import uuid
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
 
-from pypnm.lib.types import OperationId, GroupId
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.constants import cast
+from pypnm.lib.types import GroupId, OperationId
+
 
 class OperationManager:
     """
@@ -103,7 +103,9 @@ class OperationManager:
             ValueError: If the capture_group_id is not present in the CaptureGroup database.
         """
         # Verify that the capture group exists, or fail hard
-        from pypnm.api.routes.common.classes.file_capture.capture_group import CaptureGroup
+        from pypnm.api.routes.common.classes.file_capture.capture_group import (
+            CaptureGroup,
+        )
         cg = CaptureGroup(group_id=self.capture_group_id)
         if self.capture_group_id not in cg.list_groups():
             raise ValueError(

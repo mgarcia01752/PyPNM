@@ -3,14 +3,14 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, ClassVar, List, Optional, Union, cast
 import logging
+from typing import Any, Callable, ClassVar, List, Optional, Union, cast
 
 from pydantic import BaseModel
 
 from pypnm.docsis.data_type.enums import MeasStatusType
-from pypnm.snmp.snmp_v2c import Snmp_v2c
 from pypnm.snmp.casts import as_bool, as_int, as_str
+from pypnm.snmp.snmp_v2c import Snmp_v2c
 
 
 class DocsPnmCmDsOfdmModProfFields(BaseModel):

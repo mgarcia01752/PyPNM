@@ -3,16 +3,24 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
+
 from fastapi import APIRouter
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpRequest, SnmpResponse
-from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import (
+    SnmpRequest,
+    SnmpResponse,
+)
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import (
+    CableModemServicePreCheck,
+)
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
-from pypnm.api.routes.docs.if30.ds.scqam.chan.stats.schemas import CodewordErrorRateRequest
+from pypnm.api.routes.docs.if30.ds.scqam.chan.stats.schemas import (
+    CodewordErrorRateRequest,
+)
 from pypnm.api.routes.docs.if30.ds.scqam.chan.stats.service import DsScQamChannelService
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
+
 
 class DsScQamChannelRouter:
     """

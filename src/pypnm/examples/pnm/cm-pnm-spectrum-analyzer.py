@@ -4,16 +4,17 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
-
 import argparse
 import asyncio
 import logging
+
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.cm_snmp_operation import DocsPnmCmCtlStatus, SpectrumRetrievalType
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
-from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import DocsIf3CmSpectrumAnalysisCtrlCmd
+from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
+    DocsIf3CmSpectrumAnalysisCtrlCmd,
+)
 
 # Configure logging
 logging.basicConfig(

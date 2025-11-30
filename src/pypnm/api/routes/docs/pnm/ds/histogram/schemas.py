@@ -4,8 +4,13 @@
 from __future__ import annotations
 
 from pydantic import BaseModel, Field
+
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
-    PnmMeasurementResponse, PnmRequest, PnmSingleCaptureRequest)
+    PnmMeasurementResponse,
+    PnmRequest,
+    PnmSingleCaptureRequest,
+)
+
 
 class HistogramCaptureSettings(BaseModel):
     sample_duration:int = Field(default=10, description="Histogram Sample Duration in seconds")

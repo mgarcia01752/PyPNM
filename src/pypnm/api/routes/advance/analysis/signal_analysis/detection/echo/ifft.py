@@ -3,16 +3,15 @@
 
 from __future__ import annotations
 
-import numpy as np
-from typing import Sequence, Union, Tuple, List, Optional, Literal, Final, Dict
+from typing import Dict, Final, List, Literal, Optional, Sequence, Tuple, Union
 
+import numpy as np
 from numpy.typing import NDArray
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # Reuse central constants & aliases
 from pypnm.lib.constants import FEET_PER_METER, SPEED_OF_LIGHT, CableTypes
-from pypnm.lib.types import FloatSeries, ComplexArray, ChannelId
-
+from pypnm.lib.types import ChannelId, ComplexArray, FloatSeries
 
 # ──────────────────────────────────────────────────────────────
 # Constants

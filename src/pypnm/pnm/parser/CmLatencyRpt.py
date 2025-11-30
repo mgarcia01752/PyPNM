@@ -3,12 +3,12 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 
 from pypnm.pnm.parser.model.pnm_base_model import PnmBaseModel
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.pnm.parser.pnm_header import PnmHeader
+
 
 class CmLatencyModel(PnmBaseModel):
     ''' Pydantic model for Latency Report data -> PnmBaseModel'''

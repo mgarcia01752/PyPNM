@@ -3,13 +3,14 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
+
 from pypnm.config.pnm_config_manager import PnmConfigManager
+from pypnm.docsis.cm_snmp_operation import CmSnmpOperation
 from pypnm.lib.inet import Inet, InetAddressStr
 from pypnm.lib.mac_address import MacAddress
-from pypnm.docsis.cm_snmp_operation import CmSnmpOperation
 from pypnm.lib.ping import Ping
+
 
 class CableModem(CmSnmpOperation):
     """

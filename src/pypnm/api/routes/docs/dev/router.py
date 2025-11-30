@@ -3,14 +3,20 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import BaseDeviceConnectRequest
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
-from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import (
+    BaseDeviceConnectRequest,
+)
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import (
+    SnmpResponse,
+)
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import (
+    CableModemServicePreCheck,
+)
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.dev.schemas import EventLogResponse
 from pypnm.api.routes.docs.dev.service import CmDocsDevService

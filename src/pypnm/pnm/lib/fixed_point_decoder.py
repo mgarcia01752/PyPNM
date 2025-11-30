@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
-from typing import List, NewType, Tuple, Literal
 import logging
+from typing import List, Literal, NewType, Tuple
 
 from pypnm.lib.types import ComplexSeries
 

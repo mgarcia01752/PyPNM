@@ -2,15 +2,30 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from struct import calcsize, unpack
-from typing import Dict, Optional, Tuple, overload, Literal, Union
+from typing import Dict, Literal, Optional, Tuple, Union, overload
 
+from pypnm.lib.constants import (
+    INVALID_CHANNEL_ID,
+    INVALID_SUB_CARRIER_ZERO_FREQ,
+    KHZ,
+    ZERO_FREQUENCY,
+    cast,
+)
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat
-from pypnm.lib.constants import INVALID_CHANNEL_ID, INVALID_SUB_CARRIER_ZERO_FREQ, KHZ, ZERO_FREQUENCY, cast
-from pypnm.lib.types import ChannelId, ComplexArray, ComplexSeries, FrequencyHz, MacAddressStr
-from pypnm.pnm.lib.fixed_point_decoder import FixedPointDecoder, FractionalBits, IntegerBits
+from pypnm.lib.types import (
+    ChannelId,
+    ComplexArray,
+    ComplexSeries,
+    FrequencyHz,
+    MacAddressStr,
+)
+from pypnm.pnm.lib.fixed_point_decoder import (
+    FixedPointDecoder,
+    FractionalBits,
+    IntegerBits,
+)
 from pypnm.pnm.parser.model.parser_rtn_models import CmDsOfdmChanEstimateCoefModel
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.pnm.parser.pnm_header import PnmHeader

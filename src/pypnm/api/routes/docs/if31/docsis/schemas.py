@@ -3,8 +3,8 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from pydantic import BaseModel, Field
+
 
 class DocsisBaseCapability(BaseModel):
     docsis_version:str = Field()

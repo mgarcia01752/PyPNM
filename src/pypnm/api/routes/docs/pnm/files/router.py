@@ -2,17 +2,23 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from typing import cast
 
 from fastapi import APIRouter, File, Path, Query, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
+from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import (
+    OutputType,
+)
 from pypnm.api.routes.docs.pnm.files.schemas import (
-    AnalysisJsonResponse, FileAnalysisRequest, FileQueryRequest,
-    FileQueryResponse, HexDumpResponse, UploadFileResponse,)
+    AnalysisJsonResponse,
+    FileAnalysisRequest,
+    FileQueryRequest,
+    FileQueryResponse,
+    HexDumpResponse,
+    UploadFileResponse,
+)
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE

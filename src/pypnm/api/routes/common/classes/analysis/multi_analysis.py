@@ -5,7 +5,10 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, cast, overload
 
-from pypnm.api.routes.common.classes.analysis.analysis import Analysis, BaseAnalysisModel
+from pypnm.api.routes.common.classes.analysis.analysis import (
+    Analysis,
+    BaseAnalysisModel,
+)
 from pypnm.lib.types import ChannelId
 
 

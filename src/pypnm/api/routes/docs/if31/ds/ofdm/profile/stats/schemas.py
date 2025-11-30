@@ -10,9 +10,13 @@ Defines Pydantic models for DOCSIS 3.1 Downstream OFDM Profile Statistics.
 from __future__ import annotations
 
 from typing import Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_response import BaseDeviceResponse
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_response import (
+    BaseDeviceResponse,
+)
+
 
 class OfdmProfileStat(BaseModel):
     """

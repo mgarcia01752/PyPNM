@@ -1,11 +1,12 @@
 
 from __future__ import annotations
 
+from typing import Any, Dict
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from pydantic import BaseModel
-from typing import Any, Dict
+
 
 class SystemConfigModel(BaseModel):
     FastApiRequestDefault: Dict[str, Any]

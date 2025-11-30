@@ -1,16 +1,20 @@
 from __future__ import annotations
 
+from typing import List, Literal, Optional, Tuple, cast
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import numpy as np
-from typing import List, Tuple, Optional, Literal, cast
 
 from pypnm.lib.qam.code_generator.auto_gen_qam_lut import QamScale
 from pypnm.lib.qam.qam_lut import QAM_SYMBOL_CODEWORD_LUT
 from pypnm.lib.qam.types import (
-    CodeWord, HardDecisionArray, SoftDecisionArray, LutDict,
-    QamModulation, SymbolArray
+    CodeWord,
+    HardDecisionArray,
+    LutDict,
+    QamModulation,
+    SoftDecisionArray,
+    SymbolArray,
 )
 
 

@@ -4,50 +4,75 @@
 from __future__ import annotations
 
 import asyncio
-from enum import Enum, auto
 import logging
 import math
 import os
-from pathlib import Path
 import shutil
 import time
+from enum import Enum, auto
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple, TypeAlias, Union, cast
-from typing_extensions import deprecated
 
 from pydantic import BaseModel
+from typing_extensions import deprecated
 
 from pypnm.api.routes.common.classes.analysis.analysis import SpecAnCapturePara
+from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import (
+    PnmFileTransaction,
+)
 from pypnm.api.routes.common.extended.common_measure_schema import (
-    DownstreamOfdmParameters, UpstreamOfdmaParameters)
-from pypnm.config.system_config_settings import SystemConfigSettings
-from pypnm.config.config_manager import ConfigManager
-from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
-from pypnm.api.routes.common.extended.common_messaging_service import CommonMessagingService, MessageResponse
+    DownstreamOfdmParameters,
+    UpstreamOfdmaParameters,
+)
+from pypnm.api.routes.common.extended.common_messaging_service import (
+    CommonMessagingService,
+    MessageResponse,
+)
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
+from pypnm.config.config_manager import ConfigManager
 from pypnm.config.pnm_config_manager import PnmConfigManager
+from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.docsis.cable_modem import CableModem
-from pypnm.docsis.cm_snmp_operation import (DocsPnmBulkFileUploadStatus, DocsPnmCmCtlStatus, FecSummaryType)
+from pypnm.docsis.cm_snmp_operation import (
+    DocsPnmBulkFileUploadStatus,
+    DocsPnmCmCtlStatus,
+    FecSummaryType,
+)
 from pypnm.docsis.data_type.enums import MeasStatusType
-from pypnm.docsis.data_type.pnm.DocsIf3CmSpectrumAnalysisEntry import DocsIf3CmSpectrumAnalysisEntry
+from pypnm.docsis.data_type.pnm.DocsIf3CmSpectrumAnalysisEntry import (
+    DocsIf3CmSpectrumAnalysisEntry,
+)
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import (
+    DocsPnmCmDsConstDispMeasEntry,
+)
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsHistEntry import DocsPnmCmDsHistEntry
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmFecEntry import DocsPnmCmDsOfdmFecEntry
-from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmModProfEntry import DocsPnmCmDsOfdmModProfEntry
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmModProfEntry import (
+    DocsPnmCmDsOfdmModProfEntry,
+)
+from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import (
+    DocsPnmCmDsOfdmRxMerEntry,
+)
+from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import (
+    DocsPnmCmOfdmChanEstCoefEntry,
+)
 from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEntry
-from pypnm.docsis.data_type.pnm.DocsPnmCmDsConstDispMeasEntry import DocsPnmCmDsConstDispMeasEntry
-from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmRxMerEntry import DocsPnmCmDsOfdmRxMerEntry
-from pypnm.docsis.data_type.pnm.DocsPnmCmOfdmChanEstCoefEntry import DocsPnmCmOfdmChanEstCoefEntry
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.ftp.ftp_connector import FTPConnector
 from pypnm.lib.inet import Inet
-from pypnm.lib.ssh.ssh_connector import SSHConnector, SecureTransferMode
+from pypnm.lib.ssh.ssh_connector import SecureTransferMode, SSHConnector
 from pypnm.lib.tftp.tftp_connector import TFTPConnector
 from pypnm.lib.types import ChannelId, InterfaceIndex
 from pypnm.lib.utils import Generate
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
-    DocsIf3CmSpectrumAnalysisCtrlCmd, SpectrumRetrievalType, WindowFunction)
+    DocsIf3CmSpectrumAnalysisCtrlCmd,
+    SpectrumRetrievalType,
+    WindowFunction,
+)
 from pypnm.pnm.data_type.pnm_test_types import DocsPnmCmCtlTest
 from pypnm.snmp.modules import DocsisIfType
 from pypnm.snmp.snmp_v2c import Snmp_v2c
+
 
 class MeasureServiceReturnTypes(Enum):
     BASE_MODEL = auto()

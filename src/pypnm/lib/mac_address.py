@@ -3,10 +3,10 @@
 
 from __future__ import annotations
 
-from enum import Enum, auto
 import logging
 import re
-from typing import Union, cast, TYPE_CHECKING
+from enum import Enum, auto
+from typing import TYPE_CHECKING, Union, cast
 
 from pypnm.lib.types import MacAddressStr
 

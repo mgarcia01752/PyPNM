@@ -2,11 +2,13 @@
 # Copyright (c) 2025
 
 from __future__ import annotations
+
 import math
 from typing import Literal
 
 from pypnm.lib.qam.types import CodeWordLut
 from pypnm.lib.types import ComplexArray
+
 
 class CodeWordLutGenerator:
     """

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from typing import Any, Dict, List, cast
 
@@ -10,20 +9,27 @@ from fastapi import APIRouter
 
 from pypnm.api.routes.basic.us_ofdma_pre_eq_analysis_rpt import CmUsOfdmaPreEqReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
-from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
+from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import (
+    OutputType,
+)
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
-    PnmAnalysisResponse, PnmSingleCaptureRequest,)
+    PnmAnalysisResponse,
+    PnmSingleCaptureRequest,
+)
 from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import (
-    SnmpResponse,)
+    SnmpResponse,
+)
 from pypnm.api.routes.common.classes.file_capture.file_type import FileType
 from pypnm.api.routes.common.classes.operation.cable_modem_precheck import (
-    CableModemServicePreCheck,)
+    CableModemServicePreCheck,
+)
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import CommonProcessService
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.api.routes.docs.pnm.us.ofdma.pre_equalization.service import (
-    CmUsOfdmaPreEqService,)
+    CmUsOfdmaPreEqService,
+)
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.pnm.DocsPnmCmUsPreEqEntry import DocsPnmCmUsPreEqEntry
 from pypnm.lib.dict_utils import DictGenerate

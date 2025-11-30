@@ -3,12 +3,14 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from typing import List
+
 from fastapi import HTTPException
 
-from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import (
+    SNMPConfig,
+)
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmResponse
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.dev.schemas import EventLogEntry

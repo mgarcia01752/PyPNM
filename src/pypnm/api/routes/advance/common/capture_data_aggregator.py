@@ -10,10 +10,13 @@ from typing import List
 from pypnm.api.routes.advance.common.transactionsCollection import TransactionCollection
 from pypnm.api.routes.advance.common.types.types import TransactionFileCollection
 from pypnm.api.routes.common.classes.file_capture.capture_group import CaptureGroup
-from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import PnmFileTransaction
+from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import (
+    PnmFileTransaction,
+)
 from pypnm.api.routes.common.classes.file_capture.types import TransactionRecordModel
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.types import GroupId, TransactionId
+
 
 class CaptureDataAggregator:
     """

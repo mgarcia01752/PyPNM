@@ -3,22 +3,31 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 from typing import Dict, List, Union
+
 from fastapi import APIRouter
+
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import (
-    PnmAnalysisResponse, PnmRequest)
-from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import SnmpResponse
-from pypnm.api.routes.common.classes.operation.cable_modem_precheck import CableModemServicePreCheck
+    PnmAnalysisResponse,
+    PnmRequest,
+)
+from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import (
+    SnmpResponse,
+)
+from pypnm.api.routes.common.classes.operation.cable_modem_precheck import (
+    CableModemServicePreCheck,
+)
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.ds.ofdm.mer_margin.schemas import PnmMerMarginRequest
-from pypnm.api.routes.docs.pnm.ds.ofdm.mer_margin.service import CmDsOfdmMerMarginService
-from pypnm.lib.types import MacAddressStr, InetAddressStr
+from pypnm.api.routes.docs.pnm.ds.ofdm.mer_margin.service import (
+    CmDsOfdmMerMarginService,
+)
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import InetAddressStr, MacAddressStr
 
 
 class RxMerMarginRouter:

@@ -10,12 +10,15 @@ Defines a service class for fetching DOCSIS 3.1 downstream OFDM profile statisti
 from __future__ import annotations
 
 import logging
-from typing import List, Dict, Any
-from pypnm.lib.types import MacAddressStr, InetAddressStr
-from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
+from typing import Any, Dict, List
+
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import (
+    SNMPConfig,
+)
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.types import InetAddressStr, MacAddressStr
 
 logger = logging.getLogger(__name__)
 

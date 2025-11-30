@@ -4,10 +4,10 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import numpy as np
+
 from pypnm.config.system_config_settings import SystemConfigSettings
-from pypnm.lib.matplot.manager import PlotConfig, MatplotManager
+from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.qam.lut_mgr import QamLutManager
 from pypnm.lib.qam.types import QamModulation
 from pypnm.lib.types import ComplexArray

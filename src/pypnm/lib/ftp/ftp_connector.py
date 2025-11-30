@@ -1,13 +1,13 @@
 
 from __future__ import annotations
 
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
-
-import os
 import ftplib
 import logging
-from typing import Optional, List
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+import os
+from typing import List, Optional
 
 
 class FTPConnector:

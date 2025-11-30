@@ -4,11 +4,11 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import argparse
 import asyncio
 import logging
 from typing import List
+
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanEntry
 from pypnm.lib.inet import Inet

@@ -3,10 +3,10 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+from pydantic import BaseModel, ConfigDict, Field
 
+from pypnm.lib.types import FrequencyHz
 
-from pydantic import BaseModel, Field, ConfigDict
-from pypnm.lib.types import  FrequencyHz
 
 class SpecAnalysisSnmpConfigModel(BaseModel):
     """

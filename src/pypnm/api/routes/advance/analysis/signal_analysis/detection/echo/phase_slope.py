@@ -1,11 +1,12 @@
 
 from __future__ import annotations
 
+from typing import Any, Dict, Sequence, Union
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import numpy as np
-from typing import Sequence, Union, Dict, Any
+
 
 class PhaseSlopeEchoDetector:
     """

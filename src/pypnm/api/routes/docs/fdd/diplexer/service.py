@@ -3,15 +3,20 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from typing import Dict, List
-from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import SNMPConfig
+
+from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import (
+    SNMPConfig,
+)
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.ClabsDocsisVersion import ClabsDocsisVersion
-from pypnm.docsis.data_type.DocsFddCmFddCapabilities import DocsFddCmFddBandEdgeCapabilities
+from pypnm.docsis.data_type.DocsFddCmFddCapabilities import (
+    DocsFddCmFddBandEdgeCapabilities,
+)
 from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress, MacAddressStr
 from pypnm.lib.types import InetAddressStr
+
 
 class FddDiplexerBandEdgeCapabilityService:
     """

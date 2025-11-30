@@ -5,18 +5,25 @@
 from __future__ import annotations
 
 import logging
+from contextlib import nullcontext
 from dataclasses import dataclass, replace
+from datetime import datetime
+from itertools import cycle
 from pathlib import Path
 from typing import Iterable, List, Literal, Optional, Sequence, Tuple, Union
-from itertools import cycle
-from contextlib import nullcontext
-from datetime import datetime
 
-import numpy as np
 import matplotlib
+import numpy as np
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.ticker import EngFormatter, FuncFormatter, ScalarFormatter, FixedLocator, FixedFormatter
+from matplotlib.ticker import (
+    EngFormatter,
+    FixedFormatter,
+    FixedLocator,
+    FuncFormatter,
+    ScalarFormatter,
+)
 
 from pypnm.lib.code_word.cw_generator import QamModulation
 from pypnm.lib.types import ArrayLike, ComplexArray, Number

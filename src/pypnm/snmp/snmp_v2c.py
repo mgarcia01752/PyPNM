@@ -3,23 +3,31 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 import logging
 import re
-from typing import List, Optional, Tuple, Type, TypeVar, Union
 from datetime import datetime, timedelta, timezone
+from typing import List, Optional, Tuple, Type, TypeVar, Union
 
 from pysnmp.hlapi.v3arch.asyncio import (
-    SnmpEngine, CommunityData, UdpTransportTarget,ContextData,
-    ObjectType,ObjectIdentity, get_cmd,set_cmd, walk_cmd)
+    CommunityData,
+    ContextData,
+    ObjectIdentity,
+    ObjectType,
+    SnmpEngine,
+    UdpTransportTarget,
+    get_cmd,
+    set_cmd,
+    walk_cmd,
+)
+from pysnmp.proto.rfc1902 import OctetString
 
-from pysnmp.proto.rfc1902 import (OctetString)
 from pypnm.config.pnm_config_manager import SystemConfigSettings
 from pypnm.lib.constants import T
 from pypnm.lib.inet import Inet
 from pypnm.lib.inet_utils import InetGenerate
 from pypnm.snmp.compiled_oids import COMPILED_OIDS
 from pypnm.snmp.modules import InetAddressType
+
 
 class Snmp_v2c:
     """

@@ -3,14 +3,13 @@
 
 from __future__ import annotations
 
-from abc import ABC
 import logging
-from typing import TypeVar, Type, Any, Tuple, Dict
+from abc import ABC
+from typing import Any, Dict, Tuple, Type, TypeVar
 
 from pypnm.api.routes.advance.common.capture_service import AbstractCaptureService
 from pypnm.api.routes.advance.common.operation_state import OperationState
 from pypnm.lib.types import GroupId, OperationId
-
 
 T = TypeVar("T", bound=AbstractCaptureService)
 

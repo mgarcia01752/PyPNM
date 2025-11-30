@@ -6,7 +6,9 @@ from __future__ import annotations
 import logging
 import struct
 from typing import Any, Dict, Mapping, Optional, Union
+
 from pydantic import BaseModel, Field
+
 from pypnm.lib.constants import DEFAULT_CAPTURE_TIME
 from pypnm.lib.types import CaptureTime
 from pypnm.pnm.parser.pnm_file_type import PnmFileType

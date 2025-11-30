@@ -6,14 +6,20 @@ from __future__ import annotations
 
 import logging
 from math import ceil, log2
-from typing import List, Optional, Sequence, Tuple, Literal, TypeAlias
+from typing import List, Literal, Optional, Sequence, Tuple, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
 from pydantic import BaseModel, Field
 
+from pypnm.lib.constants import (
+    CABLE_VF,
+    FEET_PER_METER,
+    INVALID_CHANNEL_ID,
+    SPEED_OF_LIGHT,
+    CableTypes,
+)
 from pypnm.lib.types import ChannelId, IfftTimeResponse
-from pypnm.lib.constants import INVALID_CHANNEL_ID, SPEED_OF_LIGHT, FEET_PER_METER, CABLE_VF, CableTypes
 
 LOG = logging.getLogger(__name__)
 

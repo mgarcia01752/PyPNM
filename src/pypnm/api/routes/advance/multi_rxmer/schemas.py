@@ -1,18 +1,28 @@
 
 from __future__ import annotations
 
+from enum import IntEnum
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+from typing import Any, Dict, List, Optional
 
-from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, Field
-from pypnm.api.routes.advance.analysis.signal_analysis.multi_rxmer_signal_analysis import MultiRxMerAnalysisType
-from pypnm.api.routes.advance.common.schema.common_capture_schema import MultiCaptureRequest
+
+from pypnm.api.routes.advance.analysis.signal_analysis.multi_rxmer_signal_analysis import (
+    MultiRxMerAnalysisType,
+)
+from pypnm.api.routes.advance.common.schema.common_capture_schema import (
+    MultiCaptureRequest,
+)
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (
-    CommonAnalysisResponse, CommonMatPlotConfigRequest,  CommonOutput, CommonResponse)
+    CommonAnalysisResponse,
+    CommonMatPlotConfigRequest,
+    CommonOutput,
+    CommonResponse,
+)
 from pypnm.lib.types import OperationId
 
-from enum import IntEnum
 
 class MultiRxMerMeasureModes(IntEnum):
     CONTINUOUS          = 0

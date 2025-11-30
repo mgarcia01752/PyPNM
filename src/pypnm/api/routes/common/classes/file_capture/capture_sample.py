@@ -3,11 +3,12 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from typing import Optional
+
 from pydantic import BaseModel, Field
 
 from pypnm.lib.types import TimeStamp, TransactionId
+
 
 class CaptureSample(BaseModel):
     """

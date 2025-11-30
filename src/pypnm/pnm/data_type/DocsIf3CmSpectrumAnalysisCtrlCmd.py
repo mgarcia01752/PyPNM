@@ -1,15 +1,17 @@
 
 from __future__ import annotations
 
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
-
-from dataclasses import dataclass
 import json
 import logging
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+from dataclasses import dataclass
 from enum import IntEnum
 from typing import Any, Dict
+
 from pypnm.lib.utils import Generate
+
 
 class SpectrumRetrievalType(IntEnum):
     """
