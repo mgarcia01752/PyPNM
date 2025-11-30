@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 import re
 from enum import Enum, auto
-from typing import TYPE_CHECKING, Union, cast
+from typing import TYPE_CHECKING, cast
 
 from pypnm.lib.types import MacAddressStr
 

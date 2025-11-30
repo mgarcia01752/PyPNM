@@ -6,7 +6,6 @@ import ipaddress
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass

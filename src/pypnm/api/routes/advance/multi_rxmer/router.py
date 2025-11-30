@@ -7,7 +7,7 @@ import io
 import logging
 import os
 import zipfile
-from typing import Union, cast
+from typing import cast
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse

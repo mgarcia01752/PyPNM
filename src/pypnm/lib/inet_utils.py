@@ -5,7 +5,6 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 import ipaddress
 import logging
-from typing import Optional
 
 
 class InetGenerate:

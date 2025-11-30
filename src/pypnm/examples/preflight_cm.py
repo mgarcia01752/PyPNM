@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import asyncio
 import sys
-from typing import Optional
 
 from pypnm.config.system_config_settings import SystemConfigSettings as S
 from pypnm.docsis.cable_modem import CableModem

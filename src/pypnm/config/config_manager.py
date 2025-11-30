@@ -5,7 +5,7 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 import json
 import os
-from typing import Any, Optional
+from typing import Any
 
 
 class ConfigManager:

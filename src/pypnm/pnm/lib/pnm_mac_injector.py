@@ -8,7 +8,6 @@ import binascii
 import logging
 import struct
 from pathlib import Path
-from typing import Optional, Union
 
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.pnm.parser.pnm_header import PnmHeader

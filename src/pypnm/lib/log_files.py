@@ -3,7 +3,7 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 import os
-from typing import Any, Union
+from typing import Any
 
 from pydantic import BaseModel
 
