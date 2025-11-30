@@ -4,14 +4,14 @@
 
 from __future__ import annotations
 
+import logging
+from collections.abc import Iterable, Sequence
 from contextlib import nullcontext
 from dataclasses import dataclass, replace
 from datetime import datetime
 from itertools import cycle
-import logging
 from pathlib import Path
 from typing import Literal
-from collections.abc import Iterable, Sequence
 
 import matplotlib
 import numpy as np

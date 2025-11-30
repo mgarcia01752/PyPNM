@@ -2,10 +2,10 @@
 # Copyright (c) 2025 Maurice Garcia
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 import asyncio
 import logging
 import time
+from abc import ABC, abstractmethod
 from typing import Any, cast
 
 from pypnm.api.routes.advance.common.operation_manager import OperationManager

@@ -3,9 +3,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from enum import Enum
 from pathlib import Path
-from collections.abc import Sequence
 from typing import Any, NewType, TypeAlias
 
 import numpy as np

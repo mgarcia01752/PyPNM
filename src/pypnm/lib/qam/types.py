@@ -3,9 +3,9 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 from enum import IntEnum
-import math
 from typing import TYPE_CHECKING
 
 from pypnm.lib.types import Complex

@@ -10,7 +10,7 @@ import numpy as np
 from numpy.typing import NDArray
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from pypnm.lib.constants import CableTypes, FEET_PER_METER, SPEED_OF_LIGHT
+from pypnm.lib.constants import FEET_PER_METER, SPEED_OF_LIGHT, CableTypes
 from pypnm.lib.types import ChannelId, ComplexArray, FloatSeries
 
 # ──────────────────────────────────────────────────────────────

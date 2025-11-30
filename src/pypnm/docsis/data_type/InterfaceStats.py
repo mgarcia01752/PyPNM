@@ -1,11 +1,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from enum import IntEnum
-from collections.abc import Callable
 
 from pydantic import BaseModel
 

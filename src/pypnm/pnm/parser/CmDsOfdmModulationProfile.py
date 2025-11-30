@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 from enum import IntEnum
 from struct import calcsize, unpack
-from typing import TYPE_CHECKING, Annotated, Any, cast, Literal
+from typing import TYPE_CHECKING, Annotated, Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 

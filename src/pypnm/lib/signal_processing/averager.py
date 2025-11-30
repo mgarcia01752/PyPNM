@@ -2,7 +2,9 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
+
 import numpy as np
+
 from pypnm.lib.types import FloatSeries
 
 Number = int | float

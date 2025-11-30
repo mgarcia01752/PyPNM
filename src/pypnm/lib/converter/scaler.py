@@ -2,10 +2,10 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
+
 import numpy as np
 from numpy.typing import NDArray
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-
 from pypnm.lib.qam.types import CodeWordArray, QamModulation
 from pypnm.lib.types import ByteArray, Number
 

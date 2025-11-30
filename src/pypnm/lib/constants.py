@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import cast, Final, Literal, TypeAlias, TypeVar
+from typing import Final, Literal, TypeAlias, TypeVar, cast
 
 from pypnm.lib.types import (
     CaptureTime,

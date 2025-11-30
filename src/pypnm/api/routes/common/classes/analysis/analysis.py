@@ -59,12 +59,12 @@ from pypnm.docsis.cm_snmp_operation import Generate
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor
 from pypnm.lib.constants import (
     CABLE_VF,
-    CableType,
     INVALID_CHANNEL_ID,
     INVALID_PROFILE_ID,
     INVALID_SCHEMA_TYPE,
     INVALID_START_VALUE,
     SPEED_OF_LIGHT,
+    CableType,
 )
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.log_files import LogFile
@@ -109,8 +109,8 @@ from pypnm.pnm.parser.model.parser_rtn_models import (
     CmDsOfdmRxMerModel,
     CmUsOfdmaPreEqModel,
 )
-
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
+
 
 class RxMerCarrierType(Enum):
     """

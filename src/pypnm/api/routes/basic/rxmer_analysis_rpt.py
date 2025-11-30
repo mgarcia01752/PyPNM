@@ -6,8 +6,8 @@ from __future__ import annotations
 import logging
 import math
 import re
-from typing import cast
 from collections.abc import Mapping
+from typing import cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
