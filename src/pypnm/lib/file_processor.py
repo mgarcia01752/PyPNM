@@ -8,6 +8,7 @@ import logging
 import tarfile
 import zipfile
 from pathlib import Path
+from types import TracebackType
 from typing import Any, Literal
 
 from pypnm.lib.types import PathLike
@@ -334,10 +335,12 @@ class FileProcessor:
     def __repr__(self) -> str:
         return f"FileProcessor(filepath={self.filepath})"
 
-    def __enter__(self):
+    def __enter__(self) -> FileProcessor:
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type: type | None, 
+                 exc_value: BaseException | None, 
+                 traceback: TracebackType | None) -> Literal[False]:
         self.close()
         if exc_type:
             self.logger.error(f"Exception in FileProcessor: {exc_value}")

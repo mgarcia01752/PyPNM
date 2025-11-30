@@ -5,7 +5,6 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 import string
 from collections.abc import Iterable
-from typing import Any
 
 
 class Format:
@@ -51,7 +50,7 @@ class Format:
         return delimiter.join(grouped_hex)
 
     @staticmethod
-    def non_ascii_to_hex(value) -> str:
+    def non_ascii_to_hex(value: str | bytes | object) -> str:
         """
         Convert a string or bytes to ASCII if possible; otherwise return a hex representation.
 
@@ -59,7 +58,7 @@ class Format:
         by converting unprintable or non-ASCII characters into a hexadecimal string.
 
         Parameters:
-            value (str | bytes | any): The input value to normalize.
+            value (str | bytes | object): The input value to normalize.
 
         Returns:
             str: Printable ASCII string if all characters are ASCII-printable;
@@ -88,4 +87,3 @@ class Format:
                 return value.encode('utf-8').hex()
         else:
             return str(value)
-

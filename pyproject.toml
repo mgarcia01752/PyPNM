@@ -139,6 +139,7 @@ src            = ["src"]
 target-version = "py310"
 exclude        = [
   "tools",
+  "src/pypnm/lib/matplot/manager.py",
 ]
 
 

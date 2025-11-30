@@ -14,6 +14,8 @@ from pathlib import Path
 from typing import Literal
 
 import matplotlib
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 import numpy as np
 
 matplotlib.use("Agg")
@@ -110,7 +112,7 @@ class PlotConfig:
     y_ticks: list[Number] | None = None
     y_tick_labels: list[str] | None = None
 
-    def update(self, **kwargs) -> PlotConfig:
+    def update(self, **kwargs: object) -> PlotConfig:
         """Create a new PlotConfig with fields replaced by kwargs."""
         return replace(self, **kwargs)
 
@@ -156,7 +158,7 @@ class MatplotManager:
 
     # ───────────────────────── internals ─────────────────────────
 
-    def _new_fig(self, projection: str | None = None):
+    def _new_fig(self, projection: str | None = None) -> tuple[Figure, Axes]:
         fig = plt.figure(figsize=self.figsize, dpi=self.dpi)
         ax = fig.add_subplot(111, projection=projection) if projection else fig.add_subplot(111)
         return fig, ax
