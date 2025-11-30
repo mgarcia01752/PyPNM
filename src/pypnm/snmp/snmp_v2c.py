@@ -1,8 +1,8 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
 
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
 import logging
 import re
 from datetime import datetime, timedelta, timezone
@@ -85,7 +85,7 @@ class Snmp_v2c:
         oid: str | tuple[str, str, int],
         timeout: float | None = None,
         retries: int | None = None,
-    ):
+    ) -> list[ObjectType] | None:
         """
         Perform an SNMP GET operation.
 
@@ -99,7 +99,7 @@ class Snmp_v2c:
             retries: Number of retries. If None, uses self._retries.
 
         Returns:
-            List[ObjectType]: List of SNMP variable bindings.
+            Optional[List[ObjectType]]: List of SNMP variable bindings or None if no result.
 
         Raises:
             RuntimeError: On SNMP errors (transport/protocol).
@@ -287,7 +287,7 @@ class Snmp_v2c:
         return bool(re.fullmatch(r"\.?(\d+\.)+\d+", oid))
 
     @staticmethod
-    def get_result_value(pysnmp_get_result) -> str | None:
+    def get_result_value(pysnmp_get_result: ObjectType | tuple[ObjectType, ...] | None) -> str | None:
         """
         Extract the value from a pysnmp GET result.
 
@@ -570,7 +570,7 @@ class Snmp_v2c:
         return dt.isoformat()
 
     @staticmethod
-    def truth_value(snmp_value) -> bool:
+    def truth_value(snmp_value: int | str) -> bool:
         """
         Converts SNMP TruthValue integer to a boolean.
 
@@ -643,13 +643,14 @@ class Snmp_v2c:
             self.logger.debug(f"Resolving OID string: {oid}")
             return ObjectIdentity(oid)
 
-    def _raise_on_snmp_error(self, errorIndication, errorStatus, errorIndex) -> None:
+    def _raise_on_snmp_error(self, errorIndication: Exception | str | None, errorStatus: object | None, errorIndex: int | None) -> None:
         """
         Raises RuntimeError if any SNMP error is detected.
 
         Args:
             errorIndication: General SNMP engine-level error (e.g., timeout, transport failure).
-            errorStatus: SNMP protocol-level error (e.g., noSuchName, tooBig).
+                            Typically an Exception instance or an error string, or None.
+            errorStatus: SNMP protocol-level error (e.g., noSuchName, tooBig) or None.
             errorIndex: Index of the variable that caused the error (if applicable).
 
         Raises:
@@ -658,8 +659,14 @@ class Snmp_v2c:
         if errorIndication:
             raise RuntimeError(f"SNMP operation failed: {errorIndication}")
         if errorStatus:
+            # errorStatus objects from pysnmp typically expose prettyPrint()
+            pretty = getattr(errorStatus, "prettyPrint", None)
+            if callable(pretty):
+                status_text = pretty()
+            else:
+                status_text = str(errorStatus)
             raise RuntimeError(
-                f"SNMP error {errorStatus.prettyPrint()} at index {errorIndex}"
+                f"SNMP error {status_text} at index {errorIndex}"
             )
 
     def _is_oid_in_subtree(self, oid_str: str, obj_str: str) -> bool:

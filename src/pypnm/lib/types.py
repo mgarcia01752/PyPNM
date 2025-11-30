@@ -153,10 +153,13 @@ IfftTimeResponse: TypeAlias = tuple[NDArrayF64, NDArrayC128]
 # ────────────────────────────────────────────────────────────────────────────────
 HttpRtnCode = NewType("HttpRtnCode", int)
 
+ScalarValue: TypeAlias = float | int | str
+
 # ────────────────────────────────────────────────────────────────────────────────
 # Explicit public surface
 # ────────────────────────────────────────────────────────────────────────────────
 __all__ = [
+    "ScalarValue",
     "HashStr",
     "TransactionId", "GroupId", "OperationId",
     # enums

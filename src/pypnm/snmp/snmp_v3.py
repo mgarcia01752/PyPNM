@@ -1,13 +1,14 @@
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025
+
+from __future__ import annotations
+
+from enum import Enum
 import logging
 import re
-from enum import Enum
+from typing import NoReturn
 
 from pypnm.lib.inet import Inet
-from typing import NoReturn
 
 
 class SecurityLevel(str, Enum):
@@ -131,7 +132,7 @@ class Snmp_v3:
         self.logger.debug("Snmp_v3.walk(%r) called (stub).", oid)
         raise NotImplementedError("Snmp_v3.walk is not implemented yet.")
 
-    async def set(self, oid: str, value, value_type) -> NoReturn:
+    async def set(self, oid: str, value: str | int | float | bytes | bool, value_type: str) -> NoReturn:
         """
         Stub for SNMP SET (v3).
         """
