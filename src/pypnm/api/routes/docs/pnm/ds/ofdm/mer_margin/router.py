@@ -85,7 +85,7 @@ class RxMerMarginRouter:
         @self.router.post(f"/{self.base_endpoint}/getMeasurement",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
-        async def get_measurement(request: PnmMerMarginRequest):
+        async def get_measurement(request: PnmMerMarginRequest) -> SnmpResponse:
             """
             Initiates a MER Margin test on a specified OFDM channel/profile.
 
@@ -117,8 +117,9 @@ class RxMerMarginRouter:
                 message="MER Margin test triggered successfully")
 
         @self.router.post(f"/{self.base_endpoint}/getAnalysis",
-                          response_model=PnmAnalysisResponse | SnmpResponse)
-        async def get_analysis(request: PnmMerMarginRequest):
+                          response_model=None,
+                          responses=FAST_API_RESPONSE,)
+        async def get_analysis(request: PnmMerMarginRequest) -> SnmpResponse | PnmAnalysisResponse:
             """
             Retrieves the MER Margin analysis results from the cable modem.
 

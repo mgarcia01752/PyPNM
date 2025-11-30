@@ -37,7 +37,7 @@ class DsOfdmChannelStatsRouter:
         @self.router.post("/stats",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
-        async def get_ds_ofdm_channels(request: SnmpRequest):
+        async def get_ds_ofdm_channels(request: SnmpRequest) -> SnmpResponse:
             """
             **Downstream OFDM Modulation Profile Statistics (DOCSIS 3.1)**
 

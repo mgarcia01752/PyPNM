@@ -32,7 +32,7 @@ class DiplexerConfigResult:
         @self.router.post("/diplexer",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
-        async def diplexer_config(request: SnmpRequest):
+        async def diplexer_config(request: SnmpRequest) -> SnmpResponse:
             """
             **DOCSIS 3.1 System Diplexer Configuration**
 

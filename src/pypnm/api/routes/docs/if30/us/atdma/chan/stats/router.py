@@ -35,8 +35,9 @@ class UsScQamChannelRouter:
     def _add_routes(self) -> None:
         @self.router.post("/stats",
                           summary="Get DOCSIS 3.0 Upstream ATDMA Channel Stats",
+                          response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
-        async def get_us_scqam_upstream_channels(request: SnmpRequest):
+        async def get_us_scqam_upstream_channels(request: SnmpRequest) -> SnmpResponse:
             """
             **DOCSIS 3.0 Upstream ATDMA Channel Stats**
 
@@ -77,7 +78,7 @@ class UsScQamChannelRouter:
         @self.router.post("/preEqualization",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
-        async def get_us_scqam_pre_equalizations(request: SnmpRequest):
+        async def get_us_scqam_pre_equalizations(request: SnmpRequest) -> SnmpResponse:
             """
             **DOCSIS 3.0 Upstream Pre-Equalization Coefficients**
 

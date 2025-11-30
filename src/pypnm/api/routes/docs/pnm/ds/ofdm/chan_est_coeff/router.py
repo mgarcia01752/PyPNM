@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from fastapi import APIRouter
+from starlette.responses import FileResponse
 
 from pypnm.api.routes.basic.channel_estimation_analysis_rpt import ChanEstimationReport
 from pypnm.api.routes.basic.rxmer_analysis_rpt import AnalysisRptMatplotConfig
@@ -57,8 +58,9 @@ class ChannelEstimationCoefficientRouter:
         @self.router.post(
             f"{self.base_endpoint}/getCapture",
             summary="Get Channel Estimation Coefficients PNM Capture File",
+            response_model=None,
             responses=FAST_API_RESPONSE,)
-        async def get_capture(request: PnmSingleCaptureRequest):
+        async def get_capture(request: PnmSingleCaptureRequest) -> SnmpResponse | PnmAnalysisResponse | FileResponse:
             """
             Capture Downstream OFDM Channel Estimation Coefficients.
 

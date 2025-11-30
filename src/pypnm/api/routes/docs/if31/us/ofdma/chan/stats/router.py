@@ -35,7 +35,7 @@ class UsOfdmaChannelRouter:
         @self.router.post("/stats",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
-        async def get_us_ofdma_channels(request: SnmpRequest):
+        async def get_us_ofdma_channels(request: SnmpRequest) -> SnmpResponse:
             """
             **Upstream OFDMA Channel Statistics**
 

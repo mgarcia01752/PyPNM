@@ -39,9 +39,9 @@ class OfdmProfileStatsRouter:
 
     def _add_routes(self) -> None:
         @self.router.post("/stats",
-                          response_model=SnmpResponse,
+                          response_model=SnmpResponse | OfdmProfileStatsResponse,
                           responses=FAST_API_RESPONSE,)
-        async def get_ofdm_profile_stats(request: SnmpRequest):
+        async def get_ofdm_profile_stats(request: SnmpRequest) -> OfdmProfileStatsResponse | SnmpResponse:
             """
             Retrieve DOCSIS 3.1 Downstream OFDM Modulation Profile Statistics.
 

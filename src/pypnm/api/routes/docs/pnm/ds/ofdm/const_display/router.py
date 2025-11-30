@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from fastapi import APIRouter
+from starlette.responses import FileResponse
 
 from pypnm.api.routes.basic.abstract.analysis_report import Analysis
 from pypnm.api.routes.basic.constellation_display_analysis_rpt import (
@@ -73,10 +74,11 @@ class ConstellationDisplayRouter:
         @self.router.post(
             f"{self.base_endpoint}/getCapture",
             summary="Get Constellation Display PNM Capture File",
+            response_model=None,
             responses=FAST_API_RESPONSE,
         )
 
-        async def get_capture(request: PnmConstellationDisplayAnalysisRequest):
+        async def get_capture(request: PnmConstellationDisplayAnalysisRequest) -> SnmpResponse | PnmAnalysisResponse | FileResponse:
             """
             Capture Downstream OFDM Constellation Display Samples And Return Analysis Results.
 

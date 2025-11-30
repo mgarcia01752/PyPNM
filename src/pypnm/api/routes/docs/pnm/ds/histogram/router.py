@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from fastapi import APIRouter
+from starlette.responses import FileResponse
 
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisRptMatplotConfig
 from pypnm.api.routes.basic.histrogram_analysis_rpt import DsHistrogramReport
@@ -58,9 +59,10 @@ class DsHistogramRouter:
         @self.router.post(
             f"{self.base_endpoint}/getCapture",
             summary="Get Downstream Histogram PNM Capture",
+            response_model=None,
             responses=FAST_API_RESPONSE,)
 
-        async def get_capture(request: PnmHistogramAnalysisRequest):
+        async def get_capture(request: PnmHistogramAnalysisRequest) -> SnmpResponse | PnmAnalysisResponse | FileResponse:
             """
             Capture DOCSIS Downstream Histogram and return results as JSON or archive.
 

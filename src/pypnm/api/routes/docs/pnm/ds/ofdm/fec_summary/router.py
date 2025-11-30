@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from fastapi import APIRouter
+from starlette.responses import FileResponse
 
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisRptMatplotConfig
 from pypnm.api.routes.basic.fec_summary_analysis_rpt import FecSummaryAnalysisReport
@@ -57,8 +58,9 @@ class FecSummaryRouter:
         @self.router.post(
             f"{self.base_endpoint}/getCapture",
             summary="Get FEC Summary PNM Capture",
+            response_model=None,
             responses=FAST_API_RESPONSE,)
-        async def get_capture(request: PnmFecSummaryAnalysisRequest):
+        async def get_capture(request: PnmFecSummaryAnalysisRequest) -> SnmpResponse | PnmAnalysisResponse | FileResponse:
             """
             Capture Downstream OFDM FEC Summary Statistics.
 
