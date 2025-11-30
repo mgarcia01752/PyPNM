@@ -111,8 +111,8 @@ class MultiDsChanEstRouter(AbstractService):
             try:
                 service: MultiChannelEstimationService = cast(MultiChannelEstimationService, self.getService(operation_id))
 
-            except KeyError:
-                raise HTTPException(status_code=404, detail="Operation not found")
+            except KeyError as err:
+                raise HTTPException(status_code=404, detail="Operation not found") from err
 
             status = service.status(operation_id)
             return MultiChanEstStatusResponse(
@@ -166,8 +166,8 @@ class MultiDsChanEstRouter(AbstractService):
             try:
                 service: MultiChannelEstimationService = cast(MultiChannelEstimationService, self.getService(operation_id))
 
-            except KeyError:
-                raise HTTPException(status_code=404, detail="Operation not found")
+            except KeyError as err:
+                raise HTTPException(status_code=404, detail="Operation not found") from err
 
             service.stop(operation_id)
             status = service.status(operation_id)

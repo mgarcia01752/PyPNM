@@ -108,7 +108,7 @@ class EchoDetector:
         subcarrier_spacing_hz: float,
         n_fft: Optional[int] = None,
         cable_type: CableTypes = "RG6",
-        channel_id: ChannelId = ChannelId(INVALID_CHANNEL_ID),
+        channel_id: Optional[ChannelId] = None,
     ) -> None:
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         if subcarrier_spacing_hz <= 0.0:
@@ -122,6 +122,9 @@ class EchoDetector:
             n_fft = max(MIN_NFFT, 1 << ceil(log2(max(1, N))))
         if n_fft <= 0:
             raise ValueError("n_fft must be positive")
+
+        if channel_id is None:
+            channel_id = ChannelId(INVALID_CHANNEL_ID)
 
         self._H_in: NDArrayC128 = H
         self._N: int = N

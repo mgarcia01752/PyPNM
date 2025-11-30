@@ -510,9 +510,9 @@ class GroupDelay:
             return f, None
         # constant spacing
         try:
-            df = float(df_hz)  # type: ignore[arg-type]
+            df = float(df_hz)
         except Exception as e:
-            raise ValueError(f"df_hz must be a real number: {e}")
+            raise ValueError(f"df_hz must be a real number: {e}") from e
         if not np.isfinite(df) or df == 0.0:
             raise ValueError("df_hz must be finite and non-zero.")
         return None, df

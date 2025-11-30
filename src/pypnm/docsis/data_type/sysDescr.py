@@ -76,7 +76,7 @@ class SystemDescriptor:
             )
 
         except KeyError as e:
-            raise ValueError(f"Missing expected field {e.args[0]} in sysDescr: {system_description}")
+            raise ValueError(f"Missing expected field {e.args[0]} in sysDescr: {system_description}") from e
 
     def to_model(self) -> SystemDescriptorModel:
         """

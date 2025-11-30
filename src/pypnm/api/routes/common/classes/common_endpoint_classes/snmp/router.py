@@ -48,7 +48,7 @@ class SnmpFastApiRouter(ABC):
                 raise
             except Exception as e:
                 self.logger.exception(f"[getMeasurement] Error for MAC {request.cable_modem.mac_address}")
-                raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}") from e
 
         @self.router.post(f"/{self._base_endpoint}/getAnalysis", response_model=SnmpAnalysisResponse)
         async def get_analysis(request: SnmpAnalysisRequest):
@@ -58,7 +58,7 @@ class SnmpFastApiRouter(ABC):
                 raise
             except Exception as e:
                 self.logger.exception(f"[getPlot] Error for MAC {request.cable_modem.mac_address}")
-                raise HTTPException(status_code=500, detail=f"Plot retrieval failed: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Plot retrieval failed: {str(e)}") from e
 
     @abstractmethod
     async def get_measurement_logic(self, request: BaseDeviceConnectRequest) -> SnmpResponse:

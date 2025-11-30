@@ -77,6 +77,6 @@ class DiplexerConfigResult:
                 self.logger.exception("Failed to fetch diplexer configuration")
                 raise HTTPException(
                     status_code=500,
-                    detail=f"Internal error retrieving diplexer configuration, Reason: {exc}")
+                    detail=f"Internal error retrieving diplexer configuration, Reason: {exc}") from exc
 
 router = DiplexerConfigResult().router

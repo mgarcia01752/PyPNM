@@ -90,7 +90,7 @@ class InterfaceStats(BaseModel):
                 except (ValueError, TypeError):
                     return None
 
-            async def fetch(field: str, cast: Optional[Callable] = None):
+            async def fetch(field: str, cast: Optional[Callable] = None, index=index):
                 raw = await snmp.get(f"{field}.{index}")
                 val = Snmp_v2c.get_result_value(raw)
 

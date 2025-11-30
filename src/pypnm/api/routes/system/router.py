@@ -78,7 +78,7 @@ class SystemRouter:
                 # You can return more detailed errors based on exception type if you like
                 raise HTTPException(
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-                    detail="Failed to retrieve sysDescr")
+                    detail="Failed to retrieve sysDescr") from exc
 
         @self.router.post("/upTime", response_model=Union[SysUpTimeResponse, SnmpResponse])
         async def get_uptime(request: SysRequest) -> Union[SysUpTimeResponse, SnmpResponse] :
@@ -107,6 +107,6 @@ class SystemRouter:
 
             except Exception as exc:
                 self.logger.error(f"sysUpTime error for {mac}@{ip}: {exc}")
-                raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail="Failed to retrieve sysUpTime")
+                raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail="Failed to retrieve sysUpTime") from exc
 
 router = SystemRouter().router

@@ -233,5 +233,5 @@ class SignalCaptureAggregator:
         }
         try:
             return table[reducer]
-        except KeyError:
-            raise ValueError(f"Unknown reducer: {reducer!r}")
+        except KeyError as err:
+            raise ValueError(f"Unknown reducer: {reducer!r}") from err

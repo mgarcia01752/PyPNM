@@ -70,10 +70,12 @@ class AnalysisReport(ABC):
         - Construct with an `Analysis` instance.
         - Call `build_report()` to emit files, then `to_model()` for response data.
     '''
-    def __init__(self, analysis: Analysis, armc: AnalysisRptMatplotConfig = AnalysisRptMatplotConfig()):
+    def __init__(self, analysis: Analysis, armc: AnalysisRptMatplotConfig | None = None):
         """Set up logging, store the `Analysis`, and initialize runtime context."""
         self.logger = logging.getLogger("AnalysisReport")
         self._analysis = analysis
+        if armc is None:
+            armc = AnalysisRptMatplotConfig()
         self._armc = armc
         self.__init()
 

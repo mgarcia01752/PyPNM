@@ -59,8 +59,10 @@ class ChanEstimationReport(AnalysisReport):
     def __init__(
         self,
         analysis: Analysis,
-        analysis_matplot_config: AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(),
+        analysis_matplot_config: AnalysisRptMatplotConfig | None = None,
     ):
+        if analysis_matplot_config is None:
+            analysis_matplot_config = AnalysisRptMatplotConfig()
         super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("ChanEstimationReport")
         self._results: Dict[int, ChanEstimationAnalysisRptModel] = {}

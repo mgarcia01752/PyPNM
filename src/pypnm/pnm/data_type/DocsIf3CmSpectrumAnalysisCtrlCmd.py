@@ -270,7 +270,7 @@ class DocsIf3CmSpectrumAnalysisCtrlCmd:
         try:
             window = WindowFunction(value)
         except ValueError:
-            raise ValueError("Invalid WindowFunction value")
+            raise ValueError("Invalid WindowFunction value") from None
         self.docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction = window
         self.logger.debug(f"Set window function to {window.name} ({value})")
 

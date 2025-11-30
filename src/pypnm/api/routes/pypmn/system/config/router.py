@@ -37,7 +37,7 @@ class PyPnmSystemConfigAPI:
             config = cm.as_dict()
             return JSONResponse(content={"status": "success", "data": config})
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to load config: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to load config: {e}") from e
 
     async def update_system_config(self, config_update: SystemConfigModel):
         """
@@ -48,6 +48,6 @@ class PyPnmSystemConfigAPI:
             PnmConfigManager.reload()
             return JSONResponse(content={"status": "success", "message": "Configuration updated"})
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to update config: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to update config: {e}") from e
 
 router = PyPnmSystemConfigAPI().router

@@ -49,7 +49,7 @@ class CableModemPnmConfig(BaseModel):
         try:
             return MacAddress(v).mac_address
         except Exception as e:
-            raise ValueError(f"Invalid MAC address: {v}, reason: ({e})")
+            raise ValueError(f"Invalid MAC address: {v}, reason: ({e})") from e
 
 
 class CommonMatPlotUiConfig(BaseModel):
@@ -66,7 +66,7 @@ class CommonFileSearchRequest(BaseModel):
         try:
             return MacAddress(v).to_mac_format(MacAddressFormat.COLON)
         except Exception as e:
-            raise ValueError(f"Invalid MAC address: {v}, reason: ({e})")
+            raise ValueError(f"Invalid MAC address: {v}, reason: ({e})") from e
 
 class CommonRequest(BaseModel):
     cable_modem: CableModemPnmConfig = Field(description="Cable modem configuration for basic PNM operations")
@@ -107,7 +107,7 @@ class CommonResponse(BaseModel):
         try:
             return MacAddress(v).mac_address
         except Exception as e:
-            raise ValueError(f"Invalid MAC address: {v}, reason: ({e})")
+            raise ValueError(f"Invalid MAC address: {v}, reason: ({e})") from e
 
 
 class CommonAnalysisResponse(CommonResponse):

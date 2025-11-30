@@ -182,7 +182,7 @@ class CommonMeasureService(CommonMessagingService):
         """
         return self._capture_parameter
 
-    async def set_and_go(self, interface_parameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = DownstreamOfdmParameters() ,
+    async def set_and_go(self, interface_parameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = None ,
                          max_wait_count: int = 5,) -> MessageResponse:
         """
         Trigger PNM file capture and retrieval based on direction-specific parameters.
@@ -581,7 +581,7 @@ class CommonMeasureService(CommonMessagingService):
             self.logger.exception(f"{self.log_prefix} - File retrieval failed: {e}")
             return False
 
-    async def _get_indexes_via_pnm_test_type(self, ifParameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = DownstreamOfdmParameters()
+    async def _get_indexes_via_pnm_test_type(self, ifParameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = None
                                              ) -> Tuple["ServiceStatusCode", Optional[List[Tuple[InterfaceIndex, ChannelId]]]]:
         """
         Determines the appropriate interface indexes and channel IDs to target for a given PNM test type.
@@ -597,6 +597,9 @@ class CommonMeasureService(CommonMessagingService):
             Tuple[ServiceStatusCode, Optional[List[Tuple[int, int]]]]:
                 A status code indicating success or reason for failure, and a list of (index, channelId) tuples.
         """
+
+        if ifParameters is None:
+            ifParameters = DownstreamOfdmParameters()
 
         if not ifParameters:
             ifParameters = self.getInterfaceParameters(DocsisIfType.docsOfdmDownstream)

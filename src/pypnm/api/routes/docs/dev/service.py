@@ -25,7 +25,9 @@ class CmDocsDevService:
 
     def __init__(self, mac_address: MacAddressStr,
                  ip_address: InetAddressStr,
-                 snmp_config: SNMPConfig = SNMPConfig()) -> None:
+                 snmp_config: SNMPConfig | None = None) -> None:
+        if snmp_config is None:
+            snmp_config = SNMPConfig()
         self._mac = MacAddress(mac_address)
         self._ip = Inet(ip_address)
         self._cm = CableModem(mac_address   =   self._mac,
@@ -78,7 +80,7 @@ class CmDocsDevService:
 
         except Exception as e:
             logger.exception("Failed to reset cable modem")
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
     async def ping_cable_modem(self) -> PnmResponse:
         try:
@@ -97,4 +99,4 @@ class CmDocsDevService:
 
         except Exception as e:
             logger.exception("Failed to send ping to cable modem")
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=str(e)) from e

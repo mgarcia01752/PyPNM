@@ -406,4 +406,4 @@ class QamLutManager:
         try:
             return lut[cw]
         except KeyError:
-            raise KeyError(f"Codeword {cw} not found in LUT")
+            raise KeyError(f"Codeword {cw} not found in LUT") from None

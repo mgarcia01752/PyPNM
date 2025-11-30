@@ -45,4 +45,4 @@ class BaseDeviceResponse(BaseModel):
         try:
             return MacAddress(v).to_mac_format(MacAddressFormat.COLON)
         except Exception as e:
-            raise ValueError(f"Invalid MAC address {v!r}: {e}")
+            raise ValueError(f"Invalid MAC address {v!r}: {e}") from e

@@ -162,8 +162,8 @@ class GetPnmParserAndParameters(PnmHeader):
         """
         try:
             file_type_enum = PnmFileType(self.pnm_type)
-        except ValueError:
-            raise ValueError(f"Unsupported PNM file type code: {self.pnm_type}")
+        except ValueError as exc:
+            raise ValueError(f"Unsupported PNM file type code: {self.pnm_type}") from exc
 
         self.logger.debug("PNM-File-Type-Enum: %s", file_type_enum)
 

@@ -118,7 +118,7 @@ class CSVManager:
             try:
                 self.insert_row(row)
             except CSVValidationError as e:
-                raise CSVValidationError(f"Error in row {i}: {str(e)}")
+                raise CSVValidationError(f"Error in row {i}: {str(e)}") from e
 
     def get_row_count(self) -> int:
         """Get the number of data rows (excluding header)"""

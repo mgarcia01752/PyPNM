@@ -52,7 +52,7 @@ class PyPnmSystemLog:
                 media_type="text/plain" )
 
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to retrieve log: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to retrieve log: {e}") from e
 
 # Expose router for FastAPI
 router = PyPnmSystemLog().router

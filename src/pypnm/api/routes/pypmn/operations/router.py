@@ -66,7 +66,7 @@ class PyPnmOperationsAPI(AbstractService):
         active_services = self.getActiveServices()
         return JSONResponse(content={"operations": list(active_services.keys())})
 
-    async def get_operation_status(self, operation_id: OperationId = Path(..., description="Unique operation identifier")) -> JSONResponse:
+    async def get_operation_status(self, operation_id: OperationId = Path(..., description="Unique operation identifier")) -> JSONResponse:  # noqa: B008
         """
         Retrieve detailed metadata for a specific operation.
         """

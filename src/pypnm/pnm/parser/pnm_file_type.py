@@ -82,9 +82,9 @@ class PnmFileType(Enum):
         """
         try:
             return cls[name]
-        except KeyError:
+        except KeyError as exc:
             valid = ", ".join([e.name for e in cls])
-            raise KeyError(f"Invalid PnmFileType name: {name!r}. Valid names: {valid}")
+            raise KeyError(f"Invalid PnmFileType name: {name!r}. Valid names: {valid}") from exc
 
     @classmethod
     def from_mmnemonic(cls, tag: str, version: int) -> 'PnmFileType':

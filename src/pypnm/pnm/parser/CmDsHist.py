@@ -61,7 +61,7 @@ class CmDsHist(PnmHeader):
             self._mac_address = MacAddress(unpacked[0]).to_mac_format(MacAddressFormat.COLON)
             self._symmetry = unpacked[1]
         except Exception as e:
-            raise ValueError(f"Failed to unpack header: {e}")
+            raise ValueError(f"Failed to unpack header: {e}") from e
 
         offset = mac_sym_header_size
 

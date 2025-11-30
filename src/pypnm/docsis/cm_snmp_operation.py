@@ -143,8 +143,8 @@ class FecSummaryType(Enum):
     def from_value(cls, value: int):
         try:
             return cls(value)
-        except ValueError:
-            raise ValueError(f"Invalid FEC Summary Type value: {value}")
+        except ValueError as err:
+            raise ValueError(f"Invalid FEC Summary Type value: {value}") from err
 
 class CmSnmpOperation:
     """
@@ -1060,7 +1060,7 @@ class CmSnmpOperation:
             results = await self._snmp.walk(oid)
         except Exception as e:
             self.logger.error(f"SNMP walk for OID {oid} failed: {e}")
-            raise RuntimeError(f"SNMP walk failed: {e}")
+            raise RuntimeError(f"SNMP walk failed: {e}") from e
 
         # If the SNMP WALK returned no varbinds, warn and return empty bytes
         if not results:

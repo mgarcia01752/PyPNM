@@ -219,7 +219,7 @@ class Snmp_v2c:
         try:
             snmp_value = value_type(value)
         except Exception as e:
-            raise ValueError(f"Failed to create SNMP value of type {value_type}: {e}")
+            raise ValueError(f"Failed to create SNMP value of type {value_type}: {e}") from e
 
         errorIndication, errorStatus, errorIndex, varBinds = await set_cmd(
             self._snmp_engine,
@@ -589,7 +589,7 @@ class Snmp_v2c:
         try:
             snmp_value = int(snmp_value)
         except ValueError:
-            raise ValueError(f"Invalid input for TruthValue: {snmp_value}")
+            raise ValueError(f"Invalid input for TruthValue: {snmp_value}") from None
 
         if snmp_value == 1:
             return True

@@ -28,14 +28,14 @@ class CableModemOnlyConfig(BaseModel):
         try:
             return str(MacAddress(v))
         except Exception as e:
-            raise ValueError(f"Invalid MAC address {v!r}: {e}")
+            raise ValueError(f"Invalid MAC address {v!r}: {e}") from e
 
     @field_validator("ip_address")
     def _validate_ip(cls, v: str) -> str:
         try:
             return str(ip_address(v))
         except ValueError:
-            raise ValueError(f"Invalid IP address {v!r}")
+            raise ValueError(f"Invalid IP address {v!r}") from None
 
 class BaseDeviceConnectRequest(BaseModel):
     """

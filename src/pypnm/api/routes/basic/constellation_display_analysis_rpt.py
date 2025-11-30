@@ -40,8 +40,10 @@ class ConstellationDisplayReport(AnalysisReport):
     FNAME_TAG:str = 'constdisplay'
 
     def __init__(self, analysis: Analysis,
-                 analysis_matplot_config:ConstDisplayAnalysisRptMatplotConfig = ConstDisplayAnalysisRptMatplotConfig(),
+                 analysis_matplot_config: ConstDisplayAnalysisRptMatplotConfig | None = None,
                  **kwargs):
+        if analysis_matplot_config is None:
+            analysis_matplot_config = ConstDisplayAnalysisRptMatplotConfig()
         super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("ConstellationDisplayReport")
         self._results: Dict[int, ConstellationDisplayAnalysisRptModel] = {}

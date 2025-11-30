@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Iterable, List, cast
+from typing import Any, Iterable, List, Optional, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -46,7 +46,7 @@ class DsHistrogramReport(AnalysisReport):
     FNAME_TAG: str = "DsHistrogram"
 
     def __init__(self, analysis: Analysis,
-                 analysis_matplot_config: AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(),
+                 analysis_matplot_config: Optional[AnalysisRptMatplotConfig] = None,
                  **kwargs) -> None:
         """
         Initialize the report builder.
@@ -58,6 +58,8 @@ class DsHistrogramReport(AnalysisReport):
         analysis_matplot_config : AnalysisRptMatplotConfig
             Theme and rendering options used by downstream plots.
         """
+        if analysis_matplot_config is None:
+            analysis_matplot_config = AnalysisRptMatplotConfig()
         super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self._results: dict[int, DsHistrogramAnalysisRpt] = {}

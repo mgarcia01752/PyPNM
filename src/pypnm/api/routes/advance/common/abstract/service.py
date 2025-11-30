@@ -13,7 +13,7 @@ from pypnm.lib.types import GroupId, OperationId
 
 T = TypeVar("T", bound=AbstractCaptureService)
 
-class AbstractService(ABC):
+class AbstractService:
     """
     Base router class managing the lifecycle of capture service instances.
 
@@ -90,8 +90,8 @@ class AbstractService(ABC):
         """
         try:
             return self._service_store[operation_id]
-        except KeyError:
-            raise KeyError(f"No service loaded for operation_id '{operation_id}'")
+        except KeyError as err:
+            raise KeyError(f"No service loaded for operation_id '{operation_id}'") from err
 
     def getActiveServices(self) -> Dict[OperationId, AbstractCaptureService]:
         """

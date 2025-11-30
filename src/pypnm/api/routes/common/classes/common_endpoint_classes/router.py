@@ -26,14 +26,14 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import
 )
 
 
-class BaseFastApiRouter(ABC):
+class BaseFastApiRouter:
 
     def __init__(self, prefix: str, tags: List[str|Enum], base_endpoint: str)   :
         self.router = APIRouter(prefix=prefix, tags=tags)
         self.logger = logging.getLogger(f"{self.__class__.__name__}.{base_endpoint}")
-        self.base_endpoint = base_endpoint.strip("/")
+        self._base_endpoint = base_endpoint.strip("/")
 
-class PnmFastApiRouter(ABC):
+class PnmFastApiRouter(BaseFastApiRouter, ABC):
     """
     Abstract base router class for defining standardized FastAPI endpoints related to
     Proactive Network Maintenance (PNM).
@@ -49,9 +49,7 @@ class PnmFastApiRouter(ABC):
                  set_analysis_description:str=None,                         # type: ignore
                  set_measurement_statistics_description:str=None):  # type: ignore
 
-        self.router = APIRouter(prefix=prefix, tags=tags)
-        self.logger = logging.getLogger(f"{self.__class__.__name__}.{base_endpoint}")
-        self._base_endpoint = base_endpoint.strip("/")
+        super().__init__(prefix, tags, base_endpoint)
         self.set_measurement_description = set_measurement_description
         self.set_analysis_description = set_analysis_description
         self.set_measurement_statistics_description = set_measurement_statistics_description
@@ -70,7 +68,7 @@ class PnmFastApiRouter(ABC):
                 raise
             except Exception as e:
                 self.logger.exception(f"[getMeasurement] Error for MAC {request.cable_modem.mac_address}")
-                raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}") from e
 
         @self.router.post(f"/{self._base_endpoint}/getAnalysis",
                           response_model=Union[PnmAnalysisResponse, SnmpResponse],
@@ -83,7 +81,7 @@ class PnmFastApiRouter(ABC):
                 raise
             except Exception as e:
                 self.logger.exception(f"[getAnalysis] Error for MAC {request.cable_modem.mac_address}")
-                raise HTTPException(status_code=500, detail=f"Analysis retrieval failed: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Analysis retrieval failed: {str(e)}") from e
 
         @self.router.post(f"/{self._base_endpoint}/getMeasurementStatistics",
                           response_model= SnmpResponse,
@@ -96,7 +94,7 @@ class PnmFastApiRouter(ABC):
                 raise
             except Exception as e:
                 self.logger.exception(f"[getMeasurementStatistics] Error for MAC {request.cable_modem.mac_address}")
-                raise HTTPException(status_code=500, detail=f"Measurement Statistics retrieval failed: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Measurement Statistics retrieval failed: {str(e)}") from e
 
     @abstractmethod
     async def get_measurement_logic(self, request: PnmRequest) -> Union[PnmMeasurementResponse, SnmpResponse]:

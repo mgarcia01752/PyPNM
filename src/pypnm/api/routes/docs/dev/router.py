@@ -77,7 +77,7 @@ class DocsDevRouter:
 
             except Exception as e:
                 logger.exception(f"Failed to fetch event log, Mac: {mac}, IP: {ip}, error: {e}")
-                raise HTTPException(status_code=500, detail=str(e))
+                raise HTTPException(status_code=500, detail=str(e)) from e
 
         @self.router.post("/reset",
                           response_model=SnmpResponse,
@@ -118,6 +118,6 @@ class DocsDevRouter:
                 raise
             except Exception as e:
                 logger.exception(f"Failed to reset cable modem, Mac: {mac}, IP: {ip}, error: {e}")
-                raise HTTPException(status_code=500, detail=str(e))
+                raise HTTPException(status_code=500, detail=str(e)) from e
 
 router = DocsDevRouter().router

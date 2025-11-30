@@ -83,7 +83,7 @@ class BaseCapabilityRouter:
                 self.logger.exception("Failed to fetch DOCSIS base capability")
                 raise HTTPException(
                     status_code=500,
-                    detail=f"Internal error retrieving DOCSIS base capability, reason: {exc}")
+                    detail=f"Internal error retrieving DOCSIS base capability, reason: {exc}") from exc
 
 # Required for dynamic FastAPI router registration
 router = BaseCapabilityRouter().router

@@ -62,4 +62,4 @@ class OfdmProfileStatsService:
             return stats
         except Exception as e:
             logger.error(f"Error fetching OFDM profile stats: {e}", exc_info=True)
-            raise RuntimeError(f"Failed to retrieve OFDM profile stats: {e}")
+            raise RuntimeError(f"Failed to retrieve OFDM profile stats: {e}") from e
