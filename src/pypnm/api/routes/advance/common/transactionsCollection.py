@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Callable
 
 from pydantic import Field
 
@@ -203,7 +204,7 @@ class TransactionCollection:
         key_fn = self._composite_key_for_sorts(sorts)
         return sorted(self._records, key=key_fn, reverse=reverse)
 
-    def _composite_key_for_sorts(self, sorts: list[Sort]):
+    def _composite_key_for_sorts(self, sorts: list[Sort]) -> Callable[..., tuple[object, ...]]:
         """
         Build a composite key function for multi-level sorting.
 
@@ -217,7 +218,7 @@ class TransactionCollection:
         callable
             A key function for sorting.
         """
-        def key(r: TransactionCollectionModel):
+        def key(r: TransactionCollectionModel) -> tuple[object, ...]:
             parts: list[object] = []
 
             for s in sorts:

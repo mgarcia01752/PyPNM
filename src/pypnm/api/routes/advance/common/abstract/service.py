@@ -48,7 +48,7 @@ class AbstractService:
         """
         self.__SERVICE_STORE[operation_id] = service
 
-    async def loadService(self, service_cls: type[T], *args: Any, **kwargs: Any) -> tuple[GroupId, OperationId]:
+    async def loadService(self, service_cls: type[T], *args: Any, **kwargs: Any) -> tuple[GroupId, OperationId]:  # noqa: ANN401
         """
         Instantiate, start, and register a capture service.
 

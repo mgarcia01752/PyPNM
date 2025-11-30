@@ -266,7 +266,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                 )
         return self._results
 
-    def create_csv(self, **kwargs) -> list[CSVManager]:
+    def create_csv(self, **kwargs: object) -> list[CSVManager]:
         """
         Materialize Per-Channel Analysis Results As CSV Files.
 
@@ -363,7 +363,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                         csvs.append(csv)
         return csvs
 
-    def create_matplot(self, **kwargs) -> list[MatplotManager]:
+    def create_matplot(self, **kwargs: object) -> list[MatplotManager]:
         """
         Generate Matplotlib Plots For Multi-ChannelEstimation Results.
 

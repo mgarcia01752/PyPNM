@@ -469,7 +469,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
         self._dispatch_build()
 
-    def create_csv(self, **kwargs) -> list[CSVManager]:
+    def create_csv(self, **kwargs: object) -> list[CSVManager]:
         """
         Build CSV outputs for supported analysis types.
         Currently implemented for MIN_AVG_MAX only.
@@ -559,7 +559,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
         return out
 
-    def create_matplot(self, **kwargs) -> list[MatplotManager]:
+    def create_matplot(self, **kwargs: object) -> list[MatplotManager]:
         """
         Build MatPlot PNG outputs for supported analysis types.
         Currently implemented for MIN_AVG_MAX only.

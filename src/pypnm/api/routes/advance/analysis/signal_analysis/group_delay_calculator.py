@@ -8,7 +8,7 @@ from typing import Final, Literal
 
 import numpy as np
 from numpy.typing import NDArray
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 
 from pypnm.lib.types import ComplexArray, FloatSeries, FrequencyHz, TwoDFloatSeries
 
@@ -56,7 +56,7 @@ class GroupDelayCalculatorFullModel(BaseModel):
 
     @field_validator("tau_g")
     @classmethod
-    def _match_len(cls, tau_g: FloatSeries, info) -> FloatSeries:
+    def _match_len(cls, tau_g: FloatSeries, info: ValidationInfo) -> FloatSeries:
         """Enforce that the group delay vector matches the frequency axis length."""
         freqs = info.data.get("freqs", [])
         if len(freqs) != len(tau_g):
@@ -106,7 +106,7 @@ class GroupDelayCalculatorMedianModel(BaseModel):
 
     @field_validator("tau_med")
     @classmethod
-    def _match_len(cls, tau_med: FloatSeries, info) -> FloatSeries:
+    def _match_len(cls, tau_med: FloatSeries, info: ValidationInfo) -> FloatSeries:
         """Enforce that the median group delay vector matches the frequency axis length."""
         freqs = info.data.get("freqs", [])
         if len(freqs) != len(tau_med):
@@ -145,7 +145,7 @@ class GroupDelayCalculatorModel(BaseModel):
 
     @field_validator("H_avg")
     @classmethod
-    def _coerce_and_check_avg(cls, v: ComplexArray, info) -> ComplexArray:
+    def _coerce_and_check_avg(cls, v: ComplexArray, info: ValidationInfo) -> ComplexArray:
         """Coerce average channel estimates into well-formed (re, im) pairs and validate length."""
         freqs = info.data.get("freqs", [])
         out: ComplexArray = []
@@ -160,7 +160,7 @@ class GroupDelayCalculatorModel(BaseModel):
 
     @field_validator("H_raw")
     @classmethod
-    def _coerce_and_check_raw(cls, v: list[ComplexArray], info) -> list[ComplexArray]:
+    def _coerce_and_check_raw(cls, v: list[ComplexArray], info: ValidationInfo) -> list[ComplexArray]:
         """Coerce raw channel matrix into (re, im) pairs and validate its M×K shape."""
         freqs = info.data.get("freqs", [])
         if not v or not v[0]:
@@ -181,7 +181,7 @@ class GroupDelayCalculatorModel(BaseModel):
 
     @field_validator("snapshot_group_delay")
     @classmethod
-    def _shape_match_snapshots(cls, v: GroupDelayCalculatorSnapshotModel, info) -> GroupDelayCalculatorSnapshotModel:
+    def _shape_match_snapshots(cls, v: GroupDelayCalculatorSnapshotModel, info: ValidationInfo) -> GroupDelayCalculatorSnapshotModel:
         """Ensure snapshot group delay K dimension matches the frequency axis."""
         k = len(info.data.get("freqs", []))
         _, k_taus = v.shape()
