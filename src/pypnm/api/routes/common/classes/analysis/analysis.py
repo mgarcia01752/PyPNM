@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Mapping, Sequence
 from enum import Enum
-from typing import Any, cast
+from typing import Any, NoReturn, cast
 
 import numpy as np
 
@@ -258,7 +258,7 @@ class Analysis:
                 self.logger.error(f'Unknown AnalysisType: {self.analysis_type}')
                 raise
 
-    def _basic_analysis(self, pnm_file_type: str, measurement, analysis_para: AnalysisProcessParameters) -> None:
+    def _basic_analysis(self, pnm_file_type: str, measurement: dict[str, Any], analysis_para: AnalysisProcessParameters) -> None:
         """
         Route to the appropriate BASIC analysis handler.
 

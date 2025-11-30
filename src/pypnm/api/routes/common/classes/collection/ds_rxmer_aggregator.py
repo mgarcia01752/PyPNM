@@ -8,6 +8,7 @@ from typing import Any, overload
 from pydantic import BaseModel, Field, model_validator
 from typing_extensions import override
 
+from pypnm.api.routes.basic.rxmer_analysis_rpt import DsRxMerAnalysisModel
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis
 from pypnm.api.routes.common.classes.collection.abstract.multi_pnm_aggreator import (
     MultiPnmCollection,
@@ -94,13 +95,13 @@ class DsRxMerAggregator(MultiPnmCollection):
         return obj.get_frequencies()
 
     @overload
-    def get_basic_analysis(self) -> Any: ...
+    def get_basic_analysis(self) -> DsRxMerAnalysisModel: ...
     @overload
-    def get_basic_analysis(self, channel_id: ChannelId) -> Any: ...
+    def get_basic_analysis(self, channel_id: ChannelId) -> DsRxMerAnalysisModel: ...
     @overload
-    def get_basic_analysis(self, channel_id: ChannelId, capture_time: CaptureTime) -> Any: ...
+    def get_basic_analysis(self, channel_id: ChannelId, capture_time: CaptureTime) -> DsRxMerAnalysisModel: ...
 
-    def get_basic_analysis(self, channel_id: ChannelId | None = None, capture_time: CaptureTime | None = None) -> Any:
+    def get_basic_analysis(self, channel_id: ChannelId | None = None, capture_time: CaptureTime | None = None) -> DsRxMerAnalysisModel:
         """
         Perform basic RxMER analysis using `Analysis.basic_analysis_rxmer`.
 

@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, cast
+from typing import cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -47,14 +47,14 @@ class SpectrumAnalyzerReport(AnalysisReport):
 
     def __init__(self, analysis: Analysis,
                  analysis_matplot_config:AnalysisRptMatplotConfig | None = None,
-                 **kwargs) -> None:
+                 **kwargs: object) -> None:
         if analysis_matplot_config is None:
             analysis_matplot_config = AnalysisRptMatplotConfig()
         super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("SpectrumAnalyzerReport")
         self._results: dict[int, SpectrumAnalyzerAnalysisRptModel] = {}
 
-    def create_csv(self, **kwargs: Any) -> list[CSVManager]:
+    def create_csv(self, **kwargs: object) -> list[CSVManager]:
         """Emit CSV with columns: Frequency, Magnitude(dBmV), MovingAverage."""
         csv_mgr_list: list[CSVManager] = []
 
@@ -81,7 +81,7 @@ class SpectrumAnalyzerReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self, **kwargs: Any) -> list[MatplotManager]:
+    def create_matplot(self, **kwargs: object) -> list[MatplotManager]:
         """Create two figures per channel: raw spectrum and moving average."""
         out: list[MatplotManager] = []
 

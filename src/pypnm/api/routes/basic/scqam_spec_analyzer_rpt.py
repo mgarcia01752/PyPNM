@@ -204,7 +204,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
         self.logger = logging.getLogger("SpectrumAnalyzerReport")
         self._results: dict[int, SpectrumAnalyzerAnalysisRptModel] = {}
 
-    def create_csv(self, **kwargs: Any) -> list[CSVManager]:
+    def create_csv(self) -> list[CSVManager]:
         """Emit a CSV per channel with ``Frequency``, ``Magnitude(dBmV)``, and ``MovingAverage``.
 
         Returns
@@ -250,7 +250,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self, **kwargs: Any) -> list[MatplotManager]:
+    def create_matplot(self) -> list[MatplotManager]:
         """Create two line plots per channel: raw spectrum and windowed average.
 
         Returns

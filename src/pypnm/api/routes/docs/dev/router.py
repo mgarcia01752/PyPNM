@@ -39,7 +39,7 @@ class DocsDevRouter:
         @self.router.post("/eventLog",
                           response_model=EventLogResponse,
                           responses=FAST_API_RESPONSE,)
-        async def get_event_log(request: BaseDeviceConnectRequest):
+        async def get_event_log(request: BaseDeviceConnectRequest) -> EventLogResponse:
             """
             **Retrieve DOCSIS Cable Modem Event Log**
 
@@ -80,9 +80,9 @@ class DocsDevRouter:
                 raise HTTPException(status_code=500, detail=str(e)) from e
 
         @self.router.post("/reset",
-                          response_model=SnmpResponse,
+                          response_model= None,
                           responses=FAST_API_RESPONSE,)
-        async def reset_cable_modem(request: BaseDeviceConnectRequest):
+        async def reset_cable_modem(request: BaseDeviceConnectRequest) -> SnmpResponse | JSONResponse:
             """
             **Reset a DOCSIS Cable Modem**
 

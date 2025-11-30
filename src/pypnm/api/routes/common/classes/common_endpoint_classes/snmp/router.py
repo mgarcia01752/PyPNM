@@ -2,6 +2,8 @@
 # Copyright (c) 2025 Maurice Garcia
 from __future__ import annotations
 
+from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
+
 __skip_autoregister__ = True
 
 import logging
@@ -37,8 +39,10 @@ class SnmpFastApiRouter(ABC):
         self._add_routes()
 
     def _add_routes(self) -> None:
-        @self.router.post(f"/{self._base_endpoint}/getMeasurement", response_model=SnmpResponse)
-        async def get_measurement(request: BaseDeviceConnectRequest):
+        @self.router.post(f"/{self._base_endpoint}/getMeasurement", 
+                          response_model=SnmpResponse,
+                          responses=FAST_API_RESPONSE,)
+        async def get_measurement(request: BaseDeviceConnectRequest) -> SnmpResponse:
             try:
                 return await self.get_measurement_logic(request)
             except HTTPException:
@@ -47,8 +51,9 @@ class SnmpFastApiRouter(ABC):
                 self.logger.exception(f"[getMeasurement] Error for MAC {request.cable_modem.mac_address}")
                 raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}") from e
 
-        @self.router.post(f"/{self._base_endpoint}/getAnalysis", response_model=SnmpAnalysisResponse)
-        async def get_analysis(request: SnmpAnalysisRequest):
+        @self.router.post(f"/{self._base_endpoint}/getAnalysis",
+                          response_model=SnmpAnalysisResponse)
+        async def get_analysis(request: SnmpAnalysisRequest) -> SnmpAnalysisResponse:
             try:
                 return await self.get_analysis_logic(request)
             except HTTPException:

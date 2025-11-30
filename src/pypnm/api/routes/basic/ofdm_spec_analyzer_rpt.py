@@ -208,7 +208,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
         self.logger = logging.getLogger("SingleOfdmSpecAnalyzerReport")
         self._results: dict[int, SpectrumAnalyzerAnalysisRptModel] = {}
 
-    def create_csv(self, **kwargs: Any) -> list[CSVManager]:
+    def create_csv(self, **kwargs: dict[str, object]) -> list[CSVManager]:
         """Emit a CSV per channel with ``Frequency``, ``Magnitude(dBmV)``, and ``MovingAverage``.
 
         Returns
@@ -254,7 +254,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self, **kwargs: Any) -> list[MatplotManager]:
+    def create_matplot(self, **kwargs: dict[str, object]) -> list[MatplotManager]:
         """Create Spectrum Analysis of standard and windowed average Matplots.
 
         Returns

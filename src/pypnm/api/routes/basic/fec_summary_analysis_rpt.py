@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping, Sequence
-from typing import Any, cast
+from typing import cast
 
 from pydantic import Field
 
@@ -20,7 +20,7 @@ from pypnm.api.routes.common.classes.analysis.model.schema import (
 )
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
-from pypnm.lib.types import ArrayLike, ChannelId
+from pypnm.lib.types import ArrayLike, ChannelId, IntSeries, ScalarValue
 
 
 class FecSummaryAnalysisRptModel(CommonAnalysis):
@@ -52,7 +52,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
         self,
         analysis: Analysis,
         analysis_matplot_config: AnalysisRptMatplotConfig | None = None,
-        **kwargs: Any,
+        **kwargs: object,
     ) -> None:
         """Initialize report generator and internal result registry."""
         if analysis_matplot_config is None:
@@ -62,8 +62,16 @@ class FecSummaryAnalysisReport(AnalysisReport):
         self._results: dict[int, FecSummaryAnalysisRptModel] = {}
 
     @staticmethod
-    def _as_seq(x: Any) -> list[Any]:
-        """Convert input to list; None→[], tuples/arrays→list, scalars→[x]."""
+    def _as_seq(x: ScalarValue | Sequence[ScalarValue] | None) -> list[ScalarValue]:
+        """
+        Convert scalar or sequence of scalars into a list of ScalarValue.
+
+        Notes
+        -----
+        - None         → []
+        - list/tuple   → list(x)
+        - other scalar → [x]
+        """
         if x is None:
             return []
         if isinstance(x, (list, tuple)):
@@ -74,8 +82,22 @@ class FecSummaryAnalysisReport(AnalysisReport):
             return [x]
 
     @staticmethod
-    def _get(obj: Any, *names: str) -> Any:
-        """Get attribute or mapping key by trying a list of candidate names."""
+    def _get(obj: object, *names: str) -> object | None:
+        """
+        Retrieve the first matching attribute or mapping key from a set of candidates.
+
+        Parameters
+        ----------
+        obj : Any
+            Source object or mapping.
+        *names : str
+            Candidate attribute or key names to probe in order.
+
+        Returns
+        -------
+        Any
+            Value of the first attribute/key found, otherwise None.
+        """
         for n in names:
             if hasattr(obj, n):
                 return getattr(obj, n)
@@ -83,8 +105,20 @@ class FecSummaryAnalysisReport(AnalysisReport):
                 return obj[n]
         return None
 
-    def _resolve_profile(self, profile_entry: Any) -> str:
-        """Return profile id as string from various schema field names."""
+    def _resolve_profile(self, profile_entry: object) -> str:
+        """
+        Resolve a human-readable profile identifier string.
+
+        Parameters
+        ----------
+        profile_entry : Any
+            Profile entry object or mapping with one of: profile, profile_id, id.
+
+        Returns
+        -------
+        str
+            Profile identifier coerced to string (integer string when possible).
+        """
         p = self._get(profile_entry, "profile", "profile_id", "id")
         try:
             return str(int(p))
@@ -92,43 +126,44 @@ class FecSummaryAnalysisReport(AnalysisReport):
             return str(p) if p is not None else "unknown"
 
     def _resolve_codewords(
-        self, profile_entry: Any
-    ) -> tuple[list[Any], list[int], list[int], list[int], dict[str, int]]:
+        self,
+        profile_entry: object,
+    ) -> tuple[list[ScalarValue], IntSeries, IntSeries, IntSeries, dict[str, int]]:
         """
-        Resolve (timestamps, total, corrected, uncorrected) arrays from schema variants.
+        Resolve timestamp and codeword counter series from schema variants.
+
+        Parameters
+        ----------
+        profile_entry : Any
+            Profile entry containing codeword time-series data in one of several
+            supported field layouts.
 
         Returns
         -------
-        Tuple[List[Any], List[int], List[int], List[int], Dict[str,int]]
-            Timestamps, totals, corrected, uncorrected, and a small shape dict for logging.
+        Tuple[List[ScalarValue], IntSeries, IntSeries, IntSeries, Dict[str, int]]
+            - List[ScalarValue] : Timestamps (epoch seconds or formatted labels).
+            - IntSeries         : Total codewords per timestamp.
+            - IntSeries         : Corrected codewords per timestamp.
+            - IntSeries         : Uncorrected codewords per timestamp.
+            - Dict[str, int]    : Shape summary for logging (keys: ts, tc, cc, uc).
         """
         cw = self._get(profile_entry, "codewords", "codeword_entries", "entries", "codeword")
         shape: dict[str, int] = {}
         candidates = [cw, self._get(cw, "values"), self._get(cw, "data")]
 
-        ts = tc = cc = uc = []
+        ts: list[ScalarValue] = []
+        tc: IntSeries = []
+        cc: IntSeries = []
+        uc: IntSeries = []
         for node in candidates:
             if node is None:
                 continue
             ts = self._as_seq(self._get(node, "timestamps", "timestamp"))
-            tc = self._as_seq(self._get(node, "total_codewords", "total", "totals"))
-            cc = self._as_seq(self._get(node, "corrected"))
-            uc = self._as_seq(self._get(node, "uncorrected"))
+            tc = [int(v) for v in self._as_seq(self._get(node, "total_codewords", "total", "totals"))]
+            cc = [int(v) for v in self._as_seq(self._get(node, "corrected"))]
+            uc = [int(v) for v in self._as_seq(self._get(node, "uncorrected"))]
             if any((ts, tc, cc, uc)):
                 break
-
-        try:
-            tc = [int(v) for v in tc]
-        except Exception:
-            pass
-        try:
-            cc = [int(v) for v in cc]
-        except Exception:
-            pass
-        try:
-            uc = [int(v) for v in uc]
-        except Exception:
-            pass
 
         shape["ts"] = len(ts)
         shape["tc"] = len(tc)
@@ -136,22 +171,47 @@ class FecSummaryAnalysisReport(AnalysisReport):
         shape["uc"] = len(uc)
         return ts, tc, cc, uc, shape
 
-    def _log_preview(self, ch: ChannelId, profile: str, ts: Sequence[Any], tc: Sequence[int], cc: Sequence[int], uc: Sequence[int]) -> None:
-        """Log a short preview of the first few points for debugging."""
-        def head(seq: Sequence[Any], k: int = 5) -> list[Any]:
+    def _log_preview(
+        self,
+        ch: ChannelId,
+        profile: str,
+        ts: Sequence[ScalarValue],
+        tc: Sequence[int],
+        cc: Sequence[int],
+        uc: Sequence[int],
+    ) -> None:
+        """
+        Log a short preview of the first few samples for a channel/profile series.
+
+        Parameters
+        ----------
+        ch : ChannelId
+            Channel identifier.
+        profile : str
+            Profile identifier.
+        ts : Sequence[ScalarValue]
+            Timestamp sequence.
+        tc : Sequence[int]
+            Total codeword counts.
+        cc : Sequence[int]
+            Corrected codeword counts.
+        uc : Sequence[int]
+            Uncorrected codeword counts.
+        """
+        def head(seq: Sequence[ScalarValue | int], k: int = 5) -> list[ScalarValue | int]:
             return list(seq[:k])
         self.logger.debug(
             "Preview ch=%s prof=%s ts[:5]=%s total[:5]=%s corr[:5]=%s unc[:5]=%s",
             int(ch), profile, head(ts), head(tc), head(cc), head(uc),
         )
 
-    def create_csv(self, **kwargs: Any) -> list[CSVManager]:
+    def create_csv(self, **kwargs: object) -> list[CSVManager]:
         """
         Produce CSV files with per-timestamp codeword counters for each channel/profile.
 
         Returns
         -------
-        List[CSVManager]
+        list[CSVManager]
             Managers pointing at the generated CSV files.
         """
         mgr_out: list[CSVManager] = []
@@ -184,7 +244,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
                     self.logger.exception("Failed to create CSV for channel %s (profile %s): %s", channel_id, profile, exc)
         return mgr_out
 
-    def create_matplot(self, **kwargs: Any) -> list[MatplotManager]:
+    def create_matplot(self, **kwargs: object) -> list[MatplotManager]:
         """
         Produce PNG plots (Total/Corrected/Uncorrected) for each channel/profile.
 
@@ -195,7 +255,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
 
         Returns
         -------
-        List[MatplotManager]
+        list[MatplotManager]
             Managers used to generate and reference plot outputs.
         """
         mgr_out: list[MatplotManager] = []
@@ -251,7 +311,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
 
         Expected
         --------
-        The analysis model list is `List[OfdmFecSummaryAnalysisModel]`.
+        The analysis model list is `list[OfdmFecSummaryAnalysisModel]`.
         """
         models: list[OfdmFecSummaryAnalysisModel] = cast(list[OfdmFecSummaryAnalysisModel], self.get_analysis_model())
         for model in models:

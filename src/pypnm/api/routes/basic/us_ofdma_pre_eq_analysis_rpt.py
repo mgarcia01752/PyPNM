@@ -75,7 +75,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
         self._results: dict[int, OfdmaPreEqAnalysis] = {}
         self._sig_cap_agg: SignalCaptureAggregator   = SignalCaptureAggregator()
 
-    def create_csv(self, **kwargs) -> list[CSVManager]:
+    def create_csv(self, **kwargs: object) -> list[CSVManager]:
         """
         Stream validated models into CSVs. Assumes `_process()` already enforced.
         """
@@ -122,7 +122,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self, **kwargs) -> list[MatplotManager]:
+    def create_matplot(self, **kwargs: object) -> list[MatplotManager]:
         """
         Generate per-channel plots from validated OFDMA US Pre-EQ models.
         """
@@ -317,7 +317,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                 group_delay: FloatSeries           = list(cv.group_delay.magnitude)
 
                 # Coerce -> float and ensure finiteness
-                def coerce_finite(seq, name: str) -> list[float]:
+                def coerce_finite(seq: ArrayLike, name: str) -> list[float]:
                     out: list[float] = []
                     for v in seq:
                         fv = float(v)

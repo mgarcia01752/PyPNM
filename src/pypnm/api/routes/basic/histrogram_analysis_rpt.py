@@ -3,9 +3,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 import logging
-from collections.abc import Iterable
-from typing import Any, cast
+from typing import cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -48,7 +48,7 @@ class DsHistrogramReport(AnalysisReport):
 
     def __init__(self, analysis: Analysis,
                  analysis_matplot_config: AnalysisRptMatplotConfig | None = None,
-                 **kwargs) -> None:
+                 **kwargs: object) -> None:
         """
         Initialize the report builder.
 
@@ -65,7 +65,7 @@ class DsHistrogramReport(AnalysisReport):
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self._results: dict[int, DsHistrogramAnalysisRpt] = {}
 
-    def create_csv(self, **kwargs: Any) -> list[CSVManager]:
+    def create_csv(self, **kwargs: object) -> list[CSVManager]:
         """
         Emit one CSV per channel; rows are (ChannelID, BinIndex, HitCount, Symmetry, DwellCount).
 
@@ -99,7 +99,18 @@ class DsHistrogramReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self, **kwargs: Any) -> list[MatplotManager]:
+    def create_matplot(
+        self,
+        *,
+        normalized: bool = False,
+        cumulative: bool = False,
+        orientation: str = "vertical",
+        histtype: str = "bar",
+        align: str = "mid",
+        label: str | None = None,
+        bins: int | Sequence[float] | None = None,
+        **kwargs: object,
+    ) -> list[MatplotManager]:
         """
         Render a per-channel histogram using `MatplotManager.plot_histogram` and pre-binned counts.
 
@@ -127,13 +138,13 @@ class DsHistrogramReport(AnalysisReport):
         """
         out: list[MatplotManager] = []
 
-        normalized: bool    = bool(kwargs.get("normalized", False))
-        cumulative: bool    = bool(kwargs.get("cumulative", False))
-        orientation: str    = str(kwargs.get("orientation", "vertical")).lower()
-        histtype: str       = str(kwargs.get("histtype", "bar"))
-        align: str          = str(kwargs.get("align", "mid"))
-        label               = kwargs.get("label", None)
-        bins_override       = kwargs.get("bins", None)
+        # Normalize and validate incoming parameters
+        orientation = str(orientation).lower()
+        histtype = str(histtype)
+        align = str(align)
+        normalized = bool(normalized)
+        cumulative = bool(cumulative)
+        bins_override = bins
 
         for common_model in self.get_common_analysis_model():
             model = cast(DsHistrogramAnalysisRpt, common_model)

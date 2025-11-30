@@ -48,8 +48,7 @@ class RxMerAnalysisReport(AnalysisReport):
     """Concrete report builder for RxMER measurements."""
 
     def __init__(self, analysis: Analysis,
-                 analysis_matplot_config:AnalysisRptMatplotConfig | None = None,
-                 **kwargs) -> None:
+                 analysis_matplot_config: AnalysisRptMatplotConfig | None = None) -> None:
         if analysis_matplot_config is None:
             analysis_matplot_config = AnalysisRptMatplotConfig()
         super().__init__(analysis, analysis_matplot_config)
@@ -258,7 +257,7 @@ class RxMerAnalysisReport(AnalysisReport):
                 snr_db_limit    = data.modulation_statistics.snr_db_min
                 mod_count:dict[str,int] = data.modulation_statistics.supported_modulation_counts
 
-                def coerce_finite(seq, name: str) -> list[float]:
+                def coerce_finite(seq: ArrayLike, name: str) -> list[float]:
                     '''coerce -> float (and finiteness)'''
                     out: list[float] = []
                     for v in seq:

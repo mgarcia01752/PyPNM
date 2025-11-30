@@ -28,9 +28,8 @@ from pypnm.pnm.parser.CmSpectrumAnalysis import CmSpectrumAnalysis
 from pypnm.pnm.parser.CmSpectrumAnalysisSnmp import CmSpectrumAnalysisSnmp
 from pypnm.pnm.parser.CmUsOfdmaPreEq import CmUsOfdmaPreEq
 
-
 class CommonProcessService(CommonMessagingService):
-    def __init__(self, message_response:MessageResponse, **extra_options) -> None:
+    def __init__(self, message_response: MessageResponse, **extra_options: object) -> None:
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
         self.pnm_file_dir = self.config_mgr = SystemConfigSettings.pnm_dir

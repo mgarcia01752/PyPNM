@@ -41,7 +41,7 @@ class ConstellationDisplayReport(AnalysisReport):
 
     def __init__(self, analysis: Analysis,
                  analysis_matplot_config: ConstDisplayAnalysisRptMatplotConfig | None = None,
-                 **kwargs) -> None:
+                 **kwargs: object) -> None:
         if analysis_matplot_config is None:
             analysis_matplot_config = ConstDisplayAnalysisRptMatplotConfig()
         super().__init__(analysis, analysis_matplot_config)
@@ -50,7 +50,7 @@ class ConstellationDisplayReport(AnalysisReport):
         self._sig_cap_agg: SignalCaptureAggregator = SignalCaptureAggregator()
         self._matplot_config: ConstDisplayAnalysisRptMatplotConfig = analysis_matplot_config
 
-    def create_csv(self, **kwargs) -> list[CSVManager]:
+    def create_csv(self, **kwargs: object) -> list[CSVManager]:
         """
         Stream validated models into CSVs. Assumes `_process()` already enforced
         """
@@ -96,7 +96,7 @@ class ConstellationDisplayReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self, **kwargs) -> list[MatplotManager]:
+    def create_matplot(self, **kwargs: object) -> list[MatplotManager]:
         """
         Generate per-channel line and multi-line plots from validated models.
         """

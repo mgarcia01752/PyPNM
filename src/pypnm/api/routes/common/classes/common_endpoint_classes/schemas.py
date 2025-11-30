@@ -58,7 +58,7 @@ class PnmMeasurementResponse(CommonResponse):
     measurement: dict[Any, Any] = Field(default_factory=dict, description="Raw or structured data resulting from the operation (e.g., text, JSON, or binary).")
 
     @field_validator("measurement", mode="before")
-    def wrap_measurement_in_key(cls, v):
+    def wrap_measurement_in_key(cls, v: object) -> dict[Any, Any] | dict[str, Any]:
         """
         Ensures that if the input is not a dictionary, it gets wrapped under a 'data' key.
         """

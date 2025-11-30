@@ -51,14 +51,14 @@ class ModulationProfileReport(AnalysisReport):
 
     def __init__(self, analysis: Analysis,
                  analysis_matplot_config: AnalysisRptMatplotConfig | None = None,
-                 **kwargs) -> None:
+                 **kwargs: object) -> None:
         if analysis_matplot_config is None:
             analysis_matplot_config = AnalysisRptMatplotConfig()
         super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("ModulationProfileReport")
         self._results: dict[int, ModulationProfileAnalysisRptModel] = {}
 
-    def create_csv(self, **kwargs: Any) -> list[CSVManager]:
+    def create_csv(self, **kwargs: object) -> list[CSVManager]:
         """
         Stream validated models into CSVs. Assumes `_process()` already enforced.
         Emits one CSV per channel/profile pair.
