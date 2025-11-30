@@ -234,7 +234,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
                 csv_mgr.set_header(["Frequency", "Magnitude(dBmV)", "MovingAverage"])
 
                 # Rows aligned by index
-                for f_hz, mag_dbmv, ma in zip(sig.frequencies, sig.amplitude, sig.window.windows_average):
+                for f_hz, mag_dbmv, ma in zip(sig.frequencies, sig.amplitude, sig.window.windows_average, strict=False):
                     csv_mgr.insert_row ([f_hz, mag_dbmv, ma])
 
                 csv_fname = self.create_csv_fname(tags=[str(channel_id), self.FNAME_TAG])
@@ -344,7 +344,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
         """
         models: List[SpectrumAnalyzerAnalysisModel] = cast(List[SpectrumAnalyzerAnalysisModel], self.get_analysis_model())
 
-        for idx, _model in enumerate(models):
+        for _idx, _model in enumerate(models):
 
             sig_analysis = _model.signal_analysis
             freq_hz: FrequencySeriesHz  = [int(f) for f in sig_analysis.frequencies]

@@ -450,7 +450,7 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
         noise_bw = 150
         segment_freq_span = 1_000_000
 
-        for count, (chan_id, (start_hz, center_hz, end_hz)) in enumerate(bw_by_channel.items()):
+        for count, (chan_id, (start_hz, _center_hz, end_hz)) in enumerate(bw_by_channel.items()):
 
             if self._test_mode and count > 1:
                 self.logger.warning("Test mode active: processing only first 2 channels.")

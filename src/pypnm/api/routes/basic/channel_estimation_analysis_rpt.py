@@ -95,7 +95,7 @@ class ChanEstimationReport(AnalysisReport):
                     "ChannelID", "Frequency(Hz)",
                     "Magnitude(Linear)", "Magnitude(dB)", "Regression(Linear)", "Group Delay", "Real", "Imaginary"])
 
-                for rx, ry, reg, cdb, rl_v, gd_v, cmp in zip(freq, magnitude, rl, db, rl, gd, ca):
+                for rx, ry, reg, cdb, _rl_v, gd_v, cmp in zip(freq, magnitude, rl, db, rl, gd, ca, strict=False):
                     real, img = cmp
                     csv_mgr.insert_row([chan, rx, ry, cdb, reg, gd_v, real, img])
 
@@ -145,7 +145,7 @@ class ChanEstimationReport(AnalysisReport):
                 if not cplex:
                     self.logger.warning("No complex samples; skipping IQ scatter for channel %s", channel_id)
                 else:
-                    i, q = zip(*cplex)
+                    i, q = zip(*cplex, strict=False)
                     max_abs = max(
                         max(abs(v) for v in i) if i else 0.0,
                         max(abs(v) for v in q) if q else 0.0,
@@ -271,7 +271,7 @@ class ChanEstimationReport(AnalysisReport):
                 matplot_mgr.append(mgr)
 
                 # Residuals (dB)
-                residuals = cast(ArrayLike, [d - h for d, h in zip(cast(List[float], db), yhat_db)])
+                residuals = cast(ArrayLike, [d - h for d, h in zip(cast(List[float], db), yhat_db, strict=False)])
 
                 cfg = PlotConfig(
                     title           = f"Residual Ripple (dB) - OFDM Channel: {channel_id}  "

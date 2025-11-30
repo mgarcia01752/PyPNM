@@ -146,7 +146,7 @@ class GroupDelayAnomalyDetector:
         f_min, f_max = self.f[0], self.f[-1]
         edges = np.arange(f_min, f_max + bin_width, bin_width)
         local_sigma: Dict[Tuple[float, float], float] = {}
-        for start, end in zip(edges[:-1], edges[1:]):
+        for start, end in zip(edges[:-1], edges[1:], strict=False):
             idx = (self.f >= start) & (self.f < end)
             if np.sum(idx) < 2:
                 continue

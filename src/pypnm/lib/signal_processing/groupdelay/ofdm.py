@@ -243,7 +243,7 @@ class OFDMGroupDelay(BaseModel):
         """
         acc = 0.0
         cnt = 0
-        for v, ok in zip(series_us, mask):
+        for v, ok in zip(series_us, mask, strict=False):
             if ok == 1 and math.isfinite(v):
                 acc += v
                 cnt += 1

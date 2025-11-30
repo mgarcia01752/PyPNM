@@ -2016,7 +2016,7 @@ class Analysis:
 
         profiles: List[OfdmFecSummaryProfileModel] = []
 
-        for idx, prof in enumerate(model.fec_summary_data or []):
+        for _idx, prof in enumerate(model.fec_summary_data or []):
             cwe = prof.codeword_entries
 
             cw = FecSummaryCodeWordModel(

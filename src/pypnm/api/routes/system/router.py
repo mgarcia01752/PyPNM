@@ -37,7 +37,9 @@ class SystemRouter:
     def __init__(
         self,
         prefix: str = "/system",
-        tags: List[Union[str, Enum]] = ["DOCSIS System"]):
+        tags: List[Union[str, Enum]] = None):
+        if tags is None:
+            tags = ["DOCSIS System"]
         self.router = APIRouter(prefix=prefix, tags=tags)
         self.logger = logging.getLogger(__name__)
         self._register_routes()

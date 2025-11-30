@@ -118,7 +118,7 @@ class AnalysisReport(ABC):
             archive_file =   self.archive_file,
         )
 
-    def create_csv_fname(self, tags: List[str] = []) -> PathLike:
+    def create_csv_fname(self, tags: List[str] = None) -> PathLike:
         '''
         Build a CSV filename of the form:
             <csv_dir>/<mac>_<model>_<timestamp>[_TAGS].csv
@@ -126,9 +126,11 @@ class AnalysisReport(ABC):
         Example:
             fname = self.create_csv_fname(tags=["ch1", "rpt"])
         '''
+        if tags is None:
+            tags = []
         return f"{self._csv_dir}/{self.create_generic_fname(tags=tags, ext='csv')}"
 
-    def create_png_fname(self, tags: List[str] = []) -> PathLike:
+    def create_png_fname(self, tags: List[str] = None) -> PathLike:
         '''
         Build a PNG filename of the form:
             <png_dir>/<mac>_<model>_<timestamp>[_TAGS].png
@@ -136,9 +138,11 @@ class AnalysisReport(ABC):
         Example:
             fname = self.create_png_fname(tags=["spectrum"])
         '''
+        if tags is None:
+            tags = []
         return f"{self._png_dir}/{self.create_generic_fname(tags=tags, ext='png')}"
 
-    def create_json_fname(self, tags: List[str] = []) -> PathLike:
+    def create_json_fname(self, tags: List[str] = None) -> PathLike:
         '''
         Build a PNG filename of the form:
             <json_dir>/<mac>_<model>_<timestamp>[_TAGS].png
@@ -146,9 +150,11 @@ class AnalysisReport(ABC):
         Example:
             fname = self.create_png_fname(tags=["spectrum"])
         '''
+        if tags is None:
+            tags = []
         return f"{self._json_dir}/{self.create_generic_fname(tags=tags, ext='json')}"
 
-    def create_archive_fname(self, tags: List[str] = []) -> PathLike:
+    def create_archive_fname(self, tags: List[str] = None) -> PathLike:
         '''
         Build a ZIP archive filename of the form:
             <archive_dir>/<mac>_<model>_<timestamp>[_TAGS].zip
@@ -156,6 +162,8 @@ class AnalysisReport(ABC):
         Example:
             fname = self.create_archive_fname(tags=["bundle"])
         '''
+        if tags is None:
+            tags = []
         return f"{self._archive_dir}/{self.create_generic_fname(tags=tags, ext='zip')}"
 
     def create_generic_fname(self, tags: List[str], ext: str = "") -> FileNameStr:
@@ -411,7 +419,7 @@ class AnalysisReport(ABC):
                                                                                                SystemDescriptor.empty().to_dict()))
         self._system_description: SystemDescriptor      = SystemDescriptor.load_from_dict(system_description_dict)
 
-    def _generate_fname(self, tags: List[str] = [], ext: str = "") -> FileNameStr:
+    def _generate_fname(self, tags: List[str] = None, ext: str = "") -> FileNameStr:
         """
         Construct a sanitized filename from:
           - MAC address (colon-free, lowercase)
@@ -430,6 +438,8 @@ class AnalysisReport(ABC):
         Example:
             self._generate_fname(tags=["ch1", "rpt"], ext="csv")
         """
+        if tags is None:
+            tags = []
         mac = self.get_mac_address().to_mac_format()
         model = self.get_system_description().model.replace(" ", "_").lower()
         ts = str(self.get_group_time())

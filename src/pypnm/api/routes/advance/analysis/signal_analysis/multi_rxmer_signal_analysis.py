@@ -365,7 +365,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 for profile_entry in mod_analysis.profiles:
                     pid = profile_entry.profile_id
                     shannon_min = profile_entry.carrier_values.shannon_min_mer
-                    capacity_delta = [float(a - b) for a, b in zip(mam.avg, shannon_min)]
+                    capacity_delta = [float(a - b) for a, b in zip(mam.avg, shannon_min, strict=False)]
 
                     # Match corresponding FEC summary per profile
                     fec_entry = next((p for p in fec_summary.summary if p.profile_id == pid), None)
@@ -527,7 +527,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                         ch_model.frequency,
                         ch_model.avg_mer,
                         profile_model.profile_min_mer,
-                        profile_model.capacity_delta,
+                        profile_model.capacity_delta, strict=False,
                     ):
                         csv_mgr.insert_row([pid, freq, avg_mer, prof_lim, delta, total, corr, uncor])
 
@@ -548,7 +548,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 csv_mgr.set_header(header)
 
                 # Each row contains: capture time + MER values for that time
-                for ts, mag_series in zip(ch_model.timestamps, ch_model.values):
+                for ts, mag_series in zip(ch_model.timestamps, ch_model.values, strict=False):
                     csv_mgr.insert_row([ts] + mag_series)
 
                 # Assign CSV filename

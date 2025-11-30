@@ -99,7 +99,7 @@ class CSVManager:
 
         # Convert all data to appropriate types and add row
         processed_row = []
-        for i, value in enumerate(row_data):
+        for _i, value in enumerate(row_data):
             if value is None:
                 processed_row.append("")
             else:
