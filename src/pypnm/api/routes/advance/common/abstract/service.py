@@ -4,8 +4,7 @@
 from __future__ import annotations
 
 import logging
-from abc import ABC
-from typing import Any, Dict, Tuple, Type, TypeVar
+from typing import Any, TypeVar
 
 from pypnm.api.routes.advance.common.capture_service import AbstractCaptureService
 from pypnm.api.routes.advance.common.operation_state import OperationState

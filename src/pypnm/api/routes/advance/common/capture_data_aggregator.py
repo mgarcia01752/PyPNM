@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import List
 
 from pypnm.api.routes.advance.common.transactionsCollection import TransactionCollection
 from pypnm.api.routes.advance.common.types.types import TransactionFileCollection

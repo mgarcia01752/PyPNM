@@ -7,8 +7,8 @@ import io
 import logging
 import os
 import zipfile
-from typing import Dict, Union, cast
 from collections.abc import Callable
+from typing import cast
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
@@ -70,7 +70,7 @@ class MultiDsChanEstRouter(AbstractService):
     def _add_routes(self) -> None:
 
         @self.router.post("/start",
-            response_model=Union[MultiChanEstimationStartResponse, SnmpResponse],
+            response_model=MultiChanEstimationStartResponse | SnmpResponse,
             summary="Start a multi-sample ChannelEstimation capture")
         async def start_multi_chan_estimation(request: MultiChanEstRequest) -> MultiChanEstimationStartResponse | SnmpResponse:
 

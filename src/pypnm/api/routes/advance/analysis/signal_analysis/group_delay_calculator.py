@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
-from typing import Final, List, Literal, Tuple, Union
 from collections.abc import Sequence
+from typing import Final, Literal
 
 import numpy as np
 from numpy.typing import NDArray
@@ -12,13 +12,8 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from pypnm.lib.types import ComplexArray, FloatSeries, FrequencyHz, TwoDFloatSeries
 
-# Provide a Literal-typed constant to satisfy Pylance when passing the alias kwarg.
 COMPLEX_LITERAL: Final[Literal["[Real, Imaginary]"]] = "[Real, Imaginary]"
 
-
-# ──────────────────────────────────────────────────────────────
-# Models (scoped to GroupDelayCalculator)
-# ──────────────────────────────────────────────────────────────
 class GroupDelayCalculatorDatasetInfo(BaseModel):
     """
     Dataset shape metadata for group delay computation.

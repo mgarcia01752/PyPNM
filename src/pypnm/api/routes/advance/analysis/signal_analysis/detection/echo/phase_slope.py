@@ -1,11 +1,11 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
 
-from typing import Any, Dict, Union
 from collections.abc import Sequence
+from typing import Any
 
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
 import numpy as np
 
 

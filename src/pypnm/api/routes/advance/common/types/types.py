@@ -1,10 +1,9 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+from __future__ import annotations
+
 import enum
-from typing import Any, Dict, List, Optional, Tuple, TypedDict, Union
+from typing import Any, TypedDict
 
 from pypnm.docsis.data_type.sysDescr import SystemDescriptor, SystemDescriptorModel
 from pypnm.lib.types import (
@@ -15,10 +14,7 @@ from pypnm.lib.types import (
     TransactionId,
 )
 
-DeviceDetailsPayload = Union[
-    SystemDescriptorModel,
-    SystemDescriptor, str, dict[str, Any],
-    None,]
+DeviceDetailsPayload =     SystemDescriptorModel| SystemDescriptor | str | dict[str, Any] | None
 
 class EntryDict(TypedDict):
     transaction_id: TransactionId

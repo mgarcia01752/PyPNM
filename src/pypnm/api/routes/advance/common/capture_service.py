@@ -1,14 +1,12 @@
-
-from __future__ import annotations
-
-import asyncio
-import logging
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-import time
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Tuple, cast
+import asyncio
+import logging
+import time
+from typing import Any, cast
 
 from pypnm.api.routes.advance.common.operation_manager import OperationManager
 from pypnm.api.routes.advance.common.operation_state import OperationState

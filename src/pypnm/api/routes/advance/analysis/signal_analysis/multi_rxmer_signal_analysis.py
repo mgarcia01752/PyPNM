@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, cast
 
 import numpy as np
 from pydantic import BaseModel, Field
@@ -81,12 +81,12 @@ class ChannelHeatMapModel(MultiRxMerAnalysisBaseModel):
     timestamps:  list[TimestampSec]     = Field(..., description="Capture timestamps (epoch) for rows of the heatmap.")
     values:      list[MagnitudeSeries]  = Field(..., description="Matrix: rows=captures, cols=subcarriers; MER values.")
 
-MultiRxMerTemporalObjType   = Union[CmDsOfdmRxMer, CmDsOfdmFecSummary, CmDsOfdmModulationProfile]
+MultiRxMerTemporalObjType   = CmDsOfdmRxMer |CmDsOfdmFecSummary |CmDsOfdmModulationProfile
 MinAvgMaxMap                = dict[ChannelId, MinAvgMaxAnalysisModel]
 OfdmProfilePerf01Map        = dict[ChannelId, ChannelOfdmProfilePerf01Model]
 HeatMapMap                  = dict[ChannelId, ChannelHeatMapModel]
 TemporalMapping             = tuple[CaptureTime, MultiRxMerTemporalObjType]
-MultiRxMerAnalysisMap       = Union[MinAvgMaxMap, OfdmProfilePerf01Map, HeatMapMap]
+MultiRxMerAnalysisMap       = MinAvgMaxMap |OfdmProfilePerf01Map |HeatMapMap
 
 class MultiRxMerAnalysisResult(BaseModel):
     mac_address:   MacAddressStr              = Field(..., description="Cable modem MAC address associated with this analysis.")

@@ -5,9 +5,9 @@
 from __future__ import annotations
 
 import logging
-from math import ceil, log2
-from typing import List, Literal, Optional, Tuple, TypeAlias
 from collections.abc import Sequence
+from math import ceil, log2
+from typing import Literal, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
