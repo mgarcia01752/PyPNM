@@ -162,11 +162,11 @@ class ComplexArrayOps:
         return f"ComplexArrayOps(n={self._z.size}, RMS={rms:.6g}, MeanPwr={mp:.6g})"
 
     @staticmethod
-    def to_list(l: ArrayLikeF64) -> FloatSeries:
+    def to_list(arr_like: ArrayLikeF64) -> FloatSeries:
         """
         Coerce array-like to a 1-D list[float].
         """
-        arr = np.asarray(l, dtype=np.float64)
+        arr = np.asarray(arr_like, dtype=np.float64)
         if arr.ndim == 0:
             return [float(arr)]
         if arr.ndim != 1:

@@ -691,7 +691,8 @@ class CommonMeasureService(CommonMessagingService):
             self.logger.debug(f"{self.log_prefix} - Checking Measurement Status for {self.pnm_test_type} @ IDX: {interface_index}")
 
             wait_count = 0
-            extract_idx = lambda idx: idx[0] if isinstance(idx, list) and idx else idx
+            def extract_idx(idx):
+                return idx[0] if isinstance(idx, list) and idx else idx
 
             while wait_count < max_wait_count:
                 meas_status = await self.cm.getPnmMeasurementStatus(self.pnm_test_type, extract_idx(interface_index))

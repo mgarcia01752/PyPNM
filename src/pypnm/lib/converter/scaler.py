@@ -48,20 +48,26 @@ class AutoUnitScaler:
 
     def __init__(self, values: Sequence[Number] | NDArray[np.number]):
         arr = np.asarray(values, dtype=np.float64)
-        if arr.ndim == 0: arr = arr.reshape(1)
-        if not np.isfinite(arr).all(): raise ValueError("Input contains NaN or infinite values.")
+        if arr.ndim == 0:
+            arr = arr.reshape(1)
+        if not np.isfinite(arr).all():
+            raise ValueError("Input contains NaN or infinite values.")
         self._x = arr
 
     @staticmethod
     def _choose_by_max(max_abs: float) -> FreqScale:
-        if max_abs >= 1e9: return FreqScale.GHZ
-        if max_abs >= 1e6: return FreqScale.MHZ
-        if max_abs >= 1e3: return FreqScale.KHZ
+        if max_abs >= 1e9:
+            return FreqScale.GHZ
+        if max_abs >= 1e6:
+            return FreqScale.MHZ
+        if max_abs >= 1e3:
+            return FreqScale.KHZ
         return FreqScale.HZ
 
     @staticmethod
     def _parse_unit(u: str | FreqScale) -> FreqScale:
-        if isinstance(u, FreqScale): return u
+        if isinstance(u, FreqScale):
+            return u
         m = u.strip().lower()
         return {"hz": FreqScale.HZ, "khz": FreqScale.KHZ, "mhz": FreqScale.MHZ, "ghz": FreqScale.GHZ}[m]
 

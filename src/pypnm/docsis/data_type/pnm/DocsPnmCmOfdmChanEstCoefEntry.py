@@ -41,12 +41,14 @@ class DocsPnmCmOfdmChanEstCoefEntry(BaseModel):
             res = await snmp.get(f"{sym}.{index}")
             raw = Snmp_v2c.get_result_value(res)
             val = None if raw is None else caster(raw)
-            if cls.DEBUG and log.isEnabledFor(logging.DEBUG): log.debug("idx=%s %s raw=%r cast=%r", index, sym, raw, val)
+            if cls.DEBUG and log.isEnabledFor(logging.DEBUG):
+                log.debug(f"ChanEstCoef idx={index}: {sym} = {raw} -> {val!r}")
             return val
 
         async def req(sym: str, caster: Callable[[Any], Any], key: str) -> Any:
             val = await fetch(sym, caster)
-            if val is None: raise ValueError(f"ChanEstCoef idx={index}: missing required field: {key}")
+            if val is None:
+                raise ValueError(f"ChanEstCoef idx={index}: missing required field: {key}")
             return val
 
         trig_en   = cast(bool,   await req("docsPnmCmOfdmChEstCoefTrigEnable",           as_bool,  "trig_en"))
@@ -78,7 +80,9 @@ class DocsPnmCmOfdmChanEstCoefEntry(BaseModel):
 
     @classmethod
     async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsPnmCmOfdmChanEstCoefEntry"]:
-        if not indices: return []
+        if not indices:
+            return []
         out: List[DocsPnmCmOfdmChanEstCoefEntry] = []
-        for idx in indices: out.append(await cls.from_snmp(idx, snmp))
+        for idx in indices:
+            out.append(await cls.from_snmp(idx, snmp))
         return out

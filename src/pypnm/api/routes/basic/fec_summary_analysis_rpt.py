@@ -110,12 +110,18 @@ class FecSummaryAnalysisReport(AnalysisReport):
             if any((ts, tc, cc, uc)):
                 break
 
-        try: tc = [int(v) for v in tc]
-        except Exception: pass
-        try: cc = [int(v) for v in cc]
-        except Exception: pass
-        try: uc = [int(v) for v in uc]
-        except Exception: pass
+        try:
+            tc = [int(v) for v in tc]
+        except Exception:
+            pass
+        try:
+            cc = [int(v) for v in cc]
+        except Exception:
+            pass
+        try:
+            uc = [int(v) for v in uc]
+        except Exception:
+            pass
 
         shape["ts"] = len(ts)
         shape["tc"] = len(tc)

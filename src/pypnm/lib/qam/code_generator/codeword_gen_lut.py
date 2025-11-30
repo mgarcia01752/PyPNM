@@ -94,24 +94,24 @@ class CodeWordLutGenerator:
             lut: CodeWordLut = {}
             if self.axis_order == "IQ":
                 # I bits are MSBs
-                for (I, Q0) in sorted(self.hard_decision, key=lambda t: (t[0], t[1])):
-                    ii = i_index_of[I]
+                for (i, Q0) in sorted(self.hard_decision, key=lambda t: (t[0], t[1])):
+                    ii = i_index_of[i]
                     qi = q_index_of[Q0]
                     gi = self._gray(ii)
                     gq = self._gray(qi)
                     Q = -Q0 if self.q_invert else Q0
                     cw = (gi << bits_q) | gq
-                    lut[cw] = (I, Q)
+                    lut[cw] = (i, Q)
             else:
                 # Q bits are MSBs
-                for (I, Q0) in sorted(self.hard_decision, key=lambda t: (t[1], t[0])):
-                    ii = i_index_of[I]
+                for (i, Q0) in sorted(self.hard_decision, key=lambda t: (t[1], t[0])):
+                    ii = i_index_of[i]
                     qi = q_index_of[Q0]
                     gi = self._gray(ii)
                     gq = self._gray(qi)
                     Q = -Q0 if self.q_invert else Q0
                     cw = (gq << bits_i) | gi
-                    lut[cw] = (I, Q)
+                    lut[cw] = (i, Q)
 
             self.codeword_dict = lut
             return self
@@ -126,10 +126,10 @@ class CodeWordLutGenerator:
         points = sorted(self.hard_decision, key=lambda t: (t[0], t[1]))
 
         lut: CodeWordLut = {}
-        for rank, (I, Q0) in enumerate(points):
+        for rank, (i, Q0) in enumerate(points):
             Q = -Q0 if self.q_invert else Q0
             cw = self._gray(rank)  # 0..(m-1) mapped via Gray sequence
-            lut[cw] = (I, Q)
+            lut[cw] = (i, Q)
 
         self.codeword_dict = lut
         return self

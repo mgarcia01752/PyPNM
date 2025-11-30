@@ -179,7 +179,7 @@ class QamByteToSymbolMapper:
         if not as_complex:
             out = np.empty((n_syms, 2), dtype=np.float64)
             i = 0
-            for (I, Q) in self.iter_symbols(data):
+            for (I, Q) in self.iter_symbols(data):  # noqa: E741
                 out[i, 0] = I
                 out[i, 1] = Q
                 i += 1
@@ -191,7 +191,7 @@ class QamByteToSymbolMapper:
         # complex128
         outc = np.empty((n_syms,), dtype=np.complex128)
         i = 0
-        for (I, Q) in self.iter_symbols(data):
+        for (I, Q) in self.iter_symbols(data):  # noqa: E741
             outc[i] = complex(I, Q)
             i += 1
         if i != n_syms:

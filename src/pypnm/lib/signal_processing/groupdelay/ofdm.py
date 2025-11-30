@@ -218,12 +218,13 @@ class OFDMGroupDelay(BaseModel):
         for i in range(n):
             if mask[i] != 1 or not math.isfinite(series_s[i]):
                 continue
-            lo = max(0, i - half); hi = min(n, i + half + 1)
+            lo = max(0, i - half)
+            hi = min(n, i + half + 1)
             acc = 0.0
             cnt = 0
             for j in range(lo, hi):
                 if mask[j] == 1 and math.isfinite(series_s[j]):
-                    acc += series_s[j];
+                    acc += series_s[j]
                     cnt += 1
             if cnt > 0:
                 out[i] = acc / cnt
@@ -235,10 +236,12 @@ class OFDMGroupDelay(BaseModel):
         Mean of τ(µs) across bins where mask==1 and values are finite.
         Returns NaN when there are no valid contributors.
         """
-        acc = 0.0; cnt = 0
+        acc = 0.0
+        cnt = 0
         for v, ok in zip(series_us, mask):
             if ok == 1 and math.isfinite(v):
-                acc += v; cnt += 1
+                acc += v
+                cnt += 1
         return (acc / cnt) if cnt > 0 else float("nan")
 
     # ── Pipeline ───────────────────────────────────────────────────────────────

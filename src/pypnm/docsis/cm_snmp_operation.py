@@ -241,12 +241,12 @@ class CmSnmpOperation:
             return None
 
         # Handle string and bytes conversions explicitly
-        if value_type == str:
+        if value_type is str:
             if isinstance(val, bytes):  # if val is bytes, decode it
                 return val.decode('utf-8', errors='ignore')  # or replace with appropriate encoding
             return str(val)
 
-        if value_type == bytes:
+        if value_type is bytes:
             if isinstance(val, str):  # if val is a string, convert to bytes
                 # Remove any '0x' prefix or spaces before converting
                 val = val.strip().lower()

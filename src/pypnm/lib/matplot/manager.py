@@ -228,7 +228,8 @@ class MatplotManager:
             x_min, x_max = ax.get_xlim()
             unit = (cfg.x_time_input_unit or "s").lower()
             if unit == "ms":
-                x_min /= 1_000.0; x_max /= 1_000.0
+                x_min /= 1_000.0
+                x_max /= 1_000.0
             elif unit == "ns":
                 x_min /= 1_000_000_000.0
             fmt = cfg.x_time_format or "%Y-%m-%d %H:%M:%S"
@@ -786,7 +787,8 @@ class MatplotManager:
             w = np.asarray(weights, dtype=float).ravel()
             if w.size != vals.size:
                 n = min(w.size, vals.size)
-                vals = vals[:n]; w = w[:n]
+                vals = vals[:n]
+                w = w[:n]
 
         defaults = PlotConfig(grid=True, legend=None, transparent=False)
         cfg = self._merge_cfg(cfg, defaults)
