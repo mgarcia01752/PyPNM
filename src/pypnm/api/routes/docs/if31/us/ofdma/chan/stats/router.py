@@ -25,7 +25,7 @@ class UsOfdmaChannelRouter:
         self._add_routes()
 
     def _add_routes(self):
-        @self.router.post("/stats", 
+        @self.router.post("/stats",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
         async def get_us_ofdma_channels(request: SnmpRequest):
@@ -47,20 +47,20 @@ class UsOfdmaChannelRouter:
             ip = request.cable_modem.ip_address
             self.logger.info(f"Retrieving Upstream OFDMA Channel Statistics for MAC: {mac}, IP: {ip}")
 
-            status, msg = await CableModemServicePreCheck(mac_address=mac, 
+            status, msg = await CableModemServicePreCheck(mac_address=mac,
                                                           ip_address=ip,
                                                           snmp_config=request.cable_modem.snmp,
                                                           validate_ofdma_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(mac_address=mac, status=status, message=msg)              
+                return SnmpResponse(mac_address=mac, status=status, message=msg)
 
             service = UsOfdmChannelService(mac, ip, request.cable_modem.snmp)
             data = await service.get_ofdma_chan_entries()
 
-            return SnmpResponse(mac_address =   mac, 
-                                status      =   status, 
-                                message     =   msg, 
+            return SnmpResponse(mac_address =   mac,
+                                status      =   status,
+                                message     =   msg,
                                 results     =   data)
 
 # Required for dynamic auto-registration

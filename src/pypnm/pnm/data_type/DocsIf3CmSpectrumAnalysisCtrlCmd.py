@@ -63,7 +63,7 @@ class SpectrumAnalysisDefaults(IntEnum):
     Enum class representing the default configuration values for spectrum analysis.
 
     These defaults are used to control the parameters for spectrum analysis in DOCSIS-based systems.
-    The values are used in the configuration of spectrum analysis commands, like center frequencies, 
+    The values are used in the configuration of spectrum analysis commands, like center frequencies,
     frequency span, noise bandwidth, and window function.
 
     Attributes:
@@ -78,7 +78,7 @@ class SpectrumAnalysisDefaults(IntEnum):
         WINDOW_FUNCTION (WindowFunction): The window function used in the analysis (e.g., Hann, Hamming).
         NUM_AVERAGES (int): The number of averages used for the analysis.
     """
-    
+
     ENABLE = 1
     FILE_ENABLE = SpectrumRetrievalType.FILE
     INACTIVITY_TIMEOUT = 100
@@ -111,7 +111,7 @@ class SpectrumAnalysisDefaults(IntEnum):
 
         Returns:
             str: The JSON string representation of the class's default configuration.
-        
+
         Example:
             json_string = SpectrumAnalysisDefaults.to_json()
         """
@@ -157,7 +157,7 @@ class DocsIf3CmSpectrumAnalysisCtrlCmd:
         set_meas_status(value): Sets measurement status (1 = running, 2 = notRunning).
         set_file_name(value): Sets file name for output.
         get_member_list(): Returns full SNMP object list with `.0` instance suffixes.
-    """    
+    """
     docsIf3CmSpectrumAnalysisCtrlCmdEnable: int = SpectrumAnalysisDefaults.ENABLE
     docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout: int = SpectrumAnalysisDefaults.INACTIVITY_TIMEOUT
     docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency: int = SpectrumAnalysisDefaults.FIRST_SEGMENT_CENTER_FREQ
@@ -184,7 +184,7 @@ class DocsIf3CmSpectrumAnalysisCtrlCmd:
         """
         Validate that the spectrum analyzer's first/last segment center frequencies
         and the per-segment frequency span divide evenly into whole segments.
-        
+
         If the total frequency range (last_center - first_center) isn't an exact multiple
         of the segment span, this method will **increase** the start segment center frequency
         to the nearest value that yields an integer number of segments.
@@ -312,4 +312,3 @@ class DocsIf3CmSpectrumAnalysisCtrlCmd:
             "docsIf3CmSpectrumAnalysisCtrlCmdFileName":                        self.docsIf3CmSpectrumAnalysisCtrlCmdFileName,
         }
         return spectrum_cmd
-    

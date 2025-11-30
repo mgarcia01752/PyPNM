@@ -37,28 +37,28 @@ async def main():
         exit(1)
 
     logging.info(f"Connected to: {await cm.getSysDescr()}")
-    
+
     if not await cm.setDocsPnmBulk(tftp_server=args.tftp_ipv4, tftp_path=args.tftp_dest_dir):
         logging.error(f'Unable to set TFTP Server: {args.tftp_ipv4} and/or TFTP Path: {args.tftp_dest_dir}')
         exit(1)
 
     ofdma_idx_list = await cm.getDocsIf31CmUsOfdmaChanChannelIdIndex()
-                
+
     for idx in ofdma_idx_list:
-        
+
         filename = f"us-ofdma-pre-eq_{idx}_{Generate.time_stamp()}.bin"
         filename_last = f"us-ofdma-pre-eq-last_{idx}_{Generate.time_stamp()}.bin"
         print(f"Setting Pre-Equalization OFDMA index {idx} with filename {filename}")
-        dsce = await cm.setDocsPnmCmUsPreEq(ofdma_idx=idx, 
-                                            filename=filename, 
+        dsce = await cm.setDocsPnmCmUsPreEq(ofdma_idx=idx,
+                                            filename=filename,
                                             last_pre_eq_filename=filename_last)
-        
+
         print(f'Waiting for Pre-Equalization OFDMA to complete,setDocsPnmCmUsPreEq returned: {dsce}')
 
         while (await cm.getDocsPnmCmCtlStatus() != DocsPnmCmCtlStatus.READY):
             print("Waiting for Pre-Equalization OFDMA to complete")
-            
+
         print("Done")
-        
+
 if __name__ == "__main__":
     asyncio.run(main())

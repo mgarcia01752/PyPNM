@@ -61,7 +61,7 @@ class CmSpectrumAnalysisService(CommonMeasureService):
         tftp_path: str = PnmConfigManager.get_tftp_path(),*,
         capture_parameters: SpecAnCapturePara,):
         self.logger = logging.getLogger(self.__class__.__name__)
-        
+
         pnmCmCtlTest = DocsPnmCmCtlTest.SPECTRUM_ANALYZER
 
         if not self.logger.handlers:
@@ -81,7 +81,7 @@ class CmSpectrumAnalysisService(CommonMeasureService):
             tftp_servers,
             tftp_path,
             cable_modem.getWriteCommunity(),)
-        
+
         self.setSpectrumCaptureParameters(capture_parameters)
 
 class OfdmChanSpecAnalyzerService(CommonMeasureService):
@@ -106,8 +106,8 @@ class OfdmChanSpecAnalyzerService(CommonMeasureService):
 
     Usage
     -----
-    1) Construct the service.  
-    2) Call :meth:`setSpectrumCaptureParameters` with a :class:`SpecAnCapturePara`.  
+    1) Construct the service.
+    2) Call :meth:`setSpectrumCaptureParameters` with a :class:`SpecAnCapturePara`.
     3) Execute :meth:`set_and_go` to run the test.
     """
 
@@ -132,8 +132,8 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
 
     Responsibilities
     ----------------
-    1) Query the cable modem for DS OFDM channel configuration.  
-    2) Compute per-channel spectrum bandwidth tuples: (start_hz, plc_hz, end_hz).  
+    1) Query the cable modem for DS OFDM channel configuration.
+    2) Compute per-channel spectrum bandwidth tuples: (start_hz, plc_hz, end_hz).
     3) Build :class:`SpecAnCapturePara` for each channel and invoke
        :class:`OfdmChanSpecAnalyzerService` to capture.
 
@@ -148,8 +148,8 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
     """
 
     def __init__(self, cable_modem: CableModem,
-                 _tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(), 
-                 number_of_averages: int = 2, 
+                 _tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
+                 number_of_averages: int = 2,
                  spectrum_retrieval_type:SpectrumRetrievalType = SpectrumRetrievalType.FILE,):
         super().__init__(cable_modem)
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -280,12 +280,12 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
             if (chan_id is None or zero_freq is None or
                 first_active is None or last_active is None or
                 sub_spacing is None or plc_freq is None ):
-                
+
                 self.logger.info(
                     "Skipping channel with missing data: "
                     f"id={chan_id}, zero_freq={zero_freq}, first_active={first_active}, "
                     f"last_active={last_active}, spacing={sub_spacing}, plc_freq={plc_freq}")
-                
+
                 continue
 
             # For now, starting at zero_freq as per current implementation
@@ -342,8 +342,8 @@ class ScQamChanSpecAnalyzerService(CommonMeasureService):
 
     Usage
     -----
-    1) Construct the service.  
-    2) Call :meth:`setSpectrumCaptureParameters` with :class:`SpecAnCapturePara`.  
+    1) Construct the service.
+    2) Call :meth:`setSpectrumCaptureParameters` with :class:`SpecAnCapturePara`.
     3) Execute :meth:`set_and_go` to run the test.
     """
 
@@ -375,9 +375,9 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
 
     Responsibilities
     ----------------
-    1) Fetch downstream SC-QAM channel list from the cable modem.  
+    1) Fetch downstream SC-QAM channel list from the cable modem.
     2) Compute per-channel tuples (start_hz, center_hz, end_hz) using
-       the reported center frequency and channel width.  
+       the reported center frequency and channel width.
     3) Build :class:`SpecAnCapturePara` and run captures per channel via
        :class:`ScQamChanSpecAnalyzerService`.
 
@@ -392,15 +392,15 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
     """
 
     def __init__(self, cable_modem: CableModem,
-                 tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(), 
-                 number_of_averages: int = 1, 
+                 tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
+                 number_of_averages: int = 1,
                  spectrum_retrieval_type:SpectrumRetrievalType = SpectrumRetrievalType.FILE,):
         super().__init__(cable_modem)
         self.logger = logging.getLogger(self.__class__.__name__)
         self._number_of_averages = number_of_averages
         self._spectrum_retrieval_type = spectrum_retrieval_type
         self._tftp_servers = tftp_servers
-        
+
         self.log_prefix = f"DsScQamChannelSpectrumAnalyzer - CM {self._cm.get_mac_address}"
         self._test_mode = False
 
@@ -480,7 +480,7 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
         Method
         ------
         For each SC-QAM channel, computes:
-            start = center - width/2  
+            start = center - width/2
             end   = center + width/2
 
         Returns

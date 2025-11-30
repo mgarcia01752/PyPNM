@@ -19,7 +19,7 @@ class DocsisBaseCapabilityService:
     """
     Service class for retrieving the DOCSIS Base Capability of a cable modem.
 
-    Queries the modem for its DOCSIS version using the 
+    Queries the modem for its DOCSIS version using the
     `docsIf31DocsisBaseCapability` SNMP OID.
     """
 

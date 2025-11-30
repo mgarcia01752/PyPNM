@@ -67,7 +67,7 @@ class ShannonSeries:
             supported_modulation_counts =   self.supported_modulation_counts(),
             snr_db_min                  =   self.limit()
         )
-        
+
         return _
 
     def supported_modulation_counts(self) -> Dict[str, int]:
@@ -82,7 +82,7 @@ class ShannonSeries:
         """
         # Initialize counts for all known modulations
         counts: Dict[str, int] = {mod: 0 for mod in Shannon.QAM_MODULATIONS.values()}
-        
+
         # For each sample, increment all modulations it supports
         for inst in self._instances:
             max_bits = inst.bits

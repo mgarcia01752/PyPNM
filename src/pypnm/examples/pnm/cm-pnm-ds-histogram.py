@@ -42,15 +42,15 @@ async def main():
     if not await cm.setDocsPnmBulk(tftp_server=args.tftp_ipv4, tftp_path=args.tftp_dest_dir):
         logging.error(f'Unable to set TFTP Server: {args.tftp_ipv4} and/or TFTP Path: {args.tftp_dest_dir}')
         exit(1)
-    
+
     filename = f"ds_hist_{Generate.time_stamp()}.bin"
     await cm.setDocsPnmCmDsHist(ds_histogram_file_name=filename)
-                    
+
     while (True):
         if await cm.getDocsPnmCmCtlStatus() == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
             logging.info('Measurement in progress...')
             continue
         break
-        
+
 if __name__ == "__main__":
     asyncio.run(main())

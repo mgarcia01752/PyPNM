@@ -13,11 +13,11 @@ from pypnm.lib.types import PathLike
 
 
 class LogFile:
-    
+
 
     @classmethod
-    def write(cls, 
-              fname: PathLike, 
+    def write(cls,
+              fname: PathLike,
               data: Union[BaseModel, dict[Any, Any], str, bytes],
               log_dir:PathLike = SystemConfigSettings.log_dir ) -> None:
         """
@@ -38,8 +38,8 @@ class LogFile:
         elif isinstance(data, dict):
             from json import dumps
             fp.write_file(dumps(data, indent=2))
-        
+
         else:
             fp.write_file(data)
-        
+
         fp.close()

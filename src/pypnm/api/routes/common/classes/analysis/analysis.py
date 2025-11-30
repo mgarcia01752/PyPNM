@@ -15,9 +15,9 @@ from pypnm.api.routes.common.classes.analysis.model.mod_profile_schema import (
     CarrierItemModel, CarrierValuesListModel, CarrierValuesModel, CarrierValuesSplitModel, ProfileAnalysisEntryModel)
 from pypnm.api.routes.common.classes.analysis.model.process import AnalysisProcessParameters
 from pypnm.api.routes.common.classes.analysis.model.schema import (
-    BaseAnalysisModel, ChanEstCarrierModel, ConstellationDisplayAnalysisModel, DsChannelEstAnalysisModel, 
-    DsHistogramAnalysisModel, DsModulationProfileAnalysisModel, DsRxMerAnalysisModel, EchoDatasetModel, 
-    FecSummaryCodeWordModel, GrpDelayStatsModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel, 
+    BaseAnalysisModel, ChanEstCarrierModel, ConstellationDisplayAnalysisModel, DsChannelEstAnalysisModel,
+    DsHistogramAnalysisModel, DsModulationProfileAnalysisModel, DsRxMerAnalysisModel, EchoDatasetModel,
+    FecSummaryCodeWordModel, GrpDelayStatsModel, OfdmFecSummaryAnalysisModel, OfdmFecSummaryProfileModel,
     OfdmaUsPreEqCarrierModel, RegressionModel, RxMerCarrierValuesModel, UsOfdmaUsPreEqAnalysisModel)
 from pypnm.api.routes.common.classes.analysis.model.spectrum_analyzer_schema import (
     DEFAULT_POINT_AVG, MagnitudeSeries, SpecAnaAnalysisResults, SpectrumAnalyzerAnalysisModel, WindowAverage)
@@ -25,8 +25,8 @@ from pypnm.api.routes.common.extended.common_messaging_service import MessageRes
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpecAnCapturePara
 from pypnm.docsis.cm_snmp_operation import  Generate
-from pypnm.docsis.data_type.sysDescr import SystemDescriptor 
-from pypnm.lib.constants import (CABLE_VF, INVALID_CHANNEL_ID, INVALID_PROFILE_ID, 
+from pypnm.docsis.data_type.sysDescr import SystemDescriptor
+from pypnm.lib.constants import (CABLE_VF, INVALID_CHANNEL_ID, INVALID_PROFILE_ID,
                                  INVALID_SCHEMA_TYPE, INVALID_START_VALUE, SPEED_OF_LIGHT, CableType)
 from pypnm.lib.file_processor import FileProcessor
 from pypnm.lib.log_files import LogFile
@@ -39,16 +39,16 @@ from pypnm.lib.signal_processing.complex_array_ops import ComplexArrayOps
 from pypnm.lib.signal_processing.group_delay import GroupDelay
 from pypnm.lib.signal_processing.linear_regression import LinearRegression1D
 from pypnm.lib.types import (
-    ArrayLike, ChannelId, ComplexArray, FloatSeries, FrequencyHz, 
+    ArrayLike, ChannelId, ComplexArray, FloatSeries, FrequencyHz,
     FrequencySeriesHz, IntSeries, MacAddressStr, ProfileId)
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import WindowFunction
 from pypnm.pnm.data_type.DsOfdmModulationType import DsOfdmModulationType
 from pypnm.pnm.lib.signal_statistics import SignalStatistics, SignalStatisticsModel
 from pypnm.pnm.parser.model.parser_rtn_models import (
-    CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel, CmDsOfdmFecSummaryModel, 
+    CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel, CmDsOfdmFecSummaryModel,
     CmDsOfdmModulationProfileModel, CmDsOfdmRxMerModel, CmUsOfdmaPreEqModel)
 from pypnm.pnm.parser.CmDsOfdmModulationProfile import (
-    CmDsOfdmModulationProfile, ModulationOrderType, RangeModulationProfileSchemaModel, 
+    CmDsOfdmModulationProfile, ModulationOrderType, RangeModulationProfileSchemaModel,
     SkipModulationProfileSchemaModel)
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.lib.signal_processing.shan.series import Shannon, ShannonSeries
@@ -78,7 +78,7 @@ RXMER_CLIPPED_HIGH = 63.5
 
 # Constants for Signal Processing
 CHAN_EST_BW_CUTOFF_FRACTION: float = 0.25
-    
+
 class AnalysisType(Enum):
     """
     Analysis mode selector.
@@ -115,18 +115,18 @@ class Analysis:
 
     """
 
-    def __init__(self, analysis_type: AnalysisType, 
-                 msg_response: MessageResponse, 
+    def __init__(self, analysis_type: AnalysisType,
+                 msg_response: MessageResponse,
                  cable_type: CableType = CableType.RG6,
                  skip_automatic_process: bool = False) -> None:
-        
+
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self.analysis_type: "AnalysisType"      = analysis_type
         self.msg_response: "MessageResponse"    = msg_response
         self._cable_type: CableType             = cable_type
         payload: Dict[Union[int, str], Any]     = msg_response.payload_to_dict() or {}
         _raw_data                               = payload.get("data", [])
-        
+
         self._result_model:List[BaseAnalysisModel] = []
         self._processed_pnm_type:List[PnmFileType] = []
         self._skip_automatic_process = skip_automatic_process
@@ -165,7 +165,7 @@ class Analysis:
         Unknown or missing file types are logged; the measurement is
         serialized for troubleshooting via :class:`LogFile`.
         """
-        
+
         for idx, measurement in enumerate(self.measurement_data):
 
             if "pnm_file_type" in measurement and PnmFileType.CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA.name in measurement["pnm_file_type"]:
@@ -175,7 +175,7 @@ class Analysis:
                 if self.analysis_type == AnalysisType.BASIC:
                     self.logger.debug('Performing Basic Analysis on SNMP Spectrum Analysis Data')
                     self._basic_analysis(pnm_file_type, measurement, analysis_para)
-                
+
                 continue
 
             pnm_header: Dict[str, Any] = measurement.get("pnm_header") or {}
@@ -195,7 +195,7 @@ class Analysis:
             if self.analysis_type == AnalysisType.BASIC:
                 self.logger.debug(f'Performing Basic Analysis on PNM: {pnm_file_type} on Channel: {channel_id}')
                 self._basic_analysis(pnm_file_type, measurement, analysis_para)
-            
+
             else:
                 self.logger.error(f'Unknown AnalysisType: {self.analysis_type}')
                 raise
@@ -238,14 +238,14 @@ class Analysis:
             model = self.basic_analysis_ds_constellation_display(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
-            self.__add_pnmType(PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY) 
+            self.__add_pnmType(PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY)
 
         elif pnm_file_type == PnmFileType.RECEIVE_MODULATION_ERROR_RATIO.value:
             self.logger.debug("Processing: RECEIVE_MODULATION_ERROR_RATIO")
             model = self.basic_analysis_rxmer(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
-            self.__add_pnmType(PnmFileType.RECEIVE_MODULATION_ERROR_RATIO)             
+            self.__add_pnmType(PnmFileType.RECEIVE_MODULATION_ERROR_RATIO)
 
         elif pnm_file_type == PnmFileType.DOWNSTREAM_HISTOGRAM.value:
             self.logger.debug("Processing: DOWNSTREAM_HISTOGRAM")
@@ -259,14 +259,14 @@ class Analysis:
             model = self.basic_analysis_us_ofdma_pre_equalization(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
-            self.__add_pnmType(PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS)   
-  
+            self.__add_pnmType(PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS)
+
         elif pnm_file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE.value:
             self.logger.debug("Processing: UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE")
             model = self.basic_analysis_us_ofdma_pre_equalization(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
-            self.__add_pnmType(PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE)            
+            self.__add_pnmType(PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE)
 
         elif pnm_file_type == PnmFileType.OFDM_FEC_SUMMARY.value:
             self.logger.debug("Processing: OFDM_FEC_SUMMARY")
@@ -287,11 +287,11 @@ class Analysis:
             model = self.basic_analysis_ds_modulation_profile(measurement)
             self.__update_result_model(model)
             self.__update_result_dict(model.model_dump())
-            self.__add_pnmType(PnmFileType.OFDM_MODULATION_PROFILE)             
+            self.__add_pnmType(PnmFileType.OFDM_MODULATION_PROFILE)
 
         elif pnm_file_type == PnmFileType.LATENCY_REPORT.value:
             self.logger.warning("Stub: Processing: LATENCY_REPORT")
-            self.__add_pnmType(PnmFileType.LATENCY_REPORT) 
+            self.__add_pnmType(PnmFileType.LATENCY_REPORT)
             pass
 
         elif pnm_file_type == PnmFileType.CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA.value:
@@ -304,7 +304,7 @@ class Analysis:
         else:
             self.logger.error(f"Unknown PNM file type: ({pnm_file_type})")
 
-    def get_pnm_type(self) -> List[PnmFileType]: 
+    def get_pnm_type(self) -> List[PnmFileType]:
         return self._processed_pnm_type
 
     def get_results(self, full_dict: bool = True) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
@@ -367,7 +367,7 @@ class Analysis:
             The model instance to record.
         """
         self._result_model.append(model)
-    
+
     def __update_result_dict(self, model_dict:Dict[str,Any]):
         """Append a plain-dict analysis result to the results cache.
 
@@ -494,12 +494,12 @@ class Analysis:
         channel_id:ChannelId                = measurement.get("channel_id", INVALID_CHANNEL_ID)
         pnm_header                          = measurement.get("pnm_header",{})
         device_details                      = measurement.get("device_details",{})
-        mac_address:MacAddressStr           = measurement.get("mac_address",MacAddress.null()) 
-        subcarrier_spacing:int              = measurement.get("subcarrier_spacing",-1)           
+        mac_address:MacAddressStr           = measurement.get("mac_address",MacAddress.null())
+        subcarrier_spacing:int              = measurement.get("subcarrier_spacing",-1)
         first_active_subcarrier_index:int   = measurement.get("first_active_subcarrier_index",-1)
         subcarrier_zero_frequency:int       = measurement.get("subcarrier_zero_frequency", -1)
         values                              = measurement.get("values", [])
-        
+
         if first_active_subcarrier_index < 0 or subcarrier_zero_frequency < 0 or subcarrier_spacing <0:
             raise ValueError(f"Active index: {first_active_subcarrier_index} or "
                              f"zero frequency: {subcarrier_zero_frequency} or "
@@ -530,20 +530,20 @@ class Analysis:
             )
 
         ss = ShannonSeries(magnitudes)
-        
+
         regession_model = RegressionModel(
-            slope   = cast(FloatSeries, LinearRegression1D(cast(ArrayLike,magnitudes), 
+            slope   = cast(FloatSeries, LinearRegression1D(cast(ArrayLike,magnitudes),
                                                            cast(ArrayLike,freqs)).regression_line())
         )
 
-        csm:Dict[str, Any] = { 
+        csm:Dict[str, Any] = {
             RxMerCarrierType.EXCLUSION.name.lower(): RxMerCarrierType.EXCLUSION.value,
             RxMerCarrierType.CLIPPED.name.lower(): RxMerCarrierType.CLIPPED.value,
             RxMerCarrierType.NORMAL.name.lower(): RxMerCarrierType.NORMAL.value,
         }
 
         cv = RxMerCarrierValuesModel(
-            carrier_status_map  = csm, 
+            carrier_status_map  = csm,
             carrier_count       = len(freqs),
             magnitude           = magnitudes,
             frequency           = freqs,
@@ -759,17 +759,17 @@ class Analysis:
 
             Each scheme item is one of:
             - schema_type = 0 (range):
-                    { 
+                    {
                         "schema_type": 0,
                         "modulation_order": "qam_256" | "plc" | "exclusion" | "continuous_pilot" | ...,
-                        "num_subcarriers": int 
+                        "num_subcarriers": int
                     }
             - schema_type = 1 (skip):
-                    { 
+                    {
                         "schema_type": 1,
                         "main_modulation_order": "...",
                         "skip_modulation_order": "...",
-                        "num_subcarriers": int 
+                        "num_subcarriers": int
                     }
 
         split_carriers : bool, default True
@@ -832,7 +832,7 @@ class Analysis:
                 elif schema_type == CmDsOfdmModulationProfile.SKIP_MODULATION:
                     mod_name = str(scheme.get("main_modulation_order"))
                     count    = int(scheme.get("num_subcarriers", 0))
-                
+
                 else:
                     # Unknown schema; skip conservatively
                     logging.warning(f'basic_analysis_ds_modulation_profile() -> Unknown Schema: {schema_type}')
@@ -841,14 +841,14 @@ class Analysis:
                 for _ in range(count):
                     # Compute Shannon minimum MER (perfect FEC) per modulation-order-type
 
-                    if mod_name in (ModulationOrderType.continuous_pilot.name, 
+                    if mod_name in (ModulationOrderType.continuous_pilot.name,
                                     ModulationOrderType.exclusion.name):
                         s_min = 0.0
 
                     elif mod_name == ModulationOrderType.plc.name:
                         # Treat PLC as 16-QAM (4 bits/s/Hz) at the Shannon min
                         s_min = Shannon.bits_to_snr(4)
-                    
+
                     else:
                         # Map strings like 'qam_256' → Shannon SNR (dB)
                         s_min = Shannon.snr_from_modulation(mod_name)
@@ -1549,7 +1549,7 @@ class Analysis:
         )
 
     @classmethod
-    def basic_analysis_ds_chan_est_from_model(cls, model: CmDsOfdmChanEstimateCoefModel, 
+    def basic_analysis_ds_chan_est_from_model(cls, model: CmDsOfdmChanEstimateCoefModel,
                                               cable_type: CableType = CableType.RG6,) -> DsChannelEstAnalysisModel:
         """
         Model-based variant of downstream channel-estimation analysis.
@@ -1706,7 +1706,7 @@ class Analysis:
         return result_model
 
     @classmethod
-    def basic_analysis_ds_modulation_profile_from_model(cls, model: CmDsOfdmModulationProfileModel, 
+    def basic_analysis_ds_modulation_profile_from_model(cls, model: CmDsOfdmModulationProfileModel,
                                                         split_carriers: bool = True) -> DsModulationProfileAnalysisModel:
         """
         Analyze a Downstream OFDM Modulation Profile using a parsed model
@@ -1805,7 +1805,7 @@ class Analysis:
             )
 
         return result
-    
+
     @classmethod
     def basic_analysis_ds_constellation_display_from_model(cls, model: CmDsConstDispMeasModel) -> ConstellationDisplayAnalysisModel:
         """

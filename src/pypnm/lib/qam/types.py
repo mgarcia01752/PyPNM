@@ -30,7 +30,7 @@ __all__ = [
     "QamSymbol",
     "CodeWordLut",
     "QamSymCwLut",
-    "HardDecisionArray", 
+    "HardDecisionArray",
     "SoftDecisionArray",
     "SymbolArray",
     "QamModulation",

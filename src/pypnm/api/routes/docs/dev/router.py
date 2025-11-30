@@ -30,15 +30,15 @@ class DocsDevRouter:
         self._add_routes()
 
     def _add_routes(self):
-        @self.router.post("/eventLog", 
-                          response_model=EventLogResponse, 
+        @self.router.post("/eventLog",
+                          response_model=EventLogResponse,
                           responses=FAST_API_RESPONSE,)
         async def get_event_log(request: BaseDeviceConnectRequest):
             """
             **Retrieve DOCSIS Cable Modem Event Log**
 
-            This endpoint fetches the device event log from a DOCSIS cable modem using SNMP. 
-            Entries typically include system-level events such as T3/T4 timeouts, partial service alerts, 
+            This endpoint fetches the device event log from a DOCSIS cable modem using SNMP.
+            Entries typically include system-level events such as T3/T4 timeouts, partial service alerts,
             reboots, and other diagnostic messages useful for proactive network maintenance.
 
             [API Guide - Cable Modem Event Log](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/event-log.md)
@@ -46,7 +46,7 @@ class DocsDevRouter:
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
-            self.logger.info(f"Retrieving event log for MAC: {mac}, IP: {ip}")            
+            self.logger.info(f"Retrieving event log for MAC: {mac}, IP: {ip}")
             status, msg = await CableModemServicePreCheck(mac_address=mac,
                                                           ip_address=ip,
                                                           snmp_config=request.cable_modem.snmp).run_precheck()
@@ -55,7 +55,7 @@ class DocsDevRouter:
                 logger.error(msg)
                 return EventLogResponse(mac_address =   mac,
                                         status = status,
-                                        message = msg, logs=[])                
+                                        message = msg, logs=[])
 
             try:
                 service = CmDocsDevService(mac_address=mac,
@@ -65,15 +65,15 @@ class DocsDevRouter:
                 return EventLogResponse(mac_address =   service.get_mac_address(),
                                         status      =   ServiceStatusCode.SUCCESS,
                                         logs        =   log_entries)
-                
+
             except HTTPException:
                 raise
-            
+
             except Exception as e:
                 logger.exception(f"Failed to fetch event log, Mac: {mac}, IP: {ip}, error: {e}")
                 raise HTTPException(status_code=500, detail=str(e))
 
-        @self.router.post("/reset", 
+        @self.router.post("/reset",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
         async def reset_cable_modem(request: BaseDeviceConnectRequest):
@@ -90,7 +90,7 @@ class DocsDevRouter:
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
-            self.logger.info(f"Resetting cable modem for MAC: {mac}, IP: {ip}")           
+            self.logger.info(f"Resetting cable modem for MAC: {mac}, IP: {ip}")
             status, msg = await CableModemServicePreCheck(mac_address   =   mac,
                                                           ip_address    =   ip,
                                                           snmp_config   =   request.cable_modem.snmp).run_precheck()
@@ -99,15 +99,15 @@ class DocsDevRouter:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac,
                                     status=status,
-                                    message=msg)               
-            
+                                    message=msg)
+
             try:
                 service = CmDocsDevService(mac_address=mac,
                                            ip_address=ip,
                                            snmp_config=request.cable_modem.snmp)
                 result = await service.reset_cable_modem()
                 return JSONResponse(content=result.model_dump())
-            
+
             except HTTPException:
                 raise
             except Exception as e:

@@ -38,13 +38,13 @@ async def main():
 
     if not await cm.setDocsPnmBulk(tftp_server=args.tftp_ipv4, tftp_path=args.tftp_dest_dir):
         logging.error(f'Unable to set TFTP Server: {args.tftp_ipv4} and/or TFTP Path: {args.tftp_dest_dir}')
-        exit(1)    
-    
-    await cm.setDocsIf3CmSpectrumAnalysisCtrlCmd(DocsIf3CmSpectrumAnalysisCtrlCmd(), 
+        exit(1)
+
+    await cm.setDocsIf3CmSpectrumAnalysisCtrlCmd(DocsIf3CmSpectrumAnalysisCtrlCmd(),
                                                  SpectrumRetrievalType.SNMP )
-    
+
     while (await cm.getDocsPnmCmCtlStatus() != DocsPnmCmCtlStatus.READY):
         print("Waiting for Spectrum Analyzer to complete")
-        
+
 if __name__ == "__main__":
     asyncio.run(main())

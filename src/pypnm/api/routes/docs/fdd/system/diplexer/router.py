@@ -30,7 +30,7 @@ class FddDiplexerConfigResult:
         self._register_routes()
 
     def _register_routes(self) -> None:
-        @self.router.post("/diplexer/configuration", 
+        @self.router.post("/diplexer/configuration",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
         async def diplexer_config(request: SnmpRequest) -> SnmpResponse:
@@ -50,7 +50,7 @@ class FddDiplexerConfigResult:
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
 
-            status, msg = await CableModemServicePreCheck(mac_address=mac, 
+            status, msg = await CableModemServicePreCheck(mac_address=mac,
                                                           ip_address=ip,
                                                           snmp_config=request.cable_modem.snmp,
                                                           check_docsis_version=[ClabsDocsisVersion.DOCSIS_40]).run_precheck()

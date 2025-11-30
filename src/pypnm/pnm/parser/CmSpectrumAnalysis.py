@@ -155,7 +155,7 @@ class CmSpectrumAnalysis(PnmHeader):
         header fields and processed amplitude data.
         """
         self._model = CmSpectrumAnalyzerModel(
-            pnm_header                     = self.getPnmHeaderParameterModel(), 
+            pnm_header                     = self.getPnmHeaderParameterModel(),
             channel_id                     = self._channel_id,
             mac_address                    = self._mac_address,
             first_segment_center_frequency = self._first_segment_center_frequency,

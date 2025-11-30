@@ -70,7 +70,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
         any_models: bool               = False
 
         for common_model in self.get_common_analysis_model():
-            
+
             any_models                 = True
             model                      = cast(OfdmaPreEqAnalysis, common_model)
             channel_id                 = ChannelId(model.channel_id)
@@ -294,7 +294,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
 
             try:
                 channel_id: ChannelId              = model.channel_id
-                subcarrier_spacing: FrequencyHz    = model.subcarrier_spacing   
+                subcarrier_spacing: FrequencyHz    = model.subcarrier_spacing
 
                 # Carrier values block
                 cv: ComplexDataCarrierModel        = model.carrier_values

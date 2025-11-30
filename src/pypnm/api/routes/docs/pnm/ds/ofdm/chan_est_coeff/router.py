@@ -59,17 +59,17 @@ class ChannelEstimationCoefficientRouter:
             community: str = request.cable_modem.snmp.snmp_v2c.community
             tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
             tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
-            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6) 
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)
 
             self.logger.info(f"Starting Channel Estimation Coefficients measurement for MAC: {mac}, IP: {ip}")
 
-            cm = CableModem(mac_address=MacAddress(mac), 
+            cm = CableModem(mac_address=MacAddress(mac),
                             inet=Inet(ip),
                             write_community=community)
 
             status, msg = await CableModemServicePreCheck(
                 cable_modem=cm, validate_ofdm_exist=True).run_precheck()
-            
+
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
@@ -88,10 +88,10 @@ class ChannelEstimationCoefficientRouter:
             msg_rsp = cps.process()
 
             analysis =  Analysis(AnalysisType.BASIC, msg_rsp)
-        
+
             if request.analysis.output.type == OutputType.JSON:
                 payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
-                
+
                 # Clean up payload by removing unneeded or redundant sections
                 DictGenerate.pop_keys_recursive(payload, ["pnm_header", "complex"])
                 primative = msg_rsp.payload_to_dict('primative')

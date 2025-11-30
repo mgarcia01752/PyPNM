@@ -58,7 +58,7 @@ class DiplexerConfigService:
             mac_address=MacAddress(mac_address),
             inet=Inet(ip_address),
             write_community=snmp_config.snmp_v2c.community)
-        
+
         state: DocsIf31CmSystemCfgDiplexState = await cm.getDocsIf31CmSystemCfgDiplexState()
 
         if state is None:

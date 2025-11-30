@@ -32,7 +32,7 @@ async def main():
     parser.add_argument("--mac", "-m", required=True, help="MAC address of cable modem")
     parser.add_argument("--inet", "-i", required=True, help="IP address of cable modem")
     parser.add_argument("--tftp-ipv4", "-t4", required=True, help="IPv4 TFTP server")
-    parser.add_argument("--community-write", "-cw", default="private", help="SNMP write community string (default: private)")    
+    parser.add_argument("--community-write", "-cw", default="private", help="SNMP write community string (default: private)")
 
     args = parser.parse_args()
 
@@ -45,7 +45,7 @@ async def main():
         exit(1)
 
     logging.info(f"Connected to: {await cm.getSysDescr()}")
-    
+
     service = CmDsOfdmModProfileService(cm)
     msg_rsp:MessageResponse = await service.set_and_go()
 
@@ -55,7 +55,7 @@ async def main():
 
     cps = CommonProcessService(msg_rsp)
     msg_rsp:MessageResponse = cps.process()
-    
+
     for payload in msg_rsp.payload: # type: ignore
         sleep(1)
         FileProcessor(f"output/mod-profile-{str(Generate.time_stamp(TimeUnit.MILLISECONDS))}.json").write_file(payload)

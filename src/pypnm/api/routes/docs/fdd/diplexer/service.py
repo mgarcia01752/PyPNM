@@ -28,7 +28,7 @@ class FddDiplexerBandEdgeCapabilityService:
     """
 
     def __init__(self, mac_address: MacAddressStr,
-                 ip_address: InetAddressStr, 
+                 ip_address: InetAddressStr,
                  snmp_config: SNMPConfig=SNMPConfig()):
         """
         Initialize the service using a modem's MAC and IP address.
@@ -37,15 +37,15 @@ class FddDiplexerBandEdgeCapabilityService:
             mac_address (str): The MAC address of the target cable modem.
             ip_address (str): The IP address of the target cable modem.
         """
-        self.cm = CableModem(mac_address=MacAddress(mac_address), 
-                             inet=Inet(ip_address), 
+        self.cm = CableModem(mac_address=MacAddress(mac_address),
+                             inet=Inet(ip_address),
                              write_community=snmp_config.snmp_v2c.community)
 
     def isDocsis40(self) -> bool:
         if self.cm.getDocsisBaseCapability() != ClabsDocsisVersion.DOCSIS_40:
             return False
         return True
-    
+
     async def getFddDiplexerBandEdgeCapabilityEntries(self) -> List[Dict]:
         """
         Retrieve and populate the FDD diplexer band edge capabilities from the modem.

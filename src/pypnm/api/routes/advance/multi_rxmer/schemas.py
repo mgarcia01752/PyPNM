@@ -15,11 +15,11 @@ from pypnm.lib.types import OperationId
 from enum import IntEnum
 
 class MultiRxMerMeasureModes(IntEnum):
-    CONTINUOUS          = 0   
+    CONTINUOUS          = 0
     OFDM_PERFORMANCE_1  = 1
 
 class MultiChanEstModes(IntEnum):
-    STANDARD            = 0   
+    STANDARD            = 0
 
 class ChanEstMeasureParameters(BaseModel):
     mode:MultiChanEstModes = Field(default=MultiChanEstModes.STANDARD, description="Measurement mode: 0 for standard channel estimation capture")
@@ -101,7 +101,7 @@ class MultiRxMerStatusResponse(CommonResponse):
     Response schema for checking the status of a Multi-RxMER capture operation.
 
     Inherits:
-        mac_address (str): 
+        mac_address (str):
             The target cable modem’s MAC address, echoed from the request.
         status (Literal["success", "error"]):
             Overall HTTP-level outcome of this call.
@@ -111,7 +111,7 @@ class MultiRxMerStatusResponse(CommonResponse):
     Adds:
         operation (MultiRxMerResponseStatus):
             Detailed operation-level result, including:
-            
+
             - operation_id (str):
                 The 16-hex ID for this capture session.
             - state (OperationState):

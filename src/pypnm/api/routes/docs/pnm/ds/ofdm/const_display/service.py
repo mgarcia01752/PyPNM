@@ -18,8 +18,8 @@ class CmDsOfdmConstDisplayService(CommonMeasureService):
     Service for triggering and retrieving DOCSIS 3.1 Downstream OFDM Constellation Display measurements.
 
     This class orchestrates a Proactive Network Maintenance (PNM) control test on a cable modem
-    to capture constellation data from downstream OFDM channels. The test results are transferred 
-    via TFTP and typically visualized to evaluate symbol demodulation quality, such as detecting 
+    to capture constellation data from downstream OFDM channels. The test results are transferred
+    via TFTP and typically visualized to evaluate symbol demodulation quality, such as detecting
     phase noise, symbol dispersion, or signal degradation.
 
     The constellation display provides a two-dimensional scatter plot of I/Q symbol points,
@@ -42,9 +42,9 @@ class CmDsOfdmConstDisplayService(CommonMeasureService):
         - CmDsConstDispMeas: Class used to parse and visualize the retrieved constellation data.
         - CommonMeasureService: Provides core test initiation and file retrieval logic.
     """
-    def __init__(self, cable_modem: CableModem,                  
+    def __init__(self, cable_modem: CableModem,
                  modulation_order_offset: int = ConstelDisplayConst.MODULATION_OFFSET.value,
-                 number_sample_symbol:int = ConstelDisplayConst.NUM_SAMPLE_SYMBOL.value, 
+                 number_sample_symbol:int = ConstelDisplayConst.NUM_SAMPLE_SYMBOL.value,
                  tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
                  tftp_path: str = PnmConfigManager.get_tftp_path()):
         super().__init__(DocsPnmCmCtlTest.DS_CONSTELLATION_DISP,

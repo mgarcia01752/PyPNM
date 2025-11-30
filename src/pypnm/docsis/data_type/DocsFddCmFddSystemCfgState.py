@@ -22,7 +22,7 @@ class DocsFddCmFddSystemCfgState:
 
     The frequency values are reported in MHz and aligned with TLVs 5.79, 5.80, and 5.81
     in the DOCSIS 4.0 specifications (CM-SP-MULPIv4.0, CM-SP-PHYv4.0).
-    
+
     A value of `0` indicates the modem is not configured with an extended spectrum channel
     for that band edge.
     """

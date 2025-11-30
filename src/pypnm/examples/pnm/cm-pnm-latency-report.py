@@ -42,18 +42,18 @@ async def main():
     if not cm.setDocsPnmBulk(tftp_server=args.tftp_ipv4, tftp_path=args.tftp_dest_dir):
         logging.error(f'Unable to set TFTP Server: {args.tftp_ipv4} and/or TFTP Path: {args.tftp_dest_dir}')
         exit(1)
-    
-    filename = f"latency_rpt_{Generate.time_stamp()}.bin"        
-   
+
+    filename = f"latency_rpt_{Generate.time_stamp()}.bin"
+
     if not cm.setDocsCmLatencyRptCfg(latency_rpt_file_name=filename):
         logging.error('Unable to set Latency Report, exiting...')
         exit(1)
-        
+
     while (True):
         if cm.getDocsPnmCmCtlStatus() == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
             logging.info('Measurement in progress...')
             continue
         break
-        
+
 if __name__ == "__main__":
     asyncio.run(main())

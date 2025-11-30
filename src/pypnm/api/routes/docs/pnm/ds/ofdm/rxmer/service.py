@@ -19,7 +19,7 @@ class CmDsOfdmRxMerService(CommonMeasureService):
     measurements on a cable modem.
 
     This class wraps the necessary logic for configuring and triggering the
-    DS-OFDM-RxMER-Per-Subcarrier test defined by the PNM framework. It determines the 
+    DS-OFDM-RxMER-Per-Subcarrier test defined by the PNM framework. It determines the
     appropriate TFTP server address based on IP version compatibility with the cable modem
     and utilizes SNMP to configure the modem's bulk data collection behavior.
 

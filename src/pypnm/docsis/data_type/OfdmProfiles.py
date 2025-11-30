@@ -40,7 +40,7 @@ class OfdmProfile(Enum):
 class OfdmProfiles:
     """
     Represents a set of active OFDM downstream profiles using a 16-bit bitmask.
-    
+
     DOCSIS BITS are MSB-first. So profile0 is the most significant bit.
     """
 

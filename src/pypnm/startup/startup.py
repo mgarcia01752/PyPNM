@@ -23,7 +23,7 @@ class StartUp:
 
         LoggerConfigurator(SystemConfigSettings.log_dir,
                            SystemConfigSettings.log_filename,
-                           SystemConfigSettings.log_level)        
+                           SystemConfigSettings.log_level)
 
 
 

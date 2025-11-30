@@ -41,8 +41,8 @@ class RxMerMarginRouter:
         self._add_routes()
 
     def _add_routes(self):
-        
-        @self.router.post(f"/{self.base_endpoint}/getMeasurementTemplate", 
+
+        @self.router.post(f"/{self.base_endpoint}/getMeasurementTemplate",
                           response_model=Union[SnmpResponse],
                           responses=FAST_API_RESPONSE,)
         async def get_measurement_template(request: PnmRequest) -> Union[SnmpResponse]:
@@ -73,8 +73,8 @@ class RxMerMarginRouter:
                 status=ServiceStatusCode.SUCCESS,
                 message="MER Margin test triggered successfully",
                 results=template)
-                
-        @self.router.post(f"/{self.base_endpoint}/getMeasurement", 
+
+        @self.router.post(f"/{self.base_endpoint}/getMeasurement",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
         async def get_measurement(request: PnmMerMarginRequest):
@@ -88,7 +88,7 @@ class RxMerMarginRouter:
             """
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
-            self.logger.info(f"Initiating MER Margin measurement for MAC: {mac}, IP: {ip}, Profile ID: {request.mer_margin.profile_id}")            
+            self.logger.info(f"Initiating MER Margin measurement for MAC: {mac}, IP: {ip}, Profile ID: {request.mer_margin.profile_id}")
 
             cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip))
 
@@ -108,7 +108,7 @@ class RxMerMarginRouter:
                 status=ServiceStatusCode.SUCCESS,
                 message="MER Margin test triggered successfully")
 
-        @self.router.post(f"/{self.base_endpoint}/getAnalysis", 
+        @self.router.post(f"/{self.base_endpoint}/getAnalysis",
                           response_model=Union[PnmAnalysisResponse, SnmpResponse])
         async def get_analysis(request: PnmMerMarginRequest):
             """
@@ -137,7 +137,7 @@ class RxMerMarginRouter:
             service = CmDsOfdmMerMarginService(cm)
             return await service.get_analysis()
 
-        @self.router.post(f"/{self.base_endpoint}/getMeasurementStatistics", 
+        @self.router.post(f"/{self.base_endpoint}/getMeasurementStatistics",
                           response_model=Union[SnmpResponse])
         async def get_measurement_statistics(request: PnmRequest):
             """
@@ -154,7 +154,7 @@ class RxMerMarginRouter:
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
             community: str = request.cable_modem.snmp.snmp_v2c.community
-            self.logger.info(f"Fetching MER Margin measurement statistics for MAC: {mac}, IP: {ip}")            
+            self.logger.info(f"Fetching MER Margin measurement statistics for MAC: {mac}, IP: {ip}")
 
             cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip), write_community=community)
 

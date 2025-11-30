@@ -23,12 +23,12 @@ class DsOfdmChannelStatsRouter:
         self.router = APIRouter(
             prefix="/docs/if31/ds/ofdm/chan",
             tags=["DOCSIS 3.1 Downstream OFDM Channel", "Physical Layer Statistics"])
-        
+
         self._add_routes()
 
     def _add_routes(self):
-        
-        @self.router.post("/stats", 
+
+        @self.router.post("/stats",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
         async def get_ds_ofdm_channels(request: SnmpRequest):
@@ -50,21 +50,21 @@ class DsOfdmChannelStatsRouter:
             ip = request.cable_modem.ip_address
             self.logger.info(f"Retrieving Downstream OFDM Modulation Profile Statistics for MAC: {mac}, IP: {ip}")
 
-            status, msg = await CableModemServicePreCheck(mac_address=mac, 
+            status, msg = await CableModemServicePreCheck(mac_address=mac,
                                                           ip_address=ip,
                                                           snmp_config=request.cable_modem.snmp,
                                                           validate_ofdm_exist=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(mac_address=mac, status=status, message=msg)     
-                         
+                return SnmpResponse(mac_address=mac, status=status, message=msg)
+
             service = DsOfdmChannelService(mac, ip, snmp_config=request.cable_modem.snmp)
             data = await service.get_ofdm_chan_entries()
 
-            return SnmpResponse(mac_address =   mac, 
-                                status      =   ServiceStatusCode.SUCCESS, 
-                                message     =   "Successfully retrieved downstream OFDM channel statistics", 
+            return SnmpResponse(mac_address =   mac,
+                                status      =   ServiceStatusCode.SUCCESS,
+                                message     =   "Successfully retrieved downstream OFDM channel statistics",
                                 results     =   data)
-        
+
 # Required for dynamic auto-registration
 router = DsOfdmChannelStatsRouter().router

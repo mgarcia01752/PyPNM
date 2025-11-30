@@ -30,7 +30,7 @@ class Snmp_v2c:
         port (int): Port number used for SNMP (default is 161).
         community (str): Community string for SNMP authentication (default 'private').
         _snmp_engine (SnmpEngine): Instance of pysnmp SnmpEngine.
-    
+
     Class Attributes:
         COMPILE_MIBS (bool): Whether to compile MIBs for OID resolution.
         SNMP_PORT (int): Default SNMP port.
@@ -45,14 +45,14 @@ class Snmp_v2c:
 
     DISABLE = 1
     ENABLE = 2
-    
+
     TRUE = 1
     FALSE = 2
 
     SNMP_PORT = 161
 
-    def __init__(self, host: Inet, 
-                 community: str = SystemConfigSettings.snmp_write_community, 
+    def __init__(self, host: Inet,
+                 community: str = SystemConfigSettings.snmp_write_community,
                  port: int      = SNMP_PORT,
                  timeout: int   = SystemConfigSettings.snmp_timeout,
                  retries: int   = SystemConfigSettings.snmp_retries):
@@ -135,13 +135,13 @@ class Snmp_v2c:
         self.logger.debug(f"Starting SNMP WALK with OID: {oid}")
         oid = Snmp_v2c.resolve_oid(oid)
         self.logger.debug(f"Converted: {oid}")
-     
+
         identity = self._to_object_identity(oid)
         obj = ObjectType(identity)
         results: List[ObjectType] = []
 
         transport = await UdpTransportTarget.create((self._host, self._port),
-                                                    timeout=self._timeout, 
+                                                    timeout=self._timeout,
                                                     retries=self._retries)
 
         objects = walk_cmd(
@@ -153,16 +153,16 @@ class Snmp_v2c:
         )
 
         async for item in objects:
-            
+
             errorIndication, errorStatus, errorIndex, varBinds = item
 
             try:
                 self._raise_on_snmp_error(errorIndication, errorStatus, errorIndex)
-                
+
             except Exception as e:
                 self.logger.error(f"Failed walk : {e}")
-                continue    
-            
+                continue
+
             if not varBinds:
                 continue
 
@@ -174,9 +174,9 @@ class Snmp_v2c:
                     return results if results else None
 
                 results.append(varBind)
-                
+
         self.logger.debug(f'List size {len(results)}')
-        
+
         return results if results else None
 
     async def set(self, oid: str, value: Union[str, int], value_type: Type)-> Optional[List[ObjectType]]:
@@ -204,7 +204,7 @@ class Snmp_v2c:
         self.logger.debug(f'SNMP-SET-OID: {oid} -> {value_type} -> {value}')
 
         oid = Snmp_v2c.resolve_oid(oid)
-        
+
         transport = await UdpTransportTarget.create((self._host, self._port),
                                                     timeout=self._timeout, retries=self._retries)
 
@@ -226,7 +226,7 @@ class Snmp_v2c:
         except Exception as e:
             self.logger.error(f"Error extracting SNMP value: {e}")
             return None
-        
+
         return varBinds # type: ignore
 
     def close(self) -> None:
@@ -277,7 +277,7 @@ class Snmp_v2c:
             bool: True if the OID is numeric, False otherwise.
         """
         return bool(re.fullmatch(r"\.?(\d+\.)+\d+", oid))
-    
+
     @staticmethod
     def get_result_value(pysnmp_get_result) -> Optional[str]:
         """
@@ -298,7 +298,7 @@ class Snmp_v2c:
                 if isinstance(value, OctetString):
                     return value.prettyPrint()
                 return str(value)
-            
+
             return None
 
         except Exception as e:
@@ -414,7 +414,7 @@ class Snmp_v2c:
 
     T = TypeVar("T", int, str)
     @staticmethod
-    def snmp_get_result_last_idx_force_value_type(snmp_responses: List[ObjectType], 
+    def snmp_get_result_last_idx_force_value_type(snmp_responses: List[ObjectType],
                                                   value_type: Type[T] = str) -> List[Tuple[int, T]]:
         """
         Extract the last index and value from each SNMP response,
@@ -460,7 +460,7 @@ class Snmp_v2c:
         """
         Extracts value(s) from an SNMP SET response string.
 
-        This method parses the raw SNMP SET response string and extracts the 
+        This method parses the raw SNMP SET response string and extracts the
         returned value(s), if any, from the output. Useful for validating
         SNMP set operations.
 
@@ -474,9 +474,9 @@ class Snmp_v2c:
         """
         if not snmp_set_response:
             return []
-        
+
         logging.debug(f'snmp_set_result_value -> {snmp_set_response}')
-        
+
         return  [str(value[1]) for value in snmp_set_response]
 
     @staticmethod
@@ -536,7 +536,7 @@ class Snmp_v2c:
         """
         if len(data) < 8:
             raise ValueError("Invalid SNMP DateAndTime data (too short)")
-        
+
         # Convert the raw bytes into integer values
         year = data[0] << 8 | data[1]
         month = data[2]
@@ -560,7 +560,7 @@ class Snmp_v2c:
             dt = dt.replace(tzinfo=tz)
 
         return dt.isoformat()
- 
+
     @staticmethod
     def truth_value(snmp_value) -> bool:
         """
@@ -617,7 +617,7 @@ class Snmp_v2c:
     ###################
     # Private Methods #
     ###################
-    
+
     def _to_object_identity(self, oid: Union[str, Tuple[str, str, int]]) -> ObjectIdentity:
         """
         Internal helper to resolve an OID.

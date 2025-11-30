@@ -43,21 +43,21 @@ async def main():
     logging.info(f"Connected to: {await cm.getSysDescr()}")
 
     ofdm_idx_list = await cm.getDocsIf31CmDsOfdmChannelIdIndex()
-    
+
     if not ofdm_idx_list:
         logging.error('Unable to get DocsIf31CmDsOfdmChanEntry')
         exit(1)
-    
+
     if not await cm.setDocsPnmBulk(tftp_server=args.tftp_ipv4, tftp_path=args.tftp_dest_dir):
         logging.error(f'Unable to set TFTP Server: {args.tftp_ipv4} and/or TFTP Path: {args.tftp_dest_dir}')
         exit(1)
-            
+
     for idx in ofdm_idx_list:
 
         filename = f"ds-chan-est_{idx}_{Generate.time_stamp()}.bin"
         print(f"Setting Channel Estimation for OFDM index {idx} with filename {filename}")
         await cm.setDocsPnmCmOfdmChEstCoef(ofdm_idx=idx, chan_est_file_name=filename)
-        
+
         while (True):
             if await cm.getDocsPnmCmCtlStatus() == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
                 logging.info('Measurement in progress...')

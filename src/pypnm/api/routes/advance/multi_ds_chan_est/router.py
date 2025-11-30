@@ -64,7 +64,7 @@ class MultiDsChanEstRouter(AbstractService):
             tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
             tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)
 
-                 
+
             self.logger.info(f"[start] Multi-ChanEst for MAC={mac_address}, duration={duration}s interval={interval}s")
 
             cm = CableModem(mac_address=MacAddress(mac_address), inet=Inet(ip_address), write_community=community)
@@ -75,10 +75,10 @@ class MultiDsChanEstRouter(AbstractService):
                 self.logger.error(f"[start] Precheck failed for MAC={mac_address}: {msg}")
                 return SnmpResponse(mac_address=mac_address, status=status, message=msg)
 
-            group_id, operation_id = await self.loadService(MultiChannelEstimationService, 
+            group_id, operation_id = await self.loadService(MultiChannelEstimationService,
                                                             cm,
                                                             tftp_servers,
-                                                            duration=duration, 
+                                                            duration=duration,
                                                             interval=interval,)
             return MultiChanEstimationStartResponse(mac_address     =   mac_address,
                                                     status          =   OperationState.RUNNING,
@@ -123,16 +123,16 @@ class MultiDsChanEstRouter(AbstractService):
             with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
                 for s in samples:
                     path = os.path.join(pnm_dir, s.filename)
-                    
-                    try: 
+
+                    try:
                         zf.write(path, arcname=os.path.basename(s.filename))
-                    
-                    except FileNotFoundError: 
+
+                    except FileNotFoundError:
                         self.logger.warning(f"[zip] Missing: {path}")
-                    
-                    except Exception as e: 
+
+                    except Exception as e:
                         self.logger.warning(f"[zip] Skip {path}: {e}")
-            
+
             buf.seek(0)
             headers = {"Content-Disposition": f"attachment; filename=multiChannelEstimation_{mac}_{operation_id}.zip"}
             return StreamingResponse(buf, media_type="application/zip", headers=headers)
@@ -146,10 +146,10 @@ class MultiDsChanEstRouter(AbstractService):
 
 
             """
-            try: 
+            try:
                 service: MultiChannelEstimationService = cast(MultiChannelEstimationService, self.getService(operation_id))
-            
-            except KeyError: 
+
+            except KeyError:
                 raise HTTPException(status_code=404, detail="Operation not found")
 
             service.stop(operation_id)
@@ -255,7 +255,7 @@ class MultiDsChanEstRouter(AbstractService):
                     rpt = engine.build_report()
                     self.logger.info(f"[analysis] Built archive report for group {capture_group_id}")
                     return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)
-                
+
                 except Exception as e:
                     msg = f"Archive build failed: {e}"
                     self.logger.error(msg)

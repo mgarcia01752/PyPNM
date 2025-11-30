@@ -32,9 +32,9 @@ class DocsDevEventEntry:
 
         Returns:
             bool: True if SNMP queries succeed (even if some values are None), False otherwise.
-            
+
             "docsDevEvLastTime": ("docsDevEvLastTime", bytes),
-        
+
         """
         fields = {
             "docsDevEvFirstTime": ("docsDevEvFirstTime", Snmp_v2c.parse_snmp_datetime),
@@ -52,7 +52,7 @@ class DocsDevEventEntry:
                     value_result = Snmp_v2c.get_result_value(result)
 
                     if isinstance(value_result, str) and value_result.startswith("0x"):
-                        value_result = unhexlify(value_result[2:]) 
+                        value_result = unhexlify(value_result[2:])
 
                     if not value_result:
                         self.logger.warning(f"Invalid value returned for {oid_key}.{self.index}: {value_result}")

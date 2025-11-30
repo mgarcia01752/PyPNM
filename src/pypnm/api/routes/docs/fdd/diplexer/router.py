@@ -38,16 +38,16 @@ class FddDiplexerBandEdgeCapability:
         Defines the POST /bandEdgeCapability endpoint and attaches it to the router.
         """
 
-        @self.router.post("/bandEdgeCapability", 
-                          summary="Get DOCSIS 4.0 FDD Diplexer Band Edge Capabilities",                    
+        @self.router.post("/bandEdgeCapability",
+                          summary="Get DOCSIS 4.0 FDD Diplexer Band Edge Capabilities",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
         async def get_band_edge_cap(request: SnmpRequest) -> SnmpResponse:
             """
             **DOCSIS 4.0 FDD Diplexer Band Edge Capabilities**
 
-            Queries the cable modem to retrieve all supported diplexer band edge configurations 
-            for upstream and downstream paths. These capabilities are advertised via TLVs 5.82, 
+            Queries the cable modem to retrieve all supported diplexer band edge configurations
+            for upstream and downstream paths. These capabilities are advertised via TLVs 5.82,
             5.83, and 5.84 during CM registration and reflect the modem's spectrum planning capabilities.
 
             - Upstream Upper Band Edge Capability (TLV 5.84)
@@ -62,24 +62,24 @@ class FddDiplexerBandEdgeCapability:
 
             # Ensure modem is reachable and SNMP is operational
             status, msg = await CableModemServicePreCheck(mac_address=mac,
-                                                          ip_address=ip, 
+                                                          ip_address=ip,
                                                           snmp_config=request.cable_modem.snmp,
                                                           check_docsis_version=[ClabsDocsisVersion.DOCSIS_40]).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
-            
+
             # Fetch capability data from the cable modem
             service = FddDiplexerBandEdgeCapabilityService(mac_address=mac,
                                                            ip_address=ip,
                                                            snmp_config=request.cable_modem.snmp)
-                        
+
             entry = await service.getFddDiplexerBandEdgeCapabilityEntries()
 
-            return SnmpResponse(mac_address =   mac, 
-                                status      =   ServiceStatusCode.SUCCESS, 
-                                message     =   "Successfully retrieved FDD diplexer band edge capabilities", 
+            return SnmpResponse(mac_address =   mac,
+                                status      =   ServiceStatusCode.SUCCESS,
+                                message     =   "Successfully retrieved FDD diplexer band edge capabilities",
                                 results     =   entry)
 
 # Required for dynamic auto-registration

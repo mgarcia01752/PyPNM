@@ -18,7 +18,7 @@ def test_perfect_line_with_explicit_x() -> None:
     b_true = -1.2
     y = m_true * x + b_true
 
-    lr = LinearRegression1D(y_values    =   cast(ArrayLike, y), 
+    lr = LinearRegression1D(y_values    =   cast(ArrayLike, y),
                             x_values    =   cast(ArrayLike, x))
 
     assert lr.n == x.size
@@ -48,7 +48,7 @@ def test_filters_nonfinite_pairs() -> None:
     y = np.array([0.0, 2.0, 4.0, 6.0, np.nan, 10.0, 12.0], dtype=float)
 
     # Finite overlapping pairs are: (0,0), (1,2), (2,4), (5,10)
-    lr = LinearRegression1D(y_values     =   cast(ArrayLike, y), 
+    lr = LinearRegression1D(y_values     =   cast(ArrayLike, y),
                             x_values    =   cast(ArrayLike, x))
 
     assert lr.n == 4
@@ -62,7 +62,7 @@ def test_constant_y_robust_r2() -> None:
     # y is constant; r2 should be 1 if perfectly fit, else 0 (implementation treats as perfect)
     x = np.linspace(0.0, 1.0, 10)
     y = np.full_like(x, 3.14)
-    lr = LinearRegression1D(y_values     =   cast(ArrayLike, y), 
+    lr = LinearRegression1D(y_values     =   cast(ArrayLike, y),
                             x_values    =   cast(ArrayLike, x))
 
     # Any slope with intercept ~3.14 fits; least squares gives slope≈0, intercept≈3.14
@@ -75,7 +75,7 @@ def test_near_zero_variance_x_raises() -> None:
     x = np.ones(5, dtype=float) * 7.0
     y = np.linspace(0.0, 1.0, 5)
     with pytest.raises(ValueError):
-        LinearRegression1D(y_values     =   cast(ArrayLike, y), 
+        LinearRegression1D(y_values     =   cast(ArrayLike, y),
                             x_values    =   cast(ArrayLike, x))
 
 
@@ -92,7 +92,7 @@ def test_min_points_and_shape_checks() -> None:
 def test_to_list_and_to_dict_and_repr() -> None:
     x = np.array([0.0, 1.0, 2.0], dtype=float)
     y = np.array([1.0, 3.0, 5.0], dtype=float)  # slope=2, intercept=1
-    lr = LinearRegression1D(y_values    =   cast(ArrayLike, y), 
+    lr = LinearRegression1D(y_values    =   cast(ArrayLike, y),
                             x_values    =   cast(ArrayLike, x))
 
     lst = lr.to_list()
@@ -114,7 +114,7 @@ def test_to_list_and_to_dict_and_repr() -> None:
 def test_regression_line_and_residuals() -> None:
     x = np.array([0.0, 1.0, 2.0, 3.0], dtype=float)
     y = np.array([1.0, 2.9, 5.1, 7.2], dtype=float)  # near slope=2, intercept=1
-    lr = LinearRegression1D(y_values    =   cast(ArrayLike, y), 
+    lr = LinearRegression1D(y_values    =   cast(ArrayLike, y),
                             x_values    =   cast(ArrayLike, x))
 
     yhat_only = lr.regression_line(y_axis_only=True)

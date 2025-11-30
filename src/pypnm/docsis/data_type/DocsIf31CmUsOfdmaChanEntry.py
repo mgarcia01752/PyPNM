@@ -110,7 +110,7 @@ class DocsIf31CmUsOfdmaChanEntry(BaseModel):
             return results
 
         for index in indices:
-            
+
             try:
                 result = await cls.from_snmp(index, snmp)
                 results.append(result)

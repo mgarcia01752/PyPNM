@@ -21,4 +21,3 @@ class FecSummaryCaptureSettings(BaseModel):
 
 class PnmFecSummaryAnalysisRequest(PnmSingleCaptureRequest):
     capture_settings: FecSummaryCaptureSettings
-    

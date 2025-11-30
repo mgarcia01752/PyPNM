@@ -9,11 +9,10 @@ from pypnm.api.routes.docs.pnm.spectrumAnalyzer.schemas import SpectrumAnalysisE
 
 class SpectrumAnalysisProcess(SpectrumAnalysisExtention):
     pass
-    
+
 class AnalysisProcessParameters(SpectrumAnalysisProcess):
     '''
         Extend the differnt types of processing of Analysis
         Use Models that are defined in the FastAPI request/response schemas
     '''
     pass
-    

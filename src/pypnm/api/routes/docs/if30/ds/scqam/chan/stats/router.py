@@ -24,12 +24,12 @@ class DsScQamChannelRouter:
         self.router = APIRouter(
             prefix="/docs/if30/ds/scqam/chan",
             tags=["DOCSIS 3.0 Downstream SC-QAM Channel"])
-        
+
         self._add_routes()
 
     def _add_routes(self):
 
-        @self.router.post("/stats", 
+        @self.router.post("/stats",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
         async def get_scqam_ds_channels(request: SnmpRequest) -> SnmpResponse:
@@ -49,15 +49,15 @@ class DsScQamChannelRouter:
             mac = request.cable_modem.mac_address
             ip = request.cable_modem.ip_address
             self.logger.info(f"Retrieving DOCSIS 3.0 SC-QAM downstream channel stats for MAC: {mac}, IP: {ip}")
-            status, msg = await CableModemServicePreCheck(mac_address=mac, 
+            status, msg = await CableModemServicePreCheck(mac_address=mac,
                                                           ip_address=ip,
                                                           snmp_config=request.cable_modem.snmp).run_precheck()
-            
+
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
 
-            service = DsScQamChannelService(mac_address=mac, 
+            service = DsScQamChannelService(mac_address=mac,
                                             ip_address=ip,
                                             snmp_config=request.cable_modem.snmp)
             data = await service.get_scqam_chan_entries()
@@ -68,7 +68,7 @@ class DsScQamChannelRouter:
                 message     =   "Successfully retrieved downstream SC-QAM channel stats",
                 results     =   data)
 
-        @self.router.post("/codewordErrorRate", 
+        @self.router.post("/codewordErrorRate",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
         async def get_scqam_ds_channels_codeword_error_rate(request: CodewordErrorRateRequest) -> SnmpResponse:
@@ -89,19 +89,19 @@ class DsScQamChannelRouter:
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(mac_address=mac, status=status, message=msg)              
+                return SnmpResponse(mac_address=mac, status=status, message=msg)
 
-            service = DsScQamChannelService(mac_address=mac, 
-                                            ip_address=ip, 
+            service = DsScQamChannelService(mac_address=mac,
+                                            ip_address=ip,
                                             snmp_config=request.cable_modem.snmp)
             sample_time_elapsed = float(request.capture_parameters.sample_time_elapsed)
             if sample_time_elapsed <= 0:
                 error_msg = "Sample time elapsed must be a positive number."
                 self.logger.error(error_msg)
                 return SnmpResponse(mac_address=mac, status=ServiceStatusCode.INVALID_CAPTURE_PARAMETERS, message=error_msg)
-               
+
             cw_error_rate = await service.get_scqam_chan_codeword_error_rate(float(request.capture_parameters.sample_time_elapsed))
-            
+
             return SnmpResponse(
                 mac_address =   mac,
                 status      =   ServiceStatusCode.SUCCESS,

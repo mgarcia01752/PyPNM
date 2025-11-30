@@ -59,9 +59,9 @@ class SystemRouter:
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
                     return SnmpResponse(mac_address=mac, status=status, message=msg)
-                
+
                 return await SystemSnmpService.get_sysdescr(request)
-            
+
             except Exception as exc:
                 self.logger.error(f"sysDescr error for {request.cable_modem.mac_address}@{request.cable_modem.ip_address}: {exc}")
                 # You can return more detailed errors based on exception type if you like
@@ -90,10 +90,10 @@ class SystemRouter:
                                                               snmp_config=request.cable_modem.snmp).run_precheck()
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(msg)
-                    return SnmpResponse(mac_address=mac, status=status, message=msg)                          
-                
-                return await SystemSnmpService.get_sys_up_time(request) 
-            
+                    return SnmpResponse(mac_address=mac, status=status, message=msg)
+
+                return await SystemSnmpService.get_sys_up_time(request)
+
             except Exception as exc:
                 self.logger.error(f"sysUpTime error for {mac}@{ip}: {exc}")
                 raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail="Failed to retrieve sysUpTime")

@@ -40,7 +40,7 @@ class ServiceStatusCode(IntEnum):
     CM_MAC_DOES_MATCH_MATCH                 = 25
 
     INVALID_CAPTURE_PARAMETERS              = 90
-    
+
     SCP_PNM_FILE_FETCH_ERROR                = 100
     TFTP_PNM_FILE_FETCH_ERROR               = 101
     FTP_PNM_FILE_FETCH_ERROR                = 102
@@ -51,30 +51,30 @@ class ServiceStatusCode(IntEnum):
     INVALID_DOCSIS_VERSION                  = 110
     NO_OFDMA_CHANNELS_EXIST                 = 111
     NO_OFDM_CHANNELS_EXIST                  = 112
-    
+
     TRANSACTION_RECORD_GET_FAILED           = 200
     UNSUPPORTED_TEST_TYPE                   = 201
     CAPTURE_GROUP_NOT_FOUND                 = 202
-    
+
     INVALID_OUTPUT_TYPE                     = 220
-    
+
     DS_OFDM_RXMER_NOT_AVAILABLE             = 300
-    
+
     SPEC_ANALYZER_NOT_AVAILABLE             = 400
     SPEC_ANALYZER_AMPLITUDE_DATA_TIMEOUT    = 401
     SPEC_ANALYZER_AMPLITUDE_DATA_NOT_FOUND  = 402
     SPEC_ANALYZER_DATA_RETRIVAL_ERROR       = 403
-    SPEC_ANALYZER_SET_CONFIG_ERROR          = 404    
-    
+    SPEC_ANALYZER_SET_CONFIG_ERROR          = 404
+
     DS_OFDM_MULIT_RXMER_FAILED              = 500
     MEASURE_MODE_INVALID                    = 501
     DS_OFDM_MULIT_RXMER_ANALYSIS_TYPE       = 502
-    
+
     DS_OFDM_CHAN_EST_NOT_AVAILABLE          = 600
     DS_OFDM_CHAN_EST_INVALID_ANALYSIS_TYPE  = 601
-    
+
     DS_OFDM_FEC_SUMMARY_NOT_AVALIABLE       = 700
-    
+
     DS_OFDM_MOD_PROFILE_NOT_AVALAIBLE       = 800
 
     NO_SPECTRUM_CAPTURE_PARAMETERS          = 1000

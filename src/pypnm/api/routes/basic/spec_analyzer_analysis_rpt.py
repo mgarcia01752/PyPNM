@@ -38,8 +38,8 @@ class SpectrumAnalyzerReport(AnalysisReport):
     """Builds CSV and plots from Spectrum Analyzer analysis results."""
     FNAME_TAG: str = "spec_analysis"
 
-    def __init__(self, analysis: Analysis, 
-                 analysis_matplot_config:AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(), 
+    def __init__(self, analysis: Analysis,
+                 analysis_matplot_config:AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(),
                  **kwargs):
         super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("SpectrumAnalyzerReport")
@@ -86,7 +86,7 @@ class SpectrumAnalyzerReport(AnalysisReport):
 
                 cfg = PlotConfig(
                     title           =   "Spectrum Analysis · Standard",
-                    x               =   cast(ArrayLike, sig.frequencies),  
+                    x               =   cast(ArrayLike, sig.frequencies),
                     y               =   cast(ArrayLike, sig.amplitude),
                     xlabel          =   None,
                     xlabel_base     =   "Frequency",
@@ -113,7 +113,7 @@ class SpectrumAnalyzerReport(AnalysisReport):
 
                 cfg = PlotConfig(
                     title           =   f"Spectrum Analysis · Moving Average n={sig.window.window_size}",
-                    x               =   cast(ArrayLike, sig.frequencies),  
+                    x               =   cast(ArrayLike, sig.frequencies),
                     y               =   cast(ArrayLike, sig.window.windows_average),
                     xlabel          =   None,
                     xlabel_base     =   "Frequency",

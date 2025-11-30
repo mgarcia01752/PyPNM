@@ -32,9 +32,9 @@ class MultiChannelEstimationService(AbstractCaptureService):
       - duration: total measurement duration in seconds.
       - interval: interval between captures in seconds.
     """
-    def __init__(self, cm: CableModem, 
+    def __init__(self, cm: CableModem,
                 tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
-                tftp_path: str = PnmConfigManager.get_tftp_path(), 
+                tftp_path: str = PnmConfigManager.get_tftp_path(),
                  duration: float = 1, interval: float = 1):
         """
         Initialize the MultiChannelEstimationService.
@@ -42,7 +42,7 @@ class MultiChannelEstimationService(AbstractCaptureService):
         Args:
             cm: Configured CableModem instance for SNMP/TFTP operations.
             tftp_servers: Tuple of Inet objects representing TFTP servers.
-            tftp_path: Path on the TFTP server for file storage.    
+            tftp_path: Path on the TFTP server for file storage.
             duration: Total duration (seconds) to run periodic captures.
             interval: Time (seconds) between successive captures.
         """
@@ -67,7 +67,7 @@ class MultiChannelEstimationService(AbstractCaptureService):
         try:
             msg_rsp: MessageResponse = \
                 await CmDsOfdmChanEstCoefService(self.cm, self.tftp_servers, self.tftp_path).set_and_go()
-            
+
         except Exception as exc:
             err_msg = f"Exception during ChannelEstimation SNMP/TFTP operation: {exc}"
             self.logger.error(err_msg, exc_info=True)
@@ -77,5 +77,5 @@ class MultiChannelEstimationService(AbstractCaptureService):
             err_msg = f"SNMP/TFTP failure: status={msg_rsp.status}"
             self.logger.error(err_msg)
             return MessageResponse(ServiceStatusCode.DS_OFDM_CHAN_EST_NOT_AVAILABLE)
-        
+
         return msg_rsp

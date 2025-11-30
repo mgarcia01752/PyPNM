@@ -63,7 +63,7 @@ class SessionGroup:
         # Resolve DB file path
         if db_path:
             self.db_path = Path(db_path)
-            
+
         else:
             cfg_db_path = SystemConfigSettings.session_group_db
             self.db_path = Path(cfg_db_path)

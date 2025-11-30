@@ -15,7 +15,7 @@ from pypnm.lib.types import GroupId, OperationId
 T = TypeVar("T", bound=AbstractCaptureService)
 
 class AbstractService(ABC):
-    """ 
+    """
     Base router class managing the lifecycle of capture service instances.
 
     Responsibilities:

@@ -68,7 +68,7 @@ class AnalysisReport(ABC):
         self._analysis = analysis
         self._armc = armc
         self.__init()
-        
+
         self.csv_files: List[PathLike]  = []
         self.plot_files: List[PathLike] = []
         self.json_files: List[PathLike] = []
@@ -84,7 +84,7 @@ class AnalysisReport(ABC):
         """Return the parsed analysis model(s) produced by the upstream pipeline."""
         return self._analysis.get_model()
 
-    def get_mac_address(self) -> MacAddress:    
+    def get_mac_address(self) -> MacAddress:
         """Return the cable-modem MAC address associated with this report session."""
         return self._mac_address
 
@@ -95,7 +95,7 @@ class AnalysisReport(ABC):
     def get_group_time(self) -> TimeStamp:
         """Return the session/group timestamp used to namespace output filenames."""
         return self._group_time
-    
+
     def to_model(self) -> AnalysisOutputModel:
         """
         Produce a serializable model of the generated artifacts (time, CSVs, plots, archive).
@@ -127,7 +127,7 @@ class AnalysisReport(ABC):
 
         Example:
             fname = self.create_png_fname(tags=["spectrum"])
-        '''        
+        '''
         return f"{self._png_dir}/{self.create_generic_fname(tags=tags, ext='png')}"
 
     def create_json_fname(self, tags: List[str] = []) -> PathLike:
@@ -137,7 +137,7 @@ class AnalysisReport(ABC):
 
         Example:
             fname = self.create_png_fname(tags=["spectrum"])
-        '''        
+        '''
         return f"{self._json_dir}/{self.create_generic_fname(tags=tags, ext='json')}"
 
     def create_archive_fname(self, tags: List[str] = []) -> PathLike:
@@ -147,7 +147,7 @@ class AnalysisReport(ABC):
 
         Example:
             fname = self.create_archive_fname(tags=["bundle"])
-        '''        
+        '''
         return f"{self._archive_dir}/{self.create_generic_fname(tags=tags, ext='zip')}"
 
     def create_generic_fname(self, tags: List[str], ext: str = "") -> FileNameStr:
@@ -274,7 +274,7 @@ class AnalysisReport(ABC):
         f:PathArray = [Path('')]
 
         for csv_mgr in self.create_csv():
-            
+
             if not csv_mgr.write():
                 self.logger.error(f"Failed to write CSV: {csv_mgr.get_path_fname()}")
                 continue
@@ -288,7 +288,7 @@ class AnalysisReport(ABC):
                 self.logger.debug(f'Wrote Matplotlib Figure: {fn}')
                 self.plot_files.append(fn)
                 f.append(fn)
-        
+
         # Add JSON files if any
         f.extend(self.json_files)
 
@@ -323,7 +323,7 @@ class AnalysisReport(ABC):
 
         full_path_fname = self.create_json_fname(tags=[str(channel_id), "analysis", str(Generate.time_stamp())])
         self.json_files.append(full_path_fname)
-        JsonTransactionDb().write_json(data  = common_analysis.model_dump(), 
+        JsonTransactionDb().write_json(data  = common_analysis.model_dump(),
                                        fname = Path(full_path_fname).parts[-1])
 
     @abstractmethod
@@ -379,7 +379,7 @@ class AnalysisReport(ABC):
         self._group_time: TimeStamp         = TimeStamp(Generate.time_stamp())
         self._base_filename: FileNameStr    = FileNameStr("")
         self._common_analysis_model: Dict[ChannelId, List[CommonAnalysis]] = {}
-        
+
         # Normalize first item to a dict (supports both dict and BaseModel)
         first_item = self._data_list[0]
         if isinstance(first_item, BaseModel):
@@ -399,7 +399,7 @@ class AnalysisReport(ABC):
 
         # System descriptor (robust to missing keys)
         dev_details: Dict[str, Any]                     = cast(Dict[str, Any], first_dict.get("device_details", {}))
-        system_description_dict: Dict[str, Any]         = cast(Dict[str, Any], dev_details.get("system_description", 
+        system_description_dict: Dict[str, Any]         = cast(Dict[str, Any], dev_details.get("system_description",
                                                                                                SystemDescriptor.empty().to_dict()))
         self._system_description: SystemDescriptor      = SystemDescriptor.load_from_dict(system_description_dict)
 

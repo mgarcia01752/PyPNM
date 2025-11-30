@@ -160,4 +160,4 @@ class CommonSpectrumChannelAnalyzer(ABC):
         CommonSpectumBwLut
             Mapping of ChannelId -> (start_hz, center_or_plc_hz, end_hz).
         """
-        pass  
+        pass

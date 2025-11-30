@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
 from pypnm.api.routes.docs.pnm.files.schemas import (
-    AnalysisJsonResponse, FileAnalysisRequest, FileQueryRequest, 
+    AnalysisJsonResponse, FileAnalysisRequest, FileQueryRequest,
     FileQueryResponse, HexDumpResponse, UploadFileResponse,)
 from pypnm.api.routes.docs.pnm.files.service import PnmFileService
 from pypnm.config.system_config_settings import SystemConfigSettings
@@ -107,7 +107,7 @@ class PnmFileManager:
             [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file-manager/file-manager-api.md#3-download-files-by-mac-address-zip-archive)
             """
             return PnmFileService().get_file_by_mac_address(mac_address)
-    
+
         @self.router.get(
             "/download/operationID/{operation_id}",
             response_class=FileResponse,
@@ -128,7 +128,7 @@ class PnmFileManager:
             [API Guide](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/file-manager/file-manager-api.md#4-download-files-by-operation-id-zip-archive)
             """
             return PnmFileService().get_file_by_operation_id(operation_id)
-        
+
         @self.router.post(
             "/upload",
             response_model=UploadFileResponse,
@@ -195,7 +195,7 @@ class PnmFileManager:
                         status          =   "success",
                         analysis        =   analysis_result.model_dump(),
                     )
-            
+
             elif output_type == OutputType.ARCHIVE:
                 return  PnmFileService().get_archive(request)
 

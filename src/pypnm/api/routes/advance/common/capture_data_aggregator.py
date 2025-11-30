@@ -14,7 +14,7 @@ from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import Pn
 from pypnm.api.routes.common.classes.file_capture.types import TransactionRecordModel
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.types import GroupId, TransactionId
-    
+
 class CaptureDataAggregator:
     """
     Collect raw capture files for a given capture group, returning (filename, bytes) pairs.
@@ -57,7 +57,7 @@ class CaptureDataAggregator:
 
             record: TransactionRecordModel = PnmFileTransaction().getRecordModel(txn_id)
             file_path = self._safe_join(self._pnm_dir, record.filename)
-            
+
             try:
                 bin:bytes = file_path.read_bytes()
                 self.logger.debug(f'Reading capture - count={file_count},  txn={txn_id},  file={file_path.name}, size={len(bin)}')
@@ -112,7 +112,7 @@ class CaptureDataAggregator:
             self.logger.error(
                 "Rejected filename outside save_dir; group_id=%s base=%s filename=%r resolved=%s",
                 self._capture_group_id, base_resolved, fname, file_path)
-                
+
             return base_resolved / "__invalid__"
 
         return file_path

@@ -35,8 +35,8 @@ class ConstellationDisplayReport(AnalysisReport):
 
     FNAME_TAG:str = 'constdisplay'
 
-    def __init__(self, analysis: Analysis, 
-                 analysis_matplot_config:ConstDisplayAnalysisRptMatplotConfig = ConstDisplayAnalysisRptMatplotConfig(), 
+    def __init__(self, analysis: Analysis,
+                 analysis_matplot_config:ConstDisplayAnalysisRptMatplotConfig = ConstDisplayAnalysisRptMatplotConfig(),
                  **kwargs):
         super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("ConstellationDisplayReport")
@@ -58,7 +58,7 @@ class ConstellationDisplayReport(AnalysisReport):
             modulation:QamModulation    = model.parameters.modulation
             hard:ComplexArray           = model.parameters.hard
             soft:ComplexArray           = model.parameters.soft
-            
+
             """
             Single Channel Capture
             """
@@ -66,16 +66,16 @@ class ConstellationDisplayReport(AnalysisReport):
                 csv_mgr: CSVManager = self.csv_manager_factory()
                 csv_fname = self.create_csv_fname(tags=[str(channel_id), self.FNAME_TAG])
                 csv_mgr.set_path_fname(csv_fname)
-                
-                csv_mgr.set_header(["ChannelID",    "Modulation", 
-                                    "Hard(I)",      "Hard(Q)", 
+
+                csv_mgr.set_header(["ChannelID",    "Modulation",
+                                    "Hard(I)",      "Hard(Q)",
                                     "Soft(I)",      "Soft(Q)"])
-                
+
                 for h, s in zip(hard, soft):
                     hard_real, hard_img = h
                     soft_real, soft_img = s
-                    csv_mgr.insert_row([channel_id, modulation, 
-                                        hard_real,  hard_img, 
+                    csv_mgr.insert_row([channel_id, modulation,
+                                        hard_real,  hard_img,
                                         soft_real,  soft_img])
 
                 self.logger.debug(f"CSV created for channel {channel_id}: {csv_fname} (rows={csv_mgr.get_row_count()})")
@@ -150,7 +150,7 @@ class ConstellationDisplayReport(AnalysisReport):
             mac_address         = measurement.get("mac_address"),
             channel_id          = measurement.get("channel_id"),
             num_sample_symbols  = num_sample_symbols,
-            modulation_order    = qm, # QamModulation 
+            modulation_order    = qm, # QamModulation
             hard                = hard,
             soft                = samples
         }
@@ -173,10 +173,10 @@ class ConstellationDisplayReport(AnalysisReport):
                         soft            = soft,
                         sample_count    = sample_count,
                 )
-                
+
                 model = ConstellationDisplayAnalysisRptModel(
                         channel_id  =   ChannelId(channel_id),
-                        raw_x       =   [0],    
+                        raw_x       =   [0],
                         raw_y       =   [0],
                         parameters  =   params
                 )

@@ -31,7 +31,7 @@ class SystemSnmpService:
             request (SysRequest): connection params + SNMP config.
 
         Returns:
-            SysDescrResponse: 
+            SysDescrResponse:
               - on success: status=SUCCESS, system_description contains OID→description map
               - on failure: status=FAILURE, message=error text, system_description=None
         """
@@ -42,13 +42,13 @@ class SystemSnmpService:
                 inet=Inet(request.cable_modem.ip_address)
             )
             system_description: SystemDescriptor = await cm.getSysDescr()
-                        
+
             return SysDescrResponse(
                 mac_address=request.cable_modem.mac_address,
                 status=ServiceStatusCode.SUCCESS,
                 results={"sysDescr":system_description},
             )
-            
+
         except Exception as e:
             logger.error(f"Failed to retrieve sysDescr: {e}", exc_info=True)
             return SysDescrResponse(
@@ -77,7 +77,7 @@ class SystemSnmpService:
                 mac_address=MacAddress(request.cable_modem.mac_address),
                 inet=Inet(request.cable_modem.ip_address)
             )
-            
+
             raw_uptime: str = await cm.getSysUpTime()
             logger.debug("sysUpTime raw value: %r", raw_uptime)
             return SysUpTimeResponse(
@@ -85,7 +85,7 @@ class SystemSnmpService:
                 status=ServiceStatusCode.SUCCESS,
                 results={"uptime": raw_uptime},
             )
-        
+
         except Exception as e:
             logger.error(f"Failed to retrieve sysUpTime: {e}", exc_info=True)
             return SysUpTimeResponse(

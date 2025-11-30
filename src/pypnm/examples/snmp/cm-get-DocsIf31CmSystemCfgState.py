@@ -34,9 +34,9 @@ async def main():
         exit(1)
 
     logging.info(f"Connected to: {await cm.getSysDescr()}")
-    
+
     obj = await cm.getDocsIf31CmSystemCfgDiplexState()
-    
+
     print(f'{obj.to_dict()}')
 
 if __name__ == "__main__":

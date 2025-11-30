@@ -14,15 +14,15 @@ from pypnm.pnm.data_type.DocsEqualizerData import DocsEqualizerData
 
 class UsScQamChannelService:
     """
-    Service for retrieving DOCSIS Upstream SC-QAM channel information and 
+    Service for retrieving DOCSIS Upstream SC-QAM channel information and
     pre-equalization data from a cable modem using SNMP.
 
     Attributes:
         cm (CableModem): An instance of the CableModem class used to perform SNMP operations.
     """
 
-    def __init__(self, mac_address: MacAddressStr, 
-                 ip_address: InetAddressStr, 
+    def __init__(self, mac_address: MacAddressStr,
+                 ip_address: InetAddressStr,
                  snmp_config: SNMPConfig):
         """
         Initializes the service with a MAC and IP address.
@@ -31,7 +31,7 @@ class UsScQamChannelService:
             mac_address (str): MAC address of the target cable modem.
             ip_address (str): IP address of the target cable modem.
         """
-        self.cm = CableModem(mac_address=MacAddress(mac_address), 
+        self.cm = CableModem(mac_address=MacAddress(mac_address),
                              inet=Inet(ip_address),
                              write_community=snmp_config.snmp_v2c.community)
 
@@ -44,7 +44,7 @@ class UsScQamChannelService:
         """
         entries = await self.cm.getDocsIfUpstreamChannelEntry()
         return [entry.model_dump() for entry in entries]
- 
+
     async def get_upstream_pre_equalizations(self) ->  dict[int, dict]:
         """
         Fetches upstream pre-equalization coefficient data.

@@ -43,7 +43,7 @@ class CaptureGroup:
         txns = cg2.get_transactions()
     """
 
-    def __init__(self, group_id: Optional[GroupId] = None, 
+    def __init__(self, group_id: Optional[GroupId] = None,
                  db_path: Optional[Path] = None) -> None:
         """
         Initialize the CaptureGroup manager.

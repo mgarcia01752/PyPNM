@@ -14,8 +14,8 @@ class FileType(IntEnum):
     - CSV: Comma-Separated Values format (media type "text/csv")
     - PNG: Portable Network Graphics image format (media type "image/png")
     - XLSX: Microsoft Excel Open XML Spreadsheet format (media type "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    - ARCHIVE: Aggregate archive format (e.g., ZIP) that may contain multiple file types 
-               such as CSV, PNG, and other artifacts 
+    - ARCHIVE: Aggregate archive format (e.g., ZIP) that may contain multiple file types
+               such as CSV, PNG, and other artifacts
                (media type "application/zip")
     """
     JSON    = 0

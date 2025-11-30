@@ -22,8 +22,8 @@ class DsScQamChannelService:
     and extract downstream channel metrics such as frequency, power, SNR, and modulation type.
     """
 
-    def __init__(self, mac_address: MacAddressStr, 
-                 ip_address: InetAddressStr, 
+    def __init__(self, mac_address: MacAddressStr,
+                 ip_address: InetAddressStr,
                  snmp_config: SNMPConfig=SNMPConfig()):
         """
         Initialize the service with a target cable modem's MAC and IP address.
@@ -33,8 +33,8 @@ class DsScQamChannelService:
             ip_address (str): IP address of the cable modem.
         """
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.cm = CableModem(mac_address=MacAddress(mac_address), 
-                             inet=Inet(ip_address), 
+        self.cm = CableModem(mac_address=MacAddress(mac_address),
+                             inet=Inet(ip_address),
                              write_community = snmp_config.snmp_v2c.community)
 
     async def get_scqam_chan_entries(self) -> List[Dict]:
@@ -42,7 +42,7 @@ class DsScQamChannelService:
         Retrieve and process DOCSIS SC-QAM downstream channel entries.
 
         Returns:
-            List[Dict]: A list of dictionaries representing successfully retrieved 
+            List[Dict]: A list of dictionaries representing successfully retrieved
                         and populated SC-QAM downstream channel entries.
         """
         entries: List[DocsIfDownstreamChannelEntry] = await self.cm.getDocsIfDownstreamChannel()
@@ -58,15 +58,15 @@ class DsScQamChannelService:
             List[Dict]: A list of dictionaries containing codeword error rate entries for each channel.
         """
         cw_error_rate = await self.cm.getDocsIfDownstreamChannelCwErrorRate(time_elapse)
-        
+
         self.logger.info(
             f"Retrieved [{len(cw_error_rate)}] SC-QAM channel codeword error rate entries over a sampling interval of {time_elapse} seconds.")
 
         if isinstance(cw_error_rate, list):
             return [entry.model_dump() for entry in cw_error_rate]
-        
+
         elif isinstance(cw_error_rate, dict):
             return cw_error_rate.get("entries", [])
-        
+
         else:
             return []

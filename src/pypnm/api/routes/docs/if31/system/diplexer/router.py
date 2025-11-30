@@ -15,16 +15,16 @@ from pypnm.lib.fastapi_constants import FAST_API_RESPONSE
 
 
 class DiplexerConfigResult:
-    
+
     def __init__(self) -> None:
         self.router = APIRouter(prefix="/docs/if31/system",
                                 tags=["DOCSIS 3.1 System"])
         self.logger = logging.getLogger(self.__class__.__name__)
-        
+
         self._register_routes()
 
     def _register_routes(self) -> None:
-        @self.router.post("/diplexer", 
+        @self.router.post("/diplexer",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
         async def diplexer_config(request: SnmpRequest):
@@ -45,18 +45,18 @@ class DiplexerConfigResult:
             ip = request.cable_modem.ip_address
             self.logger.info(f"Retrieving diplexer configuration for MAC: {mac}, IP: {ip}")
 
-            status, msg = await CableModemServicePreCheck(mac_address=mac, 
+            status, msg = await CableModemServicePreCheck(mac_address=mac,
                                                           ip_address=ip,
                                                           snmp_config=request.cable_modem.snmp,
                                                           validate_ofdm_exist=True).run_precheck()
-            
+
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(mac_address=mac, status=status, message=msg)              
+                return SnmpResponse(mac_address=mac, status=status, message=msg)
 
             try:
 
-                config = await DiplexerConfigService.fetch_diplexer_config(mac_address=mac, 
+                config = await DiplexerConfigService.fetch_diplexer_config(mac_address=mac,
                                                                            ip_address=ip,
                                                                            snmp_config=request.cable_modem.snmp)
 
@@ -67,7 +67,7 @@ class DiplexerConfigResult:
 
             except HTTPException:
                 raise
-            
+
             except Exception as exc:
                 self.logger.exception("Failed to fetch diplexer configuration")
                 raise HTTPException(

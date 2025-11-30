@@ -60,7 +60,7 @@ class FecSummaryRouter:
             community: str = request.cable_modem.snmp.snmp_v2c.community
             tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
             tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
-            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6) 
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)
             self.logger.info(f"Starting FEC Summary capture for MAC: {mac}, IP: {ip}")
 
             cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip), write_community=community)
@@ -76,7 +76,7 @@ class FecSummaryRouter:
             service = CmDsOfdmFecSummaryService(cable_modem=cm,
                                                 fec_summary_type=fec_type,
                                                 tftp_servers=tftp_servers)
-            
+
             msg_rsp: MessageResponse = await service.set_and_go()
 
             if msg_rsp.status != ServiceStatusCode.SUCCESS:
@@ -108,7 +108,7 @@ class FecSummaryRouter:
 
             elif request.analysis.output.type == OutputType.ARCHIVE:
                 theme = request.analysis.plot.ui.theme
-                plot_config = AnalysisRptMatplotConfig(theme = theme) 
+                plot_config = AnalysisRptMatplotConfig(theme = theme)
                 analysis_rpt = FecSummaryAnalysisReport(analysis, plot_config)
                 rpt: Path = cast(Path, analysis_rpt.build_report())
                 return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)

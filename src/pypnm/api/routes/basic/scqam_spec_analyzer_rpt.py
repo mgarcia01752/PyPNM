@@ -68,18 +68,18 @@ class ScQamSpecAnalyzerAnalysisReport():
         """
         Generate and collect all per-channel analysis artifacts into a final archive.
 
-        This method iterates over each :class:`Analysis` object within a 
-        :class:`MultiAnalysis` instance, generating CSVs and plots using 
-        :class:`SingleScQamSpecAnalyzerReport`. It then aggregates all 
+        This method iterates over each :class:`Analysis` object within a
+        :class:`MultiAnalysis` instance, generating CSVs and plots using
+        :class:`SingleScQamSpecAnalyzerReport`. It then aggregates all
         generated files and produces a single ZIP archive.
 
         Returns:
             PathLike: The path to the created archive file.
 
         Workflow:
-            1. For each `Analysis`, create and execute a 
+            1. For each `Analysis`, create and execute a
             `SingleScQamSpecAnalyzerReport`.
-            2. Collect all generated files using 
+            2. Collect all generated files using
             :meth:`SingleScQamSpecAnalyzerReport.get_all_generated_files`.
             3. Combine them into a single archive using :meth:`_build_archive`.
 
@@ -117,7 +117,7 @@ class ScQamSpecAnalyzerAnalysisReport():
         The archive location defaults to :data:`SystemConfigSettings.archive_dir`
         and is cached internally for retrieval via :meth:`get_archive`.
         """
-        self._archive_file = ArchiveManager().zip_files(files=self._report_files(), 
+        self._archive_file = ArchiveManager().zip_files(files=self._report_files(),
                                                         archive_path=self._create_archive_fname())
         return self._archive_file
 
@@ -143,11 +143,11 @@ class ScQamSpecAnalyzerAnalysisReport():
         analyses = self._get_analyses()
         if not analyses:
             raise ValueError("No analyses available to extract MAC address.")
-        
+
         first_analysis = analyses[0]
 
         return MacAddress(cast(BaseAnalysisModel, first_analysis.get_model()[0].mac_address))
-        
+
     def get_archive(self) -> PathLike:
         """Return the path to the previously created archive.
 
@@ -156,7 +156,7 @@ class ScQamSpecAnalyzerAnalysisReport():
         Call :meth:`_build_archive` before invoking this method.
         """
         return self._archive_file
-    
+
     def to_model(self) -> ScQamSpecAnalysisRptModel:
         """Return a structured model of the aggregated report output.
 
@@ -166,7 +166,7 @@ class ScQamSpecAnalyzerAnalysisReport():
         """
         return ScQamSpecAnalysisRptModel(
             models=self._multi_analysis.to_model())
-    
+
     def to_dict(self) -> Dict[str,Any]:
         """Return the report as a serializable ``dict`` via Pydantic's ``model_dump``."""
         return self._multi_analysis.to_dict()
@@ -273,7 +273,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
 
                 cfg = PlotConfig(
                     title           =   f"Spectrum Analysis · SCQAM Channel ({ch}) · Standard",
-                    x               =   cast(ArrayLike, sig.frequencies),  
+                    x               =   cast(ArrayLike, sig.frequencies),
                     y               =   cast(ArrayLike, sig.amplitude),
                     xlabel          =   None,
                     xlabel_base     =   "Frequency",
@@ -287,7 +287,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
                     transparent     =   False,
                     theme           =   self.getAnalysisRptMatplotConfig().theme,
                 )
-                
+
                 mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_line(filename=fname)
                 out.append(mgr)
@@ -302,7 +302,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
 
                 cfg = PlotConfig(
                     title   =   f"Spectrum Analysis · SCQAM Channel ({ch}) · Moving Average n={sig.window.window_size}",
-                    x               =   cast(ArrayLike, sig.frequencies),  
+                    x               =   cast(ArrayLike, sig.frequencies),
                     y               =   cast(ArrayLike, sig.window.windows_average),
                     xlabel          =   None,
                     xlabel_base     =   "Frequency",

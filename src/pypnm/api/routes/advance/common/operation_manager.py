@@ -134,7 +134,7 @@ class OperationManager:
             capture_group_id if found, otherwise None.
             Exception thrown
         """
-        
+
         if not db_path:
             db_str = SystemConfigSettings.operation_db
             db_path = Path(db_str)

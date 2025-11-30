@@ -43,23 +43,23 @@ async def main():
     logging.info(f"Connected to: {await cm.getSysDescr()}")
 
     ofdm_idx_list = await cm.getDocsIf31CmDsOfdmChannelIdIndex()
-    
+
     if not await cm.setDocsPnmBulk(tftp_server=args.tftp_ipv4, tftp_path=args.tftp_dest_dir):
         logging.error(f'Unable to set TFTP Server: {args.tftp_ipv4} and/or TFTP Path: {args.tftp_dest_dir}')
         exit(1)
-            
+
     for idx in ofdm_idx_list:
-        
+
         filename = f"rxmer_{idx}_{Generate.time_stamp()}.bin"
         print(f"Setting RxMER for OFDM index {idx} with filename {filename}")
         await cm.setDocsPnmCmDsOfdmRxMer(ofdm_idx=idx, rxmer_file_name=filename)
-        
+
         while (True):
             if await cm.getDocsPnmCmCtlStatus() == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
                 logging.warning('Testing in progress...')
                 continue
             break
-    
+
     results: List[dict] = []
 
     for entry in await cm.getDocsPnmCmDsOfdmRxMerEntry():
@@ -69,6 +69,6 @@ async def main():
     json_data = json.dumps(results, indent=2)
 
     FileProcessor(filename).write_file(json_data)
-    
+
 if __name__ == "__main__":
     asyncio.run(main())

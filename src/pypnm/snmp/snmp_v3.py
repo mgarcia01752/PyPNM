@@ -116,7 +116,7 @@ class Snmp_v3:
     # Public API (signatures align with Snmp_v2c; behavior is stubbed)
     # ─────────────────────────────────────────────────────────────────────
 
-    async def get(self, oid: Union[str, Tuple[str, str, int]],                 
+    async def get(self, oid: Union[str, Tuple[str, str, int]],
                   timeout: Optional[int] = None,
                   retries: Optional[int] = None):
         """

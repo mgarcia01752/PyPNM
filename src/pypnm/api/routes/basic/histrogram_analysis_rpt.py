@@ -39,8 +39,8 @@ class DsHistrogramReport(AnalysisReport):
 
     FNAME_TAG: str = "DsHistrogram"
 
-    def __init__(self, analysis: Analysis, 
-                 analysis_matplot_config: AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(), 
+    def __init__(self, analysis: Analysis,
+                 analysis_matplot_config: AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(),
                  **kwargs) -> None:
         """
         Initialize the report builder.

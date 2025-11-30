@@ -28,7 +28,7 @@ class InterfaceStatsRouter:
         self._add_routes()
 
     def _add_routes(self):
-        @self.router.post("/stats", 
+        @self.router.post("/stats",
                           response_model=Union[SnmpResponse],
                           responses=FAST_API_RESPONSE,)
         async def get_interface_stats(request: SnmpRequest) -> SnmpResponse:
@@ -44,7 +44,7 @@ class InterfaceStatsRouter:
 
             status, msg = await CableModemServicePreCheck(mac_address   =   mac,
                                                           ip_address    =   ip,
-                                                          snmp_config   =   request.cable_modem.snmp).run_precheck() 
+                                                          snmp_config   =   request.cable_modem.snmp).run_precheck()
 
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
@@ -53,7 +53,7 @@ class InterfaceStatsRouter:
             service = InterfaceStatsService(mac_address=mac, ip_address=ip, write_community=community)
             data: Dict[str, List[Dict]] = await service.get_interface_stat_entries()
 
-            return SnmpResponse(mac_address=mac, 
+            return SnmpResponse(mac_address=mac,
                                 status=ServiceStatusCode.SUCCESS,
                                 message="Interface statistics retrieved successfully",
                                 results=data)

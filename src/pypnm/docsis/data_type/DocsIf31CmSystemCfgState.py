@@ -15,7 +15,7 @@ class DocsIf31CmSystemCfgDiplexState:
     A class to manage DOCSIS 3.1 CM System Configuration State.
 
     This class includes methods to asynchronously retrieve and populate
-    DOCS-IF31-MIB state information, such as diplexer capabilities, band edges, 
+    DOCS-IF31-MIB state information, such as diplexer capabilities, band edges,
     and lower/upper band edge configurations.
 
     Attributes:
@@ -26,7 +26,7 @@ class DocsIf31CmSystemCfgDiplexState:
         docsIf31CmSystemCfgStateDiplexerCfgDsLowerBandEdge (Optional[int]): Configuration lower band edge for downstream.
         docsIf31CmSystemCfgStateDiplexerDsUpperCapability (Optional[int]): Diplexer downstream upper capability.
         docsIf31CmSystemCfgStateDiplexerCfgDsUpperBandEdge (Optional[int]): Configuration upper band edge for downstream.
-    
+
     Methods:
         start() -> bool:
             Asynchronously fetches and populates the configuration state attributes.
@@ -49,14 +49,14 @@ class DocsIf31CmSystemCfgDiplexState:
     async def start(self) -> bool:
         """
         Asynchronously retrieves and populates the DOCS-IF31-MIB configuration state values.
-        
-        This method fetches the diplexer capabilities, band edges, and other relevant 
+
+        This method fetches the diplexer capabilities, band edges, and other relevant
         configuration information from SNMP and populates the corresponding attributes.
-        
+
         Returns:
             bool: True if SNMP queries succeed (even if some values are None), False otherwise.
         """
-        
+
         fields = {
             "docsIf31CmSystemCfgStateDiplexerCapability": ("docsIf31CmSystemCfgStateDiplexerCapability", int),
             "docsIf31CmSystemCfgStateDiplexerCfgBandEdge": ("docsIf31CmSystemCfgStateDiplexerCfgBandEdge", int),

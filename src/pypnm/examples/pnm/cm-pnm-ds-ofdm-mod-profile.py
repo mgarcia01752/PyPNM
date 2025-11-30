@@ -39,26 +39,26 @@ async def main():
     logging.info(f"Connected to: {await cm.getSysDescr()}")
 
     ofdm_idx_list = await cm.getDocsIf31CmDsOfdmChannelIdIndex()
-    
+
     if not ofdm_idx_list:
         logging.error('Unable to get OFDM SNMP indexes')
         exit(1)
-    
+
     if not await cm.setDocsPnmBulk(tftp_server=args.tftp_ipv4, tftp_path=args.tftp_dest_dir):
         logging.error(f'Unable to set TFTP Server: {args.tftp_ipv4} and/or TFTP Path: {args.tftp_dest_dir}')
         exit(1)
-            
+
     for idx in ofdm_idx_list:
 
         filename = f"mod_profile_{idx}_{Generate.time_stamp()}.bin"
         print(f"Setting Modulation Profile OFDM index {idx} with filename {filename}")
         await cm.setDocsPnmCmDsOfdmModProf(ofdm_idx=idx, mod_prof_file_name=filename)
-        
+
         while (True):
             if await cm.getDocsPnmCmCtlStatus() == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
                 logging.info('Measurement in progress...')
                 continue
             break
-        
+
 if __name__ == "__main__":
     asyncio.run(main())

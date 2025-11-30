@@ -29,8 +29,8 @@ class BaseCapabilityRouter:
         self._register_routes()
 
     def _register_routes(self) -> None:
-        
-        @self.router.post("/baseCapability", 
+
+        @self.router.post("/baseCapability",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
         async def base_capability(request: SnmpRequest) -> SnmpResponse:
@@ -52,7 +52,7 @@ class BaseCapabilityRouter:
 
             try:
                 # Verify modem is reachable
-                status, msg = await CableModemServicePreCheck(mac_address=mac, 
+                status, msg = await CableModemServicePreCheck(mac_address=mac,
                                                               ip_address=ip,
                                                               snmp_config=request.cable_modem.snmp).run_precheck()
 

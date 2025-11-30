@@ -79,27 +79,27 @@ class CommonMeasureService(CommonMessagingService):
             - Other parameters based on the test type.
 
     Notes:
-        This class serves as a base for test-specific measurement operations. Subclasses should implement 
+        This class serves as a base for test-specific measurement operations. Subclasses should implement
         specific tests such as:
         - Downstream OFDM codeword error rate
         - RXMER per subcarrier
         - FEC statistics, etc.
 
-        It is expected that subclasses will extend this service and provide the necessary implementations for 
+        It is expected that subclasses will extend this service and provide the necessary implementations for
         executing and processing PNM measurements based on the test type and parameters.
     """
-    def __init__(self, pnm_test_type:DocsPnmCmCtlTest, 
-                 cable_modem: CableModem, 
-                 tftp_servers: Tuple[Inet,Inet], 
-                 tftp_path: str = "", 
-                 snmp_write_community: str = "private", 
+    def __init__(self, pnm_test_type:DocsPnmCmCtlTest,
+                 cable_modem: CableModem,
+                 tftp_servers: Tuple[Inet,Inet],
+                 tftp_path: str = "",
+                 snmp_write_community: str = "private",
                  **extra_options):
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.propagate = True
-        
+
         self.pnm_filename:List[str]
-        
+
         self._transactionId_pnmFile: Dict[str, str] = {}
         self.pnm_test_type:DocsPnmCmCtlTest         = pnm_test_type
         self.cm:CableModem                          = cable_modem
@@ -119,8 +119,8 @@ class CommonMeasureService(CommonMessagingService):
         if self.extra_options:
             self.logger.info(f"{self.log_prefix} - OPTIONS: {self.extra_options}")
             self._preload_interface_parameters()
-            
-        self._precheck() 
+
+        self._precheck()
 
     def _precheck(self) -> None:
         """
@@ -157,29 +157,29 @@ class CommonMeasureService(CommonMessagingService):
         """
         return self._capture_parameter
 
-    async def set_and_go(self, interface_parameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = DownstreamOfdmParameters() , 
+    async def set_and_go(self, interface_parameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = DownstreamOfdmParameters() ,
                          max_wait_count: int = 5,) -> MessageResponse:
         """
         Trigger PNM file capture and retrieval based on direction-specific parameters.
 
         Args:
-            interface_parameters (InterfaceParameters, optional): 
+            interface_parameters (InterfaceParameters, optional):
                 The configuration specifying the direction of capture:
                 - `DownstreamOfdmParameters`: For OFDM downstream channels.
                 - `UpstreamOfdmaParameters`: For OFDMA upstream channels.
                 If `None` (default), all channels will be captured.
-                
-            max_wait_count (int, optional): 
+
+            max_wait_count (int, optional):
                 Maximum seconds to wait for measurement readiness. Default is 5.
 
         Returns:
             MessageResponse: Result indicating success or failure of the operation.
         """
-          
+
         ##########################################################
         # Verify that we can connect to the CM via Ping and SNMP
         ##########################################################
-        
+
         if not self.is_ping_reachable():
             self.logger.error(f"{self.log_prefix} - Unreachable via PING")
             return self.build_send_msg(ServiceStatusCode.UNREACHABLE_PING)
@@ -187,51 +187,51 @@ class CommonMeasureService(CommonMessagingService):
         if not await self.is_snmp_ready():
             self.logger.error(f"{self.log_prefix} - Unreachable via SNMP")
             return self.build_send_msg(ServiceStatusCode.UNREACHABLE_SNMP)
-        
+
         #########################################################################
         #                   Spectrum Analysis SNMP Return                       #
         #########################################################################
-        
+
         if self.getSpectrumCaptureParameters().spectrum_retrieval_type == SpectrumRetrievalType.SNMP:
             self.logger.debug(f"{self.log_prefix} - Performing Spectrum Analysis SNMP Amplitude Data")
 
             #Set Spectrum Analyzer
             __status = await self._generic_spectrum_analyzer_operation()
-            
+
             if __status[0] != ServiceStatusCode.SUCCESS:
                self.logger.error(f"{self.log_prefix} - Unable to set Spectrum Analyzer Settings")
                return ServiceStatusCode.SPEC_ANALYZER_SET_CONFIG_ERROR
-            
+
             # This is a blocking method, it will return SUCCESS or wait till timeout to return an ERROR
             status = await self._check_spectrum_amplitude_data_status()
-            
+
             if status == ServiceStatusCode.SUCCESS:
-                
+
                 amp_data: bytes = await self.cm.getSpectrumAmplitudeData()
-                
+
                 #################################################################################################
                 # Build binary filename and save file - START
                 # TODO: Refactor filename generation to utility function, need to figure where best place first
                 #################################################################################################
                 prefix = DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA.name.lower()
                 filename = f"{prefix}_{self.cm.get_mac_address.to_mac_format()}_{int(time.time())}.bin"
-                
+
                 tx_id = await PnmFileTransaction().insert(self.cm,
                     DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA, filename)
-                
+
                 pnm_dir = SystemConfigSettings.pnm_dir
                 fpath = f"{pnm_dir}/{filename}"
                 self.logger.debug(f'SpectrumAmplitudeData: - FNAME: {filename} - Length:{len(amp_data)} - TransactionID: {tx_id}')
-                
+
                 FileProcessor(fpath).write_file(amp_data)
                 #################################################################################################
                 # Build binary filename and save file - END
                 #################################################################################################
-                
+
                 self.build_transaction_msg(tx_id, filename)
 
             return self.build_send_msg(status)
-        
+
 
         #########################################################################
         # Ensure CM Inet and TFTP server address use the same IP version
@@ -239,7 +239,7 @@ class CommonMeasureService(CommonMessagingService):
         # The TFTP server address must match the IP version (IPv4 or IPv6) used
         # by the Cable Modem (CM). By default, we assume IPv4.
         #
-        # If the CM's IP address is IPv6 and matches the version of the 
+        # If the CM's IP address is IPv6 and matches the version of the
         # secondary TFTP server entry, we switch to using the IPv6 TFTP server.
         #
         # TODO: Enhance this logic to support dual-stack (dual-home) cable modems,
@@ -263,7 +263,7 @@ class CommonMeasureService(CommonMessagingService):
             return self.build_send_msg(ServiceStatusCode.TFTP_SERVER_PATH_SET_FAIL)
 
         ##############################################################################################
-        # This section is determine by the direction due to which interface and type we are accessing 
+        # This section is determine by the direction due to which interface and type we are accessing
         ##############################################################################################
 
         status_index_channelId = await self._get_indexes_via_pnm_test_type(interface_parameters)
@@ -275,9 +275,9 @@ class CommonMeasureService(CommonMessagingService):
         ##############################################################################################
         # This section runs through all the indexes, build PNM file, run measurement and check status
         ##############################################################################################
-        index_channelId: List[Tuple[InterfaceIndex, ChannelId]] = status_index_channelId[1]                   
+        index_channelId: List[Tuple[InterfaceIndex, ChannelId]] = status_index_channelId[1]
         return self.build_send_msg(await self._pnm_measure_status_and_pnm_file_transfer(index_channelId, max_wait_count))
-    
+
     def getInterfaceParameters(self,
         interface_type: DocsisIfType) -> Union[DownstreamOfdmParameters, UpstreamOfdmaParameters]:
         """
@@ -305,7 +305,7 @@ class CommonMeasureService(CommonMessagingService):
             f"Unsupported interface type: {interface_type!r}. "
             "Expected docsOfdmDownstream or docsOfdmaUpstream."
         )
-                   
+
     def is_ping_reachable(self) -> bool:
         """
         Check if the cable modem is reachable via ICMP ping.
@@ -323,7 +323,7 @@ class CommonMeasureService(CommonMessagingService):
             bool: True if the modem responds to SNMP queries, False otherwise.
         """
         return await self.cm.is_snmp_reachable()
-    
+
     async def getPnmMeasurementStatistics(self) -> List[MeasurementEntry]:
         """
         Retrieve PNM measurement entries for the currently configured `pnm_test_type`.
@@ -358,7 +358,7 @@ class CommonMeasureService(CommonMessagingService):
         if self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
             self.logger.debug(f"{self.log_prefix} - Running SPECTRUM_ANALYZER")
             concrete = await self.cm.getDocsIf3CmSpectrumAnalysisEntry()
-            return cast(List[MeasurementEntry], concrete)   
+            return cast(List[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF:
             self.logger.debug(f"{self.log_prefix} - Running OFDM Channel Estimation Coefficient collection")
@@ -398,7 +398,7 @@ class CommonMeasureService(CommonMessagingService):
         elif self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA:
             self.logger.debug(f"{self.log_prefix} - Running SPECTRUM_ANALYZER_SNMP_AMP_DATA")
             concrete = await self.cm.getDocsIf3CmSpectrumAnalysisEntry()
-            return cast(List[MeasurementEntry], concrete)            
+            return cast(List[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_SYMBOL_CAPTURE:
             self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_SYMBOL_CAPTURE")
@@ -412,7 +412,7 @@ class CommonMeasureService(CommonMessagingService):
         return entries
 
     @deprecated("Use getPnmMeasurementStatistics()")
-    async def get_pnm_measurement_statistics(self, pnm_test_type: DocsPnmCmCtlTest = None, 
+    async def get_pnm_measurement_statistics(self, pnm_test_type: DocsPnmCmCtlTest = None,
                                              return_type: MeasureServiceReturnTypes = MeasureServiceReturnTypes.DICT) -> Union[List[BaseModel], Dict[str, List[Dict]]]:
         """
         Retrieve PNM measurement statistics for the specified test type.
@@ -512,7 +512,7 @@ class CommonMeasureService(CommonMessagingService):
     ###################
     # Private Methods #
     ###################
-    
+
     async def _get_and_move_pnm_file(self, pnm_file_name: str) -> bool:
         """
         Retrieves and moves the specified PNM file based on the configured retrieval method.
@@ -569,7 +569,7 @@ class CommonMeasureService(CommonMessagingService):
                 and optionally a list of channel IDs to filter. If not provided, default parameters are selected based on test type.
 
         Returns:
-            Tuple[ServiceStatusCode, Optional[List[Tuple[int, int]]]]: 
+            Tuple[ServiceStatusCode, Optional[List[Tuple[int, int]]]]:
                 A status code indicating success or reason for failure, and a list of (index, channelId) tuples.
         """
 
@@ -586,7 +586,7 @@ class CommonMeasureService(CommonMessagingService):
         elif self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA:
             return ServiceStatusCode.SUCCESS, [(InterfaceIndex(0), ChannelId(0))]
 
-        elif self.pnm_test_type in (DocsPnmCmCtlTest.DS_CONSTELLATION_DISP, 
+        elif self.pnm_test_type in (DocsPnmCmCtlTest.DS_CONSTELLATION_DISP,
                                     DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF,
                                     DocsPnmCmCtlTest.DS_OFDM_CODEWORD_ERROR_RATE,
                                     DocsPnmCmCtlTest.DS_OFDM_MODULATION_PROFILE,
@@ -594,20 +594,20 @@ class CommonMeasureService(CommonMessagingService):
 
             if not ifParameters:
                 ifParameters = self.getInterfaceParameters(DocsisIfType.docsOfdmDownstream)
-        
+
         elif self.pnm_test_type in (DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF,):
             ifParameters = self.getInterfaceParameters(DocsisIfType.docsOfdmaUpstream)
             self.logger.info(f'{DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF} Measurement - IfParameters: {ifParameters.model_dump()}')
 
         '''
-        There is redundant code, but incase I may need to change due to 
+        There is redundant code, but incase I may need to change due to
         change of requiments depending on Downstream vs. Upstream
-        
+
         TODO: lol, I am sure I will not revisit, but OK for now.
         '''
         if ifParameters.type == "ofdm":
             channel_id_list = ifParameters.channel_id
-            idx_channelId = await self.cm.getDocsIf31CmDsOfdmChannelIdIndexStack()            
+            idx_channelId = await self.cm.getDocsIf31CmDsOfdmChannelIdIndexStack()
 
             if not idx_channelId:
                 self.logger.warning("No OFDM channel data found.")
@@ -619,9 +619,9 @@ class CommonMeasureService(CommonMessagingService):
                 return ServiceStatusCode.SUCCESS, filtered
 
             self.logger.info(f'Downstream: {ifParameters.type} -> IDX,CHAN_ID: {idx_channelId}')
-                        
+
             return ServiceStatusCode.SUCCESS, idx_channelId
-                
+
         elif ifParameters.type == "ofdma":
             channel_id_list = ifParameters.channel_id
             idx_channelId = await self.cm.getDocsIf31CmUsOfdmaChannelIdIndexStack()
@@ -637,7 +637,7 @@ class CommonMeasureService(CommonMessagingService):
             self.logger.info(f'Upstream: {ifParameters.type} -> IDX,CHAN_ID: {idx_channelId}')
 
         return ServiceStatusCode.SUCCESS, idx_channelId
-       
+
     async def _pnm_measure_status_and_pnm_file_transfer(self, idx_channelId:List[Tuple[InterfaceIndex, ChannelId]], max_wait_count:int) -> ServiceStatusCode:
         """
         Set and monitor the OFDM measurement test for specified (index, PLC) tuples.
@@ -649,7 +649,7 @@ class CommonMeasureService(CommonMessagingService):
             - Retrieves the resulting PNM file and stores it locally.
 
         Args:
-            idx_channelId (Tuple[int, int]): A list of tuples where each tuple consists of 
+            idx_channelId (Tuple[int, int]): A list of tuples where each tuple consists of
                 the SNMP interface index and the corresponding PLC (center frequency).
             max_wait_count (int): Maximum number of seconds to wait for SAMPLE_READY status.
 
@@ -666,7 +666,7 @@ class CommonMeasureService(CommonMessagingService):
             status_pnmfiles:ServiceStatusCode = await self._setDocsPnmCmMeasureTest(self.pnm_test_type, interface_index, channel_id)
             if status_pnmfiles[0] != ServiceStatusCode.SUCCESS:
                 return status_pnmfiles[0]
-            
+
             pnm_filenames = status_pnmfiles[1]
             self.logger.info(f'{self.log_prefix} - PNM File(s) -> {pnm_filenames}')
 
@@ -677,22 +677,22 @@ class CommonMeasureService(CommonMessagingService):
                 if status_pnmfiles == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
                     count += 1
                     await asyncio.sleep(1)
-                    continue                
-                
+                    continue
+
                 if status_pnmfiles == DocsPnmCmCtlStatus.READY:
                     break
-                                
+
                 if status_pnmfiles == DocsPnmCmCtlStatus.TEMP_REJECT:
                     break
-                
+
                 if status_pnmfiles == DocsPnmCmCtlStatus.SNMP_ERROR:
                     break
-                                    
+
             self.logger.debug(f"{self.log_prefix} - Checking Measurement Status for {self.pnm_test_type} @ IDX: {interface_index}")
-            
+
             wait_count = 0
             extract_idx = lambda idx: idx[0] if isinstance(idx, list) and idx else idx
-            
+
             while wait_count < max_wait_count:
                 meas_status = await self.cm.getPnmMeasurementStatus(self.pnm_test_type, extract_idx(interface_index))
                 self.logger.info(f"{self.log_prefix} - MeasureStatus: {meas_status.name}")
@@ -700,32 +700,32 @@ class CommonMeasureService(CommonMessagingService):
                     break
                 await asyncio.sleep(1)
                 wait_count += 1
-                
+
             else:
                 self.logger.error(f"{self.log_prefix} - SAMPLE_READY not reached for ChannelID {channel_id}")
                 return ServiceStatusCode.NOT_READY_AFTER_FILE_CAPTURE
 
             #Multiple PNM files for special cases
             for pnm_fname in pnm_filenames:
-                
+
                 status:ServiceStatusCode = await self._check_and_wait_for_tftp_upload(pnm_fname)
-                
+
                 if status != ServiceStatusCode.SUCCESS:
                     self.logger.error(f"{self.log_prefix} - Unable to Upload PNM File to TFTP({status})")
                     return status
-                
+
                 # Get and copy PNM file to local data directory
                 if not await self._get_and_move_pnm_file(pnm_fname):
                     self.logger.error(f"{self.log_prefix} - Uanble to copy PNM file to local {self.pnm_dir} dir")
                     return ServiceStatusCode.COPY_PNM_FILE_TO_LOCAL_SAVE_DIR_FAILED
-                
+
                 # Find Transaction ID via filename
                 trans_id = self._get_transaction_id_by_filename(pnm_fname)
                 self.logger.debug(f'{self.log_prefix} - TransID: {trans_id} -> Filename: {pnm_fname}')
-                self.build_transaction_msg(trans_id, pnm_fname)        
-            
+                self.build_transaction_msg(trans_id, pnm_fname)
+
         return ServiceStatusCode.SUCCESS
-    
+
     async def _check_and_wait_for_tftp_upload(self, filename: str, max_wait_count: int = 5) -> ServiceStatusCode:
         """
         Waits for a PNM file to be uploaded via TFTP by polling the upload status.
@@ -764,11 +764,11 @@ class CommonMeasureService(CommonMessagingService):
 
         self.logger.error(f"{self.log_prefix} - TFTP file '{filename}' upload timed out after {max_wait_count} seconds.")
         return ServiceStatusCode.TFTP_PNM_FILE_UPLOAD_FAILURE
-                            
-    async def _setDocsPnmCmMeasureTest(self, pnm_test_type:DocsPnmCmCtlTest, 
+
+    async def _setDocsPnmCmMeasureTest(self, pnm_test_type:DocsPnmCmCtlTest,
                                        interface_index:int, channel_id:ChannelId) -> Tuple[ServiceStatusCode, List[str]]:
         """
-        Configure and trigger a specific PNM (Proactive Network Maintenance) measurement 
+        Configure and trigger a specific PNM (Proactive Network Maintenance) measurement
         test on a cable modem based on the test type.
 
         Depending on the `pnm_test_type`, this method:
@@ -793,51 +793,51 @@ class CommonMeasureService(CommonMessagingService):
             Tuple[ServiceStatusCode, List[str]]: Status of the operation and list of generated file names.
         """
         pnm_files = []
-        
+
         if pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF:
-            
-            # Pre-Eq and Last Pre-EQ (2 files)            
+
+            # Pre-Eq and Last Pre-EQ (2 files)
             pre_eq_filename         = await self._pnm_file_generator(self.pnm_test_type, str(channel_id))
             last_pre_eq_filename    = await self._pnm_file_generator(self.pnm_test_type, f'last_pre-eq_{str(channel_id)}')
 
             self.logger.info(f'{self.log_prefix} - Setting {self.pnm_test_type} for ChannelID: {channel_id} @ IDX: {interface_index} -> FN(): {pre_eq_filename}, FN(last): {last_pre_eq_filename}')
-            
+
             self.logger.info(f'{self.log_prefix} - Performing US_PRE_EQUALIZER_COEF measurement on IDX: ({interface_index})')
             if not await self.cm.setDocsPnmCmUsPreEq(ofdma_idx              =   interface_index,
                                                      filename               =   pre_eq_filename,
                                                      last_pre_eq_filename   =   last_pre_eq_filename):
                 self.logger.error(f"{self.log_prefix} - Upstream OFDMA Pre-Equalization is Not Avalaible")
                 return ServiceStatusCode.FILE_SET_FAIL, []
-            
+
             #Append files for later fetching
             pnm_files.extend([pre_eq_filename, last_pre_eq_filename])
-            
+
         else:
             #The remaining PNM Measuresurement are single PNM file
             pnm_filename = await self._pnm_file_generator(self.pnm_test_type, str(channel_id))
             self.logger.debug(f'{self.log_prefix} - Setting {self.pnm_test_type} for ChannelID: {channel_id} @ IDX: {interface_index} -> FN: {pnm_filename}')
             pnm_files.append(pnm_filename)
-            
+
             if pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR:
-                        
+
                 if not await self.cm.setDocsPnmCmDsOfdmRxMer(ofdm_idx=interface_index, rxmer_file_name=pnm_filename):
                     self.logger.error(f"{self.log_prefix} - Failed to set PNM filename: {pnm_filename}")
                     return ServiceStatusCode.FILE_SET_FAIL, []
-            
+
             elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CODEWORD_ERROR_RATE:
-                
+
                 fst = self.extra_options.get("fec_summary_type", FecSummaryType.TEN_MIN)
-                            
+
                 if not await self.cm.setDocsPnmCmDsOfdmFecSum(ofdm_idx=interface_index, fec_sum_file_name=pnm_filename, fec_sum_type=fst):
                     self.logger.error(f"{self.log_prefix} - Failed to set PNM filename: {pnm_filename}")
                     return ServiceStatusCode.FILE_SET_FAIL, []
-            
+
             elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF:
-            
+
                 if not await self.cm.setDocsPnmCmOfdmChEstCoef(ofdm_idx=interface_index, chan_est_file_name=pnm_filename):
                     self.logger.error(f"{self.log_prefix} - Failed to set PNM filename: {pnm_filename}")
                     return ServiceStatusCode.FILE_SET_FAIL, []
-            
+
             elif pnm_test_type == DocsPnmCmCtlTest.DS_CONSTELLATION_DISP:
                 # OFDM Downstream Constellation Display setup
                 # Extra SNMP options may include:
@@ -851,25 +851,25 @@ class CommonMeasureService(CommonMessagingService):
                 ):
                     self.logger.error(f"{self.log_prefix} - Failed to set PNM filename: {pnm_filename}")
                     return ServiceStatusCode.FILE_SET_FAIL, []
-            
+
             elif pnm_test_type == DocsPnmCmCtlTest.DS_HISTOGRAM:
                 sample_duration = self.extra_options.get("histogram_sample_duration", 10)
                 if not await self.cm.setDocsPnmCmDsHist(ds_histogram_file_name=pnm_filename, timeout=sample_duration):
                     self.logger.error(f"{self.log_prefix} - Failed to set PNM filename: {pnm_filename}")
                     return ServiceStatusCode.FILE_SET_FAIL, []
-                                   
+
             elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_MODULATION_PROFILE:
-            
+
                 if not await self.cm.setDocsPnmCmDsOfdmModProf(ofdm_idx=interface_index, mod_prof_file_name=pnm_filename):
                     self.logger.error(f"{self.log_prefix} - Failed to set PNM filename: {pnm_filename}")
                     return ServiceStatusCode.FILE_SET_FAIL, []
-                                    
+
             elif pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
                 #Created generic to be used for PNM File and SNMP Return data
                  __status = await self._generic_spectrum_analyzer_operation(filename=pnm_filename)
                  if __status[0] != ServiceStatusCode.SUCCESS:
                     return __status
-                 
+
         return ServiceStatusCode.SUCCESS, pnm_files
 
     async def _check_spectrum_amplitude_data_status(self, timeout_seconds: int = 300) -> ServiceStatusCode:
@@ -883,7 +883,7 @@ class CommonMeasureService(CommonMessagingService):
             timeout_seconds (int): Maximum number of seconds to wait before timing out. Default is 300.
 
         Returns:
-            ServiceStatusCode: 
+            ServiceStatusCode:
                 - SUCCESS if data becomes available within the timeout period.
                 - SPEC_ANALYZER_AMPLITUDE_DATA_TIMEOUT if the timeout is exceeded.
         """
@@ -893,21 +893,21 @@ class CommonMeasureService(CommonMessagingService):
             if await self.cm.isAmplitudeDataPresent():
                 return ServiceStatusCode.SUCCESS
             now:int = math.floor((time.time() - t_start))
-            
+
             if now >= timeout_seconds:
                 self.logger.warning(f'{self.log_prefix} - Timeout for Amplitude Data ({now} of {timeout_seconds} seconds)')
                 return ServiceStatusCode.SPEC_ANALYZER_AMPLITUDE_DATA_TIMEOUT
 
             self.logger.info(f'{self.log_prefix} - Waiting for Amplitude Data ({now} of {timeout_seconds})')
-            
+
             await asyncio.sleep(1)
-           
+
     async def _handle_local_fetch(self, pnm_file_name: str) -> bool:
         """
         Handles copying a specified PNM file from a local source directory to a configured save directory.
 
-        This method looks up the source and destination paths from the application's system configuration 
-        (under the "PnmFileRetrieval" section) and attempts to copy the file named `pnm_file_name` 
+        This method looks up the source and destination paths from the application's system configuration
+        (under the "PnmFileRetrieval" section) and attempts to copy the file named `pnm_file_name`
         from the source directory to the save directory.
 
         Configuration keys used:
@@ -920,7 +920,7 @@ class CommonMeasureService(CommonMessagingService):
         Returns:
             bool: True if the file was successfully copied; False otherwise.
         """
-                
+
         src_dir = SystemConfigSettings.local_src_dir
 
         self.logger.info(
@@ -955,80 +955,80 @@ class CommonMeasureService(CommonMessagingService):
     def _handle_scp_fetch(self, pnm_file_name: str) -> bool:
         """
         Fetch a file from remote SCP server.
-        
+
         Args:
             pnm_file_name: Name of the file to fetch from remote server
-            
+
         Returns:
             bool: True if file transfer successful, False otherwise
         """
         sys_config = SystemConfigSettings()
-        
+
         self.logger.debug(f"{self.log_prefix} - SCP: Connecting to: {sys_config.scp_host}")
-        
+
         scp = SSHConnector(hostname=sys_config.scp_host,
                             username=sys_config.scp_user,
                             port=sys_config.scp_port,
                             transfer_mode=SecureTransferMode.SCP)
-        
+
         try:
             if not scp.connect(password=sys_config.scp_password):
                 self.logger.error(f'{self.log_prefix} - SCP Connect Failure: Host: {sys_config.scp_host}')
                 return False
-            
+
             remote_file_path = f'{sys_config.scp_remote_dir}/{pnm_file_name}'
             if not scp.receive_file(remote_path=remote_file_path,
                                     local_path=sys_config.pnm_dir):
                 self.logger.error(f'{self.log_prefix} - SCP Receive File Error (SRC:{remote_file_path} DST: {sys_config.pnm_dir})')
                 return False
-            
+
             self.logger.info(f'{self.log_prefix} - Successfully fetched file: {pnm_file_name}')
             return True
-            
+
         except Exception as e:
             self.logger.error(f'{self.log_prefix} - SCP Fetch Exception: {e}')
             return False
-            
+
         finally:
             scp.disconnect()
 
     def _handle_sftp_fetch(self, pnm_file_name: str) -> bool:
         """
         Fetch a file from remote SFTP server.
-        
+
         Args:
             pnm_file_name: Name of the file to fetch from remote server
-            
+
         Returns:
             bool: True if file transfer successful, False otherwise
         """
         sys_config = SystemConfigSettings()
-        
+
         self.logger.debug(f"{self.log_prefix} - SFTP: Connecting to: {sys_config.sftp_host}")
-        
+
         sftp = SSHConnector(hostname=sys_config.sftp_host,
                                 username=sys_config.sftp_user,
                                 port=sys_config.sftp_port,
                                 transfer_mode=SecureTransferMode.SFTP)
-        
+
         try:
             if not sftp.connect(password=sys_config.sftp_password):
                 self.logger.error(f'{self.log_prefix} - SFTP Connect Failure: Host: {sys_config.sftp_host}')
                 return False
-            
+
             remote_file_path = f'{sys_config.sftp_remote_dir}/{pnm_file_name}'
             if not sftp.receive_file(remote_path=remote_file_path,
                                     local_path=sys_config.pnm_dir):
                 self.logger.error(f'{self.log_prefix} - SFTP Receive File Error (SRC:{remote_file_path} DST: {sys_config.pnm_dir})')
                 return False
-            
+
             self.logger.info(f'{self.log_prefix} - Successfully fetched file: {pnm_file_name}')
             return True
-            
+
         except Exception as e:
             self.logger.error(f'{self.log_prefix} - SFTP Fetch Exception: {e}')
             return False
-            
+
         finally:
             sftp.disconnect()
 
@@ -1056,7 +1056,7 @@ class CommonMeasureService(CommonMessagingService):
             return False
 
         try:
-            
+
             self.logger.info(
                 f"{self.log_prefix} - Starting TFTP download from "
                 f"{SystemConfigSettings.tftp_host}:{SystemConfigSettings.tftp_port}"
@@ -1160,7 +1160,7 @@ class CommonMeasureService(CommonMessagingService):
         # TODO: implement HTTPS file fetch logic
         self.logger.debug(f"{self.log_prefix} - HTTPS fetch not yet implemented")
         return False
-   
+
     async def _pnm_file_generator(self, test_type: DocsPnmCmCtlTest, suffix: str = "", ext: str = ".bin") -> str:
         """
         Generates the PNM file name based on the provided DocsPnmCmCtlTest, with optional suffix and extension.
@@ -1181,9 +1181,9 @@ class CommonMeasureService(CommonMessagingService):
         file_name = f"{test_prefix}_{self.cm.get_mac_address.to_mac_format()}{suffix}_{Generate.time_stamp()}{ext}"
 
         transaction_id = await PnmFileTransaction().insert(self.cm, test_type, file_name)
-        
+
         self.logger.debug(f"Generated PNM file name: {file_name} -> TransID: {transaction_id}")
-        
+
         self._transactionId_pnmFile[transaction_id] = file_name
 
         return file_name
@@ -1270,7 +1270,7 @@ class CommonMeasureService(CommonMessagingService):
         if capture_parameter.spectrum_retrieval_type == SpectrumRetrievalType.SNMP:
             self.logger.info(f"{self.log_prefix} - SPECTRUM-ANALYZER - SNMP-AMPLITUDE-DATA-RETURN")
             ctl_cmd_filename = Snmp_v2c.FALSE
-        
+
         else:
             if not filename:
                 self.logger.error(f"{self.log_prefix} - Missing 'filename' for FILE retrieval mode")
@@ -1293,7 +1293,7 @@ class CommonMeasureService(CommonMessagingService):
         # (not shown here) will branch to either:
         #   • SNMP:  set FileEnable = FALSE → wait for measurement → walk AmplitudeData
         #   • FILE:  set FileEnable = TRUE  → wait for measurement status → TFTP download
-        if not await self.cm.setDocsIf3CmSpectrumAnalysisCtrlCmd(spectrum_cmd, 
+        if not await self.cm.setDocsIf3CmSpectrumAnalysisCtrlCmd(spectrum_cmd,
                                                                  capture_parameter.spectrum_retrieval_type):
             self.logger.error(f"{self.log_prefix} - Spectrum Analyzer is Not Available")
             return ServiceStatusCode.SPEC_ANALYZER_NOT_AVAILABLE, []

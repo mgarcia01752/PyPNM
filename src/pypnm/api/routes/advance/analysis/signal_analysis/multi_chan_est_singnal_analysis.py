@@ -18,7 +18,7 @@ from pypnm.api.routes.common.classes.analysis.model.schema import DsChannelEstAn
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.types import (
-    ArrayLike, ChannelId, FileName, FloatSeries, FrequencyHz, FrequencySeriesHz, ComplexArray, 
+    ArrayLike, ChannelId, FileName, FloatSeries, FrequencyHz, FrequencySeriesHz, ComplexArray,
     ComplexSeries, Sequence, StringEnum,)
 from pypnm.pnm.lib.min_avg_max_complex import MinAvgMaxComplex
 from pypnm.pnm.parser.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
@@ -221,7 +221,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                 data = self._analyze_echo_detection_ifft()
             case _:
                 raise ValueError(f"Unsupported analysis type: {self._analysis_type}")
-            
+
         return MultiChanEstimationResult(analysis_type=self._analysis_type.name, results=data)
 
     def to_model(self) -> MultiChanEstimationResult:
@@ -340,7 +340,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
 
                         if r.max_delay_s is not None:
                             csv.insert_row(["max_delay_s", r.max_delay_s, "", "", "", ""])
-                        
+
                         csv.insert_row(["max_peaks", r.max_peaks, "", "", "", ""])
 
                         csv.set_path_fname(self.create_csv_fname(tags=[f"ch{r.channel_id}", "echo-ifft-multi"]))
@@ -387,10 +387,10 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                         x_tick_decimals =   0,
                         xlabel_base     =   "Frequency",
                         ylabel          =   "dB",
-                        grid            =   False, 
-                        legend          =   True, 
+                        grid            =   False,
+                        legend          =   True,
                         transparent     =   False,
-                        line_colors     =   ["#FF5733",  "#3357FF", "#33FF57",], 
+                        line_colors     =   ["#FF5733",  "#3357FF", "#33FF57",],
                         theme           =   "dark",
                     )
 
@@ -423,7 +423,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                     mp.plot_line(self.create_png_fname(tags=[f"ch{r.channel_id}", "groupdelay"]))
                     plots.append(mp)
 
-            case MultiChanEstAnalysisType.ECHO_DETECTION_IFFT:                
+            case MultiChanEstAnalysisType.ECHO_DETECTION_IFFT:
                 for r in model.results:
                     if isinstance(r, EchoDetectionIfftModel):
                         cfg = PlotConfig(
@@ -462,7 +462,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                         plots.append(mp)
 
         return plots
-    
+
     def _analyze_min_avg_max(self) -> List[MinAvgMaxModel]:
         """
         Compute Per-Channel Min/Avg/Max Amplitude Statistics.
@@ -520,30 +520,30 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         """
         channel_data: ChannelComplexMap = {}
         chan_freqs_map: ChannelFrequencyMap = {}
-        
+
         for tcm in self._trans_collect.getTransactionCollectionModel():
-        
+
             try:
                 # Build model from capture data
                 model = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
-                
+
                 # Perform basic analysis to extract complex carrier values
                 result:DsChannelEstAnalysisModel = Analysis.basic_analysis_ds_chan_est_from_model(model)
 
                 ch = ChannelId(result.channel_id)
                 channel_data.setdefault(ch, []).append(result.carrier_values.complex)
-                
+
                 # Map channel to frequency bins
                 chan_freqs_map[ch] = result.carrier_values.frequency
-        
+
             except Exception as e:
                 self.logger.error(f"[file={tcm.filename}] GROUP_DELAY parse failed: {e}")
-        
+
         out: List[GroupDelayAnalysisModel] = []
-        
+
         for ch, cplx in channel_data.items():
 
-            gd = GroupDelayCalculator(cast(Sequence[Sequence[complex]], cplx), 
+            gd = GroupDelayCalculator(cast(Sequence[Sequence[complex]], cplx),
                                       chan_freqs_map[ch]).to_model().group_delay_full
 
             out.append(

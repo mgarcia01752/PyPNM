@@ -14,11 +14,11 @@ from pypnm.lib.mac_address import MacAddress, MacAddressStr
 
 class DsOfdmChannelService:
 
-    def __init__(self, mac_address: MacAddressStr, 
+    def __init__(self, mac_address: MacAddressStr,
                  ip_address: InetAddressStr,
                  snmp_config: SNMPConfig):
-        self.cm = CableModem(MacAddress(mac_address), 
-                             Inet(ip_address), 
+        self.cm = CableModem(MacAddress(mac_address),
+                             Inet(ip_address),
                              write_community=snmp_config.snmp_v2c.community)
         self.logger = logging.getLogger("DsOfdmChannelService")
 
@@ -42,7 +42,7 @@ class DsOfdmChannelService:
             except ValueError as e:
                 self.logger.warning(f"Skipping incomplete entry at index {entry.index}: {e}")
                 continue
-        
+
         if not result:
             self.logger.warning("No valid OFDM channel entries found.")
 

@@ -22,7 +22,7 @@ class PyPnmSystemLog:
         """
         Initialize the PyPNM System Log API router and bind routes.
         """
-        self.router = APIRouter(prefix="/pypnm/system/log", 
+        self.router = APIRouter(prefix="/pypnm/system/log",
                                 tags=["PyPNM System Log"])
         self.router.add_api_route(
             path="/download",

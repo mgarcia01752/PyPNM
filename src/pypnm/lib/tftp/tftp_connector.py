@@ -46,14 +46,14 @@ class TFTPConnector:
             True on success, False on any error.
         """
         self.logger.debug(f"Starting TFTP download: {remote_filename} → {local_path}")
-        
+
         try:
             os.makedirs(os.path.dirname(local_path) or '.', exist_ok=True)
             client = TftpClient(self.host, self.port)
             client.download(remote_filename, local_path)
             self.logger.debug(f"TFTP download complete: {local_path}")
             return True
-        
+
         except Exception as e:
             self.logger.error(f"TFTP download failed: {e}")
             return False

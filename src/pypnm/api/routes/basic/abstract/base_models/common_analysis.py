@@ -15,10 +15,10 @@ class CommonAnalysis(BaseModel):
 
     This model is designed to be extended by specific analysis types.
     It provides a base structure for common fields and methods.
-    
+
     Attributes:
         model_config (ConfigDict): Configuration for the Pydantic model.
-    
+
     Flattened fields:
       - channel_id: Channel ID
       - raw_x: List of raw x-values (e.g., frequencies)

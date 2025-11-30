@@ -37,10 +37,10 @@ class ModulationProfileAnalysisRptModel(CommonAnalysis):
 class ModulationProfileReport(AnalysisReport):
     FNAME_TAG: str = "modulationprofile"
 
-    def __init__(self, analysis: Analysis,  
-                 analysis_matplot_config: AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(), 
+    def __init__(self, analysis: Analysis,
+                 analysis_matplot_config: AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(),
                  **kwargs):
-        super().__init__(analysis, analysis_matplot_config) 
+        super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("ModulationProfileReport")
         self._results: Dict[int, ModulationProfileAnalysisRptModel] = {}
 
@@ -302,7 +302,7 @@ class ModulationProfileReport(AnalysisReport):
                         mer = self._align_len(mer, n, fill=float("nan"))
 
                     profile_models.append(ModulationProfileRptModel(
-                        profile_id      =   profile_id, 
+                        profile_id      =   profile_id,
                         modulation      =   mod,
                         bits_per_symbol =   bps,
                         shannon_min_mer =   mer))

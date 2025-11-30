@@ -29,7 +29,7 @@ async def main():
     args = parser.parse_args()
 
     cm = CableModem(mac_address=MacAddress(args.mac), inet=Inet(args.inet), write_community=str(args.community_write))
-    
+
     if not cm.is_ping_reachable():
         logging.error(f"{cm.get_inet_address} not reachable, exiting...")
         exit(1)
@@ -38,7 +38,7 @@ async def main():
 
     up_time = await cm.getSysUpTime()
     print(f'UpTime: {up_time}')
-    
+
 
 if __name__ == "__main__":
     asyncio.run(main())

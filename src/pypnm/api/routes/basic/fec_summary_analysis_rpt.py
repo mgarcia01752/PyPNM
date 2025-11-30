@@ -213,7 +213,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
                         transparent         = False,
                         theme               = self.getAnalysisRptMatplotConfig().theme,
                         line_colors         = ["tab:blue", "tab:green", "tab:red"],
-                        
+
                         # ── X-axis time range label & tick suppression ──
                         x_ticks_visible = False,                 # hide all x ticks/labels
                         x_time_labels   = "from_to",             # render "start → end" as xlabel

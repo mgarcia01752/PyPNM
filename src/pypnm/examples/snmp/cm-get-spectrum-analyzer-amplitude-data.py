@@ -29,11 +29,11 @@ async def main():
     parser.add_argument("--inet", "-i", required=True, help="IP address of cable modem")
     parser.add_argument("--community-write", "-cw", default="private", help="SNMP write community string (default: private)")
     args = parser.parse_args()
-    
-    cm = CableModem(mac_address=MacAddress(args.mac), 
-                    inet=Inet(args.inet), 
+
+    cm = CableModem(mac_address=MacAddress(args.mac),
+                    inet=Inet(args.inet),
                     write_community=str(args.community_write))
-    
+
     if not cm.is_ping_reachable():
         logging.error(f"{cm.get_inet_address} not reachable, exiting...")
         exit(1)
@@ -43,9 +43,9 @@ async def main():
     while not await cm.isAmplitudeDataPresent():
         sleep(1)
         logging.info('Waiting for AmplitudeData is Present')
-    
+
     logging.info('AmplitudeData is Present....Processing')
-        
+
     amplitude_byte_stream = await cm.getSpectrumAmplitudeData()
     amplitude_data = CmSpectrumAnalysisSnmp(amplitude_byte_stream)
 

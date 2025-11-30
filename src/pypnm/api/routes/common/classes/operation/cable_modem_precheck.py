@@ -76,7 +76,7 @@ class CableModemServicePreCheck:
         if cable_modem:
             self.cm = cable_modem
         elif mac_address and ip_address:
-            
+
             if snmp_config is None:
                 self.logger.debug("No SNMPConfig provided, using default settings")
                 snmp_config = SNMPConfig()
@@ -98,7 +98,7 @@ class CableModemServicePreCheck:
                 self.check_docsis_version = [check_docsis_version]
         else:
             self.check_docsis_version = []
-            
+
         self._validate_ofdma_exist      = validate_ofdma_exist
         self._validate_ofdm_exist       = validate_ofdm_exist
         self._validate_scqam_exist      = validate_scqam_exist
@@ -153,7 +153,7 @@ class CableModemServicePreCheck:
         if self._validate_ofdm_exist:
             status, msg = await self.validate_ofdm_channel_exist()
             if status != ServiceStatusCode.SUCCESS:
-                return status, msg  
+                return status, msg
 
         if self._validate_ofdma_exist:
             status, msg = await self.validate_ofdma_channel_exist()
@@ -163,7 +163,7 @@ class CableModemServicePreCheck:
         if self._validate_scqam_exist:
             status, msg = await self.validate_scqam_channel_exist()
             if status != ServiceStatusCode.SUCCESS:
-                return status, msg            
+                return status, msg
 
         if self._validate_atdma_exist:
             status, msg = await self.validate_atdma_channel_exist()
@@ -173,7 +173,7 @@ class CableModemServicePreCheck:
         if self._validate_pnm_ready_stat:
             status, msg = await self.validate_pnm_ready_status()
             if status != ServiceStatusCode.SUCCESS:
-                return status, msg 
+                return status, msg
 
         msg = "Pre-check successful: CableModem reachable via ping and SNMP"
         self.logger.debug(msg)
@@ -209,7 +209,7 @@ class CableModemServicePreCheck:
                 return ServiceStatusCode.SUCCESS
             self.logger.debug("SNMP check failed")
             return ServiceStatusCode.UNREACHABLE_SNMP
-        
+
         except Exception as e:
             self.logger.error(f"SNMP check exception: {e}", exc_info=True)
             return ServiceStatusCode.UNREACHABLE_SNMP
@@ -226,7 +226,7 @@ class CableModemServicePreCheck:
             return ServiceStatusCode.CM_MAC_DOES_MATCH_MATCH
         except Exception as e:
             self.logger.error(f"MAC address check exception: {e}", exc_info=True)
-            return ServiceStatusCode.UNREACHABLE_SNMP   
+            return ServiceStatusCode.UNREACHABLE_SNMP
 
     async def getRealMacAddress(self) -> MacAddress:
         """
@@ -304,7 +304,7 @@ class CableModemServicePreCheck:
             return ServiceStatusCode.NO_OFDMA_CHANNELS_EXIST, msg
 
         return ServiceStatusCode.SUCCESS, "OFDMA upstream channels detected."
-    
+
     async def validate_scqam_channel_exist(self) -> Tuple[ServiceStatusCode, str]:
         """
         Checks whether any SC-QAM downstream channels are present on the cable modem.
@@ -353,5 +353,5 @@ class CableModemServicePreCheck:
 
         if rst != DocsPnmCmCtlStatus.READY:
             return ServiceStatusCode.SUCCESS, rst.name
-        
+
         return out

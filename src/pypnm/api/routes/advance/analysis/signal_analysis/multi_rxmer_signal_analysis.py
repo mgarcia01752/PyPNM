@@ -20,7 +20,7 @@ from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.shan.series import ShannonSeries
 from pypnm.lib.types import (
-    ArrayLike, CaptureTime, ChannelId, FloatSeries, FrequencySeriesHz, MacAddressStr, MagnitudeSeries, 
+    ArrayLike, CaptureTime, ChannelId, FloatSeries, FrequencySeriesHz, MacAddressStr, MagnitudeSeries,
     StringEnum, TimeStamp, TimestampSec)
 from pypnm.pnm.lib.min_avg_max import MinAvgMax
 from pypnm.pnm.parser.CmDsOfdmFecSummary import CmDsOfdmFecSummary
@@ -37,7 +37,7 @@ class MultiRxMerAnalysisBaseModel(BaseModel):
     channel_id: ChannelId = Field(..., description="OFDM channel identifier for this result set.")
     frequency: FrequencySeriesHz = Field(..., description="Per-subcarrier frequency bins (Hz).")
 
-class MinAvgMaxAnalysisModel(MultiRxMerAnalysisBaseModel):    
+class MinAvgMaxAnalysisModel(MultiRxMerAnalysisBaseModel):
     min:       FloatSeries       = Field(..., description="Per-subcarrier minimum values.")
     avg:       FloatSeries       = Field(..., description="Per-subcarrier average values.")
     max:       FloatSeries       = Field(..., description="Per-subcarrier maximum values.")
@@ -78,7 +78,7 @@ class MultiRxMerAnalysisResult(BaseModel):
 
 class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
-    def __init__(self, capt_data_agg: CaptureDataAggregator, 
+    def __init__(self, capt_data_agg: CaptureDataAggregator,
                  analysis_type: MultiRxMerAnalysisType) -> None:
         super().__init__(capt_data_agg)
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -101,12 +101,12 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
         if self._model is not None:
             return self._model
-        
+
         mac = self.getMacAddresses()
 
         if len(mac) > 1:
             self.logger.error(f'Found #({len(mac)}), Not Expection more than 1 MacAddress -> {mac}')
-        
+
         mac = mac[0].to_mac_format()
 
         try:
@@ -138,7 +138,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
     def _get_temporal_pnm_data(self) -> List[TemporalMapping]:
         self.logger.debug(f'Temporal PNM Data - Record Count: [{len(self._sorted_temporal_mapping)}]')
         return self._sorted_temporal_mapping
-    
+
     def _get_capture_times(self, channel_id:ChannelId, obj_type:type) -> List[TimestampSec]:
 
         capture_times: List[TimestampSec] = []
@@ -149,20 +149,20 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
             if channel_id == chan_id and isinstance(obj, obj_type):
                 capture_times.append(cast(TimestampSec, capture_time))
-        
+
         return capture_times
 
     def _dispatch_build(self) -> MultiRxMerAnalysisMap:
 
         if self.analysis_type == MultiRxMerAnalysisType.MIN_AVG_MAX:
             return self._analyze_min_avg_max_models()
-        
+
         if self.analysis_type == MultiRxMerAnalysisType.OFDM_PROFILE_PERFORMANCE_1:
             return self._analyze_ofdm_profile_perf_1_models()
-        
+
         if self.analysis_type == MultiRxMerAnalysisType.RXMER_HEAT_MAP:
             return self._analyze_rxmer_heat_map_models()
-        
+
         raise ValueError(f"Unsupported analysis type: {self.analysis_type}")
 
     #--------------------------------------------------------------------------
@@ -443,7 +443,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
         self.logger.debug(
             f"Temporal mapping size={len(temporal_mapping)}, sorted entries={len(self._sorted_temporal_mapping)}")
-        
+
         self._dispatch_build()
 
     def create_csv(self, **kwargs) -> List[CSVManager]:
@@ -567,10 +567,10 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                     x_tick_decimals =   0,
                     xlabel_base     =   "Frequency",
                     ylabel          =   "dB",
-                    grid            =   True, 
-                    legend          =   True, 
+                    grid            =   True,
+                    legend          =   True,
                     transparent     =   False,
-                    line_colors     =   ["#FF5733",  "#3357FF", "#33FF57",], 
+                    line_colors     =   ["#FF5733",  "#3357FF", "#33FF57",],
                     theme           =   "dark",
                 )
 
@@ -694,7 +694,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
             return model
         if model is None:
             return []
-            
+
         active_idx  = model.first_active_subcarrier_index
         spacing     = model.subcarrier_spacing
         freq_zero   = model.subcarrier_zero_frequency

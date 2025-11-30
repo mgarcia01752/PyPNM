@@ -21,6 +21,6 @@ class DiplexerConfig(BaseModel):
 
 class DiplexerConfigResult(BaseModel):
     diplexer:DiplexerConfig
-    
+
 class DiplexerResponse(BaseDeviceResponse):
     results:DiplexerConfigResult = Field(..., description="Configured upper edge of downstream band in kHz.")

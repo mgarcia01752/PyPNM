@@ -9,6 +9,6 @@ from pypnm.lib.types import StringEnum
 class OutputType(StringEnum):
     JSON    =   'json'
     ARCHIVE =   'archive'
-    
+
 class AnalysisType(StringEnum):
     BASIC   =   'basic'

@@ -34,7 +34,7 @@ class DocsPnmCmDsOfdmMerMarEntry(BaseModel):
             try:
                 result = await snmp.get(f"{oid}.{index}")
                 value = Snmp_v2c.get_result_value(result)
-                
+
                 if value is None:
                     return None
 

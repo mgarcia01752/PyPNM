@@ -41,11 +41,11 @@ class MacAddress:
         if OctetString is not None and isinstance(mac_address, OctetString):
             # Convert OctetString to bytes
             mac_address = bytes(mac_address)
-        
+
         if isinstance(mac_address, (bytes, bytearray)):
             # Convert bytes to hex string
             mac_address = ''.join(f"{b:02x}" for b in mac_address)
-        
+
         if isinstance(mac_address, str):
             # Remove 0x prefix if present
             if mac_address.lower().startswith("0x"):
@@ -76,7 +76,7 @@ class MacAddress:
     @staticmethod
     def null() -> MacAddressStr:
         return cast(MacAddressStr, "00:00:00:00:00:00")
-    
+
     @property
     def mac_address(self) -> MacAddressStr:
         """
@@ -124,16 +124,16 @@ class MacAddress:
 
         elif fmt == MacAddressFormat.COLON:
             return  cast(MacAddressStr, ':'.join(hex_str[i:i+2] for i in range(0, 12, 2)))
-        
+
         elif fmt == MacAddressFormat.HYPHEN:
             return cast(MacAddressStr, '-'.join(hex_str[i:i+2] for i in range(0, 12, 2)))
-        
+
         elif fmt == MacAddressFormat.CISCO:
             return cast(MacAddressStr, f"{hex_str[:4]}.{hex_str[4:8]}.{hex_str[8:]}")
-        
+
         else:
             raise ValueError(f"Unsupported MAC address format: {fmt}")
- 
+
     def is_null(self) -> bool:
         """
         Check if the MAC address is the null address (00:00:00:00:00:00).

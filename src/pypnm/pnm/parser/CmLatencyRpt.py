@@ -19,7 +19,7 @@ class CmLatencyRpt(PnmHeader):
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
         self._process()
-    
+
     def _process(self):
         '''
         Number of LatencySummaryData objects (n)    1 byte
@@ -30,9 +30,9 @@ class CmLatencyRpt(PnmHeader):
             cann = PnmFileType.LATENCY_REPORT.get_pnm_cann()
             actual_cann = file_type.get_pnm_cann() if file_type else "Unknown"
             raise ValueError(f"PNM File Stream is not RxMER file type: {cann}, Error: {actual_cann}")
- 
+
         return None
-    
+
     def to_model(self) -> CmLatencyModel:
-        ''' Convert parsed data to a Pydantic model ''' 
+        ''' Convert parsed data to a Pydantic model '''
         return CmLatencyModel()

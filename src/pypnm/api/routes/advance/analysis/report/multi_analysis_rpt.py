@@ -28,7 +28,7 @@ from pypnm.lib.utils import TimeUnit, Generate
 class MultiAnalysisRpt(ABC):
     """
     Abstact Class to manage multiple captures:
-     + This class will be inherited and can support single or multiple cable modems    
+     + This class will be inherited and can support single or multiple cable modems
     """
     def __init__(self, capt_data_agg: CaptureDataAggregator):
         self.logger = logging.getLogger("MultiAnalysisRpt")
@@ -36,7 +36,7 @@ class MultiAnalysisRpt(ABC):
         self._capt_data_agg = capt_data_agg
         self._trans_collect:TransactionCollection = capt_data_agg.collect()
         tcm:TransactionCollectionModel = self._trans_collect.getTransactionCollectionModel()[0]
-        
+
         self._png_dir: PathLike       = SystemConfigSettings.png_dir
         self._csv_dir: PathLike       = SystemConfigSettings.csv_dir
         self._json_dir: PathLike      = SystemConfigSettings.json_dir
@@ -52,13 +52,13 @@ class MultiAnalysisRpt(ABC):
 
         self.csv_files: List[PathLike]  = []
         self.plot_files: List[PathLike] = []
-        self.json_files: List[PathLike] = [] 
+        self.json_files: List[PathLike] = []
 
         self.logger.info(f"MultiAnalysisRpt: MAC: {self._mac_addresses}, "
                          f"Model: {self._sys_descr_model.model_dump()}, "
-                         f"GroupTime: {self._group_time}")        
+                         f"GroupTime: {self._group_time}")
 
-    def getMacAddresses(self) -> List[MacAddress]:    
+    def getMacAddresses(self) -> List[MacAddress]:
         """Return the cable-modem MAC address associated with this report session."""
         return self._trans_collect.getMacAddresses()
 
@@ -69,7 +69,7 @@ class MultiAnalysisRpt(ABC):
     def get_group_time(self) -> int:
         """Return the session/group timestamp used to namespace output filenames."""
         return self._group_time
-    
+
     def to_output_model(self) -> AnalysisOutputModel:
         """
         Produce a serializable model of the generated artifacts (time, CSVs, plots, archive).
@@ -100,7 +100,7 @@ class MultiAnalysisRpt(ABC):
 
         Example:
             fname = self.create_png_fname(tags=["spectrum"])
-        '''        
+        '''
         return f"{self._png_dir}/{self.create_generic_fname(tags=tags, ext='png')}"
 
     def create_json_fname(self, tags: List[str] = []) -> PathLike:
@@ -110,9 +110,9 @@ class MultiAnalysisRpt(ABC):
 
         Example:
             fname = self.create_json_fname(tags=["spectrum"])
-        '''        
+        '''
         return f"{self._json_dir}/{self.create_generic_fname(tags=tags, ext='json')}"
-    
+
     def create_archive_fname(self, tags: List[str] = []) -> PathLike:
         '''
         Build a ZIP archive filename of the form:
@@ -120,7 +120,7 @@ class MultiAnalysisRpt(ABC):
 
         Example:
             fname = self.create_archive_fname(tags=["bundle"])
-        '''        
+        '''
         return f"{self._archive_dir}/{self.create_generic_fname(tags=tags, ext='zip')}"
 
     def create_generic_fname(self, tags: List[str], ext: str = "") -> str:
@@ -167,7 +167,7 @@ class MultiAnalysisRpt(ABC):
         f:PathArray = [Path('')]
 
         for csv_mgr in self.create_csv():
-            
+
             if not csv_mgr.write():
                 self.logger.error(f"Failed to write CSV: {csv_mgr.get_path_fname()}")
                 continue
@@ -246,10 +246,10 @@ class MultiAnalysisRpt(ABC):
             filename_tags.append(str(Generate.time_stamp(TimeUnit.NANOSECONDS)))
 
         full_path_fname = self.create_json_fname(tags=filename_tags)
-        
-        JsonTransactionDb().write_json(data  = model.model_dump(), 
+
+        JsonTransactionDb().write_json(data  = model.model_dump(),
                                        fname = Path(full_path_fname).parts[-1])
-        
+
         self.json_files.append(full_path_fname)
 
     @abstractmethod

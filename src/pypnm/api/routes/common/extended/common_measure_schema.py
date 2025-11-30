@@ -17,8 +17,8 @@ class InterfaceParameters(BaseModel, ABC):
     Abstract base class for DOCSIS measurement interface parameters.
 
     Defines a common interface for downstream and upstream configuration classes,
-    such as `DownstreamOfdmParameters` and `UpstreamOfdmaParameters`. This base class 
-    ensures that all concrete parameter classes implement necessary attributes for 
+    such as `DownstreamOfdmParameters` and `UpstreamOfdmaParameters`. This base class
+    ensures that all concrete parameter classes implement necessary attributes for
     DOCSIS measurement operations.
     """
     pass
@@ -29,7 +29,7 @@ class DownstreamOfdmParameters(InterfaceParameters):
 
     Attributes:
         type (Literal["ofdm"]): The direction type. Always set to "ofdm" for downstream configurations.
-        channel_id (Optional[List[int]]): A list of downstream OFDM channel IDs to target. 
+        channel_id (Optional[List[int]]): A list of downstream OFDM channel IDs to target.
             If None (default), all available OFDM channels will be included.
 
     Example:

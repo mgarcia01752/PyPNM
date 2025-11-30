@@ -37,7 +37,7 @@ def _to_mhz(freq_hz: FrequencyHz) -> FloatSeries:
     return (arr / 1e6).tolist()
 
 
-def compute_magnitude_summary(freq_hz: FrequencyHz, 
+def compute_magnitude_summary(freq_hz: FrequencyHz,
                               coeffs_complex: ComplexArray,) -> MagnitudeSummaryMetrics:
     """
     Compute DOCSIS D.4.3 magnitude summary metrics for channel estimate coefficients.

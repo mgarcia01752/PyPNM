@@ -227,7 +227,7 @@ class GetPnmParserAndParameters(PnmHeader):
     def _process_spectrum_analysis(self) -> Any:
         """Spectrum analysis parser (not implemented)."""
         raise NotImplementedError("Spectrum analysis parsing not implemented.")
-    
+
     """This method may never be implemented by CableLabs, no real intrest from operators"""
     def _process_symbol_capture(self) -> Any:
         """Symbol capture parser (not implemented)."""

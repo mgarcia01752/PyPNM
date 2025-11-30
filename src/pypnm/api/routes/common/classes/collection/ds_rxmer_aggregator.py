@@ -23,9 +23,9 @@ class RxMerCaptureModel(BaseModel):
 
     @model_validator(mode="after")
     def _check_lengths(self) -> "RxMerCaptureModel":
-        if not self.frequency or not self.values: 
+        if not self.frequency or not self.values:
             raise ValueError("`frequency` and `values` must be non-empty.")
-        if len(self.frequency) != len(self.values): 
+        if len(self.frequency) != len(self.values):
             raise ValueError(f"Length mismatch: frequency={len(self.frequency)} vs values={len(self.values)}.")
         return self
 

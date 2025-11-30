@@ -241,7 +241,7 @@ class CmDsOfdmModulationProfile(PnmHeader):
         spacing = int(self._model.subcarrier_spacing)
         f_zero = int(self._model.subcarrier_zero_frequency)
         first_idx = int(self._model.first_active_subcarrier_index)
-        #TODO: Need to calculate the number of subcarries using Profile-A 
+        #TODO: Need to calculate the number of subcarries using Profile-A
         n = int(0)
 
         if spacing <= 0 or n <= 0:

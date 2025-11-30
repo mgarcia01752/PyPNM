@@ -18,7 +18,7 @@ from pypnm.api.routes.advance.common.capture_data_aggregator import CaptureDataA
 from pypnm.api.routes.advance.common.operation_manager import OperationManager
 from pypnm.api.routes.advance.common.operation_state import OperationState
 from pypnm.api.routes.advance.multi_rxmer.schemas import (
-    MultiRxMerMeasureModes, MultiRxMerAnalysisRequest, MultiRxMerAnalysisResponse, MultiRxMerRequest, 
+    MultiRxMerMeasureModes, MultiRxMerAnalysisRequest, MultiRxMerAnalysisResponse, MultiRxMerRequest,
     MultiRxMerResponseStatus, MultiRxMerStartResponse, MultiRxMerStatusResponse)
 from pypnm.api.routes.advance.multi_rxmer.service import MultiRxMer_Ofdm_Performance_1_Service, MultiRxMerService
 from pypnm.api.routes.common.classes.common_endpoint_classes.common.enum import OutputType
@@ -40,10 +40,10 @@ class MultiRxMerRouter(AbstractService):
     Overview
     --------
     Exposes endpoints to:
-      • Start a background, periodic RxMER capture on a DOCSIS cable modem  
-      • Poll capture status (state, collected sample count, time remaining)  
-      • Download all collected raw RxMER files as a ZIP archive  
-      • Stop an active capture early  
+      • Start a background, periodic RxMER capture on a DOCSIS cable modem
+      • Poll capture status (state, collected sample count, time remaining)
+      • Download all collected raw RxMER files as a ZIP archive
+      • Stop an active capture early
       • Run post-capture analysis on the collected dataset
 
     Execution Model
@@ -81,13 +81,13 @@ class MultiRxMerRouter(AbstractService):
 
             Modes
             -----
-            • `MeasureModes.CONTINUOUS` - Continuous sampling for min/avg/max and heat-map workflows  
+            • `MeasureModes.CONTINUOUS` - Continuous sampling for min/avg/max and heat-map workflows
             • `MeasureModes.OFDM_PERFORMANCE_1` - Performance study pairing RxMER with modulation-profile
               and FEC summary collection
 
             Returns
             -------
-            • `MultiRxMerStartResponse` with `group_id` and `operation_id` on success  
+            • `MultiRxMerStartResponse` with `group_id` and `operation_id` on success
             • `SnmpResponse` when modem pre-checks fail (e.g., not PNM-ready or OFDM missing)
 
             [API Guide - Results](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/multi/multi-capture-rxmer.md#3-download-measurements)
@@ -100,11 +100,11 @@ class MultiRxMerRouter(AbstractService):
             tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
             tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)
             duration = request.capture.parameters.measurement_duration
-            interval = request.capture.parameters.sample_interval              
-            
+            interval = request.capture.parameters.sample_interval
+
             measure_modes = request.measure.mode
             msg:str = ""
-            
+
             self.logger.info(
                 f"Starting Multi-RxMER capture for MAC={mac_address} "
                 f"(duration={duration}s, interval={interval}s)")
@@ -118,7 +118,7 @@ class MultiRxMerRouter(AbstractService):
                                                           validate_pnm_ready_status=True).run_precheck()
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
-                return SnmpResponse(mac_address=mac_address, status=status, message=msg)   
+                return SnmpResponse(mac_address=mac_address, status=status, message=msg)
 
             if measure_modes == MultiRxMerMeasureModes.CONTINUOUS:
                 msg=f'Starting Multi-RxMER capture for MAC={mac_address}'
@@ -129,7 +129,7 @@ class MultiRxMerRouter(AbstractService):
                     tftp_servers,
                     duration=duration,
                     interval=interval,)
-                
+
             elif measure_modes == MultiRxMerMeasureModes.OFDM_PERFORMANCE_1:
                 msg=f'Starting Multi-RxMER-OFDM-Performance-1 capture for MAC={mac_address}'
                 self.logger.info(f'{msg}')
@@ -147,7 +147,7 @@ class MultiRxMerRouter(AbstractService):
                     status      =   ServiceStatusCode.MEASURE_MODE_INVALID,
                     message =f"{ServiceStatusCode.MEASURE_MODE_INVALID.name}",
                     group_id="", operation_id="",)
-                                
+
             return MultiRxMerStartResponse(
                 mac_address =   mac_address,
                 status      =   OperationState.RUNNING,
@@ -187,14 +187,14 @@ class MultiRxMerRouter(AbstractService):
             """
             try:
                 service:MultiRxMerService = cast(MultiRxMerService, self.getService(operation_id))
-                
+
             except KeyError:
                 raise HTTPException(status_code=404, detail="Operation not found")
 
             status = service.status(operation_id)
 
             self.logger.debug(f'OpId: {operation_id} - Status: {status}')
-            
+
             return MultiRxMerStatusResponse(
                 mac_address =   service.cm.get_mac_address.mac_address,
                 status      =   "success",
@@ -222,7 +222,7 @@ class MultiRxMerRouter(AbstractService):
 
             Content
             -------
-            • Media Type: `application/zip`  
+            • Media Type: `application/zip`
             • Disposition: `attachment; filename=multiRxMer_<mac>_<operation_id>.zip`
 
             Path Parameters
@@ -241,7 +241,7 @@ class MultiRxMerRouter(AbstractService):
 
             pnm_dir = SystemConfigSettings.pnm_dir
             mac = svc.cm.get_mac_address.mac_address
-            
+
             buf = io.BytesIO()
             with zipfile.ZipFile(buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zipf:
                 for sample in samples:
@@ -253,7 +253,7 @@ class MultiRxMerRouter(AbstractService):
                         self.logger.warning(f"File not found, skipping: {file_path}")
                     except Exception as e:
                         self.logger.warning(f"Skipping {file_path}: {e}")
-                        
+
             buf.seek(0)
 
             headers = {"Content-Disposition": f"attachment; filename=multiRxMer_{mac}_{operation_id}.zip"}
@@ -323,25 +323,25 @@ class MultiRxMerRouter(AbstractService):
 
             Analysis Types
             --------------
-            • `MIN_AVG_MAX` — Per-subcarrier min/avg/max over the series  
-            • `RXMER_HEAT_MAP` — Heat-map oriented dataset for visualization  
+            • `MIN_AVG_MAX` — Per-subcarrier min/avg/max over the series
+            • `RXMER_HEAT_MAP` — Heat-map oriented dataset for visualization
             • `OFDM_PROFILE_PERFORMANCE_1` — Averages RxMER, compares to modulation profiles,
               and aggregates FEC statistics over time
 
             Output
             ------
             Controlled by `request.analysis.output.type`:
-            • `OutputType.JSON` — Typed JSON payload for UI consumption  
+            • `OutputType.JSON` — Typed JSON payload for UI consumption
             • `OutputType.ARCHIVE` — Generated ZIP report via `PnmFileService`
 
             Returns
             -------
-            • `MultiRxMerAnalysisResponse` (JSON output)  
+            • `MultiRxMerAnalysisResponse` (JSON output)
             • `FileResponse` (archive report)
 
             Errors
             ------
-            • Capture group not found for the supplied operation  
+            • Capture group not found for the supplied operation
             • Invalid analysis type or invalid output type
 
             [API Guide - Results](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/multi/multi-capture-rxmer.md#3-download-measurements)
@@ -356,9 +356,9 @@ class MultiRxMerRouter(AbstractService):
                     status      =   ServiceStatusCode.CAPTURE_GROUP_NOT_FOUND,
                     message     =   f"No capture group found for operation {request.operation_id}",
                     data        =   {})
-            
+
             cda = CaptureDataAggregator(capture_group_id)
-            
+
             try:
                 atype = MultiRxMerAnalysisType(request.analysis.type)
             except ValueError:
@@ -367,13 +367,13 @@ class MultiRxMerRouter(AbstractService):
                     mac_address =   MacAddress.null(),
                     status      =   ServiceStatusCode.DS_OFDM_MULIT_RXMER_ANALYSIS_TYPE,
                     message     =   msg,
-                    data        =   {})               
+                    data        =   {})
             self.logger.info(f'Performing Multi-RxMER Min/Avg/Max Analysis for group: {capture_group_id}')
 
-            if atype == MultiRxMerAnalysisType.MIN_AVG_MAX:    
+            if atype == MultiRxMerAnalysisType.MIN_AVG_MAX:
                 engine = MultiRxMerSignalAnalysis(cda, atype)
                 multi_analysis:MultiRxMerAnalysisResult = engine.to_model()
-            
+
             elif atype == MultiRxMerAnalysisType.RXMER_HEAT_MAP:
                 engine = MultiRxMerSignalAnalysis(cda, MultiRxMerAnalysisType.RXMER_HEAT_MAP)
                 multi_analysis = engine.to_model()
@@ -387,9 +387,9 @@ class MultiRxMerRouter(AbstractService):
                     * Collect a Fec Summary at:
                         - 1 FecSummary every 10 Min
                         - At end of the test
-                        
+
                     OFDM_PROFILE_MEASUREMENT_1
-                    --------------------------    
+                    --------------------------
                     * Calculate the Avg RxMER of the series
                     * Calculate Shannon for each subcarrier
                     * Compare each modualtion profile against the RxMER Average
@@ -397,7 +397,7 @@ class MultiRxMerRouter(AbstractService):
                     * Provide total FEC Stats for each profile over the time of the capture.
                 '''
                 engine = MultiRxMerSignalAnalysis(cda, MultiRxMerAnalysisType.OFDM_PROFILE_PERFORMANCE_1)
-                multi_analysis = engine.to_model() 
+                multi_analysis = engine.to_model()
 
             else:
                 msg = f'Invalid Analysis Type {atype}'
@@ -420,7 +420,7 @@ class MultiRxMerRouter(AbstractService):
                     status      =   ServiceStatusCode.INVALID_OUTPUT_TYPE,
                     message     =   msg,
                     data        =   {})
-            
+
             mac_address = multi_analysis.mac_address
 
             if output_type == OutputType.JSON:
@@ -434,7 +434,7 @@ class MultiRxMerRouter(AbstractService):
             elif output_type == OutputType.ARCHIVE:
                 rpt = engine.build_report()
                 return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)
-            
+
             else:
 
                 # Fallback for unsupported output types

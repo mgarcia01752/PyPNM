@@ -15,7 +15,7 @@ from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.constants import INVALID_CHANNEL_ID
 from pypnm.lib.qam.types import CodeWordArray, QamModulation
 from pypnm.lib.signal_processing.shan.series import ShannonSeriesModel
-from pypnm.lib.types import (ChannelId, ComplexArray, FloatSeries, 
+from pypnm.lib.types import (ChannelId, ComplexArray, FloatSeries,
     FrequencyHz, FrequencySeriesHz, IntSeries, MacAddressStr, ProfileId, TimestampSec)
 from pypnm.pnm.lib.signal_statistics import SignalStatisticsModel
 
@@ -33,7 +33,7 @@ class GrpDelayStatsModel(BaseModel):
 class EchoDatasetModel(BaseModel):
     type: EchoDetectorType      = Field(..., description="Type of echo dataset.")
     report: EchoDetectorReport  = Field(..., description=".")
-  
+
 class ComplexDataCarrierModel(BaseModel):
     carrier_count             : int                 = Field(..., description="Total number of active subcarriers included in the estimation.")
     frequency_unit            : str                 = Field(default="Hz", description="Unit of the frequency axis (default: Hertz).")
@@ -84,7 +84,7 @@ class DsHistogramAnalysisModel(BaseAnalysisModel):
 
 class FecSummaryCodeWordModel(BaseModel):
     """Vectorized FEC codeword summary for a single OFDM profile.
-    
+
     Each list is aligned by index: ``timestamp[i]`` corresponds to
     ``total_codewords[i]``, ``corrected[i]``, and ``uncorrected[i]``.
     """
@@ -158,8 +158,8 @@ class UsOfdmaUsPreEqAnalysisModel(ComplexDataAnalysisModel):
     """"""
 
 ParserAnalysisModelReturn = Union[ConstellationDisplayAnalysisModel,
-                                  DsChannelEstAnalysisModel, 
-                                  DsHistogramAnalysisModel, 
+                                  DsChannelEstAnalysisModel,
+                                  DsHistogramAnalysisModel,
                                   DsRxMerAnalysisModel,
                                   OfdmFecSummaryAnalysisModel,
                                   DsModulationProfileAnalysisModel,

@@ -31,7 +31,7 @@ class CmDsOfdmChanEstCoefService(CommonMeasureService):
         tftp_path (str, optional): Optional subdirectory path on the TFTP server for storing files.
             Defaults to the configured base path.
     """
-    
+
     def __init__(self,
                  cable_modem: CableModem,
                  tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),

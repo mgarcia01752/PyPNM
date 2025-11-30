@@ -42,8 +42,8 @@ class RxMerAnalysisRptModel(CommonAnalysis):
 class RxMerAnalysisReport(AnalysisReport):
     """Concrete report builder for RxMER measurements."""
 
-    def __init__(self, analysis: Analysis, 
-                 analysis_matplot_config:AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(), 
+    def __init__(self, analysis: Analysis,
+                 analysis_matplot_config:AnalysisRptMatplotConfig = AnalysisRptMatplotConfig(),
                  **kwargs):
         super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("RxMerAnalysisReport")
@@ -75,7 +75,7 @@ class RxMerAnalysisReport(AnalysisReport):
                 csv_mgr: CSVManager = self.csv_manager_factory()
                 csv_fname = self.create_csv_fname(tags=[str(chan)])
                 csv_mgr.set_path_fname(csv_fname)
-                
+
                 csv_mgr.set_header(["ChannelID", "Frequency(Hz)", "Magnitude(dB)", "Shannon Limit(dB)", "Regression Line(dB)"])
                 for rx, ry, s, r in zip(x, y, sh, rl):
                     csv_mgr.insert_row([chan, rx, ry, s, r])
@@ -127,7 +127,7 @@ class RxMerAnalysisReport(AnalysisReport):
             freq        = cast(ArrayLike, model.raw_x)
             db          = cast(ArrayLike, model.raw_y)
             rl          = cast(ArrayLike, model.parameters.regression_line)
-            mc          = model.parameters.modulation_count 
+            mc          = model.parameters.modulation_count
 
             chan_id_list.append(channel_id)
 
@@ -149,9 +149,9 @@ class RxMerAnalysisReport(AnalysisReport):
                     x_tick_decimals =   0,
                     xlabel_base     =   "Frequency",
                     ylabel          =   "dB",
-                    grid            =   True, 
-                    legend          =   True, 
-                    transparent     =   False, 
+                    grid            =   True,
+                    legend          =   True,
+                    transparent     =   False,
                     theme           =   self.getAnalysisRptMatplotConfig().theme,
                 )
 
@@ -171,16 +171,16 @@ class RxMerAnalysisReport(AnalysisReport):
             '''
             try:
                 bpsym, order_count = self.__modulation_order_count_to_series(mc)
-                
+
                 cfg = PlotConfig(
                         title       =   f"{title_prefix} - Modulation Order Count",
-                        x           =   cast(ArrayLike, bpsym), 
+                        x           =   cast(ArrayLike, bpsym),
                         xlabel      =   "Bits Per Symbol (bps)",
-                        y           =   cast(ArrayLike, order_count), 
+                        y           =   cast(ArrayLike, order_count),
                         ylabel      =   "Order Count",
-                        grid        =   True, 
-                        legend      =   False, 
-                        transparent =   False, 
+                        grid        =   True,
+                        legend      =   False,
+                        transparent =   False,
                         theme       =   self.getAnalysisRptMatplotConfig().theme,
                     )
 
@@ -273,14 +273,14 @@ class RxMerAnalysisReport(AnalysisReport):
 
                 model = RxMerAnalysisRptModel(
                     channel_id  =   data.channel_id,
-                    raw_x       =   x,        
+                    raw_x       =   x,
                     raw_y       =   y,
                     parameters  =   RxMerParametersAnalysisRpt(
-                                        shannon_limit_db    =   sh, 
+                                        shannon_limit_db    =   sh,
                                         regression_line     =   data.regression.slope,
                                         modulation_count    =   mod_count
                                     ))
-                
+
                 # MUST register Model
                 self.register_common_analysis_model(channel_id, model)
 
@@ -344,12 +344,12 @@ class RxMerAnalysisReport(AnalysisReport):
 
         if not items:
             return [], []
-        
+
         items.sort(key=lambda t: t[0])  # sort by QAM order M
 
         order_bits: IntSeries = [bps for _, bps, _ in items]
         order_counts: IntSeries = [c for _, _, c in items]
-        
+
         self.logger.debug(f"Modulation order series: {order_bits}")
         self.logger.debug(f"Modulation order series: {order_counts}")
 

@@ -81,13 +81,13 @@ class SpectrumAnalyzerRouter:
             community: str = request.cable_modem.snmp.snmp_v2c.community
             tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
             tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
-            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)  
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)
 
             self.logger.info("Starting Spectrum Analyzer capture for MAC: %s, IP: %s, Output Type: %s",
                 mac, ip, request.analysis.output.type,)
 
-            cm = CableModem(mac_address=MacAddress(mac), 
-                            inet=Inet(ip), 
+            cm = CableModem(mac_address=MacAddress(mac),
+                            inet=Inet(ip),
                             write_community=community,)
 
             status, msg = await CableModemServicePreCheck(
@@ -99,7 +99,7 @@ class SpectrumAnalyzerRouter:
 
             service = CmSpectrumAnalysisService(
                 cable_modem=cm,
-                tftp_servers=tftp_servers, 
+                tftp_servers=tftp_servers,
                 capture_parameters=request.capture_parameters,)
 
             msg_rsp: MessageResponse = await service.set_and_go()
@@ -181,7 +181,7 @@ class SpectrumAnalyzerRouter:
             community: str = request.cable_modem.snmp.snmp_v2c.community
             tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
             tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
-            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)  
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)
 
             cm = CableModem(mac_address=MacAddress(mac),
                             inet=Inet(ip),
@@ -276,7 +276,7 @@ class SpectrumAnalyzerRouter:
             community: str = request.cable_modem.snmp.snmp_v2c.community
             tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
             tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
-            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)  
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)
 
             cm = CableModem(mac_address=MacAddress(mac), inet=Inet(ip), write_community=community)
             multi_analysis = MultiAnalysis()

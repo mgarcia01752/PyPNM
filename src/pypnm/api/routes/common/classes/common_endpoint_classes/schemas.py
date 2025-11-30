@@ -36,7 +36,7 @@ class PnmFileResponse(CommonResponse):
 class PnmAnalysisResponse(CommonResponse):
     """Response model that contains data structured for plotting PNM metrics."""
     data: Dict[Any, Any] = Field(..., description="Structured data (e.g., series of x/y points or histogram bins) used to generate plots.")
-    
+
 class PnmAnalysisRequest(CommonAnalysisRequest):
     """Request model that contains data structured for plotting PNM metrics."""
 
@@ -50,7 +50,7 @@ class PnmDataResponse(CommonResponse):
 class PnmMeasurementResponse(CommonResponse):
     """Response model used for returning measurement values collected from the modem."""
     measurement: Dict[Any, Any] = Field(default_factory=dict, description="Raw or structured data resulting from the operation (e.g., text, JSON, or binary).")
-    
+
     @field_validator("measurement", mode="before")
     def wrap_measurement_in_key(cls, v):
         """
@@ -59,4 +59,3 @@ class PnmMeasurementResponse(CommonResponse):
         if isinstance(v, dict):
             return v
         return {"data": v}
-    

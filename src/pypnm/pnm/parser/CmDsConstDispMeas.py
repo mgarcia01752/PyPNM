@@ -61,13 +61,13 @@ class CmDsConstDispMeas(PnmHeader):
             - 4 bytes: display data length          (bytes)
             - N bytes: constellation display data   (complex samples)
         """
-        
+
         if self.get_pnm_file_type() != PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY:
             cann = PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY.get_pnm_cann()
             current_type = self.get_pnm_file_type()
             error_cann = current_type.get_pnm_cann() if current_type is not None else "Unknown"
             raise ValueError(f"PNM File Stream is not RxMER file type: {cann}, Error: {error_cann}")
-        
+
         const_disp_meas_format = '>B6sIHHBI'
         const_disp_meas_size = calcsize(const_disp_meas_format)
         unpacked_data = unpack(const_disp_meas_format, self.pnm_data[:const_disp_meas_size])
@@ -108,10 +108,10 @@ class CmDsConstDispMeas(PnmHeader):
 
         while offset + self.CONST_DISPLAY_DATA_COMPLEX_LENGTH <= len(raw):
             decoded = FixedPointDecoder.decode_complex_data(raw[offset:offset + 4], cast(Tuple[IntegerBits, FractionalBits], (2, 13)))
-            
+
             for pt in decoded:
                 decode_list.append([float(pt.real), float(pt.imag)])
-            
+
             offset += 4
 
         return decode_list
@@ -125,7 +125,7 @@ class CmDsConstDispMeas(PnmHeader):
             dict: Alias for `get_const_disp_meas()`.
         """
         return self.to_model().model_dump()
-    
+
     def to_json(self, indent:int=2) -> str:
         """
         Serializes the parsed measurement data to a JSON string.

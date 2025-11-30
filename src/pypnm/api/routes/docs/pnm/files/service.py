@@ -32,7 +32,7 @@ from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import FileName, MacAddressStr, OperationId, PathLike, TransactionId
 from pypnm.lib.utils import Generate
 from pypnm.pnm.parser.model.parser_rtn_models import (
-    CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel, 
+    CmDsConstDispMeasModel, CmDsHistModel, CmDsOfdmChanEstimateCoefModel,
     CmDsOfdmFecSummaryModel, CmDsOfdmModulationProfileModel, CmDsOfdmRxMerModel, CmUsOfdmaPreEqModel)
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.pnm.parser.pnm_header import PnmHeader
@@ -291,7 +291,7 @@ class PnmFileService:
             filename        = filename,
             transaction_id  = transaction_id,
         )
-    
+
     def get_file(self, file_type: FileType, filename: PathLike) -> FileResponse:
         """
         Serve a generated file from its configured directory.
@@ -338,7 +338,7 @@ class PnmFileService:
         """
         Returns basic analysis result for a stored PNM file identified by transaction ID.
         The analysis performed depends on the PNM file type.
-        
+
         Return:
         Tuple[ParserAnalysisModelReturn, PnmFileType]
             A tuple containing the analysis model and the PNM file type.
@@ -435,7 +435,7 @@ class PnmFileService:
             containing offset, hex bytes, and ASCII representation.
         """
         DEFAULT_HEXDUMP_BYTES_PER_LINE = 16
-        
+
         if bytes_per_line <= 0:
             bytes_per_line = DEFAULT_HEXDUMP_BYTES_PER_LINE
 
@@ -473,10 +473,10 @@ class PnmFileService:
 
         elif model.file_type == PnmFileType.DOWNSTREAM_CONSTELLATION_DISPLAY:
             return Analysis.basic_analysis_ds_constellation_display_from_model(cast(CmDsConstDispMeasModel, parser.to_model())), model.file_type
-        
+
         elif model.file_type == PnmFileType.DOWNSTREAM_HISTOGRAM:
             return Analysis.basic_analysis_ds_histogram_from_model(cast(CmDsHistModel, parser.to_model())), model.file_type
-        
+
         elif model.file_type == PnmFileType.OFDM_FEC_SUMMARY:
             return Analysis.basic_analysis_ds_ofdm_fec_summary_from_model(cast(CmDsOfdmFecSummaryModel, parser.to_model())), model.file_type
 
@@ -498,14 +498,14 @@ class PnmFileService:
         plot_config = AnalysisRptMatplotConfig(theme = theme)
         analysis_model, pnm_ftype = self.get_analysis(request)
 
-        # TODO: Need to clean up circlar import at next major release 
+        # TODO: Need to clean up circlar import at next major release
         from pypnm.api.routes.common.classes.analysis.analysis import Analysis
         analysis = Analysis.get_analysis_from_model(analysis_model)
 
         if pnm_ftype == PnmFileType.RECEIVE_MODULATION_ERROR_RATIO:
             analysis_rpt = RxMerAnalysisReport(analysis, plot_config)
             rpt: Path = cast(Path, analysis_rpt.build_report())
-        
+
         elif pnm_ftype == PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT:
             analysis_rpt = ChanEstimationReport(analysis, plot_config)
             rpt: Path = cast(Path, analysis_rpt.build_report())
@@ -534,6 +534,5 @@ class PnmFileService:
             analysis_rpt = FecSummaryAnalysisReport(analysis, plot_config)
             rpt: Path = cast(Path, analysis_rpt.build_report())
 
-        return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)        
-    
-        
+        return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)
+

@@ -124,7 +124,7 @@ class CmSnmpOperation:
     """
     Cable Modem SNMP Operation Handler.
 
-    This class provides methods to perform SNMP operations 
+    This class provides methods to perform SNMP operations
     (GET, WALK, etc.) specifically for Cable Modems.
 
     Attributes:
@@ -154,7 +154,7 @@ class CmSnmpOperation:
         if not isinstance(inet, Inet):
             self.logger.error(f'CmSnmpOperation() inet is of an Invalid Type: {type(inet)} , expecting Inet')
             exit(1)
-        
+
         self._inet:Inet = inet
         self._community = write_community
         self._port = port
@@ -223,36 +223,36 @@ class CmSnmpOperation:
         - value_type (type or str): The type to which the value should be converted. Defaults to `str`.
 
         Returns:
-        - Optional[Union[str, bytes, int]]: The value retrieved from SNMP, converted to the specified type, 
+        - Optional[Union[str, bytes, int]]: The value retrieved from SNMP, converted to the specified type,
           or `None` if there was an error or no value could be obtained.
         """
         result = await self._snmp.get(f"{oid_suffix}.0")
-        
+
         if result is None:
             logging.warning(f"Failed to get value for {oid_suffix}")
             return None
-        
+
         val = Snmp_v2c.snmp_get_result_value(result)[0]
         logging.debug(f"get_value() -> Val:{val}")
-        
+
         # Check if the result is an error message, and return None if it is
         if isinstance(val, str) and "No Such Instance currently exists at this OID" in val:
             logging.warning(f"SNMP error for {oid_suffix}: {val}")
             return None
-        
+
         # Handle string and bytes conversions explicitly
         if value_type == str:
             if isinstance(val, bytes):  # if val is bytes, decode it
                 return val.decode('utf-8', errors='ignore')  # or replace with appropriate encoding
             return str(val)
-        
+
         if value_type == bytes:
             if isinstance(val, str):  # if val is a string, convert to bytes
                 # Remove any '0x' prefix or spaces before converting
                 val = val.strip().lower()
                 if val.startswith('0x'):
                     val = val[2:]  # Remove '0x' prefix
-                
+
                 # Ensure the string is a valid hex format
                 try:
                     return bytes.fromhex(val)  # convert the cleaned hex string to bytes
@@ -260,7 +260,7 @@ class CmSnmpOperation:
                     logging.error(f"Invalid hex string: {val}. Error: {e}")
                     return None
             return val  # assuming it's already in bytes
-        
+
         # Default case (int conversion)
         try:
             return value_type(val)
@@ -271,10 +271,10 @@ class CmSnmpOperation:
     ######################
     # SNMP Get Operation #
     ######################
-    
+
     def getWriteCommunity(self) -> str:
         return self._community
-    
+
     async def getIfTypeIndex(self, doc_if_type: DocsisIfType) -> List[int]:
         """
         Retrieve interface indexes that match the specified DOCSIS IANA ifType.
@@ -305,7 +305,7 @@ class CmSnmpOperation:
                 # Compare ifType value with the result value
                 if ifType_value == int(result[1]):
                     self.logger.debug(f"ifType-Name: ({ifType_name}) -> ifType-Value: ({ifType_value}) -> Found: {result}")
-                    
+
                     # Extract index using a helper method (ensure it returns a valid index)
                     index = Snmp_v2c.get_oid_index(str(result[0]))
                     if index is not None:
@@ -314,7 +314,7 @@ class CmSnmpOperation:
                         self.logger.warning(f"Invalid OID index for result: {result}")
             except Exception as e:
                 self.logger.error(f"Error processing result {result}: {e}")
-        
+
         # Return the list of found indexes
         return indexes
 
@@ -328,7 +328,7 @@ class CmSnmpOperation:
         timeout = timeout if timeout is not None else self._snmp._timeout
         retries = retries if retries is not None else self._snmp._retries
 
-        self.logger.debug(f"Retrieving sysDescr for {self._inet}, timeout: {timeout}, retries: {retries}")   
+        self.logger.debug(f"Retrieving sysDescr for {self._inet}, timeout: {timeout}, retries: {retries}")
 
         try:
             result = await self._snmp.get(f'{"sysDescr"}.0', timeout=timeout, retries=retries)
@@ -352,18 +352,18 @@ class CmSnmpOperation:
             return SystemDescriptor.empty()
 
         values = Snmp_v2c.get_result_value(result)
-        
+
         if not values:
             self.logger.warning("No sysDescr value parsed.")
             return SystemDescriptor.empty()
-        
+
         self.logger.debug(f"SysDescr: {values}")
-        
+
         try:
             parsed = SystemDescriptor.parse(values)
             self.logger.debug(f"Successfully parsed sysDescr: {parsed}")
             return parsed
-        
+
         except ValueError as e:
             self.logger.error(f"Failed to parse sysDescr: {values}. Error: {e}")
             return SystemDescriptor.empty()
@@ -375,19 +375,19 @@ class CmSnmpOperation:
         Returns:
             DocsPnmBulkDataGroup: A dataclass populated with SNMP values.
         """
-        
+
         return DocsPnmBulkDataGroup(
             docsPnmBulkDestIpAddrType   =   await self._get_value("docsPnmBulkDestIpAddrType", int),
             docsPnmBulkDestIpAddr       =   InetGenerate.binary_to_inet(await self._get_value("docsPnmBulkDestIpAddr", bytes)),
             docsPnmBulkDestPath         =   await self._get_value("docsPnmBulkDestPath", str),
             docsPnmBulkUploadControl    =   await self._get_value("docsPnmBulkUploadControl", int)
         )
-          
+
     async def getDocsPnmCmCtlStatus(self, max_retry:int=1) -> DocsPnmCmCtlStatus:
         """
         Fetches the current Docs PNM CmCtlStatus.
 
-        This method retrieves the Docs PNM CmCtlStatus and retries up to a specified number of times 
+        This method retrieves the Docs PNM CmCtlStatus and retries up to a specified number of times
         if the response is not valid. The possible statuses are:
         - 1: other
         - 2: ready
@@ -408,9 +408,9 @@ class CmSnmpOperation:
         """
         count = 1
         while True:
-            
+
             result = await self._snmp.get(f'{"docsPnmCmCtlStatus"}.0')
-            
+
             if result is None:
                 time.sleep(2)
                 self.logger.warning(f"Not getting a proper docsPnmCmCtlStatus response, retrying: ({count} of {max_retry})")
@@ -423,11 +423,11 @@ class CmSnmpOperation:
                 continue
             else:
                 break
-            
+
         if not result:
             self.logger.error(f'No results found for docsPnmCmCtlStatus: {DocsPnmCmCtlStatus.SNMP_ERROR}')
             return DocsPnmCmCtlStatus.SNMP_ERROR
-            
+
         status_value = int(Snmp_v2c.snmp_get_result_value(result)[0])
 
         return DocsPnmCmCtlStatus(status_value)
@@ -494,7 +494,7 @@ class CmSnmpOperation:
 
         Returns:
             List[int]: A list of SC-QAM channel indices present on the device.
-        """  
+        """
         try:
             return await self.getIfTypeIndex(DocsisIfType.docsCableDownstream)
 
@@ -555,14 +555,14 @@ class CmSnmpOperation:
 
         Returns:
             dict[ofdm_idx, dict[profile_id, count_change]]
-        
+
         TODO: Need to get back, not really working
-        
+
         """
         result = self._snmp.walk(f'{"docsIf31CmDsOfdmProfileStatsConfigChangeCt"}.{ofdm_idx}')
         profile_change_count = Snmp_v2c.snmp_get_result_value(result)[0]
         return profile_change_count
-      
+
     async def _getDocsIf31CmDsOfdmChanEntry(self) -> List[DocsIf31CmDsOfdmChanEntry]:
         """
         Asynchronously retrieve all DOCSIS 3.1 downstream OFDM channel entries.
@@ -574,8 +574,8 @@ class CmSnmpOperation:
             This is an async method. You must use 'await' when calling it.
 
         Returns:
-            List[DocsIf31CmDsOfdmChanEntry]: 
-                A list of populated DocsIf31CmDsOfdmChanEntry objects, 
+            List[DocsIf31CmDsOfdmChanEntry]:
+                A list of populated DocsIf31CmDsOfdmChanEntry objects,
                 each representing one OFDM downstream channel.
 
         Raises:
@@ -652,7 +652,7 @@ class CmSnmpOperation:
         """
         try:
             indices = await self.getDocsIfCmDsScQamChanChannelIdIndex()
-            
+
             if not indices:
                 self.logger.warning("No downstream SC-QAM channel indices found.")
                 return []
@@ -685,7 +685,7 @@ class CmSnmpOperation:
 
             self.logger.debug(f"Found {len(idx_chanid_indices)} downstream SC-QAM channel indices: {idx_chanid_indices}")
             # Extract only the first element of each tuple
-            idx_indices:List[int] = [index[0] for index in idx_chanid_indices]  
+            idx_indices:List[int] = [index[0] for index in idx_chanid_indices]
 
             # 2) First snapshot
             initial_entry = await DocsIfDownstreamChannelEntry.get(snmp=self._snmp, indices=idx_indices)
@@ -770,7 +770,7 @@ class CmSnmpOperation:
         Raises:
             Exception: If any unexpected error occurs during the process of fetching or processing.
         """
-        
+
         ofdm_chan_entry: List[DocsIf31CmDsOfdmChanChannelEntry] = []
 
         try:
@@ -786,7 +786,7 @@ class CmSnmpOperation:
             self.logger.exception("Failed to retrieve DocsIf31CmDsOfdmChanEntry entries, error: %s", e)
 
         return ofdm_chan_entry
-    
+
     async def getDocsIf31CmSystemCfgDiplexState(self) -> DocsIf31CmSystemCfgDiplexState:
         """
         Asynchronously retrieves the DOCS-IF31-MIB system configuration state and populates the `DocsIf31CmSystemCfgState` object.
@@ -799,9 +799,9 @@ class CmSnmpOperation:
         """
         obj = DocsIf31CmSystemCfgDiplexState(self._snmp)
         await obj.start()
-        
+
         return obj
-    
+
     async def getDocsIf31CmDsOfdmProfileStatsEntry(self) -> List[DocsIf31CmDsOfdmProfileStatsEntry]:
         """
         Asynchronously retrieves the DOCS-IF31-MIB system configuration state and populates the `DocsIf31CmSystemCfgState` object.
@@ -812,7 +812,7 @@ class CmSnmpOperation:
         Returns:
             DocsIf31CmSystemCfgState: An instance of the `DocsIf31CmSystemCfgState` class with populated data.
         """
-        
+
         ofdm_profile_entry: List[DocsIf31CmDsOfdmProfileStatsEntry] = []
 
         try:
@@ -828,8 +828,8 @@ class CmSnmpOperation:
                 ofdm_profile_entry.append(entry)
 
         except Exception as e:
-            self.logger.exception("Failed to retrieve DocsIf31CmDsOfdmProfileStatsEntry entries, error: %s", e)        
-                
+            self.logger.exception("Failed to retrieve DocsIf31CmDsOfdmProfileStatsEntry entries, error: %s", e)
+
         return ofdm_profile_entry
 
     async def getPnmMeasurementStatus(self, test_type: DocsPnmCmCtlTest, ofdm_ifindex: int = 0) -> MeasStatusType:
@@ -919,7 +919,7 @@ class CmSnmpOperation:
 
         # 3) parse into (idx, chanId), forcing chanId → int
         try:
-            raw_pairs: List[Tuple[int, int]] = Snmp_v2c.snmp_get_result_last_idx_force_value_type(responses, 
+            raw_pairs: List[Tuple[int, int]] = Snmp_v2c.snmp_get_result_last_idx_force_value_type(responses,
                                                                                                   value_type=int)
 
         except Exception:
@@ -929,7 +929,7 @@ class CmSnmpOperation:
         # 4) filter out non-SC-QAM and zero entries (likely OFDM)
         scqam_set = set(scqam_if_indices)
         filtered: List[Tuple[InterfaceIndex, ChannelId]] = []
-        
+
         for idx, chan_id in raw_pairs:
             if idx not in scqam_set:
                 self.logger.debug("Skipping idx %s not in SC-QAM interface list", idx)
@@ -950,7 +950,7 @@ class CmSnmpOperation:
             List[Tuple[int, int]]: Each tuple contains (index, channelId). Returns an empty list if no data is found.
         """
         result = await self._snmp.walk(f'{"docsIf31CmDsOfdmChanChannelId"}')
-        
+
         if not result:
             return []
 
@@ -967,7 +967,7 @@ class CmSnmpOperation:
         of the system was last re-initialized.
 
         Returns:
-            Optional[int]: The system uptime in hundredths of a second if successful, 
+            Optional[int]: The system uptime in hundredths of a second if successful,
             otherwise `None` if the SNMP request fails or the result cannot be parsed.
 
         Logs:
@@ -983,7 +983,7 @@ class CmSnmpOperation:
         try:
             value = Snmp_v2c.get_result_value(result)
             return Snmp_v2c.ticks_to_duration(int(value))
-        
+
         except (ValueError, TypeError) as e:
             self.logger.error(f"Failed to parse sysUpTime value: {value} - {e}")
             return None
@@ -1069,7 +1069,7 @@ class CmSnmpOperation:
             self.logger.debug(f"Retrieved {total_length} bytes of amplitude data for OID {oid}.")
 
         return varbind_bytes
- 
+
     async def getBulkFileUploadStatus(self, filename: str) -> DocsPnmBulkFileUploadStatus:
         """
         Retrieve the upload‐status enum of a bulk data file by its filename.
@@ -1078,9 +1078,9 @@ class CmSnmpOperation:
             filename: The exact file name to search for in the BulkDataFile table.
 
         Returns:
-            DocsPnmBulkFileUploadStatus:  
-            - The actual upload status if found  
-            - DocsPnmBulkFileUploadStatus.ERROR if the filename is not present or any SNMP error occurs  
+            DocsPnmBulkFileUploadStatus:
+            - The actual upload status if found
+            - DocsPnmBulkFileUploadStatus.ERROR if the filename is not present or any SNMP error occurs
         """
         self.logger.debug(f"Starting getBulkFileUploadStatus for filename: {filename}")
 
@@ -1260,7 +1260,7 @@ class CmSnmpOperation:
             List[Tuple[InterfaceIndex, ChannelId]]: Each tuple contains (index, channelId). Returns an empty list if no data is found.
         """
         result = await self._snmp.walk(f'{"docsIf31CmUsOfdmaChanChannelId"}')
-        
+
         if not result:
             return []
 
@@ -1277,7 +1277,7 @@ class CmSnmpOperation:
         """
         idx_list: List[int] = []
         oid_channel_id = "docsIfUpChannelId"
-        
+
         try:
             results = await self._snmp.walk(oid_channel_id)
             if not results:
@@ -1287,11 +1287,11 @@ class CmSnmpOperation:
             index_list = Snmp_v2c.extract_last_oid_index(results)
 
             oid_modulation = "docsIfUpChannelType"
-            
+
             for idx in index_list:
-                
+
                 result = await self._snmp.get(f'{oid_modulation}.{idx}')
-                
+
                 if not result:
                     self.logger.warning(f"SNMP get failed or returned empty docsIfUpChannelType for index {idx}.")
                     continue
@@ -1300,11 +1300,11 @@ class CmSnmpOperation:
 
                 try:
                     channel_type = int(val)
-                    
+
                 except ValueError:
                     self.logger.warning(f"Failed to convert channel-type value '{val}' to int for index {idx}. Skipping.")
                     continue
-                
+
                 '''
                     DocsisUpstreamType ::= TEXTUAL-CONVENTION
                     STATUS          current
@@ -1325,9 +1325,9 @@ class CmSnmpOperation:
                         scdma(3),
                         tdmaAndAtdma(4)
                     }
-         
+
                 '''
-                
+
                 if channel_type != 0: # 0 means OFDMA in this case
                     idx_list.append(idx)
 
@@ -1453,7 +1453,7 @@ class CmSnmpOperation:
             if not indices:
                 self.logger.warning("No DocsIf31CmUsOfdmaChannelIdIndex indices found.")
                 return entries
-            
+
             entries = await DocsPnmCmUsPreEqEntry.get(snmp=self._snmp, indices=indices)
 
         except Exception as e:
@@ -1483,7 +1483,7 @@ class CmSnmpOperation:
 
             entries = await DocsPnmCmDsOfdmMerMarEntry.get(snmp=self._snmp, indices=indices)
             self.logger.debug(f'Number of DocsPnmCmDsOfdmMerMarEntry Found: {len(entries)}')
-            
+
         except Exception as e:
             self.logger.exception("Failed to retrieve DocsPnmCmDsOfdmMerMarEntry entries, error: %s", e)
 
@@ -1506,7 +1506,7 @@ class CmSnmpOperation:
             if not indices:
                 self.logger.error("No docsCableMaclayer indices found.")
                 return entries
-            
+
             self.logger.debug(f'Found docsCableDownstream Indices: {indices}')
 
             entries = await DocsPnmCmDsHistEntry.get(snmp=self._snmp, indices=indices)
@@ -1595,7 +1595,7 @@ class CmSnmpOperation:
             if not indices:
                 self.logger.error("No docsCableMaclayer indices found.")
                 return entries
-            
+
             self.logger.debug(f'Found docsCableDownstream Indices: {indices}')
 
             entries = await DocsIf3CmSpectrumAnalysisEntry.get(snmp=self._snmp, indices=indices)
@@ -1616,7 +1616,7 @@ class CmSnmpOperation:
                 - Corresponding OfdmProfiles bitmask (OfdmProfiles enum)
         """
         BITS_16:int = 16
-        
+
         entries: List[Tuple[int, OfdmProfiles]] = []
 
         try:
@@ -1629,19 +1629,19 @@ class CmSnmpOperation:
             for index in indices:
                 results = await self._snmp.get(f'docsIf31RxChStatusOfdmProfiles.{index}')
                 raw = Snmp_v2c.get_result_value(results)
-                
+
                 if isinstance(raw, bytes):
                     value = int.from_bytes(raw, byteorder='little')
                 else:
                     value = int(raw, BITS_16)
-                
+
                 profiles = OfdmProfiles(value)
                 entries.append((index, profiles))
 
         except Exception as e:
             self.logger.exception("Failed to retrieve OFDM profiles, error: %s", e)
 
-        return entries     
+        return entries
 
     ####################
     # DOCSIS 4.0 - FDD #
@@ -1669,7 +1669,7 @@ class CmSnmpOperation:
 
         obj = DocsFddCmFddSystemCfgState(index, self._snmp)
         success = await obj.start()
-        
+
         if not success:
             self.logger.warning(f"SNMP population failed for DocsFddCmFddSystemCfgState (index={index})")
             return None
@@ -1723,11 +1723,11 @@ class CmSnmpOperation:
             self.logger.debug(f'Sending device reset via SNMP SET: {oid} = 1')
 
             response = await self._snmp.set(oid, Snmp_v2c.TRUE, Integer32)
-            
+
             if response is None:
                 self.logger.error('Device reset command returned None')
                 return False
-            
+
             result = Snmp_v2c.snmp_set_result_value(response)
 
             self.logger.debug(f'Device reset command issued. SNMP response: {result}')
@@ -1753,7 +1753,7 @@ class CmSnmpOperation:
             set_response = await self._snmp.set(f'{"docsPnmBulkDestIpAddrType"}.0', ip_type, Integer32)
             self.logger.debug(f'docsPnmBulkDestIpAddrType set: {set_response}')
 
-            set_response = await self._snmp.set(f'{"docsPnmBulkUploadControl"}.0', 
+            set_response = await self._snmp.set(f'{"docsPnmBulkUploadControl"}.0',
                                           DocsPnmBulkUploadControl.AUTO_UPLOAD.value, Integer32)
             self.logger.debug(f'docsPnmBulkUploadControl set: {set_response}')
 
@@ -1796,12 +1796,12 @@ class CmSnmpOperation:
         Raises:
         - Exception: If any error occurs during the SNMP set operations.
         """
-        
+
         self.logger.debug(f'SpectrumAnalyzerPara: {spec_ana_cmd.to_dict()}')
-        
+
         if spec_ana_cmd.precheck_spectrum_analyzer_settings():
             self.logger.debug(f'SpectrumAnalyzerPara-PreCheck-Changed: {spec_ana_cmd.to_dict()}')
-        
+
         '''
             Custom SNMP SET for Spectrum Analyzer
         '''
@@ -1813,33 +1813,33 @@ class CmSnmpOperation:
 
             oid = f"{base_oid}.0"
             logging.debug(f'Field-OID: {field_name} -> OID: {oid} -> {obj_value} -> Type: {snmp_type}')
-            
+
             set_response = await self._snmp.set(oid, obj_value, snmp_type)
             logging.debug(f'Set {field_name} [{oid}] = {obj_value}: {set_response}')
-            
+
             if not set_response:
                 logging.error(f'Failed to set {field_name} to ({obj_value})')
                 return False
-                            
+
             result = Snmp_v2c.snmp_set_result_value(set_response)[0]
-            
+
             if not result:
                 logging.error(f'Failed to set {field_name} to ({obj_value})')
                 return False
-                            
+
             logging.debug(f"Result({result}): {type(result)} -> Value({obj_value}): {type(obj_value)}")
 
             if str(result) != str(obj_value):
                 logging.error(f'Failed to set {field_name}. Expected ({obj_value}), got ({result})')
                 return False
-            return True 
-        
+            return True
+
         # Need to get Diplex Setting to make sure that the Spec Analyzer setting are within the band
         cscs:DocsIf31CmSystemCfgDiplexState = await self.getDocsIf31CmSystemCfgDiplexState()
         cscs.to_dict()[0]
-        
+
         """ TODO: Will need to validate the Spec Analyzer Settings against the Diplex Settings
-        lower_edge = int(diplex_dict["docsIf31CmSystemCfgStateDiplexerCfgDsLowerBandEdge"]) * 1_000_000 
+        lower_edge = int(diplex_dict["docsIf31CmSystemCfgStateDiplexerCfgDsLowerBandEdge"]) * 1_000_000
         upper_edge = diplex_dict["docsIf31CmSystemCfgStateDiplexerCfgDsUpperBandEdge"] * 1_000_000
         """
         try:
@@ -1862,11 +1862,11 @@ class CmSnmpOperation:
                     docsIf3CmSpectrumAnalysisCtrlCmdEnable      <- Triggers SNMP AMPLITUDE DATA RETURN
                     docsIf3CmSpectrumAnalysisCtrlCmdFileEnable  <- Trigger PNM FILE RETURN, OVERRIDES SNMP AMPLITUDE DATA RETURN
             '''
-            
+
             # Iterating through the fields and setting their values via SNMP
             for field_name, snmp_type in field_type_map.items():
                 obj_value = getattr(spec_ana_cmd, field_name)
-                
+
                 self.logger.debug(f'Field-Name: {field_name} -> SNMP-Type: {snmp_type}')
 
                 ##############################################################
@@ -1875,50 +1875,50 @@ class CmSnmpOperation:
 
                 if field_name == "docsIf3CmSpectrumAnalysisCtrlCmdFileName":
                     file_name = getattr(spec_ana_cmd, field_name)
-                    
+
                     if not file_name:
                         setattr(spec_ana_cmd, field_name,f'snmp-amplitude-get-flag-{Generate.time_stamp()}')
-                    
+
                     await __snmp_set(field_name, getattr(spec_ana_cmd, field_name) , snmp_type)
-                    
+
                     continue
-                 
+
                 #######################################################################################
-                #                                                                                     # 
+                #                                                                                     #
                 #                   START SPECTRUM ANALYZER MEASURING PROCESS                         #
                 #                                                                                     #
                 # This OID Triggers the start of the Spectrum Analysis for SNMP-AMPLITUDE-DATA RETURN #
                 #######################################################################################
                 elif field_name == "docsIf3CmSpectrumAnalysisCtrlCmdEnable":
-                    
+
                     obj_value = Snmp_v2c.TRUE
                     self.logger.debug(f'Field-Name: {field_name} -> SNMP-Type: {snmp_type}')
-                    
+
                     # Need to toggle ? -> FALSE -> TRUE
                     if not await __snmp_set(field_name, Snmp_v2c.FALSE, snmp_type):
                         self.logger.error(f'Fail to set {field_name} to {Snmp_v2c.FALSE}')
                         return False
-                    
+
                     time.sleep(1)
-                    
+
                     if not await __snmp_set(field_name, Snmp_v2c.TRUE, snmp_type):
                         self.logger.error(f'Fail to set {field_name} to {Snmp_v2c.TRUE}')
                         return False
-                                        
+
                     continue
 
                 ######################################################################################
                 #
                 #                   CHECK SPECTRUM ANALYZER MEASURING PROCESS
                 #                           FOR PNM FILE RETRIVAL
-                #                
+                #
                 # This OID Triggers the start of the Spectrum Analysis for PNM-FILE RETURN
                 # Override SNMP-AMPLITUDE-DATA RETURN
-                ######################################################################################    
+                ######################################################################################
                 elif field_name == "docsIf3CmSpectrumAnalysisCtrlCmdFileEnable":
                     obj_value = Snmp_v2c.TRUE if spectrum_retrieval_type == SpectrumRetrievalType.FILE else Snmp_v2c.FALSE
                     self.logger.debug(f'Setting File Retrival, Set-And-Go({set_and_go}) -> Value: {obj_value}')
-                
+
                 ###############################################
                 # Set Field setting not change by above rules #
                 ###############################################
@@ -1927,13 +1927,13 @@ class CmSnmpOperation:
                     self.logger.debug(f'ENUM Found: Set Value Type: {obj_value} -> {type(obj_value)}')
                 else:
                     obj_value = str(obj_value)
-                
+
                 self.logger.debug(f'{field_name} -> Set Value Type: {obj_value} -> {type(obj_value)}')
 
                 if not await __snmp_set(field_name, obj_value, snmp_type):
                     self.logger.error(f'Fail to set {field_name} to {obj_value}')
                     return False
-                                                
+
             return True
 
         except Exception:
@@ -1968,8 +1968,8 @@ class CmSnmpOperation:
 
             if not result or str(result[0]) != last_pre_eq_filename:
                 self.logger.error(f'Filename mismatch. Expected "{last_pre_eq_filename}", got "{result[0] if result else "None"}"')
-                return False            
-            
+                return False
+
             if set_and_go:
                 time.sleep(1)
                 enable_oid = f'{"docsPnmCmUsPreEqFileEnable"}.{ofdma_idx}'
@@ -2010,7 +2010,7 @@ class CmSnmpOperation:
                 self.logger.debug(f'Set {enable_oid} to 1 (enable): {enable_response}')
 
             return True
-        
+
         except Exception as e:
             self.logger.error(f"Failed to set DocsPnmCmDsOfdmModProf for index {ofdm_idx}: {e}")
             return False
@@ -2052,9 +2052,9 @@ class CmSnmpOperation:
             self.logger.exception(f'Exception during setDocsPnmCmDsOfdmRxMer for index {ofdm_idx}: {e}')
             return False
 
-    async def setDocsPnmCmDsOfdmFecSum(self, ofdm_idx: int, 
-                                       fec_sum_file_name: str, 
-                                       fec_sum_type: FecSummaryType = FecSummaryType.TEN_MIN, 
+    async def setDocsPnmCmDsOfdmFecSum(self, ofdm_idx: int,
+                                       fec_sum_file_name: str,
+                                       fec_sum_type: FecSummaryType = FecSummaryType.TEN_MIN,
                                        set_and_go:bool=True) -> bool:
         """
         Sets SNMP parameters for FEC summary of an OFDM channel.
@@ -2132,7 +2132,7 @@ class CmSnmpOperation:
                     return False
 
             self.logger.debug(f'Successfully configured OFDM channel estimation for index {ofdm_idx} with file name "{chan_est_file_name}"')
-            
+
         except Exception as e:
             self.logger.exception(f'Exception occurred while setting OFDM Channel Estimation coefficients for index {ofdm_idx}: {e}')
             return False
@@ -2210,8 +2210,8 @@ class CmSnmpOperation:
 
     async def setDocsCmLatencyRptCfg(self, latency_rpt_file_name: str, num_of_reports: int = 1, set_and_go:bool=True) -> bool:
         """
-        Configures the CM upstream latency reporting feature. This enables 
-        the creation of latency report files containing per-Service Flow 
+        Configures the CM upstream latency reporting feature. This enables
+        the creation of latency report files containing per-Service Flow
         latency measurements over a defined period of time.
 
         Parameters:
@@ -2221,9 +2221,9 @@ class CmSnmpOperation:
         Returns:
         - bool: True if configuration is successful, False otherwise.
         """
-        
+
         mac_idx = self.getIfTypeIndex(DocsisIfType.docsCableMaclayer)[0]
-        
+
         try:
             oid_file_name = f'{"docsCmLatencyRptCfgFileName"}.{mac_idx}'
             self.logger.debug(f'Setting US Latency Report file name [{oid_file_name}] = "{latency_rpt_file_name}"')
@@ -2357,8 +2357,8 @@ class CmSnmpOperation:
         """
         Retrieve and parse DOCSIS 3.0/3.1 upstream equalizer data via Snmp_v2c.
 
-        This method performs an SNMP walk on the OID corresponding to 
-        `docsIf3CmStatusUsEqData`, which contains the pre-equalization 
+        This method performs an SNMP walk on the OID corresponding to
+        `docsIf3CmStatusUsEqData`, which contains the pre-equalization
         coefficient data for upstream channels.
 
         It parses the SNMP response into a structured `DocsEqualizerData` object.
@@ -2371,7 +2371,7 @@ class CmSnmpOperation:
         oid = 'docsIf3CmStatusUsEqData'
         try:
             result = await self._snmp.walk(oid)
-            
+
         except Exception as e:
             self.logger.error(f"SNMP walk failed for {oid}: {e}")
             return DocsEqualizerData()
@@ -2386,7 +2386,7 @@ class CmSnmpOperation:
             for varbind in result:
                 us_idx = Snmp_v2c.extract_last_oid_index([varbind])[0]
                 eq_data = Snmp_v2c.snmp_get_result_value([varbind])[0]
-                eq_data = Format.non_ascii_to_hex(eq_data)              
+                eq_data = Format.non_ascii_to_hex(eq_data)
                 self.logger.debug(f'idx: {us_idx} -> eq-data: ({eq_data})')
                 ded.add(us_idx, eq_data)
 
@@ -2400,4 +2400,3 @@ class CmSnmpOperation:
                 "Ensure Pre-Equalization is enabled on the upstream interface(s).")
 
         return ded
-             

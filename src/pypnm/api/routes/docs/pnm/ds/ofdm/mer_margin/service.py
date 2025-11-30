@@ -37,7 +37,7 @@ class CmDsOfdmMerMarginService:
         NOTE: Implementation pending—will configure SNMP set values for trigger params.
         """
         pass
-    
+
     async def getMeasurementTemplate(self) -> Dict[str, List[Dict]]:
         """
         Creates a MER Margin measurement template for each OFDM profile found on each downstream channel.
@@ -62,7 +62,7 @@ class CmDsOfdmMerMarginService:
                         params=MerMarginParams(
                                 MerMarThrshldOffset=4, MerMarMeasEnable=True,
                                 MerMarNumSymPerSubCarToAvg=8, MerMarReqAvgMer=360))
-                    
+
                     template[str(index)].append(profile.model_dump())
 
         except Exception as e:
@@ -81,7 +81,7 @@ class CmDsOfdmMerMarginService:
         try:
             entries = await self.cable_modem.getDocsPnmCmDsOfdmMerMarEntry()
             return {"DS_MER_MARGIN": [e.model_dump() for e in entries]}
-        
+
         except Exception as e:
             self.logger.exception("Failed to retrieve MER Margin entries, error: %s", e)
             return {"DS_MER_MARGIN": []}

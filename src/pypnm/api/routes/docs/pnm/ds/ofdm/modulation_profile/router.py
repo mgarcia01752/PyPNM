@@ -56,7 +56,7 @@ class ModulationProfileRouter:
             community: str = request.cable_modem.snmp.snmp_v2c.community
             tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
             tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
-            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6) 
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)
 
             self.logger.info(f"Starting Modulation Profile measurement for MAC: {mac}, IP: {ip}")
 

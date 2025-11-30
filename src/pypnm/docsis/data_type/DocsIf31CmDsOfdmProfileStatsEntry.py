@@ -56,7 +56,7 @@ class DocsIf31CmDsOfdmProfileStatsEntry:
             self.channel_id = await self._get_channel_id()
             self.logger.info(f"Number of profiles: {profile_idx_list} for OFDM index: {self.index} - ChannelID: {self.channel_id}")
             self.profile_stats = {}
-            
+
             for profile_index in profile_idx_list:
                 profile_data = {}
                 for attr, transform in fields.items():
@@ -101,7 +101,7 @@ class DocsIf31CmDsOfdmProfileStatsEntry:
 
         if nested:
             return {self.index: self.profile_stats}
-        
+
         return {
             "index": self.index,
             "channel_id": self.channel_id,  # ← correct key
@@ -117,9 +117,9 @@ class DocsIf31CmDsOfdmProfileStatsEntry:
             List[int]: A list of profile ID indices.
         """
         result = await self.snmp.walk(f'{COMPILED_OIDS["docsIf31CmDsOfdmProfileStatsTotalCodewords"]}.{self.index}')
-        
+
         profile_indices = set()
-        for oid_str in result:           
+        for oid_str in result:
             oid_parts = str(oid_str[0]).split(".")
             if len(oid_parts) >= 2:
                 profile_idx = int(oid_parts[-1])

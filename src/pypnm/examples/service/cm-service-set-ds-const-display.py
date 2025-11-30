@@ -33,7 +33,7 @@ async def main():
     parser.add_argument("--tftp-ipv4", "-t4", required=True, help="IPv4 TFTP server")
     parser.add_argument("--modulation-offset", "-mo", default=0, required=False, help="Modualtion offset from selceted modulation")
     parser.add_argument("--number-symbol-sample", "-nss", default=8192, required=False, help="Numebr of soft decision symbols samples")
-    parser.add_argument("--community-write", "-cw", default="private", help="SNMP write community string (default: private)")    
+    parser.add_argument("--community-write", "-cw", default="private", help="SNMP write community string (default: private)")
 
     args = parser.parse_args()
 
@@ -46,9 +46,9 @@ async def main():
         exit(1)
 
     logging.info(f"Connected to: {await cm.getSysDescr()}")
-    
-    service = CmDsOfdmConstDisplayService(cable_modem=cm, 
-                                          modulation_order_offset=int(args.modulation_offset), 
+
+    service = CmDsOfdmConstDisplayService(cable_modem=cm,
+                                          modulation_order_offset=int(args.modulation_offset),
                                           number_sample_symbol=int(args.number_symbol_sample))
     msg_rsp:MessageResponse = await service.set_and_go()
 
@@ -58,7 +58,7 @@ async def main():
 
     cps = CommonProcessService(msg_rsp)
     msg_rsp:MessageResponse = cps.process()
-    
+
     for payload in msg_rsp.payload: # type: ignore
         FileProcessor(f"output/const-display-{str(Generate.time_stamp(TimeUnit.MILLISECONDS))}.json").write_file(payload)
 

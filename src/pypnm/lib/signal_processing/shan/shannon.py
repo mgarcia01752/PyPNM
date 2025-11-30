@@ -95,7 +95,7 @@ class Shannon:
         """
         if symbol_count <= 0:
             raise ValueError("Symbol count must be positive.")
-        
+
         return int(math.floor(math.log2(float(symbol_count))))
 
     @staticmethod
@@ -117,10 +117,10 @@ class Shannon:
     def bits_to_snr(bits: int) -> SNRdB:
         """
         Calculate the ideal Shannon-limit SNR (dB) for a given number of bits per symbol.
-        
+
         Parameters:
             bits (int): Number of bits per symbol (e.g., 8 for QAM256).
-        
+
         Returns:
             float: SNR in dB required under Shannon conditions.
         """
@@ -128,7 +128,7 @@ class Shannon:
             raise ValueError("Bit value must be positive.")
         snr_linear = (2 ** bits) - 1
         return cast(SNRdB, 10 * math.log10(snr_linear))
-    
+
     @staticmethod
     def snr_to_limit(snr: Union[float, FloatSeries, np.ndarray]) -> List[BitsPerSymbol]:
         """

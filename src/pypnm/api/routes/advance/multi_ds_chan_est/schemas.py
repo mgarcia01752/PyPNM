@@ -37,11 +37,11 @@ class MultiChanEstAnalysisRequest(BaseModel):
 
 ################################# RESPONSE #################################
 
-class MultiChanEstRequest(MultiCaptureRequest): 
+class MultiChanEstRequest(MultiCaptureRequest):
     """Request schema for initiating a Multi-ChannelEstimation operation."""
     measure:ChanEstMeasureParameters = Field(..., description="Measurement parameters for the Multi-ChannelEstimation operation.")
 
-class MultiChanEstimationResponseStatus(MultiCaptureParametersResponse): 
+class MultiChanEstimationResponseStatus(MultiCaptureParametersResponse):
     """Status details about a Multi-ChannelEstimation capture operation."""
     pass
 

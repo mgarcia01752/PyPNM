@@ -24,8 +24,8 @@ class InterfaceStatsService:
             mac_address (str): MAC address of the cable modem.
             ip_address (str): IP address of the cable modem.
         """
-        self.cm = CableModem(mac_address=MacAddress(mac_address), 
-                             inet=Inet(ip_address), 
+        self.cm = CableModem(mac_address=MacAddress(mac_address),
+                             inet=Inet(ip_address),
                              write_community=write_community)
 
     async def get_interface_stat_entries(self) -> Dict[str, List[Dict]]:

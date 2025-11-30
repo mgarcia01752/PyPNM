@@ -19,7 +19,7 @@ class Format:
             return f"({empty})"
         items = (str(v) for v in values)
         return f"({sep.join(items)})"
-    
+
     @staticmethod
     def hex_string(hex_string: str, delimiter: str = ':', grouping: int = 2) -> str:
         """

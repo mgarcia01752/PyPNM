@@ -55,7 +55,7 @@ class CommonMatPlotConfigRequest(BaseModel):
 
 class CommonFileSearchRequest(BaseModel):
     mac_address: MacAddressStr = Field(description="MAC address of the cable modem")
-    
+
     @field_validator("mac_address")
     def validate_mac(cls, v: MacAddressStr) -> MacAddressStr:
         try:

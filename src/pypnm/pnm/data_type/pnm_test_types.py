@@ -39,4 +39,4 @@ class DocsPnmCmCtlTest(Enum):
     UNKNOWN                             = 255                 # Unknown
 
     def __str__(self) -> str:
-        return self.name.lower()    
+        return self.name.lower()

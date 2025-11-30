@@ -24,11 +24,11 @@ class OfdmProfileStatsRouter:
         self.router = APIRouter(
             prefix="/docs/if31/ds/ofdm/profile",
             tags=["DOCSIS 3.1 Downstream OFDM Modulation Profile Stats"])
-        
+
         self._add_routes()
 
     def _add_routes(self):
-        @self.router.post("/stats", 
+        @self.router.post("/stats",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
         async def get_ofdm_profile_stats(request: SnmpRequest):
@@ -41,7 +41,7 @@ class OfdmProfileStatsRouter:
             ip = request.cable_modem.ip_address
             self.logger.info(f"Retrieving DOCSIS 3.1 Downstream OFDM profile statistics for MAC: {mac}, IP: {ip}")
 
-            status, msg = await CableModemServicePreCheck(mac_address=mac, 
+            status, msg = await CableModemServicePreCheck(mac_address=mac,
                                                           ip_address=ip,
                                                           snmp_config=request.cable_modem.snmp,
                                                           validate_ofdm_exist=True).run_precheck()
@@ -50,11 +50,11 @@ class OfdmProfileStatsRouter:
                 return OfdmProfileStatsResponse(mac_address =   mac,
                                                 status      =   status,
                                                 message     =   msg)
-                                 
-            stats_data = await OfdmProfileStatsService.fetch_profile_stats(mac_address=mac, 
+
+            stats_data = await OfdmProfileStatsService.fetch_profile_stats(mac_address=mac,
                                                                            ip_address=ip,
                                                                             snmp_config=request.cable_modem.snmp)
-            
+
             return SnmpResponse(
                 mac_address =   mac,
                 status      =   ServiceStatusCode.SUCCESS,

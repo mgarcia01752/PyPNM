@@ -14,7 +14,7 @@ from pypnm.docsis.data_type.DsCmConstDisplay import CmDsConstellationDisplayCons
 class ConsDisplayAnalysisRequest(BaseModel):
     cable_modem: CableModemPnmConfig            = Field(description="Cable modem configuration")
     analysis: ConsDisplayCaptureAnalysisType    = Field(description="Analysis configuration for constellation display")
-    
+
 class ConsDisplayMatPlotConfigOptions(BaseModel):
     display_cross_hair: bool = Field(default=True, description="Enable or disable crosshair on the constellation plot")
 
@@ -27,10 +27,10 @@ class ConsDisplayCaptureAnalysisType(BaseModel):
     output: CommonOutput            = Field(description="Output format selection for single capture analysis")
     plot: ConsDisplayMatPlotConfigRequest = Field(description="Plot configuration for single capture analysis")
 
-    
+
 class ConstellationDisplaySettings(BaseModel):
     modulation_order_offset:int = Field(default=ConsDisplaConstant.MODULATION_OFFSET.value, description="")
-    number_sample_symbol:int    = Field(default=ConsDisplaConstant.NUM_SAMPLE_SYMBOL.value, description="")    
+    number_sample_symbol:int    = Field(default=ConsDisplaConstant.NUM_SAMPLE_SYMBOL.value, description="")
 
 class PnmConstellationDisplayAnalysisRequest(ConsDisplayAnalysisRequest):
     """Generic response container for most PNM operations."""

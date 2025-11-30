@@ -64,7 +64,7 @@ class SystemDescriptor:
             empty:bool = False
             if data.get('HW_REV') == '':
                 empty = True
-            
+
             return cls(
                 hw_rev      =   data.get('HW_REV', ''),
                 vendor      =   data.get('VENDOR', ''),
@@ -73,7 +73,7 @@ class SystemDescriptor:
                 model       =   data.get('MODEL', ''),
                 _is_empty   =   empty
             )
-            
+
         except KeyError as e:
             raise ValueError(f"Missing expected field {e.args[0]} in sysDescr: {system_description}")
 
@@ -101,7 +101,7 @@ class SystemDescriptor:
         Serialize the SysDescr fields to a JSON string.
         """
         return json.dumps(self.to_dict())
-    
+
     def is_empty(self) -> bool:
         return self._is_empty
 
@@ -117,7 +117,7 @@ class SystemDescriptor:
             sw_rev  =   data.get('SW_REV', ''),
             model   =   data.get('MODEL', '')
         )
-    
+
     @classmethod
     def empty(cls) -> "SystemDescriptor":
         """
@@ -137,4 +137,3 @@ class SystemDescriptor:
 
     def __repr__(self) -> str:
         return f"SystemDescriptor(hw_rev={self.hw_rev!r}, vendor={self.vendor!r}, boot_rev={self.boot_rev!r}, sw_rev={self.sw_rev!r}, model={self.model!r})"
-    

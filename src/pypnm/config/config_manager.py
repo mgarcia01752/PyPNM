@@ -15,13 +15,13 @@ class ConfigManager:
     Loads configuration two levels above this file:
     Example: src/pypnm/system.json
     """
-    
+
     def __init__(self, config_path: Optional[str] = None) -> None:
-        
+
         CONFIG_NAME = "system.json"
         CONFIG_DIR = "settings"
-        CONFIG_PATH = os.path.join(CONFIG_DIR, CONFIG_NAME)        
-        
+        CONFIG_PATH = os.path.join(CONFIG_DIR, CONFIG_NAME)
+
         if config_path:
             self._config_path = config_path
         else:
@@ -50,7 +50,7 @@ class ConfigManager:
 
         Returns:
             Any: The value from the configuration or the fallback.
-        
+
         Example:
             config.get("database", "host")
         """

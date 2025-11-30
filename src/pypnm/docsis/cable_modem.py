@@ -21,8 +21,8 @@ class CableModem(CmSnmpOperation):
 
     inet: Inet
 
-    def __init__(self, mac_address: MacAddress, 
-                 inet: Inet, 
+    def __init__(self, mac_address: MacAddress,
+                 inet: Inet,
                  write_community: str = PnmConfigManager.get_write_community()):
         """
         Initialize the CableModem instance.
@@ -113,7 +113,7 @@ class CableModem(CmSnmpOperation):
             str: MAC and IP address representation.
         """
         return f"{self.get_mac_address}"
-    
+
     def __repr__(self) -> str:
         """
         String representation of the cable modem.
@@ -122,7 +122,7 @@ class CableModem(CmSnmpOperation):
             str: MAC and IP address representation.
         """
         return f"Mac: {self.__str__()} - Inet: {self.get_inet_address}"
-        
+
     def __hash__(self) -> int:
         """
         Hash based on the normalized raw MAC address string (12 lowercase hex chars).

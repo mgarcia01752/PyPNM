@@ -19,6 +19,6 @@ class MeasStatusType(Enum):
     RESOURCE_UNAVAILABLE = 6      # Test could not start due to lack of resources
     SAMPLE_TRUNCATED = 7          # Requested data exceeds supported file size
     INTERFACE_MODIFICATION = 8    # Interface numbering changed due to DBC or primary backup switch
-   
+
     def __str__(self) -> str:
-        return self.name.lower()    
+        return self.name.lower()

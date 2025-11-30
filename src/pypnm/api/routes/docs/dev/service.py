@@ -20,9 +20,9 @@ from pypnm.lib.types import InetAddressStr, MacAddressStr
 logger = logging.getLogger(__name__)
 
 class CmDocsDevService:
-    
-    def __init__(self, mac_address: MacAddressStr, 
-                 ip_address: InetAddressStr, 
+
+    def __init__(self, mac_address: MacAddressStr,
+                 ip_address: InetAddressStr,
                  snmp_config: SNMPConfig = SNMPConfig()) -> None:
         self._mac = MacAddress(mac_address)
         self._ip = Inet(ip_address)
@@ -36,7 +36,7 @@ class CmDocsDevService:
     async def fetch_event_log(self) -> List[EventLogEntry]:
         """
         Fetch DOCSIS event log entries and return a list of structured models.
-        """        
+        """
         raw_entries: List[dict] = await self._cm.getDocsDevEventEntry(to_dict=True)
 
         log_entries = []

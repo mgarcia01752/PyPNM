@@ -27,7 +27,7 @@ class CmDsHist(PnmHeader):
     - Symmetry flag (1 byte, additional signal characterization)
     - Dwell Count: Number of samples considered per bin
     - Hit Count: Number of samples that actually fall into each bin
-    
+
     The class extracts and exposes this data from binary format for further analysis.
     """
 
@@ -46,13 +46,13 @@ class CmDsHist(PnmHeader):
         self.__process()
 
     def __process(self) -> None:
-        
+
         if self.get_pnm_file_type() != PnmFileType.DOWNSTREAM_HISTOGRAM:
             cann = PnmFileType.DOWNSTREAM_HISTOGRAM.get_pnm_cann()
             actual_type = self.get_pnm_file_type()
             actual_cann = actual_type.get_pnm_cann() if actual_type else "Unknown"
             raise ValueError(f"PNM File Stream is not RxMER file type: {cann}, Error: {actual_cann}")
-                
+
         mac_sym_format = '>6sB'
         mac_sym_header_size = calcsize(mac_sym_format)
 
@@ -88,7 +88,7 @@ class CmDsHist(PnmHeader):
             hit_count_values            =   self._hit_count_values,
         )
 
-    
+
     def to_model(self) -> CmDsHistModel:
         return self._model
 

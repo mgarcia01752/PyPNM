@@ -39,7 +39,7 @@ class DocsFddCmFddBandEdgeCapabilities:
         self.docsFddDiplexerUsUpperBandEdgeCapability: Optional[int] = None
         self.docsFddDiplexerDsLowerBandEdgeCapability: Optional[int] = None
         self.docsFddDiplexerDsUpperBandEdgeCapability: Optional[int] = None
-        
+
         self._started:bool = False
 
     async def start(self) -> bool:
@@ -58,9 +58,9 @@ class DocsFddCmFddBandEdgeCapabilities:
         # This should only be run once
         if self.is_start():
             return True
-        
+
         self._started = True
-        
+
         try:
             for attr, transform in fields.items():
                 oid = COMPILED_OIDS.get(attr)
@@ -90,7 +90,7 @@ class DocsFddCmFddBandEdgeCapabilities:
 
     def is_start(self) -> bool:
         return self._started
-    
+
     def to_dict(self) -> dict:
         """
         Convert the populated attributes into a structured dictionary.

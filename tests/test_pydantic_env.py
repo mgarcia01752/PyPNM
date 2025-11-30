@@ -148,7 +148,7 @@ def test_field_default_factory_behavior() -> None:
     assert m1.seq == 101
     assert m2.seq == 102
     assert counter["calls"] == 2
-    
+
 def test_field_validator_basic() -> None:
     """Test basic functionality of field validators in Pydantic models."""
 

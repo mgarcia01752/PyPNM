@@ -39,10 +39,10 @@ class CmSymbolCapture(PnmHeader):
             actual_type = self.get_pnm_file_type()
             error_cann = actual_type.get_pnm_cann() if actual_type else "Unknown"
             raise ValueError(f"PNM File Stream is not RxMER file type: {cann}, Error: {error_cann}")
- 
+
         # Extract CmSymbolCapture fields using struct.unpack
         cm_symbol_capture_format = '<B6sII2HI'
-        cm_symbol_capture_size = unpack(cm_symbol_capture_format, 
+        cm_symbol_capture_size = unpack(cm_symbol_capture_format,
                                         self.pnm_data[:calcsize(cm_symbol_capture_format)])
 
         # Assign values to attributes
@@ -78,7 +78,7 @@ class CmSymbolCapture(PnmHeader):
             'Capture Data Length': self.capture_data_length,
             'Capture Data': self.capture_data.hex() if self.capture_data is not None else None
         }
-    
+
     def to_model(self) -> CmSymbolCaptureModel:
-        ''' Convert parsed data to a Pydantic model ''' 
+        ''' Convert parsed data to a Pydantic model '''
         return CmSymbolCaptureModel()

@@ -36,7 +36,7 @@ class PnmFileType(Enum):
     LATENCY_REPORT                                  = "LLD01"
 
     # (Not in Spec)Internal use for SNMP-based Spectrum Analysis
-    CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA              = "PXX9"    
+    CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA              = "PXX9"
 
     def __init__(self, pnm_cann: str):
         """
@@ -86,7 +86,7 @@ class PnmFileType(Enum):
         except KeyError:
             valid = ", ".join([e.name for e in cls])
             raise KeyError(f"Invalid PnmFileType name: {name!r}. Valid names: {valid}")
-        
+
     @classmethod
     def from_mmnemonic(cls, tag: str, version: int) -> 'PnmFileType':
         """
@@ -110,7 +110,7 @@ class PnmFileType(Enum):
 
         elif tag_up in ("PNN", "PNM"):
             code = f"{tag_up}{version}"
-        
+
         else:
             code = f"{tag_up}{version}"
 
@@ -155,7 +155,7 @@ class PnmFileType(Enum):
             if not suffix.isdigit():
                 raise KeyError(f"Unknown code: {code!r}. '{prefix}' suffix must be numeric.")
             s = f"{prefix}{int(suffix)}"  # strip any leading zeros
-        
+
         # else: leave as-is and try exact match
 
         for member in cls:

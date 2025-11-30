@@ -78,7 +78,7 @@ class ChanEstimationReport(AnalysisReport):
                 csv_mgr.set_path_fname(csv_fname)
 
                 csv_mgr.set_header([
-                    "ChannelID", "Frequency(Hz)", 
+                    "ChannelID", "Frequency(Hz)",
                     "Magnitude(Linear)", "Magnitude(dB)", "Regression(Linear)", "Group Delay", "Real", "Imaginary"])
 
                 for rx, ry, reg, cdb, rl_v, gd_v, cmp in zip(freq, magnitude, rl, db, rl, gd, ca):

@@ -54,5 +54,5 @@ class FddDiplexerConfigService:
         if state is None:
             logger.error("Diplexer configuration returned None")
             raise RuntimeError("Failed to retrieve diplexer configuration")
-       
+
         return state

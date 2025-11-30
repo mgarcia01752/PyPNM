@@ -260,7 +260,7 @@ class FecSummaryAggregator(MultiPnmCollection):
             self.logger.warning(f"No profile entries aggregated for ch={channel_id} in range ({start_time} - {end_time})")
 
         summary_list: List[ProfileSummaryTotalsModel] = [
-            ProfileSummaryTotalsModel(profile_id    =   pid, 
+            ProfileSummaryTotalsModel(profile_id    =   pid,
                                       summary       =   totals)
             for pid, totals in profile_totals.items()
         ]

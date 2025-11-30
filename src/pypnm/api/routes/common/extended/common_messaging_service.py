@@ -20,7 +20,7 @@ class MessageResponseType(Enum):
     PNM_FILE_TRANSACTION        = 1
     PNM_FILE_SESSION            = 2
     SNMP_DATA_RTN_SPEC_ANALYSIS = 10
-    
+
 class MessageResponse:
     """
     Represents a structured response with a status and optional data payload.
@@ -28,9 +28,9 @@ class MessageResponse:
     Attributes:
         status (ServiceStatusCode): Status of the message.
         payload (Optional[Any]): Associated payload (list, dict, etc.).
-        
+
     Example:
-        
+
         {
             "status":"SUCCESS",
             "payload":[
@@ -44,9 +44,9 @@ class MessageResponse:
                 }
             ]
         }
-    
+
     """
-    
+
     def __init__(self, status: ServiceStatusCode, payload: Optional[Any] = None):
         """
         Initializes a MessageResponse instance.
@@ -69,7 +69,7 @@ class MessageResponse:
             "status": self.status.name,
             "payload": self.payload
         }
-    
+
     def __repr__(self):
         return json.dumps({
             "status": self.status.name,
@@ -114,7 +114,7 @@ class MessageResponse:
         if filename_prefix:
             prefix = f'{filename_prefix}_'
 
-        LogFile.write(f'{prefix}payload_{Generate.time_stamp(TimeUnit.MILLISECONDS)}.msgrsp', 
+        LogFile.write(f'{prefix}payload_{Generate.time_stamp(TimeUnit.MILLISECONDS)}.msgrsp',
                       self.payload_to_dict(),
                       log_dir = SystemConfigSettings.message_response_dir)
 

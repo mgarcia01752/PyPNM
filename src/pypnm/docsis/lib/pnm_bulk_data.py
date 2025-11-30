@@ -25,7 +25,7 @@ class DocsPnmBulkDataGroup:
                 ipaddress.ip_address(self.docsPnmBulkDestIpAddr)
             except ValueError:
                 raise ValueError(f"Invalid IP address: {self.docsPnmBulkDestIpAddr}")
-            
+
 @dataclass
 class DocsPnmBulkFileEntry:
     index: int

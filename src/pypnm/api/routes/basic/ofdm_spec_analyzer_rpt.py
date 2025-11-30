@@ -68,18 +68,18 @@ class OfdmSpecAnalyzerAnalysisReport():
         """
         Generate and collect all per-channel analysis artifacts into a final archive.
 
-        This method iterates over each :class:`Analysis` object within a 
-        :class:`MultiAnalysis` instance, generating CSVs and plots using 
-        :class:`SingleOfdmSpecAnalyzerReport`. It then aggregates all 
+        This method iterates over each :class:`Analysis` object within a
+        :class:`MultiAnalysis` instance, generating CSVs and plots using
+        :class:`SingleOfdmSpecAnalyzerReport`. It then aggregates all
         generated files and produces a single ZIP archive.
 
         Returns:
             PathLike: The path to the created archive file.
 
         Workflow:
-            1. For each `Analysis`, create and execute a 
+            1. For each `Analysis`, create and execute a
             `SingleOfdmSpecAnalyzerReport`.
-            2. Collect all generated files using 
+            2. Collect all generated files using
             :meth:`SingleOfdmSpecAnalyzerReport.get_all_generated_files`.
             3. Combine them into a single archive using :meth:`_build_archive`.
 
@@ -121,7 +121,7 @@ class OfdmSpecAnalyzerAnalysisReport():
         The archive location defaults to :data:`SystemConfigSettings.archive_dir`
         and is cached internally for retrieval via :meth:`get_archive`.
         """
-        self._archive_file = ArchiveManager().zip_files(files=self._report_files(), 
+        self._archive_file = ArchiveManager().zip_files(files=self._report_files(),
                                                         archive_path=self._create_archive_fname())
         return self._archive_file
 
@@ -147,11 +147,11 @@ class OfdmSpecAnalyzerAnalysisReport():
         analyses = self._get_analyses()
         if not analyses:
             raise ValueError("No analyses available to extract MAC address.")
-        
+
         first_analysis:Analysis = analyses[0]
 
         return MacAddress(cast(BaseAnalysisModel, first_analysis.get_model()[0].mac_address))
-        
+
     def get_archive(self) -> PathLike:
         """Return the path to the previously created archive.
 
@@ -160,7 +160,7 @@ class OfdmSpecAnalyzerAnalysisReport():
         Call :meth:`_build_archive` before invoking this method.
         """
         return self._archive_file
-    
+
     def to_model(self) -> OfdmSpecAnalysisRptModel:
         """Return a structured model of the aggregated report output.
 
@@ -170,7 +170,7 @@ class OfdmSpecAnalyzerAnalysisReport():
         """
         return OfdmSpecAnalysisRptModel(
             models=self._multi_analysis.to_model())
-    
+
     def to_dict(self) -> Dict[str,Any]:
         """Return the report as a serializable ``dict`` via Pydantic's ``model_dump``."""
         return self._multi_analysis.to_dict()
@@ -277,7 +277,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
 
                 cfg = PlotConfig(
                     title           =   f"Spectrum Analysis · OFDM Channel ({channel_id}) · Standard",
-                    x               =   cast(ArrayLike, sig.frequencies),  
+                    x               =   cast(ArrayLike, sig.frequencies),
                     y               =   cast(ArrayLike, sig.amplitude),
                     xlabel          =   None,
                     xlabel_base     =   "Frequency",
@@ -305,7 +305,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
 
                 cfg = PlotConfig(
                     title           =   f"Spectrum Analysis · OFDM Channel ({channel_id}) · Moving Average n={sig.window.window_size}",
-                    x               =   cast(ArrayLike, sig.frequencies),  
+                    x               =   cast(ArrayLike, sig.frequencies),
                     y               =   cast(ArrayLike, sig.window.windows_average),
                     xlabel          =   None,
                     xlabel_base     =   "Frequency",
@@ -318,7 +318,7 @@ class SingleOfdmSpecAnalyzerReport(AnalysisReport):
                     legend          =   False,
                     transparent     =   False,
                     theme           =   self.getAnalysisRptMatplotConfig().theme,)
-                
+
                 mgr = MatplotManager(default_cfg=cfg)
                 mgr.plot_line(filename=fname)
                 out.append(mgr)

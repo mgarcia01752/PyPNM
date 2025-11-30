@@ -45,11 +45,11 @@ async def main():
 
     # Get OFDM channel entries
     oce_list = await cm.getDocsIf31CmDsOfdmChanEntry()
-    
+
     if not oce_list:
         logging.error('Unable to get DocsIf31CmDsOfdmChanEntry')
         exit(1)
-    
+
     # Set TFTP server and path
     if not await cm.setDocsPnmBulk(tftp_server=args.tftp_ipv4, tftp_path=args.tftp_dest_dir):
         logging.error(f'Unable to set TFTP Server: {args.tftp_ipv4} and/or TFTP Path: {args.tftp_dest_dir}')
@@ -66,7 +66,7 @@ async def main():
             sum_type = FecSummaryType.TEN_MIN
         else:
             sum_type = FecSummaryType.TWENTY_FOUR_HOUR
-        
+
         # Set FEC summary
         if not await cm.setDocsPnmCmDsOfdmFecSum(ofdm_idx=idx, fec_sum_file_name=filename, fec_sum_type=sum_type):
             logging.error(f'Unable to start FEC Summary for OFDM index {idx}')

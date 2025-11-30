@@ -37,7 +37,7 @@ class TransactionRecordParser:
 
     def get_filename(self) -> FileName:
         return self.record.get("filename")
-    
+
     def get_device_details(self) -> Optional[Dict[str, Any]]:
         return self.record.get("device_details", {}).get("system_description", {}) if self.record else None
 

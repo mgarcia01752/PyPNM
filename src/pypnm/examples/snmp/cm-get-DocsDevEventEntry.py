@@ -33,11 +33,11 @@ async def main():
     if not cm.is_ping_reachable():
         logging.error(f"{cm.get_inet_address} not reachable, exiting...")
         exit(1)
-          
+
     logging.info(f"Connected to: {await cm.getSysDescr()}")
-    
+
     event_list = await cm.getDocsDevEventEntry()
-    
+
     for event in event_list:
         filename = f'DocsDevEventEntry_{Generate.time_stamp(TimeUnit.NANOSECONDS)}.json'
         FileProcessor(f'../output/{filename}').write_file(json.dumps(event.to_dict()))

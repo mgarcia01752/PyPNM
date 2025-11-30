@@ -51,7 +51,7 @@ class DsHistogramRouter:
             f"{self.base_endpoint}/getCapture",
             summary="Get Downstream Histogram PNM Capture",
             responses=FAST_API_RESPONSE,)
-        
+
         async def get_capture(request: PnmHistogramAnalysisRequest):
             """
             Capture DOCSIS Downstream Histogram and return results as JSON or archive.
@@ -74,8 +74,8 @@ class DsHistogramRouter:
                 f"Sample Duration: {request.capture_settings.sample_duration}"
             )
 
-            cm = CableModem(mac_address=MacAddress(mac), 
-                            inet=Inet(ip), 
+            cm = CableModem(mac_address=MacAddress(mac),
+                            inet=Inet(ip),
                             write_community=community)
 
             status, msg = await CableModemServicePreCheck(cable_modem=cm).run_precheck()
@@ -83,7 +83,7 @@ class DsHistogramRouter:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
 
-            service = CmDsHistogramService(cable_modem=cm, 
+            service = CmDsHistogramService(cable_modem=cm,
                                            sample_duration=sample_duration,
                                            tftp_servers=tftp_servers)
 
@@ -106,7 +106,7 @@ class DsHistogramRouter:
                 payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
                 DictGenerate.pop_keys_recursive(payload, ["channel_id"])
                 payload.update(DictGenerate.models_to_nested_dict(measurement_stats, 'measurement_stats',))
-                 
+
                 return PnmAnalysisResponse(
                     mac_address =   mac,
                     status      =   ServiceStatusCode.SUCCESS,
@@ -114,7 +114,7 @@ class DsHistogramRouter:
 
             elif request.analysis.output.type == OutputType.ARCHIVE:
                 theme = request.analysis.plot.ui.theme
-                plot_config = AnalysisRptMatplotConfig(theme = theme)                
+                plot_config = AnalysisRptMatplotConfig(theme = theme)
                 analysis_rpt = DsHistrogramReport(analysis, plot_config)
                 rpt: Path = cast(Path, analysis_rpt.build_report())
                 return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)

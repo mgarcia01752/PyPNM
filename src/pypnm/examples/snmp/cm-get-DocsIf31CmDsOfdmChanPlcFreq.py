@@ -29,19 +29,19 @@ async def main():
     args = parser.parse_args()
 
     cm = CableModem(mac_address=MacAddress(args.mac), inet=Inet(args.inet), write_community=str(args.community_write))
-    
+
     if not cm.is_ping_reachable():
         logging.error(f"{cm.get_inet_address} not reachable, exiting...")
         exit(1)
 
     logging.info(f"Connected to: {await cm.getSysDescr()}")
-    
+
     logging.info(f'Mac: {cm.get_mac_address} - Inet: {cm.get_inet_address} - Fetching all OFDM(s)')
 
     idx_plc_l = await cm.getDocsIf31CmDsOfdmChanPlcFreq()
-    
+
     for idx_plc in idx_plc_l:
         logging.info(f'Mac: {cm.get_mac_address} - Inet: {cm.get_inet_address} - OFDM-IDX: {idx_plc[0]} - PLC: {idx_plc[1]}')
-    
+
 if __name__ == "__main__":
     asyncio.run(main())

@@ -33,7 +33,7 @@ async def main():
     parser.add_argument("--inet", "-i", required=True, help="IP address of cable modem")
     parser.add_argument("--tftp-ipv4", "-t4", required=True, help="IPv4 TFTP server")
     parser.add_argument("--community-write", "-cw", default="private", help="SNMP write community string (default: private)")
-    
+
     args = parser.parse_args()
 
     # Initialize CableModem
@@ -45,7 +45,7 @@ async def main():
         exit(1)
 
     logging.info(f"Connected to: {await cm.getSysDescr()}")
-    
+
     service: CmUsOfdmaPreEqService = CmUsOfdmaPreEqService(cm)
     msg_rsp:MessageResponse = await service.set_and_go()
 

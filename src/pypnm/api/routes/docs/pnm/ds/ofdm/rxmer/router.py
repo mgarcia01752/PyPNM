@@ -58,7 +58,7 @@ class RxMerRouter:
             community: str = request.cable_modem.snmp.snmp_v2c.community
             tftp_server_ipv4 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv4))
             tftp_server_ipv6 = Inet(cast(InetAddressStr, request.cable_modem.pnm_parameters.tftp.ipv6))
-            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6) 
+            tftp_servers = (tftp_server_ipv4, tftp_server_ipv6)
 
             self.logger.info(f"Starting RxMER measurement for MAC: {mac}, IP: {ip}")
 
@@ -66,14 +66,14 @@ class RxMerRouter:
 
             status, msg = await CableModemServicePreCheck(
                 cable_modem=cm, validate_ofdm_exist=True).run_precheck()
-            
+
             if status != ServiceStatusCode.SUCCESS:
                 self.logger.error(msg)
                 return SnmpResponse(mac_address=mac, status=status, message=msg)
 
             service: CmDsOfdmRxMerService = CmDsOfdmRxMerService(cm, tftp_servers)
             msg_rsp: MessageResponse = await service.set_and_go()
-            
+
             if msg_rsp.status != ServiceStatusCode.SUCCESS:
                 err = "Unable to complete RxMER measurement."
                 return SnmpResponse(mac_address=mac, message=err, status=msg_rsp.status)
@@ -88,7 +88,7 @@ class RxMerRouter:
 
             if request.analysis.output.type == OutputType.JSON:
                 payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
-                
+
                 # Clean up payload by removing unneeded or redundant sections
                 DictGenerate.pop_keys_recursive(payload, ["pnm_header", "modulations", "snr_db_values"])
                 primative = msg_rsp.payload_to_dict('primative')

@@ -38,17 +38,17 @@ async def main():
         exit(1)
 
     logging.info(f"Connected to: {await cm.getSysDescr()}")
-    
+
     if not await cm.setDocsPnmBulk(tftp_server=args.tftp_ipv4, tftp_path=args.tftp_dest_dir):
         logging.error(f'Unable to set TFTP Server: {args.tftp_ipv4} and/or TFTP Path: {args.tftp_dest_dir}')
         exit(1)
-            
+
     for idx in await cm.getDocsIf31CmDsOfdmChannelIdIndex():
-        
+
         filename = f"ds-symbol-capture_{idx}_{Generate.time_stamp()}.bin"
         print(f"Setting Symbol Capture for OFDM index {idx} with filename {filename}")
         await cm.setDocsPnmCmDsOfdmSymTrig(ofdm_idx=idx, symbol_trig_file_name=filename)
-        
+
         while (True):
             if await cm.getDocsPnmCmCtlStatus() == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
                 logging.info('Measurement in progress...')

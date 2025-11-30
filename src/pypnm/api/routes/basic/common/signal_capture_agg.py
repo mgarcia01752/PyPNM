@@ -78,9 +78,9 @@ class SignalCaptureAggregator:
 
         if bucket:
             self.logger.debug("Adding additional sample at x=%s (existing %d)", xf, len(bucket))
-        
+
         bucket.append(yf)
-        
+
         self.logger.debug("Added point (%g, %g) to aggregator (total points: %d)", xf, yf, len(self._points))
 
         self._reconstructed = False  # invalidates any prior grid

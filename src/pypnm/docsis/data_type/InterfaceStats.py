@@ -76,10 +76,10 @@ class InterfaceStats(BaseModel):
 
         for if_index in await snmp.walk("ifIndex"):
             index = Snmp_v2c.get_oid_index(str(if_index[0]))
-            
+
             if_type = await snmp.get(f"ifType.{index}")
             type_val = Snmp_v2c.get_result_value(if_type)
-            
+
             if type_val is None or int(type_val) != if_type_filter:
                 continue
 

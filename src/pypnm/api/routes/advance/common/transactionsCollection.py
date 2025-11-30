@@ -112,8 +112,8 @@ class TransactionCollection:
         sorted_records = self._sorted_records(sorts, reverse)
         return [r.transaction_id for r in sorted_records]
 
-    def getTransactionCollectionModel(self, transaction_id: TransactionId = "", 
-                                      sorts: Optional[List[Sort]] = None, 
+    def getTransactionCollectionModel(self, transaction_id: TransactionId = "",
+                                      sorts: Optional[List[Sort]] = None,
                                       reverse: bool = False) -> List[TransactionCollectionModel]:
         """
         Retrieve transaction models by ID or sorted collection.
@@ -139,8 +139,8 @@ class TransactionCollection:
             return list(self._transaction_models)
         return self._sorted_records(sorts, reverse)
 
-    def getTransactionBytes(self, transaction_id: TransactionId = "", 
-                            sorts: Optional[List[Sort]] = None, 
+    def getTransactionBytes(self, transaction_id: TransactionId = "",
+                            sorts: Optional[List[Sort]] = None,
                             reverse: bool = False) -> ByteArray:
         """
         Retrieve raw data bytes from transactions.

@@ -22,20 +22,20 @@ logging.basicConfig(
 async def main():
     parser = argparse.ArgumentParser(description="Fetch DocsEqualizerData via SNMP")
     parser.add_argument("--mac", "-m", required=True, help="Mac address of cable modem")
-    parser.add_argument("--inet", "-i", required=True, help="IP address of cable modem")    
+    parser.add_argument("--inet", "-i", required=True, help="IP address of cable modem")
     parser.add_argument("--community-write", "-cw", default="private", help="SNMP write community string (default: private)")
     args = parser.parse_args()
 
     cm = CableModem(mac_address=MacAddress(args.mac), inet=Inet(args.inet), write_community=str(args.community_write))
-    
+
     if not cm.is_ping_reachable():
         logging.error(f"{cm.get_inet_address} not reachable, exiting...")
         exit(1)
 
     logging.info(f"Connected to: {await cm.getSysDescr()}")
-    
+
     ded:DocsEqualizerData = await cm.getDocsIf3CmStatusUsEqData()
-    
+
     if ded.coefficients_found():
         print(f'{ded.to_dict()}')
 

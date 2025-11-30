@@ -21,13 +21,13 @@ class DsOfdmModulationType(IntEnum):
     qam4096         = 11
     qam8192         = 12
     qam16384        = 13
-    
+
     @classmethod
     def from_value(cls, value: int) -> "DsOfdmModulationType":
         """Convert integer to corresponding DsOfdmModulationType enum member."""
         member = cls._value2member_map_.get(value, cls.UNKNOWN)
         return member  # type: ignore[return-value]
-    
+
     @classmethod
     def get_name(cls, value: int) -> str:
         """

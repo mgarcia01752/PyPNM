@@ -24,7 +24,7 @@ class InetAddressType(IntEnum):
     Enum representing the InetAddressType textual convention from SNMP MIBs.
 
     It defines types of Internet addresses used in network management.
-    
+
     Module INET-ADDRESS-MIB (RFC 3291:05/2002)
 
     Values:
@@ -34,7 +34,7 @@ class InetAddressType(IntEnum):
         IPV4Z (3): A non-global IPv4 address with a zone index.
         IPV6Z (4): A non-global IPv6 address with a zone index.
         DNS (16): A DNS domain name.
-    
+
     Notes:
         - The value 0 (UNKNOWN) should be used for zero-length addresses or addresses of undefined type.
         - Address type and corresponding InetAddress values must be consistent according to SNMP standards.

@@ -54,23 +54,23 @@ class SystemConfigSettings:
     @classproperty
     def snmp_v3_username(cls) -> str:
         return cls._cfg.get("SNMP", "version", "3", "username")
-    
+
     @classproperty
     def snmp_v3_auth_protocol(cls) -> str:
         return cls._cfg.get("SNMP", "version", "3", "auth_protocol")
-    
+
     @classproperty
     def snmp_v3_auth_password(cls) -> str:
         return cls._cfg.get("SNMP", "version", "3", "auth_password")
-    
+
     @classproperty
     def snmp_v3_priv_protocol(cls) -> str:
         return cls._cfg.get("SNMP", "version", "3", "priv_protocol")
-    
+
     @classproperty
     def snmp_v3_priv_password(cls) -> str:
         return cls._cfg.get("SNMP", "version", "3", "priv_password")
-    
+
     # SNMP general settings
     @classproperty
     def snmp_timeout(cls) -> int:
@@ -121,27 +121,27 @@ class SystemConfigSettings:
 
     @classproperty
     def csv_dir(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "csv_dir")    
+        return cls._cfg.get("PnmFileRetrieval", "csv_dir")
 
     @classproperty
     def json_dir(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "json_dir") 
+        return cls._cfg.get("PnmFileRetrieval", "json_dir")
 
     @classproperty
     def xlsx_dir(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "xlsx_dir") 
+        return cls._cfg.get("PnmFileRetrieval", "xlsx_dir")
 
     @classproperty
     def png_dir(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "png_dir") 
+        return cls._cfg.get("PnmFileRetrieval", "png_dir")
 
     @classproperty
     def archive_dir(cls) -> str:
         return cls._cfg.get("PnmFileRetrieval", "archive_dir")
-    
+
     @classproperty
     def message_response_dir(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "msg_rsp_dir") 
+        return cls._cfg.get("PnmFileRetrieval", "msg_rsp_dir")
 
     @classproperty
     def transaction_db(cls) -> str:
@@ -327,12 +327,12 @@ class SystemConfigSettings:
         Create necessary directories if they do not exist.
         """
         directories = [
-            cls.pnm_dir, 
-            cls.csv_dir, 
-            cls.json_dir, 
+            cls.pnm_dir,
+            cls.csv_dir,
+            cls.json_dir,
             cls.xlsx_dir,
-            cls.png_dir, 
-            cls.archive_dir, 
+            cls.png_dir,
+            cls.archive_dir,
             cls.message_response_dir,
             cls.log_dir,
         ]
