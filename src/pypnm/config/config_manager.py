@@ -5,7 +5,9 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 import json
 import os
-from typing import Any
+from typing import Any, TypeVar
+
+T = TypeVar("T")
 
 
 class ConfigManager:
@@ -40,7 +42,7 @@ class ConfigManager:
         with open(self._config_path) as f:
             self._config_data = json.load(f)
 
-    def get(self, *keys: str, fallback: Any | None = None) -> Any:
+    def get(self, *keys: str, fallback: T | None = None) -> T | None:
         """
         Retrieves a deeply nested value from the config.
 

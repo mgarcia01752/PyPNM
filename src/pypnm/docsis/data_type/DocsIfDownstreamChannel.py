@@ -154,7 +154,7 @@ class DocsIfDownstreamChannelEntry(BaseModel):
             except Exception:
                 return None
 
-        async def fetch(field: str, cast: Callable | None = None):
+        async def fetch(field: str, cast: Callable | None = None) -> None | int | float | str | bool:
             try:
                 raw = await snmp.get(f"{field}.{index}")
                 val = Snmp_v2c.get_result_value(raw)

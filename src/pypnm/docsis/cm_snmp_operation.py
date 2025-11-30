@@ -136,11 +136,12 @@ class FecSummaryType(Enum):
     TWENTY_FOUR_HOUR    = 3
 
     @classmethod
-    def choices(cls):
+    def choices(cls) -> dict[str, int]:
+        ''' Returns a dictionary [key,value] of enum names and their corresponding values. '''
         return {e.name: e.value for e in cls}
 
     @classmethod
-    def from_value(cls, value: int):
+    def from_value(cls, value: int) -> Self:
         try:
             return cls(value)
         except ValueError as err:
@@ -1831,7 +1832,8 @@ class CmSnmpOperation:
         '''
             Custom SNMP SET for Spectrum Analyzer
         '''
-        async def __snmp_set(field_name:str, obj_value, snmp_type) -> bool:
+        async def __snmp_set(field_name:str, obj_value:str | int, snmp_type:type) -> bool:
+            """ Helper function to perform SNMP set and verify the result."""
             base_oid = COMPILED_OIDS.get(field_name)
             if not base_oid:
                 self.logger.warning(f'OID not found for field "{field_name}", skipping.')
