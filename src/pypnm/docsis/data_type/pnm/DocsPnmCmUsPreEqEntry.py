@@ -5,13 +5,15 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from enum import Enum
-from typing import Any
+from typing import Any, TypeVar
 
 from pydantic import BaseModel
 
 from pypnm.lib.types import ChannelId
 from pypnm.snmp.casts import measurement_status
 from pypnm.snmp.snmp_v2c import Snmp_v2c
+
+T = TypeVar("T")
 
 
 class PreEqCoAdjStatus(Enum):
@@ -125,9 +127,7 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
 
     @classmethod
     async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsPnmCmUsPreEqEntry:
-        logger = logging.getLogger(cls.__name__)
-
-        async def fetch(oid: str, cast_fn: Callable[[Any], Any] | None = None) -> Any:
+        async def fetch(oid: str, cast_fn: Callable[[object], T] | None = None) -> T | object | None:
             try:
                 result = await snmp.get(f"{oid}.{index}")
                 value = Snmp_v2c.get_result_value(result)
@@ -135,6 +135,8 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
                     return None
                 return cast_fn(value) if cast_fn else value
             except Exception as e:
+                logger.warning("Fetch error for %s.%s: %s", oid, index, e)
+                return None
                 logger.warning("Fetch error for %s.%s: %s", oid, index, e)
                 return None
 

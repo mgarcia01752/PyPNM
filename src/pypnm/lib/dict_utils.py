@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, MutableMapping
-from typing import Any
+from typing import Any, Union
 
 from pydantic import BaseModel
 
@@ -46,12 +46,12 @@ class DictGenerate:
     # ---------------------------
     @staticmethod
     def pop_keys_recursive(
-        obj: Any,
+        obj: object,
         keys_to_remove: Iterable[str],
         *,
         case_sensitive: bool = True,
         in_place: bool = True,
-    ) -> Any:
+    ) -> object:
         """
         Recursively remove keys from nested dict/list/tuple/set structures.
 
@@ -74,7 +74,9 @@ class DictGenerate:
         targets: set[str] = set(keys_to_remove)
         targets_lower: set[str] | None = {k.lower() for k in targets} if not case_sensitive else None
 
-        def _walk(node: Any) -> Any:
+        NodeType = Union[dict[str, object], list[object], tuple[object, ...], set[object], object]
+
+        def _walk(node: NodeType) -> NodeType:
             if isinstance(node, dict):
                 d = node if in_place else dict(node)
 

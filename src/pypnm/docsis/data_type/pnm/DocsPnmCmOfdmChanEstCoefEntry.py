@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from typing import Any, ClassVar, cast
+from typing import Any, ClassVar, TypeVar, Optional, cast
 
 from pydantic import BaseModel
 
@@ -39,7 +39,9 @@ class DocsPnmCmOfdmChanEstCoefEntry(BaseModel):
     async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsPnmCmOfdmChanEstCoefEntry:
         log = logging.getLogger(cls.__name__)
 
-        async def fetch(sym: str, caster: Callable[[Any], Any]) -> Any:
+        T = TypeVar("T")
+
+        async def fetch(sym: str, caster: Callable[[Any], T]) -> Optional[T]:
             res = await snmp.get(f"{sym}.{index}")
             raw = Snmp_v2c.get_result_value(res)
             val = None if raw is None else caster(raw)
@@ -47,7 +49,7 @@ class DocsPnmCmOfdmChanEstCoefEntry(BaseModel):
                 log.debug(f"ChanEstCoef idx={index}: {sym} = {raw} -> {val!r}")
             return val
 
-        async def req(sym: str, caster: Callable[[Any], Any], key: str) -> Any:
+        async def req(sym: str, caster: Callable[[Any], T], key: str) -> T:
             val = await fetch(sym, caster)
             if val is None:
                 raise ValueError(f"ChanEstCoef idx={index}: missing required field: {key}")

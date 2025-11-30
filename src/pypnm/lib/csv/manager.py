@@ -29,7 +29,7 @@ class CSVManager:
     strict validation to ensure data integrity.
     """
 
-    def __init__(self, orientation: CSVOrientation = CSVOrientation.VERTICAL):
+    def __init__(self, orientation: CSVOrientation = CSVOrientation.VERTICAL) -> None:
         """
         Initialize CSV manager.
 

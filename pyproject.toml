@@ -140,6 +140,7 @@ target-version = "py310"
 exclude        = [
   "tools",
   "src/pypnm/lib/matplot/manager.py",
+  "src/pypnm/lib/csv/manager.py",
 ]
 
 
