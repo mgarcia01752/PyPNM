@@ -6,6 +6,7 @@ import logging
 from typing import Any, cast
 
 from fastapi import APIRouter
+from starlette.responses import FileResponse
 
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisRptMatplotConfig
 from pypnm.api.routes.basic.ofdm_spec_analyzer_rpt import OfdmSpecAnalyzerAnalysisReport
@@ -70,9 +71,10 @@ class SpectrumAnalyzerRouter:
         @self.router.post(
             f"{self.base_endpoint}/getCapture",
             summary="Get Spectrum Analyzer Capture",
+            response_model=None,
             responses=FAST_API_RESPONSE,
         )
-        async def get_capture(request: SingleCaptureSpectrumAnalyzer):
+        async def get_capture(request: SingleCaptureSpectrumAnalyzer) -> SnmpResponse | PnmAnalysisResponse | FileResponse:
             """
             Perform Spectrum Analyzer Capture And Return Analysis Results.
 
@@ -171,9 +173,10 @@ class SpectrumAnalyzerRouter:
         @self.router.post(
             f"{self.base_endpoint}/getCapture/ofdm",
             summary="Get OFDM Channels Spectrum Analyzer Capture",
+            response_model=None,
             responses=FAST_API_RESPONSE,
         )
-        async def get_ofdm_ds_channels_analysis(request: OfdmSpecAnaAnalysisRequest):
+        async def get_ofdm_ds_channels_analysis(request: OfdmSpecAnaAnalysisRequest) -> OfdmSpecAnaAnalysisResponse | FileResponse:
             """
             Perform OFDM Downstream Spectrum Capture Across All DS OFDM Channels.
 
@@ -266,9 +269,10 @@ class SpectrumAnalyzerRouter:
         @self.router.post(
             f"{self.base_endpoint}/getCapture/scqam",
             summary="Get SC-QAM Downstream Channels Spectrum Analysis",
+            response_model=None,
             responses=FAST_API_RESPONSE,
         )
-        async def get_scqam_ds_channels_analysis(request: ScQamSpecAnaAnalysisRequest):
+        async def get_scqam_ds_channels_analysis(request: ScQamSpecAnaAnalysisRequest) -> ScQamSpecAnaAnalysisResponse | FileResponse:
             """
             Perform SC-QAM Downstream Spectrum Capture Across All DS SC-QAM Channels.
 

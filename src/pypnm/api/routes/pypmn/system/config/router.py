@@ -29,7 +29,7 @@ class PyPnmSystemConfigAPI:
         self.router.post("/get", summary="Get PyPNM System Config")(self.get_system_config)
         self.router.post("/update", summary="Update PyPNM System Config")(self.update_system_config)
 
-    async def get_system_config(self):
+    async def get_system_config(self) -> JSONResponse:
         """
         """
         try:
@@ -39,7 +39,7 @@ class PyPnmSystemConfigAPI:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to load config: {e}") from e
 
-    async def update_system_config(self, config_update: SystemConfigModel):
+    async def update_system_config(self, config_update: SystemConfigModel) -> JSONResponse:
         """
         """
         try:

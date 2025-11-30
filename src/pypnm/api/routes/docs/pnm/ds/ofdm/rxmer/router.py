@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from fastapi import APIRouter
+from starlette.responses import FileResponse
 
 from pypnm.api.routes.basic.rxmer_analysis_rpt import (
     AnalysisRptMatplotConfig,
@@ -55,8 +56,9 @@ class RxMerRouter:
         @self.router.post(
             f"{self.base_endpoint}/getCapture",
             summary="Get RxMER PNM Capture File",
+            response_model=None,
             responses=FAST_API_RESPONSE,)
-        async def get_capture(request: PnmSingleCaptureRequest):
+        async def get_capture(request: PnmSingleCaptureRequest) -> SnmpResponse | PnmAnalysisResponse | FileResponse:
             """
             Capture Downstream OFDM RxMER Per-Subcarrier Values.
 

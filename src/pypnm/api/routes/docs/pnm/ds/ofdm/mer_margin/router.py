@@ -147,7 +147,7 @@ class RxMerMarginRouter:
 
         @self.router.post(f"/{self.base_endpoint}/getMeasurementStatistics",
                           response_model=SnmpResponse)
-        async def get_measurement_statistics(request: PnmRequest):
+        async def get_measurement_statistics(request: PnmRequest) -> SnmpResponse:
             """
             Returns current MER Margin measurement configuration and status.
 

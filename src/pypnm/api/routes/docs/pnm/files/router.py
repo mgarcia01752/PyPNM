@@ -57,7 +57,7 @@ class PnmFileManager:
             summary="Search For PNM Files Via Mac Address",
             responses=FAST_API_RESPONSE,
         )
-        def search_files(mac_address: MacAddressStr = Path(description=(f"MAC address of the cable modem, default: **{default_mac_address}**"),)):  # noqa: B008
+        def search_files(mac_address: MacAddressStr = Path(description=(f"MAC address of the cable modem, default: **{default_mac_address}**"),)) -> FileQueryResponse:  # noqa: B008
             """
             **Search Uploaded PNM Files By MAC Address**
 
@@ -78,7 +78,7 @@ class PnmFileManager:
             summary="Download A PNM File By Transaction ID",
             responses=FAST_API_RESPONSE
         )
-        def download_file_via_transaction_id(transaction_id: TransactionId = Path(description="Transaction ID of the file to download"),):  # noqa: B008
+        def download_file_via_transaction_id(transaction_id: TransactionId = Path(description="Transaction ID of the file to download"),) -> FileResponse:  # noqa: B008
             """
             **Download PNM Measurement File By Transaction ID**
 
@@ -99,7 +99,7 @@ class PnmFileManager:
             summary="Download A PNM File By MAC Address",
             responses=FAST_API_RESPONSE
         )
-        def download_file_via_mac_address(mac_address: MacAddressStr = Path(..., description="MAC address of the file to download")):  # noqa: B008
+        def download_file_via_mac_address(mac_address: MacAddressStr = Path(..., description="MAC address of the file to download")) -> FileResponse:  # noqa: B008
             """
             **Download PNM Measurement File By Transaction ID**
 
@@ -120,7 +120,8 @@ class PnmFileManager:
             summary="Download A PNM File By Operation ID",
             responses=FAST_API_RESPONSE
         )
-        def download_file_via_operationID(operation_id: OperationId = Path(..., description="Operation ID of the file to download")):  # noqa: B008
+        def download_file_via_operationID(operation_id: OperationId = Path(..., description="Operation ID of the file to download")
+                                          ) -> FileResponse:  # noqa: B008
             """
             **Download PNM Measurement File By Operation ID**
 
@@ -141,7 +142,8 @@ class PnmFileManager:
             summary="Upload A PNM File",
             responses=FAST_API_RESPONSE,
         )
-        async def upload_file(file: UploadFile = File(description="Raw PNM capture file (e.g., RxMER, constellation, histogram, spectrum)",),): # noqa: B008
+        async def upload_file(file: UploadFile = File(description="Raw PNM capture file (e.g., RxMER, constellation, histogram, spectrum)",),
+                              ) -> JSONResponse: # noqa: B008
             """
             **Upload A PNM Binary File Into The PyPNM Transaction Database**
 
@@ -170,7 +172,7 @@ class PnmFileManager:
             summary="Analyze a PNM File Via Transaction ID",
             responses=FAST_API_RESPONSE,
         )
-        def get_analysis_via_transaction_id(request: FileAnalysisRequest):
+        def get_analysis_via_transaction_id(request: FileAnalysisRequest) -> AnalysisJsonResponse | FileResponse | JSONResponse:
             """
             **Analysis Of A PNM File**
 
@@ -219,7 +221,7 @@ class PnmFileManager:
                 default=None,
                 description="Optional bytes-per-line for hexdump; if omitted, the service default is used.",
             ),
-        ):
+        ) -> HexDumpResponse:
             """
             **Hexdump Of A PNM File**
 

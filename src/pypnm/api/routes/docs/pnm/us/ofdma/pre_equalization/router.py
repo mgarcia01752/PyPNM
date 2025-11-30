@@ -6,6 +6,7 @@ import logging
 from typing import Any, cast
 
 from fastapi import APIRouter
+from starlette.responses import FileResponse
 
 from pypnm.api.routes.basic.us_ofdma_pre_eq_analysis_rpt import CmUsOfdmaPreEqReport
 from pypnm.api.routes.common.classes.analysis.analysis import Analysis, AnalysisType
@@ -52,8 +53,9 @@ class UsOfdmaPreEqualizationRouter:
         @self.router.post(
             f"{self.base_endpoint}/getCapture",
             summary="Get Upstream OFDMA Pre-Equalization Capture",
+            response_model=None,
             responses=FAST_API_RESPONSE,)
-        async def get_capture(request: PnmSingleCaptureRequest):
+        async def get_capture(request: PnmSingleCaptureRequest) -> SnmpResponse | PnmAnalysisResponse | FileResponse:
             """
             Capture Upstream OFDMA Pre-Equalization Coefficients.
 

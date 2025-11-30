@@ -8,6 +8,7 @@ from typing import Any, cast
 
 from fastapi import APIRouter
 
+
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisRptMatplotConfig
 from pypnm.api.routes.basic.modulation_profile_analysis_rpt import (
     ModulationProfileReport,
@@ -32,7 +33,7 @@ from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.ds.ofdm.modulation_profile.service import (
     CmDsOfdmModProfileService,
 )
-from pypnm.api.routes.docs.pnm.files.service import FileType, PnmFileService
+from pypnm.api.routes.docs.pnm.files.service import FileResponse, FileType, PnmFileService
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmModProfEntry import (
     DocsPnmCmDsOfdmModProfEntry,
@@ -55,10 +56,11 @@ class ModulationProfileRouter:
     def __routes(self) -> None:
         @self.router.post(
             f"{self.base_endpoint}/getCapture",
+            response_model=None,
             summary="Get Modulation Profile PNM Capture File",
             responses=FAST_API_RESPONSE,
         )
-        async def get_capture(request: PnmSingleCaptureRequest):
+        async def get_capture(request: PnmSingleCaptureRequest) -> SnmpResponse | PnmAnalysisResponse | FileResponse:
             """
             Capture Downstream OFDM Modulation Profile.
 
@@ -117,10 +119,9 @@ class ModulationProfileRouter:
                 return PnmFileService().get_file(FileType.ARCHIVE, rpt.name)
 
             else:
-                return PnmAnalysisResponse(
+                return SnmpResponse(
                     mac_address =   mac,
                     status      =   ServiceStatusCode.INVALID_OUTPUT_TYPE,
-                    data        =   {},
                 )
 
 

@@ -31,7 +31,7 @@ class PyPnmSystemLog:
             methods=["GET"],
             summary="Download PyPNM Log File")
 
-    async def get_pypnm_log(self):
+    async def get_pypnm_log(self) -> FileResponse:
         """
         **Download PyPNM System Log**
 
