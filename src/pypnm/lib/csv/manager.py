@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import csv
 from enum import Enum
+from typing import TypeVar
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
@@ -20,6 +21,7 @@ class CSVOrientation(Enum):
 class CSVValidationError(Exception):
     """Custom exception for CSV validation errors"""
     pass
+T = TypeVar("T")
 
 class CSVManager:
     """
@@ -28,7 +30,6 @@ class CSVManager:
     Supports both vertical (traditional) and horizontal orientations with
     strict validation to ensure data integrity.
     """
-
     def __init__(self, orientation: CSVOrientation = CSVOrientation.VERTICAL) -> None:
         """
         Initialize CSV manager.
@@ -68,12 +69,12 @@ class CSVManager:
             if not header.strip():
                 raise CSVValidationError(f"Header at index {i} cannot be empty or whitespace only")
 
-        self.headers = [str(h).strip() for h in headers]
-        self._header_set = True
-
-    def insert_row(self, row_data: list[Any] | Any) -> None:
+    def insert_row(self, row_data: list[T] | T) -> None:
         """
         Insert a row of data.
+
+        Args:
+            row_data: List of values or single value (for single column CSV)
 
         Args:
             row_data: List of values or single value (for single column CSV)

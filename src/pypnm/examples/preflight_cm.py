@@ -20,7 +20,7 @@ def _hdr(msg: str) -> None:
 
 def resolve_config(
     ip: str | None, mac: str | None, read_comm: str | None, timeout: int | None
-):
+) -> tuple[str, str, str, int]:
     ip_s = ip or S.default_ip_address
     mac_s = mac or S.default_mac_address
     rc = read_comm or S.snmp_read_community

@@ -19,7 +19,7 @@ class DocsPnmBulkDataGroup:
     docsPnmBulkFileControl: int | None       # control flag or enum
     docsPnmBulkFileUploadStatus: int | None  # status flag or enum
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.docsPnmBulkDestIpAddr:
             try:
                 ipaddress.ip_address(self.docsPnmBulkDestIpAddr)
