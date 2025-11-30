@@ -173,7 +173,7 @@ class DocsIf3CmSpectrumAnalysisCtrlCmd:
     docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus: int = -1
     docsIf3CmSpectrumAnalysisCtrlCmdFileName: str = f"spectrum_analysis_{Generate.time_stamp()}.bin"
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.logger = logging.getLogger(__name__)
         if not self.logger.handlers:
             handler = logging.StreamHandler()

@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 
 from __future__ import annotations
 
@@ -104,7 +107,7 @@ class CmSpectrumAnalysisSnmpModel(BaseModel):
     amplitude_bytes: bytes          = Field(..., description="Raw concatenated amplitude bytes across all parsed spectrum groups.")
 
     @field_serializer("amplitude_bytes")
-    def _ser_amplitude_bytes(self, value: bytes, _info) -> str:
+    def _ser_amplitude_bytes(self, value: bytes,) -> str:
         return value.hex()
 
 class OfdmFecSumCodeWordEntryModel(BaseModel):

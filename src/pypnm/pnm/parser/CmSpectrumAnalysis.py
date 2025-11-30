@@ -38,7 +38,7 @@ class CmSpectrumAnalyzerModel(BaseModel):
     amplitude_bin_segments_float: list[FloatSeries] = Field(..., description="Amplitude values per bin (float dB), concatenated across segments.")
 
     @field_serializer("spectrum_analysis_data")
-    def _ser_spectrum_analysis_data(self, v: bytes, _info) -> str:
+    def _ser_spectrum_analysis_data(self, v: bytes,) -> str:
         return v.hex()
 
 class CmSpectrumAnalysis(PnmHeader):

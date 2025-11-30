@@ -1,10 +1,10 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 from __future__ import annotations
 
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025
-# Maurice Garcia
 import logging
-from typing import Any
+from typing import Any, NoReturn
 
 from pydantic import BaseModel, Field
 
@@ -139,7 +139,7 @@ class GetPnmParserAndParameters(PnmHeader):
         assert self._parser is not None
         return self._parser, params
 
-    def _process(self) -> Any:
+    def _process(self) -> PnmParsers:
         """
         Determine PNM type and call the associated parser.
 
@@ -194,7 +194,7 @@ class GetPnmParserAndParameters(PnmHeader):
         """Receive modulation error ratio (RxMER) parser."""
         return CmDsOfdmRxMer(self.byte_stream)
 
-    def _process_histogram(self) -> Any:
+    def _process_histogram(self) -> CmDsHist:
         """Downstream histogram parser"""
         return CmDsHist(self.byte_stream)
 
@@ -202,7 +202,7 @@ class GetPnmParserAndParameters(PnmHeader):
         """OFDMA upstream pre-equalizer coefficients parser."""
         return CmUsOfdmaPreEq(self.byte_stream)
 
-    def _process_upstream_pre_eq_update(self) -> Any:
+    def _process_upstream_pre_eq_update(self) -> CmUsOfdmaPreEq:
         """OFDMA upstream pre-equalizer last-update coefficients parser."""
         return CmUsOfdmaPreEq(self.byte_stream)
 
@@ -214,15 +214,15 @@ class GetPnmParserAndParameters(PnmHeader):
         """OFDM modulation profile parser."""
         return CmDsOfdmModulationProfile(self.byte_stream)
 
-    def _process_latency_report(self) -> Any:
+    def _process_latency_report(self) -> NoReturn:
         """Latency report parser (not implemented)."""
         raise NotImplementedError("Latency report parsing not implemented.")
 
-    def _process_spectrum_analysis(self) -> Any:
+    def _process_spectrum_analysis(self) -> NoReturn:
         """Spectrum analysis parser (not implemented)."""
         raise NotImplementedError("Spectrum analysis parsing not implemented.")
 
     """This method may never be implemented by CableLabs, no real intrest from operators"""
-    def _process_symbol_capture(self) -> Any:
-        """Symbol capture parser (not implemented)."""
+    def _process_symbol_capture(self) -> NoReturn:
+        """Symbol capture parser (not implemented) — this always raises NotImplementedError."""
         raise NotImplementedError("Symbol capture parsing not implemented.")

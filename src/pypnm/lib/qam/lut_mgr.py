@@ -382,7 +382,7 @@ class QamLutManager:
         return max(1, max_key.bit_length())
 
     @staticmethod
-    def _lookup_symbol(lut: dict, cw: int):
+    def _lookup_symbol(lut: dict[int, tuple[float, float]], cw: int) -> tuple[float, float]:
         """
         Resolve a codeword to its (I, Q) symbol tuple.
 

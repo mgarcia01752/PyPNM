@@ -102,7 +102,7 @@ class OFDMGroupDelay(BaseModel):
     _valid_mask: IntSeries        = PrivateAttr(default_factory=list)
     _mean_us: float               = PrivateAttr(default=math.nan)
 
-    def model_post_init(self, _context) -> None:
+    def model_post_init(self, _context: dict | None) -> None:
         """Run the computation pipeline after model creation."""
         self._compute()
 
