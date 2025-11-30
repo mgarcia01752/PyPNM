@@ -157,8 +157,11 @@ HttpRtnCode = NewType("HttpRtnCode", int)
 # ────────────────────────────────────────────────────────────────────────────────
 __all__ = [
     "HashStr",
-    "TransactionId",
-    "GroupId",
+    "TransactionId", "GroupId", "OperationId",
+    # enums
+    "StringEnum", "FloatEnum",
+    # strings
+    "String", "StringArray",
     "ByteArray",
     # numerics
     "Number", "Float64", "ArrayLike", "ArrayLikeF64", "NDArrayF64", "NDArrayI64",

@@ -1761,7 +1761,7 @@ class CmSnmpOperation:
             if ip_binary is None:
                 self.logger.error(f"Failed to convert IP address to binary: {tftp_server}")
                 return False
-            set_response = await self._snmp.set('docsPnmBulkDestIpAddr.0', int(ip_binary), OctetString)
+            set_response = await self._snmp.set('docsPnmBulkDestIpAddr.0', ip_binary, OctetString)
             self.logger.debug(f'docsPnmBulkDestIpAddr set: {set_response}')
 
             tftp_path = tftp_path or ""
@@ -1836,10 +1836,12 @@ class CmSnmpOperation:
         
         # Need to get Diplex Setting to make sure that the Spec Analyzer setting are within the band
         cscs:DocsIf31CmSystemCfgDiplexState = await self.getDocsIf31CmSystemCfgDiplexState()
-        diplex_dict = cscs.to_dict()[0]
+        cscs.to_dict()[0]
+        
+        """ TODO: Will need to validate the Spec Analyzer Settings against the Diplex Settings
         lower_edge = int(diplex_dict["docsIf31CmSystemCfgStateDiplexerCfgDsLowerBandEdge"]) * 1_000_000 
         upper_edge = diplex_dict["docsIf31CmSystemCfgStateDiplexerCfgDsUpperBandEdge"] * 1_000_000
-        
+        """
         try:
             field_type_map = {
                 "docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout": Integer32,

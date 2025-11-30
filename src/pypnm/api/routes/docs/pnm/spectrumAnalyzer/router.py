@@ -199,7 +199,8 @@ class SpectrumAnalyzerRouter:
                     mac_address=mac, status=status, message=msg, data={},)
 
             service = DsOfdmChannelSpectrumAnalyzer(
-                cable_modem             =   cm, 
+                cable_modem             =   cm,
+                tftp_servers            =   tftp_servers,
                 number_of_averages      =   request.capture_parameters.number_of_averages,
                 spectrum_retrieval_type =   request.capture_parameters.spectrum_retrieval_type)
 

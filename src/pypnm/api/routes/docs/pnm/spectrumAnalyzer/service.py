@@ -147,7 +147,8 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
         Data retrieval mechanism (file-based or SNMP amplitude data).
     """
 
-    def __init__(self, cable_modem: CableModem, 
+    def __init__(self, cable_modem: CableModem,
+                 _tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(), 
                  number_of_averages: int = 2, 
                  spectrum_retrieval_type:SpectrumRetrievalType = SpectrumRetrievalType.FILE,):
         super().__init__(cable_modem)
@@ -233,7 +234,7 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
             channel_specCapture.append((chan_id, capture_parameter))
 
         for chan_id, capture_parameter in channel_specCapture:
-            service = OfdmChanSpecAnalyzerService(self._cm)
+            service = OfdmChanSpecAnalyzerService(self._cm, tftp_servers=self._tftp_servers)
             service.setSpectrumCaptureParameters(capture_parameter)
             out.append((chan_id, await service.set_and_go()))
             await self.updatePnmMeasurementStatistics(chan_id)

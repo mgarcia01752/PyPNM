@@ -16,9 +16,7 @@ class TimeUnit(Enum):
     MILLISECONDS = "ms"
     NANOSECONDS  = "ns"
 
-
-@deprecated("Generate is deprecated; use Generate instead.")
-class Generate:
+class Utils:
     """
     Legacy Time And TransactionId Utilities.
 
