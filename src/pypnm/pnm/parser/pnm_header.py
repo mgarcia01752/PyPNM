@@ -3,10 +3,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 import logging
 import struct
-from typing import Any, Dict, Optional, Union
-from collections.abc import Mapping
+from typing import Any
 
 from pydantic import BaseModel, Field
 

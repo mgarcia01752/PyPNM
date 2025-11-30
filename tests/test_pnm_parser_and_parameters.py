@@ -8,14 +8,14 @@ from pathlib import Path
 import pytest
 
 from pypnm.lib.mac_address import MacAddress
-from pypnm.pnm.parser.pnm_file_type import PnmFileType
-from pypnm.pnm.parser.pnm_parameter import GetPnmParserAndParameters
 from pypnm.pnm.parser.CmDsConstDispMeas import CmDsConstDispMeas
 from pypnm.pnm.parser.CmDsHist import CmDsHist
 from pypnm.pnm.parser.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 from pypnm.pnm.parser.CmDsOfdmFecSummary import CmDsOfdmFecSummary
 from pypnm.pnm.parser.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
 from pypnm.pnm.parser.CmDsOfdmRxMer import CmDsOfdmRxMer
+from pypnm.pnm.parser.pnm_file_type import PnmFileType
+from pypnm.pnm.parser.pnm_parameter import GetPnmParserAndParameters
 
 DATA_DIR = Path(__file__).parent / "_data"
 

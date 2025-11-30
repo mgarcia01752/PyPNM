@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
-from typing import ClassVar, Dict
+from typing import ClassVar
 
 from pydantic import BaseModel, Field
 

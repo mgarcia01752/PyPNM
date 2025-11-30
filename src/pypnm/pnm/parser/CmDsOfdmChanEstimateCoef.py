@@ -4,7 +4,7 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 import logging
 from struct import calcsize, unpack
-from typing import Dict, Literal, Optional, Tuple, Union, overload
+from typing import Literal, overload
 
 from pypnm.lib.constants import (
     INVALID_CHANNEL_ID,

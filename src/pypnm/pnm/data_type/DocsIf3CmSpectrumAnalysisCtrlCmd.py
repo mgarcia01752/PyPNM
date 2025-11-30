@@ -8,7 +8,7 @@ import logging
 # Copyright (c) 2025 Maurice Garcia
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Any, Dict
+from typing import Any
 
 from pypnm.lib.utils import Generate
 

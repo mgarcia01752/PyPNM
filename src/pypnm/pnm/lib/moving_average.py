@@ -5,7 +5,6 @@ from collections import deque
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-from typing import List, Optional
 
 from pypnm.lib.types import FloatSeries
 

@@ -7,7 +7,6 @@ import logging
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 import os
-from typing import List, Optional
 
 
 class FTPConnector:

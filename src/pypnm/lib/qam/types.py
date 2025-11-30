@@ -3,10 +3,10 @@
 
 from __future__ import annotations
 
-import math
-from enum import IntEnum
-from typing import TYPE_CHECKING, Dict, List, Union
 from collections.abc import Mapping
+from enum import IntEnum
+import math
+from typing import TYPE_CHECKING
 
 from pypnm.lib.types import Complex
 
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 # ---- Public type aliases ----
 LutDict = Mapping[str, Mapping[str, object]]
-CodeWord = Union[int]
+CodeWord = int
 CodeWordArray = list[CodeWord]
 QamSymbol = Complex
 CodeWordLut = dict[CodeWord, QamSymbol]

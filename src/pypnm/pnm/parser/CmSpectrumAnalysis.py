@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 from struct import calcsize, unpack
-from typing import Dict, List
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.functional_serializers import field_serializer

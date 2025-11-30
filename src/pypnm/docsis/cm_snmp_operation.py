@@ -7,7 +7,7 @@ import asyncio
 import logging
 import time
 from enum import Enum, IntEnum
-from typing import Any, Dict, List, Optional, Tuple, Type, Union, cast
+from typing import Any, cast
 
 from pysnmp.proto.rfc1902 import Gauge32, Integer32, OctetString
 

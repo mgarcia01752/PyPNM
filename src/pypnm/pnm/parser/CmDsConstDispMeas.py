@@ -5,7 +5,7 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 import logging
 from struct import calcsize, unpack
-from typing import Dict, Optional, Tuple, cast
+from typing import cast
 
 from pypnm.lib.constants import KHZ
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat

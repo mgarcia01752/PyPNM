@@ -5,7 +5,6 @@ import logging
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-from typing import List, Optional, Union
 from collections.abc import Callable
 
 from pydantic import BaseModel

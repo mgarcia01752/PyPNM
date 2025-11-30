@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 import re
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional, Tuple, Type, TypeVar, Union
+from typing import TypeVar
 
 from pysnmp.hlapi.v3arch.asyncio import (
     CommunityData,

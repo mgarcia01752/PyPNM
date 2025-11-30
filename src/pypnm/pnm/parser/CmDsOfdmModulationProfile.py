@@ -6,10 +6,9 @@ from __future__ import annotations
 import logging
 from enum import IntEnum
 from struct import calcsize, unpack
-from typing import TYPE_CHECKING, Annotated, Any, Dict, List, Union, cast
+from typing import TYPE_CHECKING, Annotated, Any, cast, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Literal
 
 from pypnm.lib.constants import KHZ
 from pypnm.lib.types import FrequencySeriesHz, ProfileId

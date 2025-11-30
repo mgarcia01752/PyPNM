@@ -4,7 +4,7 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 import logging
 import struct
-from typing import Any, Dict, Final, List
+from typing import Any, Final
 
 from pypnm.lib.types import FloatSeries, FrequencyHz, FrequencySeriesHz
 from pypnm.pnm.parser.model.configuration.spect_config_model import (

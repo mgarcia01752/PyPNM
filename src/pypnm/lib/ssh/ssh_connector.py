@@ -8,7 +8,6 @@ import logging
 import os
 import shutil
 import subprocess
-from typing import List, Optional, Tuple
 
 import paramiko
 

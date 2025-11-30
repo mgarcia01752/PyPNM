@@ -3,9 +3,9 @@
 
 from __future__ import annotations
 
-import logging
-from typing import Any, ClassVar, List, Optional, Union, cast
 from collections.abc import Callable
+import logging
+from typing import Any, ClassVar, cast
 
 from pydantic import BaseModel
 

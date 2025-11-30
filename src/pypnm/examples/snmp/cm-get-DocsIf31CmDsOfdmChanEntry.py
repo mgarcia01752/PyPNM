@@ -7,7 +7,6 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
-from typing import List
 
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.DocsIf31CmDsOfdmChanEntry import DocsIf31CmDsOfdmChanEntry

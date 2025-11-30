@@ -6,9 +6,9 @@ from __future__ import annotations
 import logging
 import tarfile
 import zipfile
-from pathlib import Path
-from typing import Dict, List, Literal, Optional
 from collections.abc import Iterable
+from pathlib import Path
+from typing import Literal
 
 from pypnm.lib.types import PathLike
 

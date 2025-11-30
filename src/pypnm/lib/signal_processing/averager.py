@@ -2,16 +2,10 @@
 # Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
-
-from typing import Optional, Union
-
 import numpy as np
-
 from pypnm.lib.types import FloatSeries
 
-Number = Union[int, float]
-
-
+Number = int | float
 class MovingAverage:
     r"""
     Sliding-window moving average filter with robust edge handling and

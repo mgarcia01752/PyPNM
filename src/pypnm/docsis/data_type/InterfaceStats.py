@@ -1,12 +1,12 @@
 
 from __future__ import annotations
 
-from enum import IntEnum
-from typing import List, Optional, Union
-from collections.abc import Callable
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+from enum import IntEnum
+from collections.abc import Callable
+
 from pydantic import BaseModel
 
 from pypnm.snmp.modules import DocsisIfType
@@ -78,6 +78,9 @@ class InterfaceStats(BaseModel):
 
         for if_index in await snmp.walk("ifIndex"):
             index = Snmp_v2c.get_oid_index(str(if_index[0]))
+            if index is None:
+                # skip malformed oid index results
+                continue
 
             if_type = await snmp.get(f"ifType.{index}")
             type_val = Snmp_v2c.get_result_value(if_type)

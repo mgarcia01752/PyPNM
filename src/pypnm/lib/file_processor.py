@@ -8,7 +8,7 @@ import logging
 import tarfile
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Literal
 
 from pypnm.lib.types import PathLike
 

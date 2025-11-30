@@ -6,7 +6,6 @@ import logging
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple, Union
 
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
 from pypnm.api.routes.common.extended.common_process_service import DocsPnmCmCtlTest

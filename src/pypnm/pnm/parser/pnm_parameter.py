@@ -4,12 +4,12 @@ from __future__ import annotations
 # Copyright (c) 2025
 # Maurice Garcia
 import logging
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from pydantic import BaseModel, Field
 
 from pypnm.lib.mac_address import MacAddress
-from pypnm.lib.types import MacAddressStr, Tuple
+from pypnm.lib.types import MacAddressStr
 from pypnm.pnm.parser.CmDsConstDispMeas import CmDsConstDispMeas
 from pypnm.pnm.parser.CmDsHist import CmDsHist
 from pypnm.pnm.parser.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
@@ -20,12 +20,7 @@ from pypnm.pnm.parser.CmUsOfdmaPreEq import CmUsOfdmaPreEq
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.pnm.parser.pnm_header import PnmHeader
 
-PnmParsers = Union[CmDsConstDispMeas,
-                   CmDsOfdmChanEstimateCoef,
-                   CmDsOfdmFecSummary,
-                   CmDsOfdmRxMer,
-                   CmUsOfdmaPreEq,
-                   CmDsHist]
+PnmParsers = CmDsConstDispMeas | CmDsOfdmChanEstimateCoef | CmDsOfdmFecSummary | CmDsOfdmRxMer | CmUsOfdmaPreEq | CmDsHist
 
 class PnmParserParametersModel(BaseModel):
     file_type: PnmFileType     = Field(..., description="PNM file type enum (e.g., PNN2, PNN3, ...).")
@@ -126,7 +121,7 @@ class GetPnmParserAndParameters(PnmHeader):
         """
         return self.to_model().model_dump()
 
-    def get_parser(self) -> Tuple[PnmParsers, PnmParserParametersModel]:
+    def get_parser(self) -> tuple[PnmParsers, PnmParserParametersModel]:
         """
         Return a (parser_instance, parameters_model) tuple for this PNM file.
 

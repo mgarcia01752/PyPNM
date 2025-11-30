@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import logging
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+import logging
 from enum import Enum
-from typing import Any, List, Optional, Union
+from typing import Any
 from collections.abc import Callable
 
 from pydantic import BaseModel

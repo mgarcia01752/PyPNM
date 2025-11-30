@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 from struct import calcsize, unpack
-from typing import Any, Dict, Tuple, cast
+from typing import Any, cast
 
 from pypnm.lib.constants import KHZ
 from pypnm.lib.mac_address import MacAddress, MacAddressFormat

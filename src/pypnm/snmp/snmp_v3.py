@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 import re
 from enum import Enum
-from typing import Optional, Tuple, Union
 
 from pypnm.lib.inet import Inet
 

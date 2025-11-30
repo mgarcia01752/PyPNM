@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 import struct
-from typing import Dict, cast
+from typing import cast
 
 from pypnm.lib.constants import (
     INVALID_CHANNEL_ID,

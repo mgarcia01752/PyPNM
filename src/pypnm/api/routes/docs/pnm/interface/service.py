@@ -1,9 +1,7 @@
 
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-from typing import Dict, List
+from __future__ import annotations
 
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.lib.inet import Inet

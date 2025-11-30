@@ -3,7 +3,6 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-from typing import Tuple
 
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.inet import Inet
@@ -30,9 +29,8 @@ class PnmConfigManager:
         cls._tftp_v4 = SystemConfigSettings.bulk_tftp_ip_v4
         cls._tftp_v6 = SystemConfigSettings.bulk_tftp_ip_v6
         cls._write_community = SystemConfigSettings.snmp_write_community
-        cls._tftp_path = SystemConfigSettings.snmp_write_community
+        cls._tftp_path = SystemConfigSettings.tftp_remote_dir
         cls._pnm_dir = SystemConfigSettings.pnm_dir
-
     @staticmethod
     def get_save_dir() -> str:
         '''

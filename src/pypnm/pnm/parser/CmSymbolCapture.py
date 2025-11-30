@@ -5,7 +5,6 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 import logging
 from struct import calcsize, unpack
-from typing import Optional, Tuple
 
 from pypnm.pnm.lib.fixed_point_decoder import (
     ComplexSeries,

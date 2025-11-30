@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Literal, NewType, Tuple
+from typing import Literal, NewType
 
 from pypnm.lib.types import ComplexSeries
 

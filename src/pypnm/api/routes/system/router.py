@@ -7,7 +7,6 @@ from enum import Enum
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 from http import HTTPStatus
-from typing import List, Union
 
 from fastapi import APIRouter, HTTPException
 
@@ -46,11 +45,11 @@ class SystemRouter:
 
     def _register_routes(self) -> None:
         @self.router.post("/sysDescr",
-                          response_model=Union[SysDescrResponse, SnmpResponse],
+                          response_model=SysDescrResponse | SnmpResponse,
                           summary="Retrieve DOCSIS System Description",
                           description="Fetches the system description from a DOCSIS modem.",
                           responses=FAST_API_RESPONSE,)
-        async def get_sysdescr(request: SysRequest):
+        async def get_sysdescr(request: SysRequest) -> SysDescrResponse | SnmpResponse:
             """
             **Retrieve DOCSIS System Description**
 
@@ -80,7 +79,7 @@ class SystemRouter:
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     detail="Failed to retrieve sysDescr") from exc
 
-        @self.router.post("/upTime", response_model=Union[SysUpTimeResponse, SnmpResponse])
+        @self.router.post("/upTime", response_model=SysUpTimeResponse | SnmpResponse)
         async def get_uptime(request: SysRequest) -> SysUpTimeResponse | SnmpResponse :
             """
             **Fetch DOCSIS Device System Uptime**

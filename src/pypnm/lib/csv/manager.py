@@ -7,7 +7,7 @@ from enum import Enum
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 from pathlib import Path
-from typing import Any, List, Union
+from typing import Any
 
 import pandas as pd
 

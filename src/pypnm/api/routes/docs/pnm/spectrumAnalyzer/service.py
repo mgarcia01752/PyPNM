@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Tuple, cast
+from typing import cast
 
 from pypnm.api.routes.common.classes.analysis.analysis import WindowFunction
 from pypnm.api.routes.common.extended.common_measure_service import CommonMeasureService

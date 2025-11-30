@@ -5,8 +5,8 @@ from __future__ import annotations
 
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, NewType, Tuple, TypeAlias, Union
 from collections.abc import Sequence
+from typing import Any, NewType, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -34,16 +34,16 @@ StringArray: TypeAlias  = list[String]
 # ────────────────────────────────────────────────────────────────────────────────
 # Core numerics
 # ────────────────────────────────────────────────────────────────────────────────
-Number       = Union[int, float, np.number]
+Number       = int | float | np.number
 Float64      = np.float64
 ByteArray    = list[np.uint8]
 
 # Generic array-likes (inputs)
 # TODO: Review to remove -> _ArrayLike = Union[Sequence[Number], NDArray[Any]]
-_ArrayLike   = Union[Sequence[Number], NDArray[Any]]
+_ArrayLike   = Sequence[Number] | NDArray[Any]
 
 ArrayLike    = list[Number]
-ArrayLikeF64 = Union[Sequence[float], NDArray[np.float64]]
+ArrayLikeF64 = Sequence[float] | NDArray[np.float64]
 
 # Canonical ndarray outputs (internal processing should normalize to these)
 NDArrayF64: TypeAlias   = NDArray[np.float64]
@@ -72,17 +72,17 @@ ProfileId = NewType("ProfileId", int)
 # ────────────────────────────────────────────────────────────────────────────────
 # Paths / filesystem
 # ────────────────────────────────────────────────────────────────────────────────
-PathLike  = Union[str, Path]
+PathLike  = str | Path
 PathArray = list[PathLike]
 FileNameStr = NewType("FileNameStr", str)
 
 # ────────────────────────────────────────────────────────────────────────────────
 # JSON-like structures for REST I/O
 # ────────────────────────────────────────────────────────────────────────────────
-JSONScalar = Union[str, int, float, bool, None]
+JSONScalar = str | int | float | bool | None
 JSONDict   = dict[str, "JSONValue"]
 JSONList   = list["JSONValue"]
-JSONValue  = Union[JSONScalar, JSONDict, JSONList]
+JSONValue  = JSONScalar | JSONDict | JSONList
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Unit-tagged NewTypes (scalars only; runtime = underlying type)

@@ -2,17 +2,14 @@ from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Union
-from collections.abc import Sequence
-
 import numpy as np
 from numpy.typing import NDArray
 
-Number = Union[int, float, np.number]
-
-__all__ = ["FreqScale", "RescaledArray", "PerValueRescaled", "AutoUnitScaler", "axis_unit_label"]
+Number = int | float | np.number
 
 
 class FreqScale(Enum):

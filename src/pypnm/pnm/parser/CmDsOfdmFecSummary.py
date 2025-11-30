@@ -5,7 +5,7 @@ from __future__ import annotations
 # Maurice Garcia
 import logging
 from struct import Struct
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 
 from pypnm.lib.constants import FEC_SUMMARY_TYPE_LABEL, FEC_SUMMARY_TYPE_STEP_SECONDS
 from pypnm.lib.mac_address import MacAddress
