@@ -55,9 +55,7 @@ docs = [
   "mkdocs-material>=9.5",
   "pymdown-extensions>=10.8",
 ]
-reports = [
-  "openpyxl>=3.1.5",
-]
+reports = []
 
 [project.urls]
 Homepage    = "https://github.com/mgarcia01752/PyPNM"
@@ -151,13 +149,49 @@ exclude        = [
 # I   = import sorting
 # B   = flake8-bugbear
 # UP  = pyupgrade
+#
 # Ignore:
-
 # E501 - https://docs.astral.sh/ruff/rules/line-too-long/
 # B006 - https://docs.astral.sh/ruff/rules/mutable-argument-default/
+#
+# ---------------------------------------------------------------------------
+# Ruff Roadmap (do NOT enable by default; turn on gradually when ready)
+# ---------------------------------------------------------------------------
+# Phase 1 (current):
+#   - Focus on correctness + core style only.
+#   - Enabled rule families:
+#       F, E, W, I, B, UP
+#
+# Phase 2 (optional): Naming rules
+#   - Add N (pep8-naming) when public API naming is stable.
+#   - This enforces conventional names for functions, classes, etc.
+#   - Example change (for later, DO NOT UNCOMMENT YET):
+#       select = ["F", "E", "W", "I", "B", "UP", "N"]
+#
+# Phase 3 (optional): Type-annotation rules
+#   - Add ANN to enforce more consistent type hints once F/E/W noise is low.
+#   - You can selectively ignore strict ANN codes if needed (e.g., ANN101/ANN102).
+#   - Example (for later):
+#       select = ["F", "E", "W", "I", "B", "UP", "ANN"]
+#       ignore = ["E501", "B006", "ANN101", "ANN102"]
+#
+# Phase 4 (optional): Simplification & performance hints
+#   - Enable SIM (flake8-simplify) to flag redundant or over-complicated logic.
+#   - Enable PERF to catch obvious performance footguns in hot paths.
+#   - Recommended approach:
+#       - First, run ad-hoc from CLI without adding to select:
+#           ruff check src --select SIM,PERF
+#       - Fix only the diagnostics you agree with.
+#   - If you like the results, you can later extend select:
+#       select = ["F", "E", "W", "I", "B", "UP", "N", "ANN", "SIM", "PERF"]
+#
+# Packs to generally avoid for PyPNM (unless explicitly desired later):
+#   - D (pydocstyle): conflicts with custom docstring rules.
+#   - C90 / PL (mccabe / pylint families): very noisy, low signal for this project.
 
 select = ["F", "E", "W", "I", "B", "UP"]
 ignore = [
   "E501",
   "B006"
 ]
+
