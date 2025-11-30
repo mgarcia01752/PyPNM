@@ -297,7 +297,7 @@ class MatplotManager:
                 prefix = cfg.xlabel_prefix or ""
                 ax.set_xlabel(f"{prefix}{base} ({lab_out})")
 
-    def _finish(self, fig, ax, path: Path, cfg: PlotConfig) -> Path:
+    def _finish(self, fig, ax, path: Path, cfg: PlotConfig) -> Path:  # noqa: ANN001
         """
         Finalize axes styling, save PNG to disk, and register the output path.
 
