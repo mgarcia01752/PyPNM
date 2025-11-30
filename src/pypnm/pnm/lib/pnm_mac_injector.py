@@ -41,7 +41,7 @@ class PnmMacInjector(PnmHeader):
         self,
         file_path: str | Path,
         backup: bool = True
-    ):
+    ) -> None:
         # Load raw bytes and parse header
         self.file_path = Path(file_path)
         self.raw_bytes = self.file_path.read_bytes()

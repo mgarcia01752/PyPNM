@@ -29,7 +29,7 @@ class FTPConnector:
         password: str = "",
         use_tls: bool = False,
         timeout: int = 30
-    ):
+    ) -> None:
         """
         Initialize FTPConnector parameters.
 
@@ -82,7 +82,7 @@ class FTPConnector:
             self.logger.error(f"FTP connection/login failed: {e}")
             return False
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         """
         Quit the FTP session and close the connection.
         """
@@ -114,7 +114,7 @@ class FTPConnector:
             self.logger.error(f"Directory listing failed: {e}")
             return []
 
-    def make_dirs(self, remote_directory: str):
+    def make_dirs(self, remote_directory: str) -> None:
         """
         Create nested directories on the remote FTP server (like mkdir -p).
 

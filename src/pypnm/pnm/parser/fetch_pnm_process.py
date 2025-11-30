@@ -44,7 +44,7 @@ class PnmFileTypeObjectFetcher(PnmHeader):
         model   = parser.to_model()
     """
 
-    def __init__(self, byte_stream: bytes):
+    def __init__(self, byte_stream: bytes) -> None:
         super().__init__(byte_stream)
         self._byte_stream = byte_stream
         self._parser: PnmParserClass | None = None

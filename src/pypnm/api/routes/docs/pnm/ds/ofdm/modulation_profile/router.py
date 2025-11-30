@@ -45,7 +45,7 @@ from pypnm.lib.types import InetAddressStr, MacAddressStr
 
 
 class ModulationProfileRouter:
-    def __init__(self):
+    def __init__(self) -> None:
         prefix = "/docs/pnm/ds/ofdm"
         self.base_endpoint = "/modulationProfile"
         self.router = APIRouter(prefix=prefix, tags=["PNM Operations - Downstream OFDM Modulation Profile"])

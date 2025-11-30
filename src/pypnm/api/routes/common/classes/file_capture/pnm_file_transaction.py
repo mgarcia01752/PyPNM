@@ -65,7 +65,7 @@ class PnmFileTransaction:
     DEVICE_DETAILS = "device_details"
     MAC_ADDRESS    = "mac_address"
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.transaction_db_path = Path(SystemConfigSettings.transaction_db)
         self.transaction_db_path.parent.mkdir(parents=True, exist_ok=True)

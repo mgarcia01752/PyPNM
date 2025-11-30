@@ -23,7 +23,7 @@ class GroupDelayAnomalyDetector:
         H_snapshots: np.ndarray | list,
         freqs: np.ndarray | list[float],
         prop_speed_frac: float = 1.0
-    ):
+    ) -> None:
         """
         Initialize the detector with raw channel-estimate snapshots.
 

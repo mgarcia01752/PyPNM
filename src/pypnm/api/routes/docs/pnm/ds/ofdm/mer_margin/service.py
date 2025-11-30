@@ -22,7 +22,7 @@ class CmDsOfdmMerMarginService:
     - Retrieve measurement statistics and results
     """
 
-    def __init__(self, cable_modem: CableModem):
+    def __init__(self, cable_modem: CableModem) -> None:
         """
         Initialize the MER Margin service.
 

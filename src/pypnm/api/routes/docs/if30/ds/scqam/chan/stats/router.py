@@ -27,7 +27,7 @@ class DsScQamChannelRouter:
     Router class to handle DOCSIS 3.0 Downstream SC-QAM Channel Statistics endpoints.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.router = APIRouter(
             prefix="/docs/if30/ds/scqam/chan",
@@ -35,7 +35,7 @@ class DsScQamChannelRouter:
 
         self._add_routes()
 
-    def _add_routes(self):
+    def _add_routes(self) -> None:
 
         @self.router.post("/stats",
                           response_model=SnmpResponse,

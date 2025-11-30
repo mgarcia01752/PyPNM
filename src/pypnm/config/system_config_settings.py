@@ -11,7 +11,7 @@ from pypnm.lib.types import InetAddressStr, IPv4Str, IPv6Str, MacAddressStr
 
 class classproperty:
     """Descriptor for class-level properties that reload config on each access."""
-    def __init__(self, f):
+    def __init__(self, f) -> None:
         self.f = f
     def __get__(self, instance, owner):
         return self.f(owner)

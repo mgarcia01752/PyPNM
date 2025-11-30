@@ -21,7 +21,7 @@ class RouterRegistrar:
     Uses structured logging: debug for normal flow, error for failures.
     """
 
-    def __init__(self, base_dir: pathlib.Path = None):
+    def __init__(self, base_dir: pathlib.Path = None) -> None:
         self.logger = logging.getLogger(__name__)
         # Locate project root (up to 'pypnm')
         self.project_root = (base_dir or pathlib.Path(__file__).resolve())

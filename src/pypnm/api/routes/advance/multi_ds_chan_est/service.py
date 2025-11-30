@@ -35,7 +35,7 @@ class MultiChannelEstimationService(AbstractCaptureService):
     def __init__(self, cm: CableModem,
                 tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
                 tftp_path: str = PnmConfigManager.get_tftp_path(),
-                 duration: float = 1, interval: float = 1):
+                 duration: float = 1, interval: float = 1) -> None:
         """
         Initialize the MultiChannelEstimationService.
 

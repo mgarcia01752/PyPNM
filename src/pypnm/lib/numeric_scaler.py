@@ -59,7 +59,7 @@ class NumericScaler:
     # Binary (powers of 1024)
     _BIN_EXP_BY_PREFIX = {"": 0, "Ki": 10, "Mi": 20, "Gi": 30, "Ti": 40}
 
-    def __init__(self, *, default_system: str = "si"):
+    def __init__(self, *, default_system: str = "si") -> None:
         """
         Args:
             default_system: 'si' or 'binary'

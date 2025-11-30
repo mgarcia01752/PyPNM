@@ -59,7 +59,7 @@ from pypnm.lib.types import ChannelId, InetAddressStr, MacAddressStr, Path
 
 
 class SpectrumAnalyzerRouter:
-    def __init__(self):
+    def __init__(self) -> None:
         prefix = "/docs/pnm/ds"
         self.base_endpoint = "/spectrumAnalyzer"
         self.router = APIRouter(prefix=prefix, tags=["PNM Operations - Spectrum Analyzer"])

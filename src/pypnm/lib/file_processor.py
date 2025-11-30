@@ -16,7 +16,7 @@ DEFAULT_HEXDUMP_BYTES_PER_LINE: int = 16
 
 
 class FileProcessor:
-    def __init__(self, filepath: PathLike):
+    def __init__(self, filepath: PathLike) -> None:
         """
         A utility class to handle reading/writing files, hex conversion, and optional archiving.
 

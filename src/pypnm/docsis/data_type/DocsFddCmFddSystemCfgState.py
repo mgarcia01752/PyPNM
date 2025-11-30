@@ -26,7 +26,7 @@ class DocsFddCmFddSystemCfgState:
     for that band edge.
     """
 
-    def __init__(self, index: int, snmp: Snmp_v2c):
+    def __init__(self, index: int, snmp: Snmp_v2c) -> None:
         """
         Initialize the FDD system config state object.
 

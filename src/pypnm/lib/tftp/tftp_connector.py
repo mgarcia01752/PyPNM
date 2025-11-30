@@ -24,7 +24,7 @@ class TFTPConnector:
     def __init__(self,
         host: Inet,
         port: int = 69,
-        timeout: int = 5):
+        timeout: int = 5) -> None:
         """
         Args:
             host:    TFTP server hostname or IP.

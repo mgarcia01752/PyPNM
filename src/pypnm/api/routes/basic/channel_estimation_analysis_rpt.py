@@ -60,7 +60,7 @@ class ChanEstimationReport(AnalysisReport):
         self,
         analysis: Analysis,
         analysis_matplot_config: AnalysisRptMatplotConfig | None = None,
-    ):
+    ) -> None:
         if analysis_matplot_config is None:
             analysis_matplot_config = AnalysisRptMatplotConfig()
         super().__init__(analysis, analysis_matplot_config)

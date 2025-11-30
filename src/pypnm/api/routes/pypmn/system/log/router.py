@@ -19,7 +19,7 @@ class PyPnmSystemLog:
     from the backend.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initialize the PyPNM System Log API router and bind routes.
         """

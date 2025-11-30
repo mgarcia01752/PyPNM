@@ -69,7 +69,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
 
     FNAME_TAG = "us_preeq"
 
-    def __init__(self, analysis: Analysis):
+    def __init__(self, analysis: Analysis) -> None:
         super().__init__(analysis)
         self.logger = logging.getLogger("CmUsOfdmaPreEqReport")
         self._results: dict[int, OfdmaPreEqAnalysis] = {}

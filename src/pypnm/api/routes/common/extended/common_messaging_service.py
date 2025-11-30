@@ -48,7 +48,7 @@ class MessageResponse:
 
     """
 
-    def __init__(self, status: ServiceStatusCode, payload: Any | None = None):
+    def __init__(self, status: ServiceStatusCode, payload: Any | None = None) -> None:
         """
         Initializes a MessageResponse instance.
 
@@ -71,13 +71,13 @@ class MessageResponse:
             "payload": self.payload
         }
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return json.dumps({
             "status": self.status.name,
             "payload": self.payload
         })
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.__repr__()
 
     def get_payload_msg(payload_element: dict[str, Any]) -> tuple[str, str, Any]:
@@ -107,7 +107,7 @@ class MessageResponse:
         """
         return {key: self.payload}
 
-    def log_payload(self, filename_prefix:str = ""):
+    def log_payload(self, filename_prefix:str = "") -> None:
         """
         Logs the payload content for debugging purposes.
         """
@@ -132,14 +132,14 @@ class CommonMessagingService:
         _last_non_success_status (ServiceStatusCode): Most recent non-success status seen.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initializes an empty messaging service instance.
         """
         self._messages: list[tuple[ServiceStatusCode, dict[str, Any]]] = []
         self._last_non_success_status = ServiceStatusCode.SUCCESS
 
-    def build_msg(self, status: ServiceStatusCode, payload: dict[str, Any] | None = None):
+    def build_msg(self, status: ServiceStatusCode, payload: dict[str, Any] | None = None) -> None:
         """
         Queues a new message with status and optional data.
 
@@ -198,7 +198,7 @@ class CommonMessagingService:
         return self.send_msg()
 
     def build_transaction_msg(self, transaction_id: TransactionId, filename: str,
-                              status: ServiceStatusCode = ServiceStatusCode.SUCCESS):
+                              status: ServiceStatusCode = ServiceStatusCode.SUCCESS) -> None:
         """
         Adds a transaction message with an ID and filename to the message queue.
 
@@ -219,7 +219,7 @@ class CommonMessagingService:
         })
 
     def build_session_msg( self,session_id: str,transaction_ids: list[str],
-        status: ServiceStatusCode = ServiceStatusCode.SUCCESS):
+        status: ServiceStatusCode = ServiceStatusCode.SUCCESS) -> None:
         """
         Enqueue a PNM file transaction session message.
 

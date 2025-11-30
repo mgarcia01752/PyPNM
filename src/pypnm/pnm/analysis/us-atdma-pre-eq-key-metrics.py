@@ -7,7 +7,7 @@ import math
 
 
 class EqualizerMetrics:
-    def __init__(self, coefficients: list[tuple[int, int]], nominal_amplitude: int = 2047, main_tap_index: int = 7):
+    def __init__(self, coefficients: list[tuple[int, int]], nominal_amplitude: int = 2047, main_tap_index: int = 7) -> None:
         """
         Initialize EqualizerMetrics.
 

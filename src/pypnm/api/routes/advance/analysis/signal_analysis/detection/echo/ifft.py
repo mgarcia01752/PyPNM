@@ -274,7 +274,7 @@ class IfftEchoDetector:
         freq_data: Sequence[complex] | Sequence[Sequence[complex]] | Sequence[Sequence[float]],
         sample_rate: float,
         prop_speed_frac: float = 0.87,
-    ):
+    ) -> None:
         """
         Parameters
         ----------

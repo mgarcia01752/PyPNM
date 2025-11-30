@@ -224,49 +224,49 @@ class DocsIf3CmSpectrumAnalysisCtrlCmd:
         self.docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency = adjusted_first
         return True
 
-    def set_enable(self, value: int):
+    def set_enable(self, value: int) -> None:
         if value not in (1, 2):
             raise ValueError("Enable must be 1 (true) or 2 (false)")
         self.docsIf3CmSpectrumAnalysisCtrlCmdEnable = value
         self.logger.debug(f"Set enable to {value}")
 
-    def set_inactivity_timeout(self, value: int):
+    def set_inactivity_timeout(self, value: int) -> None:
         if not 0 <= value <= 86400:
             raise ValueError("InactivityTimeout must be between 0 and 86400 seconds")
         self.docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout = value
         self.logger.debug(f"Set inactivity timeout to {value}")
 
-    def set_first_segment_center_frequency(self, value: int):
+    def set_first_segment_center_frequency(self, value: int) -> None:
         if value <= 0:
             raise ValueError("FirstSegmentCenterFrequency must be a positive integer")
         self.docsIf3CmSpectrumAnalysisCtrlCmdFirstSegmentCenterFrequency = value
         self.logger.debug(f"Set first segment center frequency to {value}")
 
-    def set_last_segment_center_frequency(self, value: int):
+    def set_last_segment_center_frequency(self, value: int) -> None:
         if value <= 0:
             raise ValueError("LastSegmentCenterFrequency must be a positive integer")
         self.docsIf3CmSpectrumAnalysisCtrlCmdLastSegmentCenterFrequency = value
         self.logger.debug(f"Set last segment center frequency to {value}")
 
-    def set_segment_frequency_span(self, value: int):
+    def set_segment_frequency_span(self, value: int) -> None:
         if not 1000000 <= value <= 900000000:
             raise ValueError("SegmentFrequencySpan must be between 1 MHz and 900 MHz")
         self.docsIf3CmSpectrumAnalysisCtrlCmdSegmentFrequencySpan = value
         self.logger.debug(f"Set segment frequency span to {value}")
 
-    def set_num_bins_per_segment(self, value: int):
+    def set_num_bins_per_segment(self, value: int) -> None:
         if not 2 <= value <= 2048:
             raise ValueError("NumBinsPerSegment must be between 2 and 2048")
         self.docsIf3CmSpectrumAnalysisCtrlCmdNumBinsPerSegment = value
         self.logger.debug(f"Set number of bins per segment to {value}")
 
-    def set_equivalent_noise_bandwidth(self, value: int):
+    def set_equivalent_noise_bandwidth(self, value: int) -> None:
         if not 50 <= value <= 500:
             raise ValueError("EquivalentNoiseBandwidth must be between 50 and 500")
         self.docsIf3CmSpectrumAnalysisCtrlCmdEquivalentNoiseBandwidth = value
         self.logger.debug(f"Set equivalent noise bandwidth to {value}")
 
-    def set_window_function(self, value: int):
+    def set_window_function(self, value: int) -> None:
         try:
             window = WindowFunction(value)
         except ValueError:
@@ -274,25 +274,25 @@ class DocsIf3CmSpectrumAnalysisCtrlCmd:
         self.docsIf3CmSpectrumAnalysisCtrlCmdWindowFunction = window
         self.logger.debug(f"Set window function to {window.name} ({value})")
 
-    def set_number_of_averages(self, value: int):
+    def set_number_of_averages(self, value: int) -> None:
         if not 1 <= value <= 1000:
             raise ValueError("NumberOfAverages must be between 1 and 1000")
         self.docsIf3CmSpectrumAnalysisCtrlCmdNumberOfAverages = value
         self.logger.debug(f"Set number of averages to {value}")
 
-    def set_file_enable(self, value: int):
+    def set_file_enable(self, value: int) -> None:
         if value not in (1, 2):
             raise ValueError("FileEnable must be 1 (true) or 2 (false)")
         self.docsIf3CmSpectrumAnalysisCtrlCmdFileEnable = value
         self.logger.debug(f"Set file enable to {value}")
 
-    def set_meas_status(self, value: int):
+    def set_meas_status(self, value: int) -> None:
         if value not in (1, 2):
             raise ValueError("MeasStatus must be 1 (running) or 2 (notRunning)")
         self.docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus = value
         self.logger.debug(f"Set measurement status to {value}")
 
-    def set_file_name(self, value: str):
+    def set_file_name(self, value: str) -> None:
         if not isinstance(value, str):
             raise ValueError("FileName must be a string")
         self.docsIf3CmSpectrumAnalysisCtrlCmdFileName = value

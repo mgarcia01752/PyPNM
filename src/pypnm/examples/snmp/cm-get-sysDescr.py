@@ -13,7 +13,7 @@ from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 
 
-async def main():
+async def main() -> None:
     parser = argparse.ArgumentParser(description="Set sysContact on Cable Modem via SNMP")
     parser.add_argument("--mac", "-m", required=True, help="MAC address of cable modem")
     parser.add_argument("--inet", "-i", required=True, help="IP address of cable modem")

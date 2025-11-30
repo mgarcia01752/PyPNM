@@ -44,7 +44,7 @@ class OfdmProfiles:
 
     BITS_16: int = 16
 
-    def __init__(self, bits: int):
+    def __init__(self, bits: int) -> None:
         self.bits = bits
 
     def list_profiles(self) -> list[OfdmProfile]:
@@ -105,5 +105,5 @@ class OfdmProfiles:
         """
         return f"0x{self.bits:04X}"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<OfdmProfiles active={[p.name for p in self.list_profiles()]}>"

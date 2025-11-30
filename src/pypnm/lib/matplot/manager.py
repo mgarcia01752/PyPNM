@@ -220,7 +220,7 @@ class MatplotManager:
             return plt.style.context("dark_background")
         return nullcontext()
 
-    def _apply_x_ticks(self, ax, cfg: PlotConfig):
+    def _apply_x_ticks(self, ax, cfg: PlotConfig) -> None:
         """Apply x-axis tick formatter/visibility and optional human time label."""
         mode = (cfg.x_tick_mode or "none").lower()
         try:
@@ -282,7 +282,7 @@ class MatplotManager:
                     return s if s else "0"
             else:
                 d = max(0, int(cfg.x_tick_decimals))
-                def _fmt(v, m=mult, d=d):
+                def _fmt(v, m=mult, d=d) -> str:
                     return f"{v*m:.{d}f}"
 
             ax.xaxis.set_major_formatter(FuncFormatter(lambda v, pos: _fmt(v)))

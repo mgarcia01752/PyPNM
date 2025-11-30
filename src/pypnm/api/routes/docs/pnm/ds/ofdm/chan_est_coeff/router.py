@@ -45,7 +45,7 @@ from pypnm.lib.types import InetAddressStr, MacAddressStr
 
 
 class ChannelEstimationCoefficientRouter:
-    def __init__(self):
+    def __init__(self) -> None:
         prefix = "/docs/pnm/ds/ofdm"
         self.base_endpoint = "/channelEstCoeff"
         self.router = APIRouter(

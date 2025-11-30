@@ -30,12 +30,12 @@ class DocsDevRouter:
     and resetting cable modems.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.router = APIRouter(prefix="/docs/dev", tags=["DOCSIS Device"])
         self.logger = logging.getLogger(self.__class__.__name__)
         self._add_routes()
 
-    def _add_routes(self):
+    def _add_routes(self) -> None:
         @self.router.post("/eventLog",
                           response_model=EventLogResponse,
                           responses=FAST_API_RESPONSE,)

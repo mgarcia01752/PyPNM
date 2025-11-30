@@ -23,7 +23,7 @@ class DocsFddCmFddBandEdgeCapabilities:
     the extended spectrum configuration for the corresponding band edge.
     """
 
-    def __init__(self, index: int, snmp: Snmp_v2c):
+    def __init__(self, index: int, snmp: Snmp_v2c) -> None:
         """
         Initialize the FDD diplexer capability object.
 

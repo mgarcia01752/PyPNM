@@ -36,7 +36,7 @@ class SSHConnector:
         username: str,
         port: int = 22,
         transfer_mode: SecureTransferMode = SecureTransferMode.SCP,
-    ):
+    ) -> None:
         """
         Initialize connection parameters.
 
@@ -109,7 +109,7 @@ class SSHConnector:
             self.logger.error(f"Connection failed: {e}")
             return False
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         """Close any active SFTP and SSH sessions."""
         if self.sftp_client:
             try:
@@ -319,7 +319,7 @@ class SSHConnector:
             self.logger.error(f"Listing failed: {e}")
             return []
 
-    def _ensure_remote_dir(self, remote_dir: str):
+    def _ensure_remote_dir(self, remote_dir: str) -> None:
         """
         Recursively creates remote directories via SFTP.
         """

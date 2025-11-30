@@ -33,7 +33,7 @@ class PhaseSlopeEchoDetector:
         H: Sequence | np.ndarray,
         f: Sequence[float],
         prop_speed_frac: float = 0.87
-    ):
+    ) -> None:
         """
         Initialize the PhaseSlopeEchoDetector.
 

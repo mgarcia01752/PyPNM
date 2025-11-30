@@ -25,14 +25,14 @@ class InterfaceStatsRouter:
     FastAPI router for retrieving DOCSIS interface statistics.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.router = APIRouter(
             prefix="/docs/pnm/interface",
             tags=["Interface Statistics"])
         self._add_routes()
 
-    def _add_routes(self):
+    def _add_routes(self) -> None:
         @self.router.post("/stats",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)

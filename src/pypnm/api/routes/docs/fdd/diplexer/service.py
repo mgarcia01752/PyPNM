@@ -31,7 +31,7 @@ class FddDiplexerBandEdgeCapabilityService:
 
     def __init__(self, mac_address: MacAddressStr,
                  ip_address: InetAddressStr,
-                 snmp_config: SNMPConfig | None = None):
+                 snmp_config: SNMPConfig | None = None) -> None:
         """
         Initialize the service using a modem's MAC and IP address.
 

@@ -13,7 +13,7 @@ class PyPnmSystemWebServiceAPI:
     API class for managing PyPNM System Web Service endpoints.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initializes the System Web Service API and registers routes.
         """

@@ -20,7 +20,7 @@ class TransactionRecordParser:
     Provides easy access to core attributes like MAC, timestamp, test type, etc.
     """
 
-    def __init__(self, transaction_id: TransactionId):
+    def __init__(self, transaction_id: TransactionId) -> None:
         self.transaction_id:TransactionId = transaction_id
 
         # TODO: Refactor to use PnmFileTransaction internally, this is causing circular imports

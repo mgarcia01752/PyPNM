@@ -28,7 +28,7 @@ class CmSpectrumAnalysisSnmp:
     BYTES_PER_AMPLITUDE: Final[int] = 2
     AMPLITUDE_SCALE_DBMV: Final[float] = 100.0
 
-    def __init__(self, byte_stream: bytes):
+    def __init__(self, byte_stream: bytes) -> None:
         """
         Initialize the parser and immediately decode the SNMP amplitude payload.
 

@@ -706,7 +706,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
     """Helpers"""
 
-    def _parse_rxmer_heatmap_series(self):
+    def _parse_rxmer_heatmap_series(self) -> None:
         pass
 
     def _build_frequencies(self, model: CmDsOfdmRxMerModel | FrequencySeriesHz | None) -> FrequencySeriesHz:

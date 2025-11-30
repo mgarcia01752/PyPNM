@@ -41,7 +41,7 @@ class MultiRxMerService(AbstractCaptureService):
     """
     def __init__(self, cm: CableModem, duration: float, interval: float,
                  tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
-                 tftp_path: str = PnmConfigManager.get_tftp_path()):
+                 tftp_path: str = PnmConfigManager.get_tftp_path()) -> None:
         """
         Initialize the MultiRxMerService.
 
@@ -105,7 +105,7 @@ class MultiRxMer_Ofdm_Performance_1_Service(AbstractCaptureService):
     def __init__(self, cm: CableModem,
                 tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
                 tftp_path: str = PnmConfigManager.get_tftp_path(),
-                duration: float = 1, interval: float = 1):
+                duration: float = 1, interval: float = 1) -> None:
         """
         Initialize the MultiRxMerService.
 

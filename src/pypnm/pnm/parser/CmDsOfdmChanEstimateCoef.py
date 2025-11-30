@@ -49,7 +49,7 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
         binary_data: bytes,
         q_format: tuple[IntegerBits, FractionalBits] = (IntegerBits(2), FractionalBits(13)),
         round_precision: int | None = 6,
-    ):
+    ) -> None:
         """
         Parameters
         ----------

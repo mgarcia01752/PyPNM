@@ -20,7 +20,7 @@ class PnmConfigManager:
     _pnm_dir = SystemConfigSettings.pnm_dir
 
     @classmethod
-    def reload(cls):
+    def reload(cls) -> None:
         """
         Reloads all configuration values from the source configuration.
         Call this if the underlying configuration file changes and you want updated values.

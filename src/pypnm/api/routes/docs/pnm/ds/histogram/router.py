@@ -47,7 +47,7 @@ class DsHistogramRouter:
     returns either a JSON payload with processed results or an archive (ZIP) report.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         prefix = "/docs/pnm/ds"
         self.base_endpoint = "/histogram"
         self.router = APIRouter(prefix=prefix, tags=["PNM Operations - Downstream Histogram"])

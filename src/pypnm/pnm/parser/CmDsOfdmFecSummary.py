@@ -38,7 +38,7 @@ class CmDsOfdmFecSummary(PnmHeader):
     5) Materialize CmDsOfdmFecSummaryModel.
     """
 
-    def __init__(self, binary_data: bytes):
+    def __init__(self, binary_data: bytes) -> None:
         """
         Initialize and parse a FEC summary blob.
 

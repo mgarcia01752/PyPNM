@@ -47,7 +47,7 @@ class GetPnmParserAndParameters(PnmHeader):
         Return (parser_instance, parameters_model) as a typed tuple.
     """
 
-    def __init__(self, byte_stream: bytes):
+    def __init__(self, byte_stream: bytes) -> None:
         """
         Initialize the parser with raw PNM data.
 

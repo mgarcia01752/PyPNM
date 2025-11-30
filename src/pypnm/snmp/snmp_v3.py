@@ -7,6 +7,7 @@ import re
 from enum import Enum
 
 from pypnm.lib.inet import Inet
+from typing import NoReturn
 
 
 class SecurityLevel(str, Enum):
@@ -116,21 +117,21 @@ class Snmp_v3:
 
     async def get(self, oid: str | tuple[str, str, int],
                   timeout: int | None = None,
-                  retries: int | None = None):
+                  retries: int | None = None) -> NoReturn:
         """
         Stub for SNMP GET (v3).
         """
         self.logger.debug("Snmp_v3.get(%r) called (stub).", oid)
         raise NotImplementedError("Snmp_v3.get is not implemented yet.")
 
-    async def walk(self, oid: str | tuple[str, str, int]):
+    async def walk(self, oid: str | tuple[str, str, int]) -> NoReturn:
         """
         Stub for SNMP WALK (v3).
         """
         self.logger.debug("Snmp_v3.walk(%r) called (stub).", oid)
         raise NotImplementedError("Snmp_v3.walk is not implemented yet.")
 
-    async def set(self, oid: str, value, value_type):
+    async def set(self, oid: str, value, value_type) -> NoReturn:
         """
         Stub for SNMP SET (v3).
         """

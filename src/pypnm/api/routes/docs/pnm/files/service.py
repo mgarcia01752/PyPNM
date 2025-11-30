@@ -86,7 +86,7 @@ class PnmFileService:
         - get_file: Serve generated CSV/JSON/ARCHIVE files.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.pnm_dir: PathLike = SystemConfigSettings.pnm_dir
         self.logger = logging.getLogger(self.__class__.__name__)
 

@@ -27,7 +27,7 @@ class CmDsConstDispMeas(PnmHeader):
     """
     CONST_DISPLAY_DATA_COMPLEX_LENGTH:int = 4
 
-    def __init__(self, binary_data: bytes):
+    def __init__(self, binary_data: bytes) -> None:
         """
         Initializes the CmDsConstDispMeas instance and parses the binary payload.
 

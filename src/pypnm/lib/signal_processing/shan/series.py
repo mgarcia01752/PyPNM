@@ -35,7 +35,7 @@ class ShannonSeries:
         bits_list        : Supported bits per symbol for each SNR.
         modulations      : Recommended QAM modulation names per SNR.
     """
-    def __init__(self, snr_db_values: FloatSequence):
+    def __init__(self, snr_db_values: FloatSequence) -> None:
         """
         Initialize the series calculator.
 

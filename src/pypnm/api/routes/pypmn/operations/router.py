@@ -21,7 +21,7 @@ class PyPnmOperationsAPI(AbstractService):
     and query specific operation or group identifiers.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initializes the System Web Service API and registers routes.
         """

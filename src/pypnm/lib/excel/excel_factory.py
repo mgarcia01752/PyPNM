@@ -16,7 +16,7 @@ class ExcelWorkbookFactory:
     Supports header formatting, autosizing, and workbook saving.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.workbook = Workbook()
         self._first_sheet_used = False
 
@@ -25,7 +25,7 @@ class ExcelWorkbookFactory:
         table_data: list[dict[str, Any]],
         bold_headers: bool = True,
         auto_size: bool = True
-    ):
+    ) -> None:
         """
         Create a new sheet with tabular data.
 
@@ -67,7 +67,7 @@ class ExcelWorkbookFactory:
                     max_length = max(max_length, len(val))
                 sheet.column_dimensions[sheet.cell(row=1, column=col_idx).column_letter].width = max_length + 2
 
-    def save(self, path: str):
+    def save(self, path: str) -> None:
         """
         Save the workbook to the given path.
 

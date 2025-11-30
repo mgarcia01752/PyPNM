@@ -43,7 +43,7 @@ class DocsIfDownstreamChannelCwErrorRate:
         entries_2: list[DocsIfDownstreamChannelEntry],
         channel_id_index_stack: list[tuple[int, int]],
         time_elapsed: float,
-    ):
+    ) -> None:
         self.logger = logging.getLogger(type(self).__name__)
         self.time_elapsed = time_elapsed
 

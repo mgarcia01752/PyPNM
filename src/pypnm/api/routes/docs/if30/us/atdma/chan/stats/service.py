@@ -24,7 +24,7 @@ class UsScQamChannelService:
 
     def __init__(self, mac_address: MacAddressStr,
                  ip_address: InetAddressStr,
-                 snmp_config: SNMPConfig):
+                 snmp_config: SNMPConfig) -> None:
         """
         Initializes the service with a MAC and IP address.
 

@@ -35,7 +35,7 @@ class CmDsOfdmModProfileService(CommonMeasureService):
     def __init__(self,
                  cable_modem: CableModem,
                  tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
-                 tftp_path: str = PnmConfigManager.get_tftp_path()):
+                 tftp_path: str = PnmConfigManager.get_tftp_path()) -> None:
         super().__init__(
             DocsPnmCmCtlTest.DS_OFDM_MODULATION_PROFILE,
             cable_modem,

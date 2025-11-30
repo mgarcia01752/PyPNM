@@ -189,7 +189,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         self._analysis_type = analysis_type
         self._results: MultiChanEstimationResult | None = None
 
-    def _process(self):
+    def _process(self) -> None:
         """
         Execute The Configured Analysis And Register JSON Archive Models.
 

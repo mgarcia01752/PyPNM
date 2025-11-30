@@ -108,7 +108,7 @@ class DocsPnmBulkFileUploadStatus(Enum):
         """Serializes the status for API or JSON usage."""
         return {"name": self.name, "value": self.value, "description": self.describe()}
 
-    def __str__(self):
+    def __str__(self) -> str:
         return super().__str__()
 
 class DocsPnmCmCtlStatus(Enum):
@@ -165,7 +165,7 @@ class CmSnmpOperation:
         _SNMPv2C = 0
         _SNMPv3  = 1
 
-    def __init__(self, inet: Inet, write_community: str, port: int = Snmp_v2c.SNMP_PORT):
+    def __init__(self, inet: Inet, write_community: str, port: int = Snmp_v2c.SNMP_PORT) -> None:
         """
         Initialize a CmSnmpOperation instance.
 

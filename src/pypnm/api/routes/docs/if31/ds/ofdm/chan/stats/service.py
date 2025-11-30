@@ -20,7 +20,7 @@ class DsOfdmChannelService:
 
     def __init__(self, mac_address: MacAddressStr,
                  ip_address: InetAddressStr,
-                 snmp_config: SNMPConfig):
+                 snmp_config: SNMPConfig) -> None:
         self.cm = CableModem(MacAddress(mac_address),
                              Inet(ip_address),
                              write_community=snmp_config.snmp_v2c.community)

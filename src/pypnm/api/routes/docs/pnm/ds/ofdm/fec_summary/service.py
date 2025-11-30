@@ -30,7 +30,7 @@ class CmDsOfdmFecSummaryService(CommonMeasureService):
     def __init__(self, cable_modem: CableModem,
                  fec_summary_type: FecSummaryType,
                  tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
-                 tftp_path: str = PnmConfigManager.get_tftp_path()):
+                 tftp_path: str = PnmConfigManager.get_tftp_path()) -> None:
         super().__init__(DocsPnmCmCtlTest.DS_OFDM_CODEWORD_ERROR_RATE,
                         cable_modem,
                         tftp_servers,

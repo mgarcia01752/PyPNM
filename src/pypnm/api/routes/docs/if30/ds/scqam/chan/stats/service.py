@@ -25,7 +25,7 @@ class DsScQamChannelService:
 
     def __init__(self, mac_address: MacAddressStr,
                  ip_address: InetAddressStr,
-                 snmp_config: SNMPConfig | None = None):
+                 snmp_config: SNMPConfig | None = None) -> None:
         """
         Initialize the service with a target cable modem's MAC and IP address.
 

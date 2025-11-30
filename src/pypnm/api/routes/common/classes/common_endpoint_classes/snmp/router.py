@@ -30,13 +30,13 @@ class SnmpFastApiRouter(ABC):
     - get_analysis_logic
     """
 
-    def __init__(self, prefix: str, tags: list[str|Enum], base_endpoint: str):
+    def __init__(self, prefix: str, tags: list[str|Enum], base_endpoint: str) -> None:
         self.router = APIRouter(prefix=prefix, tags=tags)
         self.logger = logging.getLogger(f"{self.__class__.__name__}.{base_endpoint}")
         self._base_endpoint = base_endpoint.strip("/")
         self._add_routes()
 
-    def _add_routes(self):
+    def _add_routes(self) -> None:
         @self.router.post(f"/{self._base_endpoint}/getMeasurement", response_model=SnmpResponse)
         async def get_measurement(request: BaseDeviceConnectRequest):
             try:

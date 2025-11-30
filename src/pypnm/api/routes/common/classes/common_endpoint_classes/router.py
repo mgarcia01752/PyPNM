@@ -25,7 +25,7 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.snmp.schemas import
 
 class BaseFastApiRouter:
 
-    def __init__(self, prefix: str, tags: list[str|Enum], base_endpoint: str)   :
+    def __init__(self, prefix: str, tags: list[str|Enum], base_endpoint: str) -> None   :
         self.router = APIRouter(prefix=prefix, tags=tags)
         self.logger = logging.getLogger(f"{self.__class__.__name__}.{base_endpoint}")
         self._base_endpoint = base_endpoint.strip("/")
@@ -44,7 +44,7 @@ class PnmFastApiRouter(BaseFastApiRouter, ABC):
     def __init__(self, prefix: str, tags: list[str|Enum], base_endpoint: str,
                  set_measurement_description:str=None,                      # type: ignore
                  set_analysis_description:str=None,                         # type: ignore
-                 set_measurement_statistics_description:str=None):  # type: ignore
+                 set_measurement_statistics_description:str=None) -> None:  # type: ignore
 
         super().__init__(prefix, tags, base_endpoint)
         self.set_measurement_description = set_measurement_description
@@ -53,7 +53,7 @@ class PnmFastApiRouter(BaseFastApiRouter, ABC):
 
         self._add_routes()
 
-    def _add_routes(self):
+    def _add_routes(self) -> None:
 
         @self.router.post(f"/{self._base_endpoint}/getMeasurement",
                           response_model=PnmMeasurementResponse | SnmpResponse,

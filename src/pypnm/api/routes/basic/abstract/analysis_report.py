@@ -70,7 +70,7 @@ class AnalysisReport(ABC):
         - Construct with an `Analysis` instance.
         - Call `build_report()` to emit files, then `to_model()` for response data.
     '''
-    def __init__(self, analysis: Analysis, armc: AnalysisRptMatplotConfig | None = None):
+    def __init__(self, analysis: Analysis, armc: AnalysisRptMatplotConfig | None = None) -> None:
         """Set up logging, store the `Analysis`, and initialize runtime context."""
         self.logger = logging.getLogger("AnalysisReport")
         self._analysis = analysis
@@ -332,7 +332,7 @@ class AnalysisReport(ABC):
         _.extend(self.json_files)
         return _
 
-    def _build_common_analysis_json(self, channel_id: ChannelId, common_analysis:CommonAnalysis):
+    def _build_common_analysis_json(self, channel_id: ChannelId, common_analysis:CommonAnalysis) -> None:
         """
         Build a JSON-serializable payload from the analysis results.
 

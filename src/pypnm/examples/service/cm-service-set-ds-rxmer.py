@@ -23,7 +23,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-async def main():
+async def main() -> None:
     parser = argparse.ArgumentParser(description="RxMER Set & Go Service with processing")
     parser.add_argument("--mac", "-m", required=True, help="MAC address of cable modem")
     parser.add_argument("--inet", "-i", required=True, help="IP address of cable modem")

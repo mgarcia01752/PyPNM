@@ -21,7 +21,7 @@ class HeatmapAnomalyDetector:
             (row_min, col_min, row_max, col_max) bounding boxes.
     """
 
-    def __init__(self, data: np.ndarray, threshold: float = 3.0):
+    def __init__(self, data: np.ndarray, threshold: float = 3.0) -> None:
         self.data = np.asarray(data, dtype=float)
         if self.data.ndim != 2:
             raise ValueError("Input must be a 2-D array.")

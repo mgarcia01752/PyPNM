@@ -56,7 +56,7 @@ class ScQamSpecAnalyzerAnalysisReport:
     >>> rpt_dict = rpt.to_dict()
     """
 
-    def __init__(self, multi_analysis:MultiAnalysis):
+    def __init__(self, multi_analysis:MultiAnalysis) -> None:
         """Initialize the report coordinator.
 
         Parameters
@@ -192,7 +192,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
     """
     FNAME_TAG: str = "scqam_spec_ana_rpt"
 
-    def __init__(self, analysis: Analysis):
+    def __init__(self, analysis: Analysis) -> None:
         """Create a report instance bound to a single :class:`Analysis`.
 
         Parameters

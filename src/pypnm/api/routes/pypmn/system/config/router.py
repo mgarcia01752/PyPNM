@@ -19,7 +19,7 @@ class PyPnmSystemConfigAPI:
     stored in a JSON file (typically located at `config/system.json`).
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initializes the SystemConfigAPI instance and sets up the route handlers.
         """

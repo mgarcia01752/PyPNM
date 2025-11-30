@@ -47,7 +47,7 @@ class SpectrumAnalyzerReport(AnalysisReport):
 
     def __init__(self, analysis: Analysis,
                  analysis_matplot_config:AnalysisRptMatplotConfig | None = None,
-                 **kwargs):
+                 **kwargs) -> None:
         if analysis_matplot_config is None:
             analysis_matplot_config = AnalysisRptMatplotConfig()
         super().__init__(analysis, analysis_matplot_config)

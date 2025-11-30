@@ -19,7 +19,7 @@ class ClabsDocsisVersion(IntEnum):
     DOCSIS_31 = 5
     DOCSIS_40 = 6
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name.replace("DOCSIS_", "DOCSIS ").replace("_", ".")
 
     @classmethod

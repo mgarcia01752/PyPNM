@@ -15,7 +15,7 @@ class Inet:
         _inet (str): The validated IP address.
     """
 
-    def __init__(self, inet: InetAddressStr):
+    def __init__(self, inet: InetAddressStr) -> None:
         """
         Initializes the Inet class with an IP address.
 

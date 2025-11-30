@@ -29,7 +29,7 @@ class DocsEqualizerData:
     COEFF_BYTES = 2
     COMPLEX_TAP_SIZE = COEFF_BYTES * 2
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
         self._coefficients_found: bool = False
         self.equalizer_data: dict[int, dict] = {}

@@ -109,7 +109,7 @@ class CommonMeasureService(CommonMessagingService):
                  tftp_servers: tuple[Inet,Inet],
                  tftp_path: str = "",
                  snmp_write_community: str = "private",
-                 **extra_options):
+                 **extra_options) -> None:
         super().__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.propagate = True
@@ -153,7 +153,7 @@ class CommonMeasureService(CommonMessagingService):
         """
         self.interface_parameters = self.extra_options.get("interface_parameters", None)
 
-    def setSpectrumCaptureParameters(self, capture_parameter:SpecAnCapturePara):
+    def setSpectrumCaptureParameters(self, capture_parameter:SpecAnCapturePara) -> None:
         """
         Set the spectrum capture parameters for the measurement.
 

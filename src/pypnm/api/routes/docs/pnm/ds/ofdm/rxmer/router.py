@@ -43,7 +43,7 @@ from pypnm.lib.types import InetAddressStr, MacAddressStr
 
 
 class RxMerRouter:
-    def __init__(self):
+    def __init__(self) -> None:
         prefix = "/docs/pnm/ds/ofdm"
         self.base_endpoint = "/rxMer"
         self.router = APIRouter(

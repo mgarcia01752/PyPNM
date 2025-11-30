@@ -20,7 +20,7 @@ class LoggerConfigurator:
                  log_dir: str,
                  log_filename: str = 'pypnm.log',
                  level: str = 'INFO', to_console: bool = False, rotate: bool = False
-    ):
+    ) -> None:
         """
         Initialize the LoggerConfigurator.
 
@@ -39,7 +39,7 @@ class LoggerConfigurator:
 
         self.__setup()
 
-    def __setup(self):
+    def __setup(self) -> None:
         """
         Internal method to configure the root logger:
         """

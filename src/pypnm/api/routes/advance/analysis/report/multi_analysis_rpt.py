@@ -33,7 +33,7 @@ class MultiAnalysisRpt(ABC):
     Abstact Class to manage multiple captures:
      + This class will be inherited and can support single or multiple cable modems
     """
-    def __init__(self, capt_data_agg: CaptureDataAggregator):
+    def __init__(self, capt_data_agg: CaptureDataAggregator) -> None:
         self.logger = logging.getLogger("MultiAnalysisRpt")
 
         self._capt_data_agg = capt_data_agg

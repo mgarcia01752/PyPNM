@@ -42,7 +42,7 @@ class CmUsOfdmaPreEq(PnmHeader):
 
     """
 
-    def __init__(self, binary_data: bytes):
+    def __init__(self, binary_data: bytes) -> None:
         super().__init__(binary_data)
         self.logger                          = logging.getLogger(self.__class__.__name__)
         self._channel_id                     : ChannelId

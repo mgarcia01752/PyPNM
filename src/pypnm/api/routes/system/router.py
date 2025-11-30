@@ -36,7 +36,7 @@ class SystemRouter:
     def __init__(
         self,
         prefix: str = "/system",
-        tags: list[str | Enum] = None):
+        tags: list[str | Enum] = None) -> None:
         if tags is None:
             tags = ["DOCSIS System"]
         self.router = APIRouter(prefix=prefix, tags=tags)

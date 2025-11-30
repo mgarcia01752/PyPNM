@@ -43,7 +43,7 @@ class AbstractCaptureService(ABC):
         logger (logging.Logger): Logger for operational messages.
     """
 
-    def __init__(self, duration: float, interval: float):
+    def __init__(self, duration: float, interval: float) -> None:
         """
         Initialize the capture service framework.
 
@@ -114,7 +114,7 @@ class AbstractCaptureService(ABC):
             f"CaptureGroup={group_id} / Operation={operation_id} started "
             f"({self.duration}s @ {self.interval}s interval)")
 
-        async def _runner():
+        async def _runner() -> None:
 
             end_time = start_time + self.duration
 

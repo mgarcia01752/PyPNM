@@ -18,7 +18,7 @@ from pypnm.lib.types import InetAddressStr, MacAddressStr
 class UsOfdmChannelService:
     def __init__(self, mac_address: MacAddressStr,
                  ip_address: InetAddressStr,
-                 snmp_config: SNMPConfig | None = None):
+                 snmp_config: SNMPConfig | None = None) -> None:
         if snmp_config is None:
             snmp_config = SNMPConfig()
         self.logger = logging.getLogger(self.__class__.__name__)

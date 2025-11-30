@@ -81,7 +81,7 @@ class CmDsOfdmModulationProfile(PnmHeader):
     RANGE_MODULATION: int   = 0
     SKIP_MODULATION: int    = 1
 
-    def __init__(self, binary_data: bytes):
+    def __init__(self, binary_data: bytes) -> None:
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
         self._model: CmDsOfdmModulationProfileModel

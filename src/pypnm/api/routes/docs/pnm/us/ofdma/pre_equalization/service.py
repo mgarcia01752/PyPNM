@@ -37,7 +37,7 @@ class CmUsOfdmaPreEqService(CommonMeasureService):
         cable_modem: CableModem,
         tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
         tftp_path: str = PnmConfigManager.get_tftp_path()
-    ):
+    ) -> None:
         super().__init__(
             DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF,
             cable_modem,

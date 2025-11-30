@@ -14,7 +14,7 @@ class InterfaceStatsService:
     Service class for retrieving DOCSIS interface statistics from a cable modem.
     """
 
-    def __init__(self, mac_address: MacAddressStr, ip_address: InetAddressStr, write_community: str):
+    def __init__(self, mac_address: MacAddressStr, ip_address: InetAddressStr, write_community: str) -> None:
         """
         Initialize the service with a target cable modem's MAC and IP address.
 

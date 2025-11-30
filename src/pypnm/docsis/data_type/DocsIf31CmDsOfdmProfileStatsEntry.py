@@ -21,7 +21,7 @@ class DocsIf31CmDsOfdmProfileStatsEntry:
     channel_id: int
     profile_stats: dict[int, dict[str, int | None]]
 
-    def __init__(self, index: int, snmp: Snmp_v2c):
+    def __init__(self, index: int, snmp: Snmp_v2c) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.index = index
         self.snmp = snmp

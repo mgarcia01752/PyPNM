@@ -220,7 +220,7 @@ class GroupDelayCalculator:
         self,
         H: Sequence[complex] | Sequence[Sequence[complex]] | Sequence[Sequence[float]],
         freqs: Sequence[float]
-    ):
+    ) -> None:
         """
         Initialize the calculator with channel estimates and frequencies.
 

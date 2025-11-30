@@ -16,7 +16,7 @@ from pypnm.snmp.compiled_oids import COMPILED_OIDS
 from pypnm.snmp.snmp_v2c import Snmp_v2c
 
 
-async def main():
+async def main() -> None:
     parser = argparse.ArgumentParser(description="SNMP Get Next")
     parser.add_argument("--mac", "-m", required=True, help="Mac address of cable modem")
     parser.add_argument("--inet", "-i", required=True, help="IP address of cable modem")

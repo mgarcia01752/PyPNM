@@ -24,7 +24,7 @@ class UsScQamChannelRouter:
     Router class to handle DOCSIS 3.0 Upstream ATDMA Channel Statistics endpoints.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.router = APIRouter(
             prefix="/docs/if30/us/atdma/chan",
@@ -32,7 +32,7 @@ class UsScQamChannelRouter:
 
         self._add_routes()
 
-    def _add_routes(self):
+    def _add_routes(self) -> None:
         @self.router.post("/stats",
                           summary="Get DOCSIS 3.0 Upstream ATDMA Channel Stats",
                           responses=FAST_API_RESPONSE,)

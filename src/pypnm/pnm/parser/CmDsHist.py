@@ -31,7 +31,7 @@ class CmDsHist(PnmHeader):
     The class extracts and exposes this data from binary format for further analysis.
     """
 
-    def __init__(self, binary_data: bytes):
+    def __init__(self, binary_data: bytes) -> None:
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
 

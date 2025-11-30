@@ -64,7 +64,7 @@ class CmSpectrumAnalysisService(CommonMeasureService):
         cable_modem: CableModem,
         tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
         tftp_path: str = PnmConfigManager.get_tftp_path(),*,
-        capture_parameters: SpecAnCapturePara,):
+        capture_parameters: SpecAnCapturePara,) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
 
         pnmCmCtlTest = DocsPnmCmCtlTest.SPECTRUM_ANALYZER
@@ -121,7 +121,7 @@ class OfdmChanSpecAnalyzerService(CommonMeasureService):
         cable_modem: CableModem,
         tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
         tftp_path: str = PnmConfigManager.get_tftp_path(),
-    ):
+    ) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
         super().__init__(
             DocsPnmCmCtlTest.SPECTRUM_ANALYZER,
@@ -155,7 +155,7 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
     def __init__(self, cable_modem: CableModem,
                  _tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
                  number_of_averages: int = 2,
-                 spectrum_retrieval_type:SpectrumRetrievalType = SpectrumRetrievalType.FILE,):
+                 spectrum_retrieval_type:SpectrumRetrievalType = SpectrumRetrievalType.FILE,) -> None:
         super().__init__(cable_modem)
         self.logger = logging.getLogger(self.__class__.__name__)
         self._number_of_averages = number_of_averages
@@ -357,7 +357,7 @@ class ScQamChanSpecAnalyzerService(CommonMeasureService):
         cable_modem: CableModem,
         tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
         tftp_path: str = PnmConfigManager.get_tftp_path(),
-    ):
+    ) -> None:
         """
         Initialize The SC-QAM Spectrum Analyzer Service
 
@@ -399,7 +399,7 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
     def __init__(self, cable_modem: CableModem,
                  tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
                  number_of_averages: int = 1,
-                 spectrum_retrieval_type:SpectrumRetrievalType = SpectrumRetrievalType.FILE,):
+                 spectrum_retrieval_type:SpectrumRetrievalType = SpectrumRetrievalType.FILE,) -> None:
         super().__init__(cable_modem)
         self.logger = logging.getLogger(self.__class__.__name__)
         self._number_of_averages = number_of_averages

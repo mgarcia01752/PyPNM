@@ -39,7 +39,7 @@ class RxMerMarginRouter:
     - Fetching measurement configuration/status (`getMeasurementStatistics`)
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         prefix = "/docs/pnm/ds/ofdm"
         tags = ["PNM Operations - Downstream OFDM MER Margin"]
         self.base_endpoint = "merMargin"
@@ -48,7 +48,7 @@ class RxMerMarginRouter:
 
         self._add_routes()
 
-    def _add_routes(self):
+    def _add_routes(self) -> None:
 
         @self.router.post(f"/{self.base_endpoint}/getMeasurementTemplate",
                           response_model=SnmpResponse,

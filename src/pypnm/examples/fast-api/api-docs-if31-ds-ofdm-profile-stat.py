@@ -16,7 +16,7 @@ except ImportError:
     print("❌ The 'requests' library is not installed. Please install it before running this script.")
     sys.exit(1)
 
-def test_endpoint(mac: str, ip: str, url: str):
+def test_endpoint(mac: str, ip: str, url: str) -> None:
     """
     Sends a POST request to the /system/sysdescr endpoint using Python requests.
     """

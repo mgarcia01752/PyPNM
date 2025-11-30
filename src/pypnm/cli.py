@@ -8,7 +8,7 @@ import os
 import uvicorn
 
 
-def main():
+def main() -> None:
 
     HOST_DEFAULT = "127.0.0.1"
     PORT_DEFAULT = 8000

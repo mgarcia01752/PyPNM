@@ -53,7 +53,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
         analysis: Analysis,
         analysis_matplot_config: AnalysisRptMatplotConfig | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         """Initialize report generator and internal result registry."""
         if analysis_matplot_config is None:
             analysis_matplot_config = AnalysisRptMatplotConfig()

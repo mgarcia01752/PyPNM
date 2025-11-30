@@ -31,7 +31,7 @@ class FddDiplexerBandEdgeCapability:
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initialize the router, logger, and register API routes under the /docs/fdd/diplexer prefix.
         """
@@ -41,7 +41,7 @@ class FddDiplexerBandEdgeCapability:
             tags=["DOCSIS 4.0 FDD Diplexer Band Edge Capability"])
         self._add_routes()
 
-    def _add_routes(self):
+    def _add_routes(self) -> None:
         """
         Defines the POST /bandEdgeCapability endpoint and attaches it to the router.
         """

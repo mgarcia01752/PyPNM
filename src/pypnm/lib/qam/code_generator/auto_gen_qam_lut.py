@@ -90,7 +90,7 @@ class QamLut:
     QAM_LUT_FNAME       = "qam_lut.py"
     QAM_SCALE_LUT_FNAME = 'qam_scale_lut.py'
 
-    def __init__(self, src_qam_table: PathLike, dst_qam_lut: PathLike):
+    def __init__(self, src_qam_table: PathLike, dst_qam_lut: PathLike) -> None:
         self.logger = logging.getLogger("QamLut")
         self._path_to_qam_table: Path = Path(src_qam_table)
         self._lut_dir: Path = Path(dst_qam_lut)

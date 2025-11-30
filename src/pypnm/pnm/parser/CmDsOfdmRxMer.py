@@ -33,7 +33,7 @@ class CmDsOfdmRxMer(PnmHeader):
     Parser and container for DOCSIS 3.1 CM Downstream OFDM RxMER binary data.
     """
 
-    def __init__(self, binary_data: bytes):
+    def __init__(self, binary_data: bytes) -> None:
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
         self._rxmer_model:CmDsOfdmRxMerModel

@@ -37,7 +37,7 @@ class PnmFileType(Enum):
     # (Not in Spec)Internal use for SNMP-based Spectrum Analysis
     CM_SPECTRUM_ANALYSIS_SNMP_AMP_DATA              = "PXX9"
 
-    def __init__(self, pnm_cann: str):
+    def __init__(self, pnm_cann: str) -> None:
         """
         Initialize the enum member with its PNM CANN code.
 

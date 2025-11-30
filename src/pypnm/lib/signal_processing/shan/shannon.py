@@ -34,7 +34,7 @@ class Shannon:
         16: "qam_65536"
     }
 
-    def __init__(self, snr_db: float):
+    def __init__(self, snr_db: float) -> None:
         self.snr_db = snr_db
         self.bits = self._snr_to_bits(snr_db)
 

@@ -41,7 +41,7 @@ class DocsIf31CmSystemCfgDiplexState:
     docsIf31CmSystemCfgStateDiplexerDsUpperCapability: int | None = None
     docsIf31CmSystemCfgStateDiplexerCfgDsUpperBandEdge: int | None = None
 
-    def __init__(self, snmp: Snmp_v2c):
+    def __init__(self, snmp: Snmp_v2c) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.snmp = snmp
 

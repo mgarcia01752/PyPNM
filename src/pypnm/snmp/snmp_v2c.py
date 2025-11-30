@@ -63,7 +63,7 @@ class Snmp_v2c:
                  community: str = SystemConfigSettings.snmp_write_community,
                  port: int      = SNMP_PORT,
                  timeout: int   = SystemConfigSettings.snmp_timeout,
-                 retries: int   = SystemConfigSettings.snmp_retries):
+                 retries: int   = SystemConfigSettings.snmp_retries) -> None:
         """
         Initializes the SNMPv2c client.
 
@@ -643,7 +643,7 @@ class Snmp_v2c:
             self.logger.debug(f"Resolving OID string: {oid}")
             return ObjectIdentity(oid)
 
-    def _raise_on_snmp_error(self, errorIndication, errorStatus, errorIndex):
+    def _raise_on_snmp_error(self, errorIndication, errorStatus, errorIndex) -> None:
         """
         Raises RuntimeError if any SNMP error is detected.
 

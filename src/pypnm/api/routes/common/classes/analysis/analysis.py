@@ -258,7 +258,7 @@ class Analysis:
                 self.logger.error(f'Unknown AnalysisType: {self.analysis_type}')
                 raise
 
-    def _basic_analysis(self, pnm_file_type: str, measurement, analysis_para: AnalysisProcessParameters):
+    def _basic_analysis(self, pnm_file_type: str, measurement, analysis_para: AnalysisProcessParameters) -> None:
         """
         Route to the appropriate BASIC analysis handler.
 
@@ -416,7 +416,7 @@ class Analysis:
         fp.write_file(msg_rsp_dict)
         fp.close()
 
-    def __update_result_model(self, model:BaseAnalysisModel) :
+    def __update_result_model(self, model:BaseAnalysisModel) -> None :
         """Append a typed analysis model to the results cache.
 
         Parameters
@@ -426,7 +426,7 @@ class Analysis:
         """
         self._result_model.append(model)
 
-    def __update_result_dict(self, model_dict:dict[str,Any]):
+    def __update_result_dict(self, model_dict:dict[str,Any]) -> None:
         """Append a plain-dict analysis result to the results cache.
 
         Parameters
@@ -436,7 +436,7 @@ class Analysis:
         """
         self._analysis_dict.append(model_dict)
 
-    def __add_pnmType(self, pft:PnmFileType):
+    def __add_pnmType(self, pft:PnmFileType) -> None:
         self._processed_pnm_type.append(pft)
 
     @classmethod

@@ -38,7 +38,7 @@ class PnmFileManager:
 
     DEFAULT_HEXDUMP_BYTES_PER_LINE = 16
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = logging.getLogger(f'PnmFileManager.{self.__class__.__name__}')
         self.router = APIRouter(
             prefix="/docs/pnm/files",

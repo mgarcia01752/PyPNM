@@ -40,7 +40,7 @@ from pypnm.lib.types import InetAddressStr, MacAddressStr, Path
 
 
 class UsOfdmaPreEqualizationRouter:
-    def __init__(self):
+    def __init__(self) -> None:
         prefix = "/docs/pnm/us/ofdma"
         self.base_endpoint = "/preEqualization"
         self.router = APIRouter(

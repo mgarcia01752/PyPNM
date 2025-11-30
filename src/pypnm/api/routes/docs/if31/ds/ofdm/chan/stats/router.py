@@ -24,7 +24,7 @@ class DsOfdmChannelStatsRouter:
     Router class for DOCSIS 3.1 Downstream OFDM Channel Physical Layer Statistics API.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.router = APIRouter(
             prefix="/docs/if31/ds/ofdm/chan",
@@ -32,7 +32,7 @@ class DsOfdmChannelStatsRouter:
 
         self._add_routes()
 
-    def _add_routes(self):
+    def _add_routes(self) -> None:
 
         @self.router.post("/stats",
                           response_model=SnmpResponse,

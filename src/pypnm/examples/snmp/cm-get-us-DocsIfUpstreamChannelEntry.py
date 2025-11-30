@@ -20,7 +20,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s")
 
-async def main():
+async def main() -> None:
     parser = argparse.ArgumentParser(description="Fetch DOCSIS Upstream Channel Entries via SNMP")
     parser.add_argument("--mac", "-m", required=True, help="MAC address of cable modem (e.g., aa:bb:cc:dd:ee:ff)")
     parser.add_argument("--inet", "-i", required=True, help="IP address of cable modem (e.g., 192.168.0.100)")

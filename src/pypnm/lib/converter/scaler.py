@@ -43,7 +43,7 @@ class PerValueRescaled:
 class AutoUnitScaler:
     __slots__ = ("_x",)
 
-    def __init__(self, values: Sequence[Number] | NDArray[np.number]):
+    def __init__(self, values: Sequence[Number] | NDArray[np.number]) -> None:
         arr = np.asarray(values, dtype=np.float64)
         if arr.ndim == 0:
             arr = arr.reshape(1)
