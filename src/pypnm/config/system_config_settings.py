@@ -322,7 +322,7 @@ class SystemConfigSettings:
     def log_filename(cls) -> str:
         return cls._cfg.get("logging", "log_filename")
 
-    @classproperty
+    @classmethod
     def initialize_directories(cls) -> None:
         """
         Create necessary directories if they do not exist.

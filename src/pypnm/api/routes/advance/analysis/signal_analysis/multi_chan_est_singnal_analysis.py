@@ -303,7 +303,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                     if not isinstance(r, MinAvgMaxModel):
                         continue
                     csv.set_header(["Frequency (Hz)", "Min (dB)", "Avg (dB)", "Max (dB)"])
-                    for f, mn, av, mx in zip(r.frequency, r.min, r.avg, r.max):
+                    for f, mn, av, mx in zip(r.frequency, r.min, r.avg, r.max, strict=False):
                         csv.insert_row([f, mn, av, mx])
                     csv.set_path_fname(self.create_csv_fname(tags=[f"ch{r.channel_id}", "minavgmax"]))
                     csv.write()
@@ -313,7 +313,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                     if not isinstance(r, GroupDelayAnalysisModel):
                         continue
                     csv.set_header(["Frequency (Hz)", "Group Delay (µs)"])
-                    for f, gd in zip(r.frequency, r.group_delay_us):
+                    for f, gd in zip(r.frequency, r.group_delay_us, strict=False):
                         csv.insert_row([f, gd])
                     csv.set_path_fname(self.create_csv_fname(tags=[f"ch{r.channel_id}", "groupdelay"]))
                     csv.write()
@@ -323,7 +323,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                     if not isinstance(r, LteDetectionModel):
                         continue
                     csv.set_header(["Bin Width (Hz)", "Anomaly Magnitude"])
-                    for bw, anom in zip(r.bin_widths, r.anomalies):
+                    for bw, anom in zip(r.bin_widths, r.anomalies, strict=False):
                         csv.insert_row([bw, anom])
                     csv.insert_row(["Threshold", r.threshold])
                     csv.set_path_fname(self.create_csv_fname(tags=[f"ch{r.channel_id}", "lte-detect"]))

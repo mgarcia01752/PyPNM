@@ -19,7 +19,7 @@ class StartUp:
         Initialize the system configuration settings and set up logging.
         This method should be called at the start of the application.
         """
-        SystemConfigSettings.initialize_directories
+        SystemConfigSettings.initialize_directories()
 
         LoggerConfigurator(SystemConfigSettings.log_dir,
                            SystemConfigSettings.log_filename,

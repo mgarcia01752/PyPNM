@@ -296,7 +296,7 @@ class FecSummaryAggregator(MultiPnmCollection):
                 entries.timestamp,
                 entries.total_codewords,
                 entries.corrected,
-                entries.uncorrectable,
+                entries.uncorrectable, strict=False,
             ):
                 ts_bucket = channel_store.get(ts)
                 if ts_bucket is None:

@@ -81,7 +81,7 @@ class RxMerAnalysisReport(AnalysisReport):
                 csv_mgr.set_path_fname(csv_fname)
 
                 csv_mgr.set_header(["ChannelID", "Frequency(Hz)", "Magnitude(dB)", "Shannon Limit(dB)", "Regression Line(dB)"])
-                for rx, ry, s, r in zip(x, y, sh, rl):
+                for rx, ry, s, r in zip(x, y, sh, rl, strict=False):
                     csv_mgr.insert_row([chan, rx, ry, s, r])
 
                 self.logger.debug("CSV created for channel %s: %s (rows=%d)", chan, csv_fname, len(x))
@@ -102,7 +102,7 @@ class RxMerAnalysisReport(AnalysisReport):
                 csv_mgr.set_header(["Frequency(Hz)", "Magnitude(dB)"])
 
                 x_agg, y_agg = self._sig_cap_agg.get_series()
-                for rx, ry in zip(x_agg, y_agg):
+                for rx, ry in zip(x_agg, y_agg, strict=False):
                     csv_mgr.insert_row([rx, ry])
 
                 self.logger.debug(f"CSV created: {csv_fname} (rows={len(x_agg)})")

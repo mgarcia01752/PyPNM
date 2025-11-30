@@ -49,7 +49,7 @@ class CableModemServicePreCheck:
         mac_address: Optional[MacAddressStr] = None,
         ip_address: Optional[InetAddressStr] = None,
         snmp_config: Optional[SNMPConfig] = None,
-        check_docsis_version: List[ClabsDocsisVersion] = [],
+        check_docsis_version: List[ClabsDocsisVersion] = None,
         validate_ofdm_exist: bool       = False,
         validate_ofdma_exist: bool      = False,
         validate_scqam_exist: bool      = False,
@@ -71,6 +71,8 @@ class CableModemServicePreCheck:
         Raises:
             ValueError: If neither a `CableModem` object nor both `mac_address` and `ip_address` are provided.
         """
+        if check_docsis_version is None:
+            check_docsis_version = []
         self.logger = logging.getLogger(self.__class__.__name__)
 
         if cable_modem:
