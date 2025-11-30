@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, List, Optional, cast
+from typing import Any, cast
 from collections.abc import Iterable
 
 from pydantic import BaseModel, ConfigDict, Field

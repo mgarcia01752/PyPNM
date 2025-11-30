@@ -4,8 +4,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, TypeVar, cast
 from collections.abc import Iterable
+from typing import Any, TypeVar, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 

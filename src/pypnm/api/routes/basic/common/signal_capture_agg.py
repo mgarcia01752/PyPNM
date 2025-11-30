@@ -1,11 +1,10 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+from __future__ import annotations
+
 import logging
-from typing import Dict, List, Literal, Optional, Tuple
 from collections.abc import Callable
+from typing import Literal
 
 import numpy as np
 

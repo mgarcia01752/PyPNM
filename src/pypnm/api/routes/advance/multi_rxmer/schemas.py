@@ -1,11 +1,10 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
 
 from enum import IntEnum
-
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 

@@ -1,12 +1,10 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-# Author: Maurice Garcia (2025)
-
 from __future__ import annotations
 
-from typing import Any, Dict, List, Literal, Optional, Union
 from collections.abc import Mapping
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -174,12 +172,14 @@ class OfdmaUsPreEqCarrierModel(ComplexDataCarrierModel):
 class UsOfdmaUsPreEqAnalysisModel(ComplexDataAnalysisModel):
     """"""
 
-ParserAnalysisModelReturn = Union[ConstellationDisplayAnalysisModel,
-                                  DsChannelEstAnalysisModel,
-                                  DsHistogramAnalysisModel,
-                                  DsRxMerAnalysisModel,
-                                  OfdmFecSummaryAnalysisModel,
-                                  DsModulationProfileAnalysisModel,
-                                  UsOfdmaUsPreEqAnalysisModel]
+ParserAnalysisModelReturn = (
+    ConstellationDisplayAnalysisModel
+    | DsChannelEstAnalysisModel
+    | DsHistogramAnalysisModel
+    | DsRxMerAnalysisModel
+    | OfdmFecSummaryAnalysisModel
+    | DsModulationProfileAnalysisModel
+    | UsOfdmaUsPreEqAnalysisModel
+)
 
 

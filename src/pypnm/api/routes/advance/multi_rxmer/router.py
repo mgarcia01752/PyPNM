@@ -89,7 +89,7 @@ class MultiRxMerRouter(AbstractService):
 
     def _add_routes(self) -> None:
         @self.router.post("/start",
-            response_model=Union[MultiRxMerStartResponse, SnmpResponse],
+            response_model=MultiRxMerStartResponse | SnmpResponse,
             summary="Start a Multi-RxMER capture",
             responses=FAST_API_RESPONSE,)
         async def start_multi_rxmer(request: MultiRxMerRequest):
