@@ -32,10 +32,10 @@ from pypnm.lib.utils import Generate
 class ScQamSpecAnalysisRptModel(BaseModel):
     """Pydantic model for a compiled SC-QAM Spectrum Analyzer report.
     """
-    models:List[BaseAnalysisModel]
+    models:list[BaseAnalysisModel]
 
 
-class ScQamSpecAnalyzerAnalysisReport():
+class ScQamSpecAnalyzerAnalysisReport:
     """Coordinator that compiles per-channel Spectrum Analyzer artifacts into a single deliverable.
 
     The class iterates over a :class:`MultiAnalysis` container, invokes
@@ -66,7 +66,7 @@ class ScQamSpecAnalyzerAnalysisReport():
         """
         self._multi_analysis = multi_analysis
         self._archive_path:PathLike = SystemConfigSettings.archive_dir
-        self._analysis_files:List[PathLike] = []
+        self._analysis_files:list[PathLike] = []
         self._archive_file:PathLike
 
     def build_report(self) -> PathLike:
@@ -101,11 +101,11 @@ class ScQamSpecAnalyzerAnalysisReport():
 
         return self._build_archive()
 
-    def _get_analyses(self) -> List[Analysis]:
+    def _get_analyses(self) -> list[Analysis]:
         """Return the list of analyses sourced from the bound :class:`MultiAnalysis`."""
         return self._multi_analysis.get_analyses()
 
-    def _report_files(self) -> List[PathLike]:
+    def _report_files(self) -> list[PathLike]:
         """Return the list of file paths collected during :meth:`build_report`."""
         return self._analysis_files
 
@@ -172,7 +172,7 @@ class ScQamSpecAnalyzerAnalysisReport():
         return ScQamSpecAnalysisRptModel(
             models=self._multi_analysis.to_model())
 
-    def to_dict(self) -> Dict[str,Any]:
+    def to_dict(self) -> dict[str,Any]:
         """Return the report as a serializable ``dict`` via Pydantic's ``model_dump``."""
         return self._multi_analysis.to_dict()
 
@@ -202,9 +202,9 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
         """
         super().__init__(analysis)
         self.logger = logging.getLogger("SpectrumAnalyzerReport")
-        self._results: Dict[int, SpectrumAnalyzerAnalysisRptModel] = {}
+        self._results: dict[int, SpectrumAnalyzerAnalysisRptModel] = {}
 
-    def create_csv(self, **kwargs: Any) -> List[CSVManager]:
+    def create_csv(self, **kwargs: Any) -> list[CSVManager]:
         """Emit a CSV per channel with ``Frequency``, ``Magnitude(dBmV)``, and ``MovingAverage``.
 
         Returns
@@ -218,7 +218,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
         - Filenames include the channel id and :data:`FNAME_TAG`.
         - Exceptions are logged; partial outputs may still be returned.
         """
-        csv_mgr_list: List[CSVManager] = []
+        csv_mgr_list: list[CSVManager] = []
 
         for common_model in self.get_common_analysis_model():
             model = cast(SpectrumAnalyzerAnalysisRptModel, common_model)
@@ -250,7 +250,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self, **kwargs: Any) -> List[MatplotManager]:
+    def create_matplot(self, **kwargs: Any) -> list[MatplotManager]:
         """Create two line plots per channel: raw spectrum and windowed average.
 
         Returns
@@ -264,7 +264,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
         and :data:`FNAME_TAG`. Plot configuration includes titles, axis labels,
         and optional grid; legends are disabled.
         """
-        out: List[MatplotManager] = []
+        out: list[MatplotManager] = []
 
         for common_model in self.get_common_analysis_model():
             m = cast(SpectrumAnalyzerAnalysisRptModel, common_model)
@@ -340,7 +340,7 @@ class SingleScQamSpecAnalyzerReport(AnalysisReport):
         - Computes an anti-log (linear-ratio) view of amplitudes for convenience.
         - Registers each channel’s report model for subsequent CSV/plot generation.
         """
-        models: List[SpectrumAnalyzerAnalysisModel] = cast(List[SpectrumAnalyzerAnalysisModel], self.get_analysis_model())
+        models: list[SpectrumAnalyzerAnalysisModel] = cast(list[SpectrumAnalyzerAnalysisModel], self.get_analysis_model())
 
         for _idx, _model in enumerate(models):
             sig_analysis = _model.signal_analysis

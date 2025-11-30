@@ -25,7 +25,7 @@ class MacAddressFormat(Enum):
     HYPHEN  = auto()    # e.g., '00-1a-2b-3c-4d-5e'
 
 class MacAddress:
-    def __init__(self, mac_address: Union[MacAddressStr, str, bytes, bytearray, 'OctetString']) -> None: # type: ignore
+    def __init__(self, mac_address: MacAddressStr | str | bytes | bytearray | OctetString) -> None: # type: ignore
         """
         Initialize a MacAddress object.
 
@@ -62,7 +62,7 @@ class MacAddress:
         else:
             raise TypeError(f"Unsupported type for mac_address: {type(mac_address).__name__} -> value: {mac_address}")
 
-    def is_equal(self, other: 'MacAddress') -> bool:
+    def is_equal(self, other: MacAddress) -> bool:
         """
         Check if this MAC address is equal to another MAC address.
 
@@ -159,7 +159,7 @@ class MacAddress:
         return isinstance(other, MacAddress) and self._mac == other._mac
 
     @staticmethod
-    def is_valid(mac_address: Union[str, bytes, bytearray, 'OctetString']) -> bool: # type: ignore
+    def is_valid(mac_address: str | bytes | bytearray | OctetString) -> bool: # type: ignore
         """
         Static method to validate a MAC address.
 

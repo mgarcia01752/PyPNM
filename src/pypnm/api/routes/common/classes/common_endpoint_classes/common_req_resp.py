@@ -30,8 +30,8 @@ class CommonOutput(BaseModel):
     type: OutputType = Field(default=OutputType.JSON, description="Desired output type for analysis results")
 
 class TftpConfig(BaseModel):
-    ipv4: Optional[IPv4Str] = Field(default=default_tftp_ipv4, description="TFTP server IPv4 address")
-    ipv6: Optional[IPv6Str] = Field(default=default_tftp_ipv6, description="TFTP server IPv6 address")
+    ipv4: IPv4Str | None = Field(default=default_tftp_ipv4, description="TFTP server IPv4 address")
+    ipv6: IPv6Str | None = Field(default=default_tftp_ipv6, description="TFTP server IPv6 address")
 
 
 class PnmParameters(BaseModel):
@@ -99,8 +99,8 @@ class CommonSingleCaptureAnalysisRequest(BaseModel):
 
 class CommonResponse(BaseModel):
     mac_address: MacAddressStr                                      = Field(default=default_mac, description="MAC address of the cable modem")
-    status: Optional[Union[ServiceStatusCode, OperationState, str]] = Field(default="success", description="Operation status code or state")
-    message: Optional[str]                                          = Field(default=None, description="Additional information or error details")
+    status: ServiceStatusCode | OperationState | str | None = Field(default="success", description="Operation status code or state")
+    message: str | None                                          = Field(default=None, description="Additional information or error details")
 
     @field_validator("mac_address")
     def validate_mac(cls, v: str) -> MacAddressStr:

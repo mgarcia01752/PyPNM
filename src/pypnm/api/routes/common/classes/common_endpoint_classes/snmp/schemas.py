@@ -35,7 +35,7 @@ class SnmpResponse(BaseDeviceResponse):
             - `str` for plain-text outputs.
             - `Dict[str, Any]` or any structured data.
     """
-    results: Optional[Union[bytes, str, Dict[str, Any], Any, BaseModel]] = Field(
+    results: bytes | str | dict[str, Any] | Any | BaseModel | None = Field(
         default={},
         description=(
             "Raw or structured data resulting from the SNMP operation: "
@@ -59,4 +59,4 @@ class SnmpAnalysisResponse(CommonResponse):
     """
     Response model for SNMP-based analysis operations.
     """
-    data: Optional[Union[bytes, str]] = Field(default=None, description="Structured or raw result of the SNMP analysis operation.")
+    data: bytes | str | None = Field(default=None, description="Structured or raw result of the SNMP analysis operation.")

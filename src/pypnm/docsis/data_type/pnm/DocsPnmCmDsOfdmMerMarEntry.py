@@ -5,7 +5,8 @@ import logging
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-from typing import Callable, List, Optional, Union
+from typing import List, Optional, Union
+from collections.abc import Callable
 
 from pydantic import BaseModel
 
@@ -13,15 +14,15 @@ from pypnm.snmp.snmp_v2c import Snmp_v2c
 
 
 class DocsPnmCmDsOfdmMerMarFields(BaseModel):
-    docsPnmCmDsOfdmMerMarProfileId: Optional[int] = None
-    docsPnmCmDsOfdmMerMarThrshldOffset: Optional[int] = None
-    docsPnmCmDsOfdmMerMarMeasEnable: Optional[bool] = None
-    docsPnmCmDsOfdmMerMarNumSymPerSubCarToAvg: Optional[int] = None
-    docsPnmCmDsOfdmMerMarReqAvgMer: Optional[int] = None
-    docsPnmCmDsOfdmMerMarNumSubCarBelowThrshld: Optional[int] = None
-    docsPnmCmDsOfdmMerMarMeasuredAvgMer: Optional[int] = None
-    docsPnmCmDsOfdmMerMarAvgMerMargin: Optional[int] = None
-    docsPnmCmDsOfdmMerMarMeasStatus: Optional[int] = None
+    docsPnmCmDsOfdmMerMarProfileId: int | None = None
+    docsPnmCmDsOfdmMerMarThrshldOffset: int | None = None
+    docsPnmCmDsOfdmMerMarMeasEnable: bool | None = None
+    docsPnmCmDsOfdmMerMarNumSymPerSubCarToAvg: int | None = None
+    docsPnmCmDsOfdmMerMarReqAvgMer: int | None = None
+    docsPnmCmDsOfdmMerMarNumSubCarBelowThrshld: int | None = None
+    docsPnmCmDsOfdmMerMarMeasuredAvgMer: int | None = None
+    docsPnmCmDsOfdmMerMarAvgMerMargin: int | None = None
+    docsPnmCmDsOfdmMerMarMeasStatus: int | None = None
 
 class DocsPnmCmDsOfdmMerMarEntry(BaseModel):
     index: int
@@ -29,10 +30,10 @@ class DocsPnmCmDsOfdmMerMarEntry(BaseModel):
     entry: DocsPnmCmDsOfdmMerMarFields
 
     @classmethod
-    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsPnmCmDsOfdmMerMarEntry":
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsPnmCmDsOfdmMerMarEntry:
         logger = logging.getLogger(cls.__name__)
 
-        async def fetch(oid: str, cast: Optional[Callable] = None) -> Union[str, int, float, bool, None]:
+        async def fetch(oid: str, cast: Callable | None = None) -> str | int | float | bool | None:
             try:
                 result = await snmp.get(f"{oid}.{index}")
                 value = Snmp_v2c.get_result_value(result)
@@ -64,9 +65,9 @@ class DocsPnmCmDsOfdmMerMarEntry(BaseModel):
         return cls(index=index, channel_id=index, entry=entry)
 
     @classmethod
-    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsPnmCmDsOfdmMerMarEntry"]:
+    async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsPnmCmDsOfdmMerMarEntry]:
         logger = logging.getLogger(cls.__name__)
-        results: List[DocsPnmCmDsOfdmMerMarEntry] = []
+        results: list[DocsPnmCmDsOfdmMerMarEntry] = []
 
         for idx in indices:
             try:

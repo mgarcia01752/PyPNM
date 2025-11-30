@@ -20,10 +20,10 @@ from pypnm.lib.types import Complex, ComplexArray, PathArray, PathLike
 
 BitLoad         = int
 QamScale        = float
-QamLutDict      = Dict[str, Dict[Any, Any]]
-QamScaleLutDict = Dict[BitLoad, QamScale]
+QamLutDict      = dict[str, dict[Any, Any]]
+QamScaleLutDict = dict[BitLoad, QamScale]
 
-Hard = List[Tuple[float, float]]
+Hard = list[tuple[float, float]]
 
 
 class GenerateQamLut:
@@ -44,7 +44,7 @@ class GenerateQamLut:
         # Build immediately to preserve original behavior
         self.build()
 
-    def build(self) -> Optional[Path]:
+    def build(self) -> Path | None:
         """
         Compile the QAM LUT from the specified QAM table files and write it.
 
@@ -76,7 +76,7 @@ class QamLutDb(BaseModel):
     """
     symbol_count: int
     hard: ComplexArray
-    code_words: Dict[int, Complex]
+    code_words: dict[int, Complex]
     scale_factor: float
 
 class QamLut:
@@ -96,7 +96,7 @@ class QamLut:
         self._lut_dir: Path = Path(dst_qam_lut)
         self._lut_path: Path = self._lut_dir / self.QAM_LUT_FNAME
 
-        self._qam_cc: Dict[QamModulation, ComplexCollector] = {}
+        self._qam_cc: dict[QamModulation, ComplexCollector] = {}
         self._qam_lut: QamLutDict = {}
         self._scaling_factors: QamScaleLutDict = self._load_scaling_factors()
 
@@ -133,7 +133,7 @@ class QamLut:
 
     # ---------------- I/O Helpers ----------------
 
-    def _get_qam_tables(self, skip_files: Optional[List[str]] = None) -> PathArray:
+    def _get_qam_tables(self, skip_files: list[str] | None = None) -> PathArray:
         """
         Discover available QAM table files.
         Skips ConstellationScalingFactors.txt by default.
@@ -152,12 +152,12 @@ class QamLut:
         Ignores blank lines and comments ('#', '//'). Returns {} if missing.
         """
         factors_path = self._path_to_qam_table / "ConstellationScalingFactors.txt"
-        factors: Dict[int, float] = {}
+        factors: dict[int, float] = {}
         if not factors_path.exists():
             self.logger.warning("Scaling factors file not found: %s (defaulting to no scaling)", factors_path)
             return factors
 
-        with open(factors_path, "r") as f:
+        with open(factors_path) as f:
             for line in f:
                 s = line.strip()
                 if not s or s.startswith("#") or s.startswith("//"):
@@ -175,7 +175,7 @@ class QamLut:
                     continue
         return factors
 
-    def _load_table(self, path_to_qam_table: Path) -> Tuple[ComplexCollector, QamModulation]:
+    def _load_table(self, path_to_qam_table: Path) -> tuple[ComplexCollector, QamModulation]:
         """
         Load a single QAM table file and scale points per ConstellationScalingFactors.txt.
 
@@ -183,7 +183,7 @@ class QamLut:
         """
         raw_cc = ComplexCollector()
 
-        with open(path_to_qam_table, "r") as f:
+        with open(path_to_qam_table) as f:
             for line in f:
                 s = line.strip()
                 if not s or s.startswith("#") or s.startswith("//"):

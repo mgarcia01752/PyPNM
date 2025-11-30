@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 from enum import IntEnum
-from typing import Callable, List, Optional, Union
+from typing import List, Optional, Union
+from collections.abc import Callable
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
@@ -34,17 +35,17 @@ class IfEntry(BaseModel):
     ifLastChange: int
     ifInOctets: int
     ifInUcastPkts: int
-    ifInNUcastPkts: Optional[int] = None
+    ifInNUcastPkts: int | None = None
     ifInDiscards: int
     ifInErrors: int
     ifInUnknownProtos: int
     ifOutOctets: int
     ifOutUcastPkts: int
-    ifOutNUcastPkts: Optional[int] = None
+    ifOutNUcastPkts: int | None = None
     ifOutDiscards: int
     ifOutErrors: int
-    ifOutQLen: Optional[int] = None
-    ifSpecific: Optional[str] = None
+    ifOutQLen: int | None = None
+    ifSpecific: str | None = None
 
 class IfXEntry(BaseModel):
     ifName: str
@@ -69,10 +70,10 @@ class IfXEntry(BaseModel):
 
 class InterfaceStats(BaseModel):
     ifEntry: IfEntry
-    ifXEntry: Optional[IfXEntry] = None
+    ifXEntry: IfXEntry | None = None
 
     @classmethod
-    async def from_snmp(cls, snmp: Snmp_v2c, if_type_filter: DocsisIfType) -> List["InterfaceStats"]:
+    async def from_snmp(cls, snmp: Snmp_v2c, if_type_filter: DocsisIfType) -> list[InterfaceStats]:
         stats_list = []
 
         for if_index in await snmp.walk("ifIndex"):
@@ -84,13 +85,13 @@ class InterfaceStats(BaseModel):
             if type_val is None or int(type_val) != if_type_filter:
                 continue
 
-            def safe_cast(value: str, cast: Callable) -> Union[int, float, str, bool, None]:
+            def safe_cast(value: str, cast: Callable) -> int | float | str | bool | None:
                 try:
                     return cast(value)
                 except (ValueError, TypeError):
                     return None
 
-            async def fetch(field: str, cast: Optional[Callable] = None, index=index):
+            async def fetch(field: str, cast: Callable | None = None, index=index):
                 raw = await snmp.get(f"{field}.{index}")
                 val = Snmp_v2c.get_result_value(raw)
 

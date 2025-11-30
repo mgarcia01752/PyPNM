@@ -3,7 +3,8 @@
 
 from __future__ import annotations
 
-from typing import Dict, Final, List, Literal, Optional, Sequence, Tuple, Union
+from typing import Dict, Final, List, Literal, Optional, Tuple, Union
+from collections.abc import Sequence
 
 import numpy as np
 from numpy.typing import NDArray
@@ -20,7 +21,7 @@ C0: Final[float] = SPEED_OF_LIGHT
 COMPLEX_LITERAL: Final[Literal["[Real, Imaginary]"]] = "[Real, Imaginary]"
 
 # Typical velocity factors (fraction of c0); overridable
-_CABLE_VF: Dict[CableTypes, float] = {
+_CABLE_VF: dict[CableTypes, float] = {
     "RG6": 0.87,
     "RG59": 0.82,
     "RG11": 0.87,
@@ -84,7 +85,7 @@ class IfftEchoReflectionModel(BaseModel):
     # Parameters used
     threshold_frac: float           = Field(..., description="Fraction of main-peak magnitude used as threshold")
     guard_bins: int                 = Field(..., description="Guard bins skipped after main peak")
-    max_delay_s: Optional[float]    = Field(default=None, description="Optional max delay window for echo search (s)")
+    max_delay_s: float | None    = Field(default=None, description="Optional max delay window for echo search (s)")
 
 class IfftEchoTimeResponseModel(BaseModel):
     """Time-domain impulse response via IFFT with optional zero-padding.
@@ -130,11 +131,11 @@ class IfftEchoDetectorModel(BaseModel):
     # complex encoding declaration (serialized with alias "complex")
     complex_unit: Literal["[Real, Imaginary]"] = Field(COMPLEX_LITERAL, alias="complex", description="Complex encoding tag")
 
-    H_snap: List[ComplexArray]  = Field(..., description="M×N snapshots of frequency response as (re, im) pairs")
+    H_snap: list[ComplexArray]  = Field(..., description="M×N snapshots of frequency response as (re, im) pairs")
     H_avg: ComplexArray         = Field(..., description="N-length coherent average as (re, im) pairs")
 
     reflection: IfftEchoReflectionModel                 = Field(..., description="Detected direct path and first echo metrics")
-    time_response: Optional[IfftEchoTimeResponseModel]  = Field(default=None, description="IFFT impulse response and time axis")
+    time_response: IfftEchoTimeResponseModel | None  = Field(default=None, description="IFFT impulse response and time axis")
 
     # Validators to ensure shapes & pairs
     @staticmethod
@@ -159,11 +160,11 @@ class IfftEchoDetectorModel(BaseModel):
 
     @field_validator("H_snap")
     @classmethod
-    def _coerce_snap(cls, v: List[ComplexArray], info) -> List[ComplexArray]:
+    def _coerce_snap(cls, v: list[ComplexArray], info) -> list[ComplexArray]:
         if not v or not v[0]:
             raise ValueError("H_snap must be non-empty M×N.")
         n = len(v[0])
-        out: List[ComplexArray] = []
+        out: list[ComplexArray] = []
         for row in v:
             if len(row) != n:
                 raise ValueError("H_snap must be rectangular (all rows same length).")
@@ -219,27 +220,27 @@ class IfftMultiEchoDetectionModel(BaseModel):
 
     # Detected paths
     direct_path: IfftEchoPathModel  = Field(..., description="Strongest (direct) path")
-    echoes: List[IfftEchoPathModel] = Field(..., description="Detected echo peaks (sorted by amplitude)")
+    echoes: list[IfftEchoPathModel] = Field(..., description="Detected echo peaks (sorted by amplitude)")
 
     # Parameters used
     threshold_frac: float           = Field(..., description="Threshold as fraction of |h| at direct path")
     guard_bins: int                 = Field(..., description="Guard region after direct path (bins)")
     min_separation_s: float         = Field(..., description="Min separation between echoes (seconds)")
-    max_delay_s: Optional[float]    = Field(default=None, description="Optional max search window after direct (s)")
+    max_delay_s: float | None    = Field(default=None, description="Optional max search window after direct (s)")
     max_peaks: int                  = Field(..., description="Maximum number of echoes to return (not counting direct)")
 
     # Optional time response block (handy for clients that want to draw)
-    time_response: Optional[IfftEchoTimeResponseModel] = Field(default=None)
+    time_response: IfftEchoTimeResponseModel | None = Field(default=None)
 
 
 # ──────────────────────────────────────────────────────────────
 # Utilities
 # ──────────────────────────────────────────────────────────────
-def _local_maxima_indices(mag: NDArray[np.float64]) -> List[int]:
+def _local_maxima_indices(mag: NDArray[np.float64]) -> list[int]:
     """Return indices i that are local maxima: mag[i] >= mag[i-1] and > mag[i+1]."""
     if mag.size < 3:
         return []
-    idxs: List[int] = []
+    idxs: list[int] = []
     for i in range(1, mag.size - 1):
         if mag[i] >= mag[i - 1] and mag[i] > mag[i + 1]:
             idxs.append(i)
@@ -271,11 +272,7 @@ class IfftEchoDetector:
 
     def __init__(
         self,
-        freq_data: Union[
-            Sequence[complex],
-            Sequence[Sequence[complex]],
-            Sequence[Sequence[float]]
-        ],
+        freq_data: Sequence[complex] | Sequence[Sequence[complex]] | Sequence[Sequence[float]],
         sample_rate: float,
         prop_speed_frac: float = 0.87,
     ):
@@ -322,9 +319,9 @@ class IfftEchoDetector:
         self.N: int = int(self.H_snap.shape[1])
 
         # Time-domain cache
-        self._time_axis: Optional[NDArray[np.float64]] = None
-        self._time_response: Optional[NDArray[np.complex128]] = None
-        self._n_fft: Optional[int] = None
+        self._time_axis: NDArray[np.float64] | None = None
+        self._time_response: NDArray[np.complex128] | None = None
+        self._n_fft: int | None = None
 
     # ──────────────────────────────────────────────────────────
     # Helpers
@@ -335,10 +332,10 @@ class IfftEchoDetector:
         return [(float(np.real(v)), float(np.imag(v))) for v in vec]
 
     @staticmethod
-    def _mat_to_pairs(mat: NDArray[np.complex128]) -> List[ComplexArray]:
+    def _mat_to_pairs(mat: NDArray[np.complex128]) -> list[ComplexArray]:
         """Encode a complex matrix as (re, im) pairs, row-wise."""
         M, _ = mat.shape
-        out: List[ComplexArray] = []
+        out: list[ComplexArray] = []
         for m in range(M):
             out.append([(float(np.real(v)), float(np.imag(v))) for v in mat[m]])
         return out
@@ -346,7 +343,7 @@ class IfftEchoDetector:
     # ──────────────────────────────────────────────────────────
     # Core operations
     # ──────────────────────────────────────────────────────────
-    def compute_time_response(self, n_fft: Optional[int] = None) -> Tuple[NDArray[np.float64], NDArray[np.complex128]]:
+    def compute_time_response(self, n_fft: int | None = None) -> tuple[NDArray[np.float64], NDArray[np.complex128]]:
         """Compute h(t) = IFFT{H(f)} with optional zero-padding to n_fft.
 
         Returns
@@ -371,7 +368,7 @@ class IfftEchoDetector:
         self,
         threshold_frac: float = 0.2,
         guard_bins: int = 1,
-        max_delay_s: Optional[float] = None,
+        max_delay_s: float | None = None,
     ) -> IfftEchoReflectionModel:
         """Locate the direct path and the first echo peak in |h(t)|.
 
@@ -409,7 +406,7 @@ class IfftEchoDetector:
         else:
             stop = n
 
-        ie: Optional[int] = None
+        ie: int | None = None
         for idx in range(start, stop):
             if mag[idx] >= thresh:
                 ie = int(idx)
@@ -444,13 +441,13 @@ class IfftEchoDetector:
         self,
         *,
         cable_type: CableTypes = "RG6",
-        velocity_factor: Optional[float]    = None,
+        velocity_factor: float | None    = None,
         threshold_frac: float               = 0.2,
         guard_bins: int                     = 1,
         min_separation_s: float             = 0.0,
-        max_delay_s: Optional[float]        = None,
+        max_delay_s: float | None        = None,
         max_peaks: int                      = 5,
-        n_fft: Optional[int]                = None,
+        n_fft: int | None                = None,
         include_time_response: bool         = True,
     ) -> IfftMultiEchoDetectionModel:
         """Detect multiple echoes using local maxima in |h(t)| above threshold.
@@ -516,7 +513,7 @@ class IfftEchoDetector:
 
         # enforce minimum separation in bins
         min_sep_bins = int(np.ceil(max(0.0, min_separation_s) * self.sample_rate))
-        selected: List[int] = []
+        selected: list[int] = []
         for i in cand_idxs:
             if not selected or all(abs(i - j) >= min_sep_bins for j in selected):
                 selected.append(i)
@@ -537,7 +534,7 @@ class IfftEchoDetector:
             distance_ft =   0.0,)
 
         # echoes
-        echoes: List[IfftEchoPathModel] = []
+        echoes: list[IfftEchoPathModel] = []
         for ie in selected:
             te = float(t[ie])
             delay = float(te - t0)
@@ -553,7 +550,7 @@ class IfftEchoDetector:
             )
 
         # optional time-response block
-        tr_block: Optional[IfftEchoTimeResponseModel] = None
+        tr_block: IfftEchoTimeResponseModel | None = None
         if include_time_response and self._n_fft is not None:
             tr_block = IfftEchoTimeResponseModel(
                 n_fft=int(self._n_fft),
@@ -590,10 +587,10 @@ class IfftEchoDetector:
     def to_model(
         self,
         *,
-        n_fft: Optional[int] = None,
+        n_fft: int | None = None,
         threshold_frac: float = 0.2,
         guard_bins: int = 1,
-        max_delay_s: Optional[float] = None,
+        max_delay_s: float | None = None,
         include_time_response: bool = True,
     ) -> IfftEchoDetectorModel:
         """Build a canonical model payload for IFFT echo analysis (first-echo variant)."""
@@ -603,7 +600,7 @@ class IfftEchoDetector:
 
         dataset = IfftEchoDetectorDatasetInfo(subcarriers=self.N, snapshots=self.M)
 
-        H_snap_pairs: List[ComplexArray] = self._mat_to_pairs(self.H_snap)
+        H_snap_pairs: list[ComplexArray] = self._mat_to_pairs(self.H_snap)
         H_avg_pairs: ComplexArray = self._vec_to_pairs(self.H_avg)
 
         reflection = self.detect_reflection(
@@ -611,7 +608,7 @@ class IfftEchoDetector:
             guard_bins      =   guard_bins,
             max_delay_s     =   max_delay_s,)
 
-        tr_block: Optional[IfftEchoTimeResponseModel] = None
+        tr_block: IfftEchoTimeResponseModel | None = None
         if include_time_response and self._time_axis is not None and self._time_response is not None and self._n_fft is not None:
             tr_block = IfftEchoTimeResponseModel(
                 n_fft           =   int(self._n_fft),

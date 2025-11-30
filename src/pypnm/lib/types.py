@@ -5,7 +5,8 @@ from __future__ import annotations
 
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, NewType, Sequence, Tuple, TypeAlias, Union
+from typing import Any, Dict, List, NewType, Tuple, TypeAlias, Union
+from collections.abc import Sequence
 
 import numpy as np
 from numpy.typing import NDArray
@@ -28,20 +29,20 @@ class FloatEnum(float, Enum):
 
 # Basic strings
 String: TypeAlias       = str
-StringArray: TypeAlias  = List[String]
+StringArray: TypeAlias  = list[String]
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Core numerics
 # ────────────────────────────────────────────────────────────────────────────────
 Number       = Union[int, float, np.number]
 Float64      = np.float64
-ByteArray    = List[np.uint8]
+ByteArray    = list[np.uint8]
 
 # Generic array-likes (inputs)
 # TODO: Review to remove -> _ArrayLike = Union[Sequence[Number], NDArray[Any]]
 _ArrayLike   = Union[Sequence[Number], NDArray[Any]]
 
-ArrayLike    = List[Number]
+ArrayLike    = list[Number]
 ArrayLikeF64 = Union[Sequence[float], NDArray[np.float64]]
 
 # Canonical ndarray outputs (internal processing should normalize to these)
@@ -52,15 +53,15 @@ NDArrayC128: TypeAlias  = NDArray[np.complex128]
 # ────────────────────────────────────────────────────────────────────────────────
 # Simple series / containers  — use TypeAlias (recommended)
 # ────────────────────────────────────────────────────────────────────────────────
-IntSeries: TypeAlias        = List[int]
-FloatSeries: TypeAlias      = List[float]
-TwoDFloatSeries: TypeAlias  = List[FloatSeries]
+IntSeries: TypeAlias        = list[int]
+FloatSeries: TypeAlias      = list[float]
+TwoDFloatSeries: TypeAlias  = list[FloatSeries]
 FloatSequence: TypeAlias    = Sequence[float]
 
 # Complex number encodings (JSON-safe)
-Complex                  = Tuple[float, float]  # (re, im)
-ComplexArray: TypeAlias  = List[Complex]        # K × (re, im)
-ComplexSeries: TypeAlias = List[complex]        # Python complex list (internal use)
+Complex                  = tuple[float, float]  # (re, im)
+ComplexArray: TypeAlias  = list[Complex]        # K × (re, im)
+ComplexSeries: TypeAlias = list[complex]        # Python complex list (internal use)
 ComplexMatrix: TypeAlias = list[ComplexArray]
 
 # ────────────────────────────────────────────────────────────────────────────────
@@ -72,15 +73,15 @@ ProfileId = NewType("ProfileId", int)
 # Paths / filesystem
 # ────────────────────────────────────────────────────────────────────────────────
 PathLike  = Union[str, Path]
-PathArray = List[PathLike]
+PathArray = list[PathLike]
 FileNameStr = NewType("FileNameStr", str)
 
 # ────────────────────────────────────────────────────────────────────────────────
 # JSON-like structures for REST I/O
 # ────────────────────────────────────────────────────────────────────────────────
 JSONScalar = Union[str, int, float, bool, None]
-JSONDict   = Dict[str, "JSONValue"]
-JSONList   = List["JSONValue"]
+JSONDict   = dict[str, "JSONValue"]
+JSONList   = list["JSONValue"]
 JSONValue  = Union[JSONScalar, JSONDict, JSONList]
 
 # ────────────────────────────────────────────────────────────────────────────────
@@ -112,7 +113,7 @@ SubcarrierIdx = NewType("SubcarrierIdx", int)
 
 # SNMP identifiers
 OidStr          = NewType("OidStr", str)              # symbolic or dotted-decimal
-OidNumTuple     = NewType("OidNumTuple", Tuple[int, ...])
+OidNumTuple     = NewType("OidNumTuple", tuple[int, ...])
 InterfaceIndex  = NewType("InterfaceIndex", int)
 EntryIndex      = NewType("EntryIndex", int)
 
@@ -130,22 +131,22 @@ FileName      = NewType("FileName", str)
 # ────────────────────────────────────────────────────────────────────────────────
 # Analysis-specific tuples / series
 # ────────────────────────────────────────────────────────────────────────────────
-RegressionCoeffs = Tuple[float, float]              # (slope, intercept)
-RegressionStats  = Tuple[float, float, float]       # (slope, intercept, r2)
+RegressionCoeffs = tuple[float, float]              # (slope, intercept)
+RegressionStats  = tuple[float, float, float]       # (slope, intercept, r2)
 
 # RxMER / spectrum containers
-FrequencySeriesHz: TypeAlias = List[FrequencyHz]
+FrequencySeriesHz: TypeAlias = list[FrequencyHz]
 MerSeriesdB: TypeAlias       = FloatSeries
 ShannonSeriesdB: TypeAlias   = FloatSeries
 MagnitudeSeries: TypeAlias   = FloatSeries
 
 BitsPerSymbol       = NewType("BitsPerSymbol", int)
-BitsPerSymbolSeries: TypeAlias = List[BitsPerSymbol]
+BitsPerSymbolSeries: TypeAlias = list[BitsPerSymbol]
 
 Microseconds = NewType("Microseconds", float)
 
 # IFFT time response
-IfftTimeResponse: TypeAlias = Tuple[NDArrayF64, NDArrayC128]
+IfftTimeResponse: TypeAlias = tuple[NDArrayF64, NDArrayC128]
 
 # ────────────────────────────────────────────────────────────────────────────────
 # HTTP return code type

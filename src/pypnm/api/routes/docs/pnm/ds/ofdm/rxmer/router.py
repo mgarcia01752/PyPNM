@@ -88,8 +88,8 @@ class RxMerRouter:
                 err = "Unable to complete RxMER measurement."
                 return SnmpResponse(mac_address=mac, message=err, status=msg_rsp.status)
 
-            measurement_stats:List[DocsPnmCmDsOfdmRxMerEntry] = \
-                cast(List[DocsPnmCmDsOfdmRxMerEntry], await service.getPnmMeasurementStatistics())
+            measurement_stats:list[DocsPnmCmDsOfdmRxMerEntry] = \
+                cast(list[DocsPnmCmDsOfdmRxMerEntry], await service.getPnmMeasurementStatistics())
 
             cps = CommonProcessService(msg_rsp)
             msg_rsp = cps.process()
@@ -97,7 +97,7 @@ class RxMerRouter:
             analysis = Analysis(AnalysisType.BASIC, msg_rsp)
 
             if request.analysis.output.type == OutputType.JSON:
-                payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
+                payload: dict[str, Any] = cast(dict[str, Any], analysis.get_results())
 
                 # Clean up payload by removing unneeded or redundant sections
                 DictGenerate.pop_keys_recursive(payload, ["pnm_header", "modulations", "snr_db_values"])

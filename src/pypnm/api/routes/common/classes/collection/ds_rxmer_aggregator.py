@@ -34,7 +34,7 @@ class RxMerCaptureModel(BaseModel):
     values: MagnitudeSeries      = Field(..., description="Per-subcarrier RxMER values (dB).")
 
     @model_validator(mode="after")
-    def _check_lengths(self) -> "RxMerCaptureModel":
+    def _check_lengths(self) -> RxMerCaptureModel:
         if not self.frequency or not self.values:
             raise ValueError("`frequency` and `values` must be non-empty.")
         if len(self.frequency) != len(self.values):
@@ -79,7 +79,7 @@ class DsRxMerAggregator(MultiPnmCollection):
         """
 
         captures: Sequence[tuple[CaptureTime, CmDsOfdmRxMer]] = self.get(channel_id=channel_id)
-        mags:List[MagnitudeSeries] = []
+        mags:list[MagnitudeSeries] = []
 
         for capture_time, dorm in captures:
             values = dorm.get_rxmer_values()
@@ -100,7 +100,7 @@ class DsRxMerAggregator(MultiPnmCollection):
     @overload
     def get_basic_analysis(self, channel_id: ChannelId, capture_time: CaptureTime) -> Any: ...
 
-    def get_basic_analysis(self, channel_id: Optional[ChannelId] = None, capture_time: Optional[CaptureTime] = None) -> Any:
+    def get_basic_analysis(self, channel_id: ChannelId | None = None, capture_time: CaptureTime | None = None) -> Any:
         """
         Perform basic RxMER analysis using `Analysis.basic_analysis_rxmer`.
 
@@ -130,7 +130,7 @@ class DsRxMerAggregator(MultiPnmCollection):
         - Each capture is converted via `.to_model().model_dump()` prior to analysis to ensure
         a stable, serializable payload for the analysis function.
         """
-        captures: List[CmDsOfdmRxMer] = []
+        captures: list[CmDsOfdmRxMer] = []
         if channel_id is None:
             for ch_map in self._store.values():
                 for _, obj in ch_map.items():

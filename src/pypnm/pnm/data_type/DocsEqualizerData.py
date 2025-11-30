@@ -33,7 +33,7 @@ class DocsEqualizerData:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
         self._coefficients_found: bool = False
-        self.equalizer_data: Dict[int, Dict] = {}
+        self.equalizer_data: dict[int, dict] = {}
 
     def add(self, us_idx: int, hex_data: str) -> bool:
         """
@@ -81,7 +81,7 @@ class DocsEqualizerData:
             self.logger.error(f"Failed to parse equalizer data for index {us_idx}: {e}")
             return False
 
-    def _parse_coefficients(self, data: bytes) -> List[Dict[str, float]]:
+    def _parse_coefficients(self, data: bytes) -> list[dict[str, float]]:
         coeffs = []
         for i in range(0, len(data), self.COMPLEX_TAP_SIZE):
             real = int.from_bytes(data[i:i + self.COEFF_BYTES], byteorder='big', signed=True)
@@ -101,7 +101,7 @@ class DocsEqualizerData:
     def coefficients_found(self) -> bool:
         return self._coefficients_found
 
-    def to_dict(self) -> Dict[int, Dict]:
+    def to_dict(self) -> dict[int, dict]:
         return self.equalizer_data
 
     def to_json(self, indent: int = 2) -> str:

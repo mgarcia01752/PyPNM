@@ -360,7 +360,7 @@ class PnmFileService:
             media_type  =   media_type,
         )
 
-    def get_analysis(self, req: FileAnalysisRequest) -> Tuple[ParserAnalysisModelReturn, PnmFileType]:
+    def get_analysis(self, req: FileAnalysisRequest) -> tuple[ParserAnalysisModelReturn, PnmFileType]:
         """
         Returns basic analysis result for a stored PNM file identified by transaction ID.
         The analysis performed depends on the PNM file type.
@@ -483,7 +483,7 @@ class PnmFileService:
             lines          = lines,
         )
 
-    def __get_analysis(self, parser: PnmParsers, model:PnmParserParametersModel) -> Tuple[ParserAnalysisModelReturn, PnmFileType]:
+    def __get_analysis(self, parser: PnmParsers, model:PnmParserParametersModel) -> tuple[ParserAnalysisModelReturn, PnmFileType]:
         """
         Internal method to instantiate the Analysis class with the given parser and model.
         """

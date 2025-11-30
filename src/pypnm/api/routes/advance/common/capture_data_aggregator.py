@@ -50,7 +50,7 @@ class CaptureDataAggregator:
 
         """
         capture_grp = CaptureGroup(self._capture_group_id)
-        txn_ids: List[TransactionId] = capture_grp.getTransactionIds()
+        txn_ids: list[TransactionId] = capture_grp.getTransactionIds()
 
         if not txn_ids:
             self.logger.warning(f"No transactions found for capture_group_id='{self._capture_group_id}'")

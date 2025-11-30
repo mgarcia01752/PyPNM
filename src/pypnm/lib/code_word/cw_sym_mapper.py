@@ -3,7 +3,8 @@
 
 from __future__ import annotations
 
-from typing import Iterable, Iterator, List, Literal, Optional
+from typing import List, Literal, Optional
+from collections.abc import Iterable, Iterator
 
 import numpy as np
 
@@ -60,7 +61,7 @@ class QamByteToSymbolMapper:
         self,
         codeword_lut: CodeWordLut,
         *,
-        bits_per_symbol: Optional[int] = None,
+        bits_per_symbol: int | None = None,
         require_dense: bool = True,
         pad: Literal["drop", "zero"] = "drop",
         bit_order: Literal["msb", "lsb"] = "msb",
@@ -70,7 +71,7 @@ class QamByteToSymbolMapper:
             raise ValueError("codeword_lut cannot be empty")
 
         self._lut: CodeWordLut = dict(codeword_lut)
-        self._keys_sorted: List[int] = sorted(self._lut.keys())
+        self._keys_sorted: list[int] = sorted(self._lut.keys())
 
         # Infer bits/symbol if not provided
         if bits_per_symbol is None:
@@ -101,7 +102,7 @@ class QamByteToSymbolMapper:
     # -------------------------------------------------------------------------
     # Public API
     # -------------------------------------------------------------------------
-    def map_bytes(self, data: bytes) -> List[Complex]:
+    def map_bytes(self, data: bytes) -> list[Complex]:
         """
         Convert a byte stream to a list of QAM constellation points (I, Q).
 
@@ -255,7 +256,7 @@ class QamByteToSymbolMapper:
         return total_bits // self.bits_per_symbol
 
     @staticmethod
-    def _is_dense_power_of_two(keys_sorted: List[int]) -> bool:
+    def _is_dense_power_of_two(keys_sorted: list[int]) -> bool:
         """
         True if keys are exactly [0 .. 2^k - 1] for some k≥1.
         """

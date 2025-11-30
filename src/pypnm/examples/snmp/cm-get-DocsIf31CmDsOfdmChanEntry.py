@@ -36,7 +36,7 @@ async def main():
 
     logging.info(f"Connected to: {await cm.getSysDescr()}")
 
-    obj_list:List[DocsIf31CmDsOfdmChanEntry] = await cm.getDocsIf31CmDsOfdmChanEntry()
+    obj_list:list[DocsIf31CmDsOfdmChanEntry] = await cm.getDocsIf31CmDsOfdmChanEntry()
 
     for obj in obj_list:
         print(obj.to_dict())

@@ -72,14 +72,14 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
     def __init__(self, analysis: Analysis):
         super().__init__(analysis)
         self.logger = logging.getLogger("CmUsOfdmaPreEqReport")
-        self._results: Dict[int, OfdmaPreEqAnalysis] = {}
+        self._results: dict[int, OfdmaPreEqAnalysis] = {}
         self._sig_cap_agg: SignalCaptureAggregator   = SignalCaptureAggregator()
 
-    def create_csv(self, **kwargs) -> List[CSVManager]:
+    def create_csv(self, **kwargs) -> list[CSVManager]:
         """
         Stream validated models into CSVs. Assumes `_process()` already enforced.
         """
-        csv_mgr_list: List[CSVManager] = []
+        csv_mgr_list: list[CSVManager] = []
         any_models: bool               = False
 
         for common_model in self.get_common_analysis_model():
@@ -122,11 +122,11 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self, **kwargs) -> List[MatplotManager]:
+    def create_matplot(self, **kwargs) -> list[MatplotManager]:
         """
         Generate per-channel plots from validated OFDMA US Pre-EQ models.
         """
-        matplot_mgr: List[MatplotManager] = []
+        matplot_mgr: list[MatplotManager] = []
         any_models: bool                  = False
         chan_id_list: FloatSeries           = []
 
@@ -301,7 +301,7 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
         This method expects `self.get_analysis_model()` to return a list of
         `UsOfdmaUsPreEqAnalysisModel` instances (already validated upstream).
         """
-        models: List[UsOfdmaUsPreEqAnalysisModel] = cast(List[UsOfdmaUsPreEqAnalysisModel], self.get_analysis_model())
+        models: list[UsOfdmaUsPreEqAnalysisModel] = cast(list[UsOfdmaUsPreEqAnalysisModel], self.get_analysis_model())
 
         for idx, model in enumerate(models):
 
@@ -317,8 +317,8 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                 group_delay: FloatSeries           = list(cv.group_delay.magnitude)
 
                 # Coerce -> float and ensure finiteness
-                def coerce_finite(seq, name: str) -> List[float]:
-                    out: List[float] = []
+                def coerce_finite(seq, name: str) -> list[float]:
+                    out: list[float] = []
                     for v in seq:
                         fv = float(v)
                         if not math.isfinite(fv):

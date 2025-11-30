@@ -38,7 +38,7 @@ class UsScQamChannelService:
                              inet=Inet(ip_address),
                              write_community=snmp_config.snmp_v2c.community)
 
-    async def get_upstream_entries(self) -> List[dict]:
+    async def get_upstream_entries(self) -> list[dict]:
         """
         Fetches DOCSIS Upstream SC-QAM channel entries.
 

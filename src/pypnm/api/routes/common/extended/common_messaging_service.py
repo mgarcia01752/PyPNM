@@ -49,7 +49,7 @@ class MessageResponse:
 
     """
 
-    def __init__(self, status: ServiceStatusCode, payload: Optional[Any] = None):
+    def __init__(self, status: ServiceStatusCode, payload: Any | None = None):
         """
         Initializes a MessageResponse instance.
 
@@ -58,9 +58,9 @@ class MessageResponse:
             payload (Optional[Any]): Optional message payload.
         """
         self.status:ServiceStatusCode = status
-        self.payload:Optional[Any] = payload
+        self.payload:Any | None = payload
 
-    def get(self) -> Dict[str, Any]:
+    def get(self) -> dict[str, Any]:
         """
         Serializes the message response to a dictionary.
 
@@ -81,7 +81,7 @@ class MessageResponse:
     def __str__(self):
         return self.__repr__()
 
-    def get_payload_msg(payload_element: Dict[str, Any]) -> Tuple[str, str, Any]:
+    def get_payload_msg(payload_element: dict[str, Any]) -> tuple[str, str, Any]:
         """
         Extracts 'status', 'message_type', and 'message' from a payload element.
 
@@ -96,7 +96,7 @@ class MessageResponse:
         message = payload_element.get("message", None)
         return status, message_type, message
 
-    def payload_to_dict(self, key: Union[int, str] = "data") -> Dict[Union[int,str], Any]:
+    def payload_to_dict(self, key: int | str = "data") -> dict[int | str, Any]:
         """
         Wraps the internal payload in a dictionary under the specified key.
 
@@ -137,10 +137,10 @@ class CommonMessagingService:
         """
         Initializes an empty messaging service instance.
         """
-        self._messages: List[Tuple[ServiceStatusCode, Dict[str, Any]]] = []
+        self._messages: list[tuple[ServiceStatusCode, dict[str, Any]]] = []
         self._last_non_success_status = ServiceStatusCode.SUCCESS
 
-    def build_msg(self, status: ServiceStatusCode, payload: Optional[Dict[str, Any]] = None):
+    def build_msg(self, status: ServiceStatusCode, payload: dict[str, Any] | None = None):
         """
         Queues a new message with status and optional data.
 
@@ -184,7 +184,7 @@ class CommonMessagingService:
 
         return MessageResponse(final_status, combined_data)
 
-    def build_send_msg(self, status: ServiceStatusCode, data: Optional[Dict[str, Any]] = None) -> MessageResponse:
+    def build_send_msg(self, status: ServiceStatusCode, data: dict[str, Any] | None = None) -> MessageResponse:
         """
         Builds and immediately sends a single message.
 
@@ -219,7 +219,7 @@ class CommonMessagingService:
             }
         })
 
-    def build_session_msg( self,session_id: str,transaction_ids: List[str],
+    def build_session_msg( self,session_id: str,transaction_ids: list[str],
         status: ServiceStatusCode = ServiceStatusCode.SUCCESS):
         """
         Enqueue a PNM file transaction session message.
@@ -241,7 +241,7 @@ class CommonMessagingService:
             },
         )
 
-    def get_first_of_type(self, msg_type: MessageResponseType) -> Optional[Dict[str, Any]]:
+    def get_first_of_type(self, msg_type: MessageResponseType) -> dict[str, Any] | None:
         """
         Retrieves the first message of a specified type, if available.
 

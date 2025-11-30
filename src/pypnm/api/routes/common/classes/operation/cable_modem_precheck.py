@@ -10,7 +10,8 @@ verifying reachability via ping, SNMP, and optional DOCSIS version compatibility
 from __future__ import annotations
 
 import logging
-from typing import Iterable, List, Optional, Tuple
+from typing import List, Optional, Tuple
+from collections.abc import Iterable
 
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.dev.service import SNMPConfig
@@ -22,7 +23,7 @@ from pypnm.lib.inet import Inet
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import InetAddressStr, MacAddressStr
 
-PreCheckStatus = Tuple[ServiceStatusCode, str]
+PreCheckStatus = tuple[ServiceStatusCode, str]
 
 class CableModemServicePreCheck:
     """
@@ -45,11 +46,11 @@ class CableModemServicePreCheck:
 
     def __init__(
         self,
-        cable_modem: Optional[CableModem] = None,
-        mac_address: Optional[MacAddressStr] = None,
-        ip_address: Optional[InetAddressStr] = None,
-        snmp_config: Optional[SNMPConfig] = None,
-        check_docsis_version: List[ClabsDocsisVersion] = None,
+        cable_modem: CableModem | None = None,
+        mac_address: MacAddressStr | None = None,
+        ip_address: InetAddressStr | None = None,
+        snmp_config: SNMPConfig | None = None,
+        check_docsis_version: list[ClabsDocsisVersion] = None,
         validate_ofdm_exist: bool       = False,
         validate_ofdma_exist: bool      = False,
         validate_scqam_exist: bool      = False,
@@ -108,7 +109,7 @@ class CableModemServicePreCheck:
         self._validate_pnm_ready_stat   = validate_pnm_ready_status
         self._ignore_mac_address_check  = ignore_mac_address_check
 
-    async def run_precheck(self) -> Tuple[ServiceStatusCode, str]:
+    async def run_precheck(self) -> tuple[ServiceStatusCode, str]:
         """
         Run full pre-check routine:
           1. Ping modem
@@ -245,7 +246,7 @@ class CableModemServicePreCheck:
             self.logger.error(f"Error retrieving MAC address: {e}", exc_info=True)
             raise
 
-    async def validate_docsis_version(self) -> Tuple[ServiceStatusCode, str]:
+    async def validate_docsis_version(self) -> tuple[ServiceStatusCode, str]:
         """
         Check if the modem's DOCSIS version is in the accepted list.
 
@@ -267,7 +268,7 @@ class CableModemServicePreCheck:
             self.logger.error(msg, exc_info=True)
             return ServiceStatusCode.INVALID_DOCSIS_VERSION, msg
 
-    async def validate_ofdm_channel_exist(self) -> Tuple[ServiceStatusCode, str]:
+    async def validate_ofdm_channel_exist(self) -> tuple[ServiceStatusCode, str]:
         """
         Checks whether any OFDM downstream channels are present on the cable modem.
 
@@ -287,7 +288,7 @@ class CableModemServicePreCheck:
 
         return ServiceStatusCode.SUCCESS, "OFDMA upstream channels detected."
 
-    async def validate_ofdma_channel_exist(self) -> Tuple[ServiceStatusCode, str]:
+    async def validate_ofdma_channel_exist(self) -> tuple[ServiceStatusCode, str]:
         """
         Checks whether any OFDMA upstream channels are present on the cable modem.
 
@@ -307,7 +308,7 @@ class CableModemServicePreCheck:
 
         return ServiceStatusCode.SUCCESS, "OFDMA upstream channels detected."
 
-    async def validate_scqam_channel_exist(self) -> Tuple[ServiceStatusCode, str]:
+    async def validate_scqam_channel_exist(self) -> tuple[ServiceStatusCode, str]:
         """
         Checks whether any SC-QAM downstream channels are present on the cable modem.
 
@@ -327,7 +328,7 @@ class CableModemServicePreCheck:
 
         return ServiceStatusCode.SUCCESS, "SC-QAM downstream channels detected."
 
-    async def validate_atdma_channel_exist(self) -> Tuple[ServiceStatusCode, str]:
+    async def validate_atdma_channel_exist(self) -> tuple[ServiceStatusCode, str]:
         """
         Checks whether any ATDMA upstream channels are present on the cable modem.
 

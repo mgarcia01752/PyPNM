@@ -44,8 +44,8 @@ class CaptureGroup:
         txns = cg2.get_transactions()
     """
 
-    def __init__(self, group_id: Optional[GroupId] = None,
-                 db_path: Optional[Path] = None) -> None:
+    def __init__(self, group_id: GroupId | None = None,
+                 db_path: Path | None = None) -> None:
         """
         Initialize the CaptureGroup manager.
 
@@ -71,7 +71,7 @@ class CaptureGroup:
             self._atomic_write_db({})
 
         # Load in-memory state
-        self._db: Dict[str, Any] = {}
+        self._db: dict[str, Any] = {}
         self._grp_id: GroupId = group_id
         self._load_db()
         self._create_group_id()
@@ -90,7 +90,7 @@ class CaptureGroup:
             self.logger.error(f"Error loading DB: {e}")
             self._db = {}
 
-    def _atomic_write_db(self, data: Dict[str, Any]) -> None:
+    def _atomic_write_db(self, data: dict[str, Any]) -> None:
         """
         Atomically write the given data dict to the JSON DB file.
         """
@@ -153,7 +153,7 @@ class CaptureGroup:
             self._save_db()
             self.logger.debug(f"Added txn {txn_id} to group {gid}")
 
-    def getTransactionIds(self) -> List[TransactionId]:
+    def getTransactionIds(self) -> list[TransactionId]:
         """
         Return all transaction IDs for this group (empty list if none).
         """
@@ -170,7 +170,7 @@ class CaptureGroup:
             self.logger.info(f"Deleted group: {gid}")
         self._grp_id = None
 
-    def list_groups(self) -> List[str]:
+    def list_groups(self) -> list[str]:
         """
         List all group IDs currently in the DB.
         """

@@ -97,7 +97,7 @@ class ComplexArrayOps:
 
         return (a[:, 0] + 1j * a[:, 1]).astype(np.complex128, copy=False)
 
-    def copy(self) -> "ComplexArrayOps":
+    def copy(self) -> ComplexArrayOps:
         """
         Return a deep copy.
 
@@ -242,7 +242,7 @@ class ComplexArrayOps:
     # Aggregate measures
     # ---------------------------
 
-    def rms(self, *, mask: Optional[ArrayLikeF64] = None) -> float:
+    def rms(self, *, mask: ArrayLikeF64 | None = None) -> float:
         """
         Root-mean-square magnitude.
 
@@ -266,7 +266,7 @@ class ComplexArrayOps:
             return float("nan")
         return float(np.sqrt(np.mean(p)))
 
-    def mean_power(self, *, mask: Optional[ArrayLikeF64] = None) -> float:
+    def mean_power(self, *, mask: ArrayLikeF64 | None = None) -> float:
         """
         Mean linear power.
 
@@ -294,7 +294,7 @@ class ComplexArrayOps:
     # Transformations (return NEW instances)
     # ---------------------------
 
-    def conj(self) -> "ComplexArrayOps":
+    def conj(self) -> ComplexArrayOps:
         """
         Complex conjugate per subcarrier.
 
@@ -307,7 +307,7 @@ class ComplexArrayOps:
         obj._z = np.conjugate(self._z)
         return obj
 
-    def reciprocal(self, *, eps: float = 0.0) -> "ComplexArrayOps":
+    def reciprocal(self, *, eps: float = 0.0) -> ComplexArrayOps:
         """
         Pointwise complex reciprocal.
 
@@ -330,7 +330,7 @@ class ComplexArrayOps:
         obj._z = y
         return obj
 
-    def scale(self, gain: Number) -> "ComplexArrayOps":
+    def scale(self, gain: Number) -> ComplexArrayOps:
         """
         Scale the complex vector by a real or complex gain.
 
@@ -348,7 +348,7 @@ class ComplexArrayOps:
         obj._z = np.asarray(gain, dtype=np.complex128) * self._z
         return obj
 
-    def normalize_rms(self, *, target: float = 1.0, mask: Optional[ArrayLikeF64] = None) -> "ComplexArrayOps":
+    def normalize_rms(self, *, target: float = 1.0, mask: ArrayLikeF64 | None = None) -> ComplexArrayOps:
         """
         Scale the vector so that RMS magnitude equals `target`.
 
@@ -378,7 +378,7 @@ class ComplexArrayOps:
     # Frequency / time transforms
     # ---------------------------
 
-    def fft(self, *, n: Optional[int] = None, norm: Optional[str] = None) -> "ComplexArrayOps":
+    def fft(self, *, n: int | None = None, norm: str | None = None) -> ComplexArrayOps:
         """
         Discrete Fourier Transform (forward), returning a NEW instance.
 
@@ -398,7 +398,7 @@ class ComplexArrayOps:
         obj._z = np.fft.fft(self._z, n=n, norm=norm)
         return obj
 
-    def ifft(self, *, n: Optional[int] = None, norm: Optional[str] = None) -> "ComplexArrayOps":
+    def ifft(self, *, n: int | None = None, norm: str | None = None) -> ComplexArrayOps:
         """
         Inverse Discrete Fourier Transform (inverse), returning a NEW instance.
 

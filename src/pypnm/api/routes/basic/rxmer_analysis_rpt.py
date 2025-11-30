@@ -6,7 +6,8 @@ from __future__ import annotations
 import logging
 import math
 import re
-from typing import Dict, List, Mapping, Tuple, cast
+from typing import Dict, List, Tuple, cast
+from collections.abc import Mapping
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -35,7 +36,7 @@ class RxMerParametersAnalysisRpt(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
     shannon_limit_db: FloatSeries       = Field(..., description="Shannon/SNR limit per subcarrier (dB)")
     regression_line: FloatSeries        = Field(..., description="Regression fitted values per subcarrier")
-    modulation_count: Dict[str, int]    = Field(..., description="Number of supported modulation schemes")
+    modulation_count: dict[str, int]    = Field(..., description="Number of supported modulation schemes")
 
 class RxMerAnalysisRptModel(CommonAnalysis):
     """
@@ -53,14 +54,14 @@ class RxMerAnalysisReport(AnalysisReport):
             analysis_matplot_config = AnalysisRptMatplotConfig()
         super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("RxMerAnalysisReport")
-        self._results: Dict[int, RxMerAnalysisRptModel] = {}
+        self._results: dict[int, RxMerAnalysisRptModel] = {}
         self._sig_cap_agg: SignalCaptureAggregator = SignalCaptureAggregator()
 
-    def create_csv(self) -> List[CSVManager]:
+    def create_csv(self) -> list[CSVManager]:
         """
         Stream validated models into CSVs. Assumes `_process()` already enforced
         """
-        csv_mgr_list: List[CSVManager] = []
+        csv_mgr_list: list[CSVManager] = []
         any_models = False
 
         for common_model in self.get_common_analysis_model():
@@ -118,13 +119,13 @@ class RxMerAnalysisReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self) -> List[MatplotManager]:
+    def create_matplot(self) -> list[MatplotManager]:
         """
         Generate per-channel line and multi-line plots from validated models.
         """
-        out: List[MatplotManager] = []
+        out: list[MatplotManager] = []
         any_models = False
-        chan_id_list:List[int] = []
+        chan_id_list:list[int] = []
 
         for common_model in self.get_common_analysis_model():
             any_models = True
@@ -245,7 +246,7 @@ class RxMerAnalysisReport(AnalysisReport):
 
     def _process(self) -> None:
 
-        analysis_models: List[DsRxMerAnalysisModel] = cast(List[DsRxMerAnalysisModel], self.get_analysis_model())
+        analysis_models: list[DsRxMerAnalysisModel] = cast(list[DsRxMerAnalysisModel], self.get_analysis_model())
 
         for idx, data in enumerate(analysis_models):
 
@@ -255,11 +256,11 @@ class RxMerAnalysisReport(AnalysisReport):
                 x_raw           = data.carrier_values.frequency
                 y_raw           = data.carrier_values.magnitude
                 snr_db_limit    = data.modulation_statistics.snr_db_min
-                mod_count:Dict[str,int] = data.modulation_statistics.supported_modulation_counts
+                mod_count:dict[str,int] = data.modulation_statistics.supported_modulation_counts
 
-                def coerce_finite(seq, name: str) -> List[float]:
+                def coerce_finite(seq, name: str) -> list[float]:
                     '''coerce -> float (and finiteness)'''
-                    out: List[float] = []
+                    out: list[float] = []
                     for v in seq:
                         fv = float(v)
                         if not math.isfinite(fv):
@@ -300,7 +301,7 @@ class RxMerAnalysisReport(AnalysisReport):
         # Finalize signal capture aggregation
         self._sig_cap_agg.reconstruct()
 
-    def __modulation_order_count_to_series(self, mod_count: Mapping[str, int]) -> Tuple[IntSeries, IntSeries]:
+    def __modulation_order_count_to_series(self, mod_count: Mapping[str, int]) -> tuple[IntSeries, IntSeries]:
         """
         Convert {"qam_<M>": count} → (bits_per_symbol_series, count_series),
         sorted by ascending QAM order M. Skips malformed entries with warnings.

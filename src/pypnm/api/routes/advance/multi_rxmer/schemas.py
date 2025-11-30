@@ -60,7 +60,7 @@ class MultiRxMerResponseStatus(BaseModel):
         ...,
         description="Measure time remaining in seconds."
     )
-    message: Optional[str] = Field(
+    message: str | None = Field(
         None,
         description="Optional human-readable message or error detail."
     )
@@ -86,7 +86,7 @@ class MultiRxMerResultsResponse(CommonResponse):
     """
     Returns the final list of capture samples for a completed or in-progress operation.
     """
-    samples: List[Dict] = Field(
+    samples: list[dict] = Field(
         ...,
         description="Timestamped transaction info for each RxMER capture iteration."
     )
@@ -165,7 +165,7 @@ class MultiRxMerAnalysisResponse(CommonAnalysisResponse):
     """
     Response schema for Multi-RxMER signal analysis, keyed by channel ID.
     """
-    data: Dict[int, Dict[str, Any]] = Field(
+    data: dict[int, dict[str, Any]] = Field(
         ...,
         description=(
             "Mapping from channel_id to its analysis results "

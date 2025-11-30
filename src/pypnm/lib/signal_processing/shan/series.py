@@ -19,11 +19,11 @@ from .shannon import Shannon
 
 
 class ShannonSeriesModel(BaseModel):
-    snr_db_values: List[SNRdB]                  = Field(..., description="Input SNR values in dB per subcarrier.")
+    snr_db_values: list[SNRdB]                  = Field(..., description="Input SNR values in dB per subcarrier.")
     bits_per_symbol: BitsPerSymbolSeries        = Field(..., description="Computed bits-per-symbol (capacity) for each SNR.")
     modulations: StringArray                    = Field(..., description="Recommended QAM modulation names per SNR sample.")
-    snr_db_min: List[SNRdB]                     = Field(..., description="Minimum SNR thresholds corresponding to each supported modulation.")
-    supported_modulation_counts: Dict[str, int] = Field(..., description="Mapping of modulation name → number of supported subcarriers.")
+    snr_db_min: list[SNRdB]                     = Field(..., description="Minimum SNR thresholds corresponding to each supported modulation.")
+    supported_modulation_counts: dict[str, int] = Field(..., description="Mapping of modulation name → number of supported subcarriers.")
 
 
 class ShannonSeries:
@@ -50,19 +50,19 @@ class ShannonSeries:
             If any SNR value is negative or non-finite.
         """
         # Validate inputs
-        self.snr_db_values: List[SNRdB] = []
+        self.snr_db_values: list[SNRdB] = []
         for db in snr_db_values:
             if not isinstance(db, (int, float)) or db < 0 or db != db or db == float('inf'):
                 raise ValueError(f"Invalid SNR dB value: {db}")
             self.snr_db_values.append(SNRdB(db))
 
         # Compute Shannon instances per entry
-        self._instances: List[Shannon] = [Shannon(db) for db in self.snr_db_values]
+        self._instances: list[Shannon] = [Shannon(db) for db in self.snr_db_values]
 
         # Extract bits and modulations
-        self.bits_list: List[BitsPerSymbol] = cast(List[BitsPerSymbol], [inst.bits for inst in self._instances])
-        self.modulations: List[str]         = [inst.get_modulation() for inst in self._instances]
-        self.snr_db_limit: List[SNRdB]      = self.limit()
+        self.bits_list: list[BitsPerSymbol] = cast(list[BitsPerSymbol], [inst.bits for inst in self._instances])
+        self.modulations: list[str]         = [inst.get_modulation() for inst in self._instances]
+        self.snr_db_limit: list[SNRdB]      = self.limit()
 
         self._model:ShannonSeriesModel = self.__build_model()
 
@@ -78,7 +78,7 @@ class ShannonSeries:
 
         return _
 
-    def supported_modulation_counts(self) -> Dict[str, int]:
+    def supported_modulation_counts(self) -> dict[str, int]:
         """
         Count how many input SNR values support each modulation up to Shannon limit.
 
@@ -89,7 +89,7 @@ class ShannonSeries:
             bits_per_symbol >= modulation_bits.
         """
         # Initialize counts for all known modulations
-        counts: Dict[str, int] = {mod: 0 for mod in Shannon.QAM_MODULATIONS.values()}
+        counts: dict[str, int] = {mod: 0 for mod in Shannon.QAM_MODULATIONS.values()}
 
         # For each sample, increment all modulations it supports
         for inst in self._instances:
@@ -102,7 +102,7 @@ class ShannonSeries:
     def to_model(self) -> ShannonSeriesModel:
         return self._model
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Serialize the series results and supported counts to a dictionary.
         """
@@ -147,7 +147,7 @@ class ShannonSeries:
                 return inst.get_modulation()
         return "UNKNOWN"
 
-    def limit(self) -> List[SNRdB]:
+    def limit(self) -> list[SNRdB]:
         """
         Compute the Shannon limit for each SNR value in the series.
 

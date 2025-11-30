@@ -40,7 +40,7 @@ async def main():
     logging.info(f"Connected to: {await cm.getSysDescr()}")
 
     try:
-        entries: List[DocsIfDownstreamChannelEntry] = await cm.getDocsIfDownstreamChannel()
+        entries: list[DocsIfDownstreamChannelEntry] = await cm.getDocsIfDownstreamChannel()
 
         if not entries:
             logging.warning("No downstream channel entries found.")

@@ -124,7 +124,7 @@ class MinAvgMax:
             ),
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return the same structured result as a plain dictionary.
         """

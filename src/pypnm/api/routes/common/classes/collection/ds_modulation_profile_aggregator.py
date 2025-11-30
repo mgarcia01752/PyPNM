@@ -58,11 +58,11 @@ class DsModulationProfileAggregator(MultiPnmCollection):
     # -------------------------
 
     @overload
-    def get_profiles(self, channel_id: ChannelId) -> Dict[CaptureTime, List[ModulationProfileModel]]: ...
+    def get_profiles(self, channel_id: ChannelId) -> dict[CaptureTime, list[ModulationProfileModel]]: ...
     @overload
-    def get_profiles(self, channel_id: ChannelId, capture_time: CaptureTime) -> List[ModulationProfileModel]: ...
+    def get_profiles(self, channel_id: ChannelId, capture_time: CaptureTime) -> list[ModulationProfileModel]: ...
 
-    def get_profiles(self, channel_id: ChannelId, capture_time: Optional[CaptureTime] = None):
+    def get_profiles(self, channel_id: ChannelId, capture_time: CaptureTime | None = None):
         """
         Return modulation profiles as **models** (not dicts).
 
@@ -76,13 +76,13 @@ class DsModulationProfileAggregator(MultiPnmCollection):
         KeyError if the specified channel or capture_time is not found.
         """
         if capture_time is None:
-            out: Dict[CaptureTime, List[ModulationProfileModel]] = {}
+            out: dict[CaptureTime, list[ModulationProfileModel]] = {}
             for ct, obj in self.get(channel_id):
                 cap: CmDsOfdmModulationProfile = obj  # type: ignore[assignment]
                 out[ct] = list(cap.to_model().profiles)
             return dict(sorted(out.items(), key=lambda kv: kv[0]))
 
-        capture: Optional[CmDsOfdmModulationProfile] = self.get(channel_id, capture_time)  # type: ignore[assignment]
+        capture: CmDsOfdmModulationProfile | None = self.get(channel_id, capture_time)  # type: ignore[assignment]
         if capture is None:
             raise KeyError(f"No capture for channel_id={channel_id} capture_time={capture_time}")
         return list(capture.to_model().profiles)
@@ -92,11 +92,11 @@ class DsModulationProfileAggregator(MultiPnmCollection):
     # -------------------------
 
     @overload
-    def get_profile_ids(self, channel_id: ChannelId) -> List[ProfileId]: ...
+    def get_profile_ids(self, channel_id: ChannelId) -> list[ProfileId]: ...
     @overload
-    def get_profile_ids(self, channel_id: ChannelId, capture_time: CaptureTime) -> List[ProfileId]: ...
+    def get_profile_ids(self, channel_id: ChannelId, capture_time: CaptureTime) -> list[ProfileId]: ...
 
-    def get_profile_ids(self, channel_id: ChannelId, capture_time: Optional[CaptureTime] = None) -> List[ProfileId]:
+    def get_profile_ids(self, channel_id: ChannelId, capture_time: CaptureTime | None = None) -> list[ProfileId]:
         """
         List profile IDs.
 
@@ -112,7 +112,7 @@ class DsModulationProfileAggregator(MultiPnmCollection):
                     self.logger.debug("[get_profile_ids] ch=%s ct=%s pid=%s", channel_id, ct, p.profile_id)
             return sorted(ids)
 
-        capture: Optional[CmDsOfdmModulationProfile] = self.get(channel_id, capture_time)  # type: ignore[assignment]
+        capture: CmDsOfdmModulationProfile | None = self.get(channel_id, capture_time)  # type: ignore[assignment]
         if capture is None:
             raise KeyError(f"No capture for channel_id={channel_id} capture_time={capture_time}")
         for p in capture.to_model().profiles:
@@ -124,17 +124,17 @@ class DsModulationProfileAggregator(MultiPnmCollection):
     # -------------------------
 
     @overload
-    def basic_analysis(self) -> Dict[ChannelId, List[DsModulationProfileAnalysisModel]]: ...
+    def basic_analysis(self) -> dict[ChannelId, list[DsModulationProfileAnalysisModel]]: ...
     @overload
-    def basic_analysis(self, channel_id: ChannelId) -> Dict[ChannelId, List[DsModulationProfileAnalysisModel]]: ...
+    def basic_analysis(self, channel_id: ChannelId) -> dict[ChannelId, list[DsModulationProfileAnalysisModel]]: ...
     @overload
-    def basic_analysis(self, channel_id: ChannelId, capture_time: CaptureTime) -> Dict[ChannelId, List[DsModulationProfileAnalysisModel]]: ...
+    def basic_analysis(self, channel_id: ChannelId, capture_time: CaptureTime) -> dict[ChannelId, list[DsModulationProfileAnalysisModel]]: ...
 
     def basic_analysis(
         self,
-        channel_id: Optional[ChannelId] = None,
-        capture_time: Optional[CaptureTime] = None
-    ) -> Dict[ChannelId, List[DsModulationProfileAnalysisModel]]:
+        channel_id: ChannelId | None = None,
+        capture_time: CaptureTime | None = None
+    ) -> dict[ChannelId, list[DsModulationProfileAnalysisModel]]:
         """
         Perform basic modulation profile analysis via
         `Analysis.basic_analysis_ds_modulation_profile_from_model`.
@@ -151,12 +151,12 @@ class DsModulationProfileAggregator(MultiPnmCollection):
         - Each capture is converted with `.to_model()` before analysis.
         - Raises KeyError for missing channel/snapshot when specified.
         """
-        out: Dict[ChannelId, List[DsModulationProfileAnalysisModel]] = {}
+        out: dict[ChannelId, list[DsModulationProfileAnalysisModel]] = {}
 
         # --- Case 1: No channel_id → process all channels ---
         if channel_id is None:
             for ch in self.get_channel_ids():
-                results: List[DsModulationProfileAnalysisModel] = []
+                results: list[DsModulationProfileAnalysisModel] = []
                 for _, obj in self.get(ch):
                     cap: CmDsOfdmModulationProfile = obj  # type: ignore[assignment]
                     model = cap.to_model()
@@ -167,7 +167,7 @@ class DsModulationProfileAggregator(MultiPnmCollection):
 
         # --- Case 2: Specific channel, all captures ---
         if capture_time is None:
-            results: List[DsModulationProfileAnalysisModel] = []
+            results: list[DsModulationProfileAnalysisModel] = []
             for _, obj in self.get(channel_id):
                 cap: CmDsOfdmModulationProfile = obj  # type: ignore[assignment]
                 model = cap.to_model()
@@ -176,7 +176,7 @@ class DsModulationProfileAggregator(MultiPnmCollection):
             return {channel_id: results}
 
         # --- Case 3: Specific channel + specific capture ---
-        capture: Optional[CmDsOfdmModulationProfile] = self.get(channel_id, capture_time)  # type: ignore[assignment]
+        capture: CmDsOfdmModulationProfile | None = self.get(channel_id, capture_time)  # type: ignore[assignment]
         if capture is None:
             raise KeyError(f"No capture for channel_id={channel_id} capture_time={capture_time}")
 

@@ -39,9 +39,9 @@ class DocsIfDownstreamChannelCwErrorRate:
 
     def __init__(
         self,
-        entries_1: List[DocsIfDownstreamChannelEntry],
-        entries_2: List[DocsIfDownstreamChannelEntry],
-        channel_id_index_stack: List[Tuple[int, int]],
+        entries_1: list[DocsIfDownstreamChannelEntry],
+        entries_2: list[DocsIfDownstreamChannelEntry],
+        channel_id_index_stack: list[tuple[int, int]],
         time_elapsed: float,
     ):
         self.logger = logging.getLogger(type(self).__name__)
@@ -61,14 +61,14 @@ class DocsIfDownstreamChannelCwErrorRate:
 
     def _build_entries(
         self,
-        entries_1: List[DocsIfDownstreamChannelEntry],
-        entries_2: List[DocsIfDownstreamChannelEntry],
-        channel_indexes: List[Tuple[int, int]],
-    ) -> List[DocsIfDownstreamCwErrorRateEntry]:
+        entries_1: list[DocsIfDownstreamChannelEntry],
+        entries_2: list[DocsIfDownstreamChannelEntry],
+        channel_indexes: list[tuple[int, int]],
+    ) -> list[DocsIfDownstreamCwErrorRateEntry]:
         """
         Build nested error rate entries per channel using two SNMP snapshots.
         """
-        cw_entries: List[DocsIfDownstreamCwErrorRateEntry] = []
+        cw_entries: list[DocsIfDownstreamCwErrorRateEntry] = []
 
         if not entries_1 or not entries_2:
             self.logger.warning("One or both entry lists are empty; returning no CW error rate entries.")
@@ -153,7 +153,7 @@ class DocsIfDownstreamChannelCwErrorRate:
         self.logger.debug(f"Aggregate error rate computed: {rate:.6f}")
         return rate
 
-    def get(self) -> List[DocsIfDownstreamCwErrorRateEntry]:
+    def get(self) -> list[DocsIfDownstreamCwErrorRateEntry]:
         """
         Return the list of computed codeword error rate entries.
         """
@@ -163,7 +163,7 @@ class DocsIfDownstreamChannelCwErrorRate:
             self.logger.error("Failed to get CW error rate entries", exc_info=True)
             return []
 
-    def get_dict(self) -> Dict[str, Any]:
+    def get_dict(self) -> dict[str, Any]:
         """
         Return a dictionary representation of the entries and aggregate error rate.
         """
@@ -178,15 +178,15 @@ class DocsIfDownstreamChannelCwErrorRate:
 
     def _create_mapping(
         self,
-        entries: List[DocsIfDownstreamChannelEntry]
-    ) -> Dict[int, DocsIfDownstreamChannelEntry]:
+        entries: list[DocsIfDownstreamChannelEntry]
+    ) -> dict[int, DocsIfDownstreamChannelEntry]:
         """
         Create a mapping of channel ID → entry for quick lookup.
 
         - Skips any entry missing a docsIfDownChannelId.
         - Logs a warning if duplicate channel IDs are encountered (last one wins).
         """
-        mapping: Dict[int, DocsIfDownstreamChannelEntry] = {}
+        mapping: dict[int, DocsIfDownstreamChannelEntry] = {}
         for entry in entries:
             if not isinstance(entry, DocsIfDownstreamChannelEntry):
                 self.logger.warning(f"Skipping non-DocsIfDownstreamChannelEntry: {entry!r}")

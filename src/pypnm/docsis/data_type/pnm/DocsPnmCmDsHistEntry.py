@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, ClassVar, List, Optional, Union, cast
+from typing import Any, ClassVar, List, Optional, Union, cast
+from collections.abc import Callable
 
 from pydantic import BaseModel, Field
 
@@ -27,7 +28,7 @@ class DocsPnmCmDsHistEntry(BaseModel):
     DEBUG: ClassVar[bool] = False
 
     @classmethod
-    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsPnmCmDsHistEntry":
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsPnmCmDsHistEntry:
         """
         Fetch a single DOCSIS Downstream Histogram control/status row via SNMP.
 
@@ -50,15 +51,15 @@ class DocsPnmCmDsHistEntry(BaseModel):
         """
         log = logging.getLogger(cls.__name__)
 
-        async def fetch(sym: str, caster: Optional[Callable[[Any], Any]] = None
-                        ) -> Optional[Union[str, int, float, bool]]:
+        async def fetch(sym: str, caster: Callable[[Any], Any] | None = None
+                        ) -> str | int | float | bool | None:
             try:
                 res = await snmp.get(f"{sym}.{index}")
                 raw = Snmp_v2c.get_result_value(res)
                 val = caster(raw) if (caster and raw is not None) else raw
                 if cls.DEBUG and log.isEnabledFor(logging.DEBUG):
                     log.debug("idx=%s %s raw=%r cast=%r", index, sym, raw, val)
-                return cast(Optional[Union[str, int, float, bool]], val)
+                return cast(str | int | float | bool | None, val)
             except Exception as e:
                 if cls.DEBUG and log.isEnabledFor(logging.DEBUG):
                     log.debug("idx=%s %s error=%r", index, sym, e)
@@ -89,7 +90,7 @@ class DocsPnmCmDsHistEntry(BaseModel):
         return cls(index=index, entry=entry)
 
     @classmethod
-    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsPnmCmDsHistEntry"]:
+    async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsPnmCmDsHistEntry]:
         """
         Batch fetch multiple histogram rows.
 
@@ -107,7 +108,7 @@ class DocsPnmCmDsHistEntry(BaseModel):
         """
         if not indices:
             return []
-        out: List[DocsPnmCmDsHistEntry] = []
+        out: list[DocsPnmCmDsHistEntry] = []
         for idx in indices:
             out.append(await cls.from_snmp(idx, snmp))
         return out

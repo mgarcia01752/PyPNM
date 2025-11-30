@@ -26,7 +26,7 @@ class PyPnmSystemWebServiceAPI:
             "/reload",
             summary="Restart PyPNM System Web Service")(self.trigger_reload)
 
-    async def trigger_reload(self) -> Dict[str, str]:
+    async def trigger_reload(self) -> dict[str, str]:
         """
         **Trigger PyPNM System Web Service Reload**
 

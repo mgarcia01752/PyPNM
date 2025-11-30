@@ -27,14 +27,14 @@ class DsOfdmChannelService:
                              write_community=snmp_config.snmp_v2c.community)
         self.logger = logging.getLogger("DsOfdmChannelService")
 
-    async def get_ofdm_chan_entries(self) -> List[Dict]:
+    async def get_ofdm_chan_entries(self) -> list[dict]:
         """
         Retrieves and populates all OFDM downstream channel entries.
 
         Returns:
             List[dict]: List of dictionaries with `index`, `channel_id`, and `entry` keys.
         """
-        entries: List[DocsIf31CmDsOfdmChanChannelEntry] = await self.cm.getDocsIf31CmDsOfdmChanEntry()
+        entries: list[DocsIf31CmDsOfdmChanChannelEntry] = await self.cm.getDocsIf31CmDsOfdmChanEntry()
 
         if not entries:
             self.logger.warning("No OFDM channel entries retrieved from the cable modem.")

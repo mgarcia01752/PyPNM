@@ -69,4 +69,4 @@ class EventLogResponse(CommonResponse):
             network and device events useful for fault isolation and troubleshooting.
     """
 
-    logs: List[EventLogEntry]
+    logs: list[EventLogEntry]

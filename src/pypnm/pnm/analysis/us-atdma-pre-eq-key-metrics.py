@@ -8,7 +8,7 @@ from typing import List, Tuple
 
 
 class EqualizerMetrics:
-    def __init__(self, coefficients: List[Tuple[int, int]], nominal_amplitude: int = 2047, main_tap_index: int = 7):
+    def __init__(self, coefficients: list[tuple[int, int]], nominal_amplitude: int = 2047, main_tap_index: int = 7):
         """
         Initialize EqualizerMetrics.
 
@@ -23,7 +23,7 @@ class EqualizerMetrics:
         self.nominal_amplitude = nominal_amplitude
         self.main_tap_index = main_tap_index
 
-    def _tap_energy(self, tap: Tuple[int, int]) -> float:
+    def _tap_energy(self, tap: tuple[int, int]) -> float:
         """Compute energy of a single tap."""
         real, imag = tap
         return real ** 2 + imag ** 2

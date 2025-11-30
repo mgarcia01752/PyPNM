@@ -62,7 +62,7 @@ class CodeWordLutGenerator:
     # ----------------------------
     # Public API
     # ----------------------------
-    def build(self) -> "CodeWordLutGenerator":
+    def build(self) -> CodeWordLutGenerator:
         """
         Generate the codeword mapping (rectangular Gray-on-axes or non-rect fallback).
         """

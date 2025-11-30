@@ -334,7 +334,7 @@ class MultiRxMerRouter(AbstractService):
             response_model=MultiRxMerAnalysisResponse,
             summary="Perform signal analysis on a previously executed Multi-RxMER captures",
             responses=FAST_API_RESPONSE,)
-        def analysis(request: MultiRxMerAnalysisRequest) -> Union[MultiRxMerAnalysisResponse, FileResponse]:
+        def analysis(request: MultiRxMerAnalysisRequest) -> MultiRxMerAnalysisResponse | FileResponse:
             """
             Multi-RxMER Analysis
 

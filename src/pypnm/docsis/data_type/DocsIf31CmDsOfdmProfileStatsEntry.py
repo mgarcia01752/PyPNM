@@ -20,7 +20,7 @@ class DocsIf31CmDsOfdmProfileStatsEntry:
 
     index: int
     channel_id: int
-    profile_stats: Dict[int, Dict[str, Optional[int]]]
+    profile_stats: dict[int, dict[str, int | None]]
 
     def __init__(self, index: int, snmp: Snmp_v2c):
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -109,7 +109,7 @@ class DocsIf31CmDsOfdmProfileStatsEntry:
         }
 
 
-    async def _get_profile_id_indexes(self) -> List[int]:
+    async def _get_profile_id_indexes(self) -> list[int]:
         """
         Retrieves the list of OFDM profile IDs (last index) for the given CM index.
 

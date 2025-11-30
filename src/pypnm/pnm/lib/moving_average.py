@@ -15,7 +15,7 @@ class MovingAverage:
     Class for calculating a moving average of a list of numerical values.
     """
 
-    def __init__(self, data: Optional[FloatSeries] = None, exclude_value: Optional[float] = None):
+    def __init__(self, data: FloatSeries | None = None, exclude_value: float | None = None):
         """
         Initialize the MovingAverage object.
 
@@ -45,7 +45,7 @@ class MovingAverage:
         """
         return len(self.entries)
 
-    def _calculate_window_average(self, window_data: FloatSeries) -> Optional[float]:
+    def _calculate_window_average(self, window_data: FloatSeries) -> float | None:
         """
         Calculate the average of a window.
 
@@ -59,7 +59,7 @@ class MovingAverage:
             return None
         return sum(window_data) / len(window_data)
 
-    def get_average(self, window: int) -> List[Optional[float]]:
+    def get_average(self, window: int) -> list[float | None]:
         """
         Calculate the moving average over a specified window size.
 

@@ -31,7 +31,7 @@ from pypnm.lib.types import (
 )
 from pypnm.lib.utils import Generate
 
-AnalysisData    = List[Dict[str, Any]]
+AnalysisData    = list[dict[str, Any]]
 
 class AnalysisOutputModel(BaseModel):
     """
@@ -79,9 +79,9 @@ class AnalysisReport(ABC):
         self._armc = armc
         self.__init()
 
-        self.csv_files: List[PathLike]  = []
-        self.plot_files: List[PathLike] = []
-        self.json_files: List[PathLike] = []
+        self.csv_files: list[PathLike]  = []
+        self.plot_files: list[PathLike] = []
+        self.json_files: list[PathLike] = []
 
     def getAnalysisRptMatplotConfig(self) -> AnalysisRptMatplotConfig:
         return self._armc
@@ -90,7 +90,7 @@ class AnalysisReport(ABC):
         """Return the raw per-item analysis data extracted from the `Analysis` results."""
         return self._data_list
 
-    def get_analysis_model(self) -> Union[BaseAnalysisModel, List[BaseAnalysisModel]]:
+    def get_analysis_model(self) -> BaseAnalysisModel | list[BaseAnalysisModel]:
         """Return the parsed analysis model(s) produced by the upstream pipeline."""
         return self._analysis.get_model()
 
@@ -120,7 +120,7 @@ class AnalysisReport(ABC):
             archive_file =   self.archive_file,
         )
 
-    def create_csv_fname(self, tags: List[str] = None) -> PathLike:
+    def create_csv_fname(self, tags: list[str] = None) -> PathLike:
         '''
         Build a CSV filename of the form:
             <csv_dir>/<mac>_<model>_<timestamp>[_TAGS].csv
@@ -132,7 +132,7 @@ class AnalysisReport(ABC):
             tags = []
         return f"{self._csv_dir}/{self.create_generic_fname(tags=tags, ext='csv')}"
 
-    def create_png_fname(self, tags: List[str] = None) -> PathLike:
+    def create_png_fname(self, tags: list[str] = None) -> PathLike:
         '''
         Build a PNG filename of the form:
             <png_dir>/<mac>_<model>_<timestamp>[_TAGS].png
@@ -144,7 +144,7 @@ class AnalysisReport(ABC):
             tags = []
         return f"{self._png_dir}/{self.create_generic_fname(tags=tags, ext='png')}"
 
-    def create_json_fname(self, tags: List[str] = None) -> PathLike:
+    def create_json_fname(self, tags: list[str] = None) -> PathLike:
         '''
         Build a PNG filename of the form:
             <json_dir>/<mac>_<model>_<timestamp>[_TAGS].png
@@ -156,7 +156,7 @@ class AnalysisReport(ABC):
             tags = []
         return f"{self._json_dir}/{self.create_generic_fname(tags=tags, ext='json')}"
 
-    def create_archive_fname(self, tags: List[str] = None) -> PathLike:
+    def create_archive_fname(self, tags: list[str] = None) -> PathLike:
         '''
         Build a ZIP archive filename of the form:
             <archive_dir>/<mac>_<model>_<timestamp>[_TAGS].zip
@@ -168,7 +168,7 @@ class AnalysisReport(ABC):
             tags = []
         return f"{self._archive_dir}/{self.create_generic_fname(tags=tags, ext='zip')}"
 
-    def create_generic_fname(self, tags: List[str], ext: str = "") -> FileNameStr:
+    def create_generic_fname(self, tags: list[str], ext: str = "") -> FileNameStr:
         """
         Generate a generic filename using the current session metadata plus tags.
 
@@ -237,7 +237,7 @@ class AnalysisReport(ABC):
 
         bucket.append(model)
 
-    def get_common_analysis_model(self, channel_id: ChannelId = INVALID_CHANNEL_ID) -> List[CommonAnalysis]:
+    def get_common_analysis_model(self, channel_id: ChannelId = INVALID_CHANNEL_ID) -> list[CommonAnalysis]:
         """
         Retrieve one or more `CommonAnalysis` models.
 
@@ -257,7 +257,7 @@ class AnalysisReport(ABC):
             ch5_models = self.get_common_analysis_model(channel_id=5)
         """
         if channel_id == INVALID_CHANNEL_ID:
-            out: List[CommonAnalysis] = []
+            out: list[CommonAnalysis] = []
             for cid in sorted(self._common_analysis_model):
                 out.extend(self._common_analysis_model[cid])
             return out
@@ -267,7 +267,7 @@ class AnalysisReport(ABC):
 
         return list(self._common_analysis_model[channel_id])
 
-    def get_common_analysis_models_channel_ids(self) -> List[ChannelId]:
+    def get_common_analysis_models_channel_ids(self) -> list[ChannelId]:
         """
         Return the list of channel IDs with registered models.
 
@@ -318,7 +318,7 @@ class AnalysisReport(ABC):
 
         return self.archive_file
 
-    def get_all_generated_files(self, include_archive:bool=False) -> List[PathLike]:
+    def get_all_generated_files(self, include_archive:bool=False) -> list[PathLike]:
         """
         Return a flat list of generated file paths (CSVs, plots, and JSON files).
 
@@ -326,7 +326,7 @@ class AnalysisReport(ABC):
             `include_archive` is accepted for API symmetry but ignored; the
             archive path is available via `to_model().archive_file`.
         """
-        _:List[PathLike] = []
+        _:list[PathLike] = []
         _.extend(self.csv_files)
         _.extend(self.plot_files)
         _.extend(self.json_files)
@@ -357,7 +357,7 @@ class AnalysisReport(ABC):
         pass
 
     @abstractmethod
-    def create_csv(self) -> List[CSVManager]:
+    def create_csv(self) -> list[CSVManager]:
         """
         Build one or more `CSVManager` instances ready to `write()`.
 
@@ -368,7 +368,7 @@ class AnalysisReport(ABC):
         pass
 
     @abstractmethod
-    def create_matplot(self) -> List[MatplotManager]:
+    def create_matplot(self) -> list[MatplotManager]:
         """
         Build one or more `MatplotManager` instances to render PNG figures.
 
@@ -396,14 +396,14 @@ class AnalysisReport(ABC):
 
         self._group_time: TimeStamp         = TimeStamp(Generate.time_stamp())
         self._base_filename: FileNameStr    = FileNameStr("")
-        self._common_analysis_model: Dict[ChannelId, List[CommonAnalysis]] = {}
+        self._common_analysis_model: dict[ChannelId, list[CommonAnalysis]] = {}
 
         # Normalize first item to a dict (supports both dict and BaseModel)
         first_item = self._data_list[0]
         if isinstance(first_item, BaseModel):
-            first_dict: Dict[str, Any] = first_item.model_dump()
+            first_dict: dict[str, Any] = first_item.model_dump()
         else:
-            first_dict = cast(Dict[str, Any], first_item)
+            first_dict = cast(dict[str, Any], first_item)
 
         mac_str: MacAddressStr = (
             first_dict.get("mac_address")
@@ -416,12 +416,12 @@ class AnalysisReport(ABC):
         self._cmts_mac_address: MacAddress = MacAddress(cmts_mac_str)
 
         # System descriptor (robust to missing keys)
-        dev_details: Dict[str, Any]                     = cast(Dict[str, Any], first_dict.get("device_details", {}))
-        system_description_dict: Dict[str, Any]         = cast(Dict[str, Any], dev_details.get("system_description",
+        dev_details: dict[str, Any]                     = cast(dict[str, Any], first_dict.get("device_details", {}))
+        system_description_dict: dict[str, Any]         = cast(dict[str, Any], dev_details.get("system_description",
                                                                                                SystemDescriptor.empty().to_dict()))
         self._system_description: SystemDescriptor      = SystemDescriptor.load_from_dict(system_description_dict)
 
-    def _generate_fname(self, tags: List[str] = None, ext: str = "") -> FileNameStr:
+    def _generate_fname(self, tags: list[str] = None, ext: str = "") -> FileNameStr:
         """
         Construct a sanitized filename from:
           - MAC address (colon-free, lowercase)

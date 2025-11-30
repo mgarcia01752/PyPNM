@@ -39,9 +39,9 @@ class DocsFddCmFddSystemCfgState:
         self.index = index
         self.snmp = snmp
 
-        self.docsFddCmFddSystemCfgStateDiplexerDsLowerBandEdgeCfg: Optional[int] = None
-        self.docsFddCmFddSystemCfgStateDiplexerDsUpperBandEdgeCfg: Optional[int] = None
-        self.docsFddCmFddSystemCfgStateDiplexerUsUpperBandEdgeCfg: Optional[int] = None
+        self.docsFddCmFddSystemCfgStateDiplexerDsLowerBandEdgeCfg: int | None = None
+        self.docsFddCmFddSystemCfgStateDiplexerDsUpperBandEdgeCfg: int | None = None
+        self.docsFddCmFddSystemCfgStateDiplexerUsUpperBandEdgeCfg: int | None = None
 
     async def start(self) -> bool:
         """

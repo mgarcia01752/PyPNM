@@ -298,7 +298,7 @@ class DocsIf3CmSpectrumAnalysisCtrlCmd:
         self.docsIf3CmSpectrumAnalysisCtrlCmdFileName = value
         self.logger.debug(f"Set file name to {value}")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         spectrum_cmd = {
             "docsIf3CmSpectrumAnalysisCtrlCmdEnable":                          self.docsIf3CmSpectrumAnalysisCtrlCmdEnable,
             "docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout":               self.docsIf3CmSpectrumAnalysisCtrlCmdInactivityTimeout,

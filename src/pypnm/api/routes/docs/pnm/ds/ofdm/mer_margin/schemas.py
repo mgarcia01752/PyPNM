@@ -22,7 +22,7 @@ class MerMarginMeasurementProfile(BaseModel):
     params: MerMarginParams
 
 class MerMarginMeasurementTemplate(BaseModel):
-    mer_margin_profiles: Dict[str, List[MerMarginMeasurementProfile]]
+    mer_margin_profiles: dict[str, list[MerMarginMeasurementProfile]]
 
 class MerMarginConfig(BaseModel):
     channel_id: int = Field(..., description="OFDMA channel ID to test")

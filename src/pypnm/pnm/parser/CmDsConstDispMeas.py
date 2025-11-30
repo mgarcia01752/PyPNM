@@ -110,7 +110,7 @@ class CmDsConstDispMeas(PnmHeader):
         decode_list = []
 
         while offset + self.CONST_DISPLAY_DATA_COMPLEX_LENGTH <= len(raw):
-            decoded = FixedPointDecoder.decode_complex_data(raw[offset:offset + 4], cast(Tuple[IntegerBits, FractionalBits], (2, 13)))
+            decoded = FixedPointDecoder.decode_complex_data(raw[offset:offset + 4], cast(tuple[IntegerBits, FractionalBits], (2, 13)))
 
             for pt in decoded:
                 decode_list.append([float(pt.real), float(pt.imag)])
@@ -122,7 +122,7 @@ class CmDsConstDispMeas(PnmHeader):
     def to_model(self) -> CmDsConstDispMeasModel:
         return self._model
 
-    def to_dict(self) -> Dict[str, Optional[object]]:
+    def to_dict(self) -> dict[str, object | None]:
         """
         Returns:
             dict: Alias for `get_const_disp_meas()`.

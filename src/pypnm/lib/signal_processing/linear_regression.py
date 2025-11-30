@@ -41,7 +41,7 @@ class LinearRegression1D:
     def __init__(
         self,
         y_values: ArrayLike,
-        x_values: Optional[ArrayLike] = None,
+        x_values: ArrayLike | None = None,
         *,
         dtype: type = np.float64,
     ) -> None:
@@ -118,7 +118,7 @@ class LinearRegression1D:
         return LinearRegression1DResult(
             slope=self.slope, intercept=self.intercept, r2=self.r2, rmse=self.rmse, n=self.n)
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Return a dictionary representation via `to_model().model_dump()`."""
         return self.to_model().model_dump()
 
@@ -139,11 +139,11 @@ class LinearRegression1D:
         """Return residuals y - y_hat for training data as float64 ndarray."""
         return self.y - self.fitted_values()
 
-    def params(self) -> Tuple[float, float]:
+    def params(self) -> tuple[float, float]:
         """Return `(slope, intercept)`."""
         return self.slope, self.intercept
 
-    def regression_line(self, y_axis_only: bool = True) -> NDArrayF64 | Tuple[NDArrayF64, NDArrayF64]:
+    def regression_line(self, y_axis_only: bool = True) -> NDArrayF64 | tuple[NDArrayF64, NDArrayF64]:
         """
         Return the fitted regression line.
 
@@ -156,7 +156,7 @@ class LinearRegression1D:
         y_hat = self.fitted_values()
         return y_hat if y_axis_only else (self.x, y_hat)
 
-    def regression_endpoints(self) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+    def regression_endpoints(self) -> tuple[tuple[float, float], tuple[float, float]]:
         """
         Return two endpoints of the fitted line at the min and max of training x.
 

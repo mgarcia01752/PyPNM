@@ -7,7 +7,8 @@ import io
 import logging
 import os
 import zipfile
-from typing import Callable, Dict, Union, cast
+from typing import Dict, Union, cast
+from collections.abc import Callable
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
@@ -71,7 +72,7 @@ class MultiDsChanEstRouter(AbstractService):
         @self.router.post("/start",
             response_model=Union[MultiChanEstimationStartResponse, SnmpResponse],
             summary="Start a multi-sample ChannelEstimation capture")
-        async def start_multi_chan_estimation(request: MultiChanEstRequest) -> Union[MultiChanEstimationStartResponse, SnmpResponse]:
+        async def start_multi_chan_estimation(request: MultiChanEstRequest) -> MultiChanEstimationStartResponse | SnmpResponse:
 
             duration, interval = request.capture.parameters.measurement_duration, request.capture.parameters.sample_interval
             mac_address: MacAddressStr = request.cable_modem.mac_address
@@ -187,7 +188,7 @@ class MultiDsChanEstRouter(AbstractService):
         @self.router.post("/analysis",
             response_model=MultiChanEstimationAnalysisResponse,
             summary="Perform signal analysis on a previously executed Multi-ChannelEstimation")
-        def analysis(request: MultiChanEstAnalysisRequest) -> Union[MultiChanEstimationAnalysisResponse, FileResponse]:
+        def analysis(request: MultiChanEstAnalysisRequest) -> MultiChanEstimationAnalysisResponse | FileResponse:
             """
             Perform post-capture analysis on Multi-ChannelEstimation measurement data.
 
@@ -227,7 +228,7 @@ class MultiDsChanEstRouter(AbstractService):
                     data        =   AnalysisDataModel(analysis_type="UNKNOWN", results=[]))
 
             # Dispatch map for type → analysis engine
-            analysis_map: Dict[MultiChanEstAnalysisType, Callable[[CaptureDataAggregator], MultiChanEstimationSignalAnalysis]] = {
+            analysis_map: dict[MultiChanEstAnalysisType, Callable[[CaptureDataAggregator], MultiChanEstimationSignalAnalysis]] = {
                 MultiChanEstAnalysisType.MIN_AVG_MAX:                lambda agg: MultiChanEstimationSignalAnalysis(agg, MultiChanEstAnalysisType.MIN_AVG_MAX),
                 MultiChanEstAnalysisType.GROUP_DELAY:                lambda agg: MultiChanEstimationSignalAnalysis(agg, MultiChanEstAnalysisType.GROUP_DELAY),
                 MultiChanEstAnalysisType.LTE_DETECTION_PHASE_SLOPE:  lambda agg: MultiChanEstimationSignalAnalysis(agg, MultiChanEstAnalysisType.LTE_DETECTION_PHASE_SLOPE),

@@ -37,7 +37,7 @@ def as_float2(v: Any) -> float:
     return round(float(v) / 100.0, 2)
 
 
-def scale(v: Any, factor: float, *, ndigits: Optional[int] = None) -> float:
+def scale(v: Any, factor: float, *, ndigits: int | None = None) -> float:
     x = float(v) * factor
     return round(x, ndigits) if ndigits is not None else x
 

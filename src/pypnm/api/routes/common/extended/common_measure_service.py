@@ -78,16 +78,7 @@ class MeasureServiceReturnTypes(Enum):
     BASE_MODEL = auto()
     DICT = auto()
 
-MeasurementEntry: TypeAlias = Union[
-    DocsPnmCmOfdmChanEstCoefEntry,
-    DocsPnmCmDsConstDispMeasEntry,
-    DocsPnmCmDsOfdmRxMerEntry,
-    DocsPnmCmUsPreEqEntry,
-    DocsPnmCmDsHistEntry,
-    DocsPnmCmDsOfdmFecEntry,
-    DocsPnmCmDsOfdmModProfEntry,
-    DocsIf3CmSpectrumAnalysisEntry,
-]
+MeasurementEntry: TypeAlias = DocsPnmCmOfdmChanEstCoefEntry | DocsPnmCmDsConstDispMeasEntry | DocsPnmCmDsOfdmRxMerEntry | DocsPnmCmUsPreEqEntry | DocsPnmCmDsHistEntry | DocsPnmCmDsOfdmFecEntry | DocsPnmCmDsOfdmModProfEntry | DocsIf3CmSpectrumAnalysisEntry
 
 class CommonMeasureService(CommonMessagingService):
     """
@@ -115,7 +106,7 @@ class CommonMeasureService(CommonMessagingService):
     """
     def __init__(self, pnm_test_type:DocsPnmCmCtlTest,
                  cable_modem: CableModem,
-                 tftp_servers: Tuple[Inet,Inet],
+                 tftp_servers: tuple[Inet,Inet],
                  tftp_path: str = "",
                  snmp_write_community: str = "private",
                  **extra_options):
@@ -123,12 +114,12 @@ class CommonMeasureService(CommonMessagingService):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.propagate = True
 
-        self.pnm_filename:List[str]
+        self.pnm_filename:list[str]
 
-        self._transactionId_pnmFile: Dict[str, str] = {}
+        self._transactionId_pnmFile: dict[str, str] = {}
         self.pnm_test_type:DocsPnmCmCtlTest         = pnm_test_type
         self.cm:CableModem                          = cable_modem
-        self.tftp_servers:Tuple[Inet,Inet]          = tftp_servers
+        self.tftp_servers:tuple[Inet,Inet]          = tftp_servers
         self.tftp_path:str                          = tftp_path
         self.snmp_write_community:str               = snmp_write_community
         self.extra_options                          = extra_options
@@ -182,7 +173,7 @@ class CommonMeasureService(CommonMessagingService):
         """
         return self._capture_parameter
 
-    async def set_and_go(self, interface_parameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = None ,
+    async def set_and_go(self, interface_parameters: DownstreamOfdmParameters | UpstreamOfdmaParameters | None = None ,
                          max_wait_count: int = 5,) -> MessageResponse:
         """
         Trigger PNM file capture and retrieval based on direction-specific parameters.
@@ -300,11 +291,11 @@ class CommonMeasureService(CommonMessagingService):
         ##############################################################################################
         # This section runs through all the indexes, build PNM file, run measurement and check status
         ##############################################################################################
-        index_channelId: List[Tuple[InterfaceIndex, ChannelId]] = status_index_channelId[1]
+        index_channelId: list[tuple[InterfaceIndex, ChannelId]] = status_index_channelId[1]
         return self.build_send_msg(await self._pnm_measure_status_and_pnm_file_transfer(index_channelId, max_wait_count))
 
     def getInterfaceParameters(self,
-        interface_type: DocsisIfType) -> Union[DownstreamOfdmParameters, UpstreamOfdmaParameters]:
+        interface_type: DocsisIfType) -> DownstreamOfdmParameters | UpstreamOfdmaParameters:
         """
         Instantiate and return the PNM test parameters for the specified DOCSIS interface.
 
@@ -349,7 +340,7 @@ class CommonMeasureService(CommonMessagingService):
         """
         return await self.cm.is_snmp_reachable()
 
-    async def getPnmMeasurementStatistics(self) -> List[MeasurementEntry]:
+    async def getPnmMeasurementStatistics(self) -> list[MeasurementEntry]:
         """
         Retrieve PNM measurement entries for the currently configured `pnm_test_type`.
 
@@ -378,52 +369,52 @@ class CommonMeasureService(CommonMessagingService):
         - For strict typing, concrete lists are cast to `List[MeasurementEntry]`
           at return points (because `List` is invariant in the type system).
         """
-        entries: List[MeasurementEntry] = []
+        entries: list[MeasurementEntry] = []
 
         if self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
             self.logger.debug(f"{self.log_prefix} - Running SPECTRUM_ANALYZER")
             concrete = await self.cm.getDocsIf3CmSpectrumAnalysisEntry()
-            return cast(List[MeasurementEntry], concrete)
+            return cast(list[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF:
             self.logger.debug(f"{self.log_prefix} - Running OFDM Channel Estimation Coefficient collection")
             concrete = await self.cm.getDocsPnmCmOfdmChanEstCoefEntry()
-            return cast(List[MeasurementEntry], concrete)
+            return cast(list[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_CONSTELLATION_DISP:
             self.logger.debug(f"{self.log_prefix} - Running OFDM Constellation Display collection")
             concrete = await self.cm.getDocsPnmCmDsConstDispMeasEntry()
-            return cast(List[MeasurementEntry], concrete)
+            return cast(list[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR:
             self.logger.debug(f"{self.log_prefix} - Running RXMER entry collection")
             concrete = await self.cm.getDocsPnmCmDsOfdmRxMerEntry()
-            return cast(List[MeasurementEntry], concrete)
+            return cast(list[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CODEWORD_ERROR_RATE:
             self.logger.debug(f"{self.log_prefix} - Running DS_OFDM_CODEWORD_ERROR_RATE")
             concrete = await self.cm.getDocsPnmCmDsOfdmFecEntry()
-            return cast(List[MeasurementEntry], concrete)
+            return cast(list[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_HISTOGRAM:
             self.logger.debug(f"{self.log_prefix} - Running DS_HISTOGRAM")
             concrete = await self.cm.getDocsPnmCmDsHistEntry()
-            return cast(List[MeasurementEntry], concrete)
+            return cast(list[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF:
             self.logger.debug(f"{self.log_prefix} - Running Upstream Pre-Equalization entry collection")
             concrete = await self.cm.getDocsPnmCmUsPreEqEntry()
-            return cast(List[MeasurementEntry], concrete)
+            return cast(list[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_MODULATION_PROFILE:
             self.logger.debug(f"{self.log_prefix} - Running DS_OFDM_MODULATION_PROFILE")
             concrete = await self.cm.getDocsPnmCmDsOfdmModProfEntry()
-            return cast(List[MeasurementEntry], concrete)
+            return cast(list[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA:
             self.logger.debug(f"{self.log_prefix} - Running SPECTRUM_ANALYZER_SNMP_AMP_DATA")
             concrete = await self.cm.getDocsIf3CmSpectrumAnalysisEntry()
-            return cast(List[MeasurementEntry], concrete)
+            return cast(list[MeasurementEntry], concrete)
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_SYMBOL_CAPTURE:
             self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_SYMBOL_CAPTURE")
@@ -438,7 +429,7 @@ class CommonMeasureService(CommonMessagingService):
 
     @deprecated("Use getPnmMeasurementStatistics()")
     async def get_pnm_measurement_statistics(self, pnm_test_type: DocsPnmCmCtlTest = None,
-                                             return_type: MeasureServiceReturnTypes = MeasureServiceReturnTypes.DICT) -> Union[List[BaseModel], Dict[str, List[Dict]]]:
+                                             return_type: MeasureServiceReturnTypes = MeasureServiceReturnTypes.DICT) -> list[BaseModel] | dict[str, list[dict]]:
         """
         Retrieve PNM measurement statistics for the specified test type.
 
@@ -457,7 +448,7 @@ class CommonMeasureService(CommonMessagingService):
 
         self.logger.info(f"{self.log_prefix} - Requested MeasurementStatistic for {pnm_test_type.name}")
 
-        def build_response(tag: str, payload: Union[str, List[Dict]]) -> Dict[str, Union[Dict, List[Dict]]]:
+        def build_response(tag: str, payload: str | list[dict]) -> dict[str, dict | list[dict]]:
             if isinstance(payload, str):
                 return {tag: {"message": payload}}
             return {tag: payload}
@@ -473,7 +464,7 @@ class CommonMeasureService(CommonMessagingService):
         elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF:
             self.logger.info(f"{self.log_prefix} - Running OFDM Channel Estimation Coefficient collection")
 
-            entries: List[DocsPnmCmOfdmChanEstCoefEntry] = await self.cm.getDocsPnmCmOfdmChanEstCoefEntry()
+            entries: list[DocsPnmCmOfdmChanEstCoefEntry] = await self.cm.getDocsPnmCmOfdmChanEstCoefEntry()
 
             if return_type == MeasureServiceReturnTypes.DICT:
                 return build_response("DS_OFDM_CHAN_EST_COEF", [e.model_dump() for e in entries])
@@ -482,7 +473,7 @@ class CommonMeasureService(CommonMessagingService):
         elif pnm_test_type == DocsPnmCmCtlTest.DS_CONSTELLATION_DISP:
             self.logger.info(f"{self.log_prefix} - Running OFDM Constellation Display collection")
 
-            entries: List[DocsPnmCmDsConstDispMeasEntry] = await self.cm.getDocsPnmCmDsConstDispMeasEntry()
+            entries: list[DocsPnmCmDsConstDispMeasEntry] = await self.cm.getDocsPnmCmDsConstDispMeasEntry()
 
             if return_type == MeasureServiceReturnTypes.DICT:
                 return build_response("DS_CONSTELLATION_DISP", [e.model_dump() for e in entries])
@@ -491,7 +482,7 @@ class CommonMeasureService(CommonMessagingService):
         elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR:
             self.logger.info(f"{self.log_prefix} - Running RXMER entry collection")
 
-            entries: List[DocsPnmCmDsOfdmRxMerEntry] = await self.cm.getDocsPnmCmDsOfdmRxMerEntry()
+            entries: list[DocsPnmCmDsOfdmRxMerEntry] = await self.cm.getDocsPnmCmDsOfdmRxMerEntry()
 
             if return_type == MeasureServiceReturnTypes.DICT:
                 return build_response("DS_OFDM_RXMER_PER_SUBCAR", [e.model_dump() for e in entries])
@@ -503,7 +494,7 @@ class CommonMeasureService(CommonMessagingService):
 
         elif pnm_test_type == DocsPnmCmCtlTest.DS_HISTOGRAM:
             self.logger.info(f"{self.log_prefix} - Running DS_HISTOGRAM")
-            entries: List[DocsPnmCmDsHistEntry] = await self.cm.getDocsPnmCmDsHistEntry()
+            entries: list[DocsPnmCmDsHistEntry] = await self.cm.getDocsPnmCmDsHistEntry()
 
             if return_type == MeasureServiceReturnTypes.DICT:
                 return build_response("DS_HISTOGRAM", [e.model_dump() for e in entries])
@@ -512,7 +503,7 @@ class CommonMeasureService(CommonMessagingService):
         elif pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF:
             self.logger.info(f"{self.log_prefix} - Running Upstream Pre-Equalization entry collection")
 
-            entries: List[DocsPnmCmUsPreEqEntry] = await self.cm.getDocsPnmCmUsPreEqEntry()
+            entries: list[DocsPnmCmUsPreEqEntry] = await self.cm.getDocsPnmCmUsPreEqEntry()
 
             if return_type == MeasureServiceReturnTypes.DICT:
                 return build_response("US_PRE_EQUALIZER_COEF", [e.model_dump() for e in entries])
@@ -581,8 +572,8 @@ class CommonMeasureService(CommonMessagingService):
             self.logger.exception(f"{self.log_prefix} - File retrieval failed: {e}")
             return False
 
-    async def _get_indexes_via_pnm_test_type(self, ifParameters: Optional[DownstreamOfdmParameters | UpstreamOfdmaParameters] = None
-                                             ) -> Tuple["ServiceStatusCode", Optional[List[Tuple[InterfaceIndex, ChannelId]]]]:
+    async def _get_indexes_via_pnm_test_type(self, ifParameters: DownstreamOfdmParameters | UpstreamOfdmaParameters | None = None
+                                             ) -> tuple[ServiceStatusCode, list[tuple[InterfaceIndex, ChannelId]] | None]:
         """
         Determines the appropriate interface indexes and channel IDs to target for a given PNM test type.
 
@@ -605,7 +596,7 @@ class CommonMeasureService(CommonMessagingService):
             ifParameters = self.getInterfaceParameters(DocsisIfType.docsOfdmDownstream)
 
         if self.pnm_test_type in (DocsPnmCmCtlTest.DS_HISTOGRAM, DocsPnmCmCtlTest.LATENCY_REPORT):
-            idx:List[InterfaceIndex] = await self.cm.getIfTypeIndex(DocsisIfType.docsCableMaclayer)
+            idx:list[InterfaceIndex] = await self.cm.getIfTypeIndex(DocsisIfType.docsCableMaclayer)
             return ServiceStatusCode.SUCCESS, [(idx[0], ChannelId(0))]
 
         elif self.pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
@@ -666,7 +657,7 @@ class CommonMeasureService(CommonMessagingService):
 
         return ServiceStatusCode.SUCCESS, idx_channelId
 
-    async def _pnm_measure_status_and_pnm_file_transfer(self, idx_channelId:List[Tuple[InterfaceIndex, ChannelId]], max_wait_count:int) -> ServiceStatusCode:
+    async def _pnm_measure_status_and_pnm_file_transfer(self, idx_channelId:list[tuple[InterfaceIndex, ChannelId]], max_wait_count:int) -> ServiceStatusCode:
         """
         Set and monitor the OFDM measurement test for specified (index, PLC) tuples.
 
@@ -795,7 +786,7 @@ class CommonMeasureService(CommonMessagingService):
         return ServiceStatusCode.TFTP_PNM_FILE_UPLOAD_FAILURE
 
     async def _setDocsPnmCmMeasureTest(self, pnm_test_type:DocsPnmCmCtlTest,
-                                       interface_index:int, channel_id:ChannelId) -> Tuple[ServiceStatusCode, List[str]]:
+                                       interface_index:int, channel_id:ChannelId) -> tuple[ServiceStatusCode, list[str]]:
         """
         Configure and trigger a specific PNM (Proactive Network Maintenance) measurement
         test on a cable modem based on the test type.
@@ -921,7 +912,7 @@ class CommonMeasureService(CommonMessagingService):
         while True:
             if await self.cm.isAmplitudeDataPresent():
                 return ServiceStatusCode.SUCCESS
-            now:int = math.floor((time.time() - t_start))
+            now:int = math.floor(time.time() - t_start)
 
             if now >= timeout_seconds:
                 self.logger.warning(f'{self.log_prefix} - Timeout for Amplitude Data ({now} of {timeout_seconds} seconds)')
@@ -1217,7 +1208,7 @@ class CommonMeasureService(CommonMessagingService):
 
         return file_name
 
-    def _get_transaction_id_by_filename(self, file_name: str) -> Optional[str]:
+    def _get_transaction_id_by_filename(self, file_name: str) -> str | None:
         """
         Return the transaction ID associated with the given file name.
         Assumes file names are unique. Returns None if not found.
@@ -1227,7 +1218,7 @@ class CommonMeasureService(CommonMessagingService):
                 return transaction_id
         return None
 
-    async def _generic_spectrum_analyzer_operation(self, filename:str="") -> Tuple[ServiceStatusCode, List[str]]:
+    async def _generic_spectrum_analyzer_operation(self, filename:str="") -> tuple[ServiceStatusCode, list[str]]:
         """
         Perform a generic spectrum-analyzer operation on the cable modem, supporting two retrieval modes:
         1. SNMP-based amplitude data return (AmplitudeData textual convention)

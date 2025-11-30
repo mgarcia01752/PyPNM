@@ -116,7 +116,7 @@ class CommonProcessService(CommonMessagingService):
             return ServiceStatusCode.UNSUPPORTED_TEST_TYPE
 
         file_name_dst = f'{self.pnm_file_dir}/{transaction_record[PnmFileTransaction.FILE_NAME]}'
-        device_details:Dict[str, str] = transaction_record[PnmFileTransaction.DEVICE_DETAILS]
+        device_details:dict[str, str] = transaction_record[PnmFileTransaction.DEVICE_DETAILS]
         pnm_data = FileProcessor(file_name_dst).read_file()
 
         if pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR.name:
@@ -165,7 +165,7 @@ class CommonProcessService(CommonMessagingService):
 
         return ServiceStatusCode.SUCCESS
 
-    def _add_device_details(self, pnm_data: dict, device_details: Dict[str, str]) -> dict:
+    def _add_device_details(self, pnm_data: dict, device_details: dict[str, str]) -> dict:
         """
         Adds device details to the PNM data dictionary.
 

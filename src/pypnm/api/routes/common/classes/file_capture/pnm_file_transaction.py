@@ -218,7 +218,7 @@ class PnmFileTransaction:
             return TransactionRecordModel.null()
         return TransactionRecordParser.from_id(transaction_id)
 
-    def get_file_info_via_macaddress(self, mac_address: MacAddress) -> List[TransactionRecordModel]:
+    def get_file_info_via_macaddress(self, mac_address: MacAddress) -> list[TransactionRecordModel]:
         """
         Retrieve All Transaction Records Associated With A Given MAC Address.
 
@@ -249,7 +249,7 @@ class PnmFileTransaction:
         db = self._load_db()
         mac_str = str(mac_address).lower()
         self.logger.info(f"Searching for files with MAC address: {mac_str}")
-        records: List[TransactionRecordModel] = []
+        records: list[TransactionRecordModel] = []
 
         for txn_id, record in db.items():
             if record.get(self.MAC_ADDRESS, "").lower() != mac_str:
@@ -268,7 +268,7 @@ class PnmFileTransaction:
         mac_address: MacAddress,
         pnm_test_type: DocsPnmCmCtlTest,
         filename: str,
-        system_description: Dict[str, str] | None = None,
+        system_description: dict[str, str] | None = None,
     ) -> TransactionId:
         """
         Common Logic For Creating And Persisting A Transaction Record.
@@ -297,7 +297,7 @@ class PnmFileTransaction:
             Newly created transaction identifier associated with the record.
         """
         timestamp       = int(time.time())
-        hash_input      = f"{filename}{timestamp}".encode("utf-8")
+        hash_input      = f"{filename}{timestamp}".encode()
         transaction_id  = TransactionId(hashlib.sha256(hash_input).hexdigest()[:16])
 
         db = self._load_db()

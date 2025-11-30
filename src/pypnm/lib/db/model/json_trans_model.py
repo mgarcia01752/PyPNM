@@ -17,7 +17,7 @@ class JsonTransactionRecordModel(BaseModel):
     sha256:    HashStr      = Field(..., description="Hex-Encoded SHA-256 Hash Derived From File And Timestamp")
 
 class JsonTransactionDbModel(BaseModel):
-    records: Dict[TransactionId, JsonTransactionRecordModel] = Field(default_factory=dict, description="Mapping Of Transaction Id To Metadata Records")
+    records: dict[TransactionId, JsonTransactionRecordModel] = Field(default_factory=dict, description="Mapping Of Transaction Id To Metadata Records")
 
 class JsonReturnModel(JsonTransactionRecordModel):
     data:str = Field(description="")

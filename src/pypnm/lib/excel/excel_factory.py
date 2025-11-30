@@ -22,7 +22,7 @@ class ExcelWorkbookFactory:
 
     def create_table(self,
         sheet_name: str,
-        table_data: List[Dict[str, Any]],
+        table_data: list[dict[str, Any]],
         bold_headers: bool = True,
         auto_size: bool = True
     ):

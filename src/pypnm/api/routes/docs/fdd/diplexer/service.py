@@ -55,7 +55,7 @@ class FddDiplexerBandEdgeCapabilityService:
             return False
         return True
 
-    async def getFddDiplexerBandEdgeCapabilityEntries(self) -> List[Dict]:
+    async def getFddDiplexerBandEdgeCapabilityEntries(self) -> list[dict]:
         """
         Retrieve and populate the FDD diplexer band edge capabilities from the modem.
 
@@ -68,10 +68,10 @@ class FddDiplexerBandEdgeCapabilityService:
         Returns:
             List[Dict]: A list of populated band edge capability entries.
         """
-        fdd_band_edge_list: List[DocsFddCmFddBandEdgeCapabilities] | None = \
+        fdd_band_edge_list: list[DocsFddCmFddBandEdgeCapabilities] | None = \
             await self.cm.getDocsFddCmFddBandEdgeCapabilities(create_and_start=False)
 
-        entries: List[Dict] = []
+        entries: list[dict] = []
 
         if fdd_band_edge_list is None:
             return entries

@@ -29,7 +29,7 @@ class OfdmProfile(Enum):
     profile15 = 15
 
     @staticmethod
-    def from_index(index: int) -> "OfdmProfile":
+    def from_index(index: int) -> OfdmProfile:
         for member in OfdmProfile:
             if member.value == index:
                 return member
@@ -48,7 +48,7 @@ class OfdmProfiles:
     def __init__(self, bits: int):
         self.bits = bits
 
-    def list_profiles(self) -> List[OfdmProfile]:
+    def list_profiles(self) -> list[OfdmProfile]:
         """
         Return a list of active OFDM profile enum members.
 
@@ -74,7 +74,7 @@ class OfdmProfiles:
         return bool(self.bits & (1 << (15 - profile.value)))  # MSB-first
 
     @staticmethod
-    def from_snmp(raw: Union[str, bytes]) -> "OfdmProfiles":
+    def from_snmp(raw: str | bytes) -> OfdmProfiles:
         """
         Create an OfdmProfiles instance from SNMP raw value.
 

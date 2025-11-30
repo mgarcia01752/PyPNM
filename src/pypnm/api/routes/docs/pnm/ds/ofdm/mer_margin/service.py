@@ -41,7 +41,7 @@ class CmDsOfdmMerMarginService:
         """
         pass
 
-    async def getMeasurementTemplate(self) -> Dict[str, List[Dict]]:
+    async def getMeasurementTemplate(self) -> dict[str, list[dict]]:
         """
         Creates a MER Margin measurement template for each OFDM profile found on each downstream channel.
 
@@ -49,10 +49,10 @@ class CmDsOfdmMerMarginService:
             Dict[str, List[Dict]]: A dictionary where each key is a channel index and each value is a list of
                                    profile measurement configurations.
         """
-        template: Dict[str, List[Dict]] = {}
+        template: dict[str, list[dict]] = {}
 
         try:
-            profiles: List[Tuple[int, OfdmProfiles]] = await self.cable_modem.getOfdmProfiles()
+            profiles: list[tuple[int, OfdmProfiles]] = await self.cable_modem.getOfdmProfiles()
 
             for index, ofdm_profile in profiles:
                 template[str(index)] = []
@@ -73,7 +73,7 @@ class CmDsOfdmMerMarginService:
 
         return template
 
-    async def getMeasurementStatus(self) -> Dict[str, List[Dict]]:
+    async def getMeasurementStatus(self) -> dict[str, list[dict]]:
         """
         Retrieves MER Margin measurement entries from the cable modem.
 

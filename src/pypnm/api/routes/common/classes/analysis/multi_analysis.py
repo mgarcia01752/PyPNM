@@ -24,9 +24,9 @@ class MultiAnalysis:
 
     def __init__(self) -> None:
         """Initialize an empty MultiAnalysis container."""
-        self._analysis_list: List[Analysis] = []
-        self._models: List[BaseAnalysisModel] = []
-        self._dicts: List[Dict[str, Any]] = []
+        self._analysis_list: list[Analysis] = []
+        self._models: list[BaseAnalysisModel] = []
+        self._dicts: list[dict[str, Any]] = []
 
     @overload
     def add(self, analysis: Analysis) -> None:
@@ -72,7 +72,7 @@ class MultiAnalysis:
         else:
             raise TypeError("add() expects (analysis) or (channel_id, analysis)")
 
-        models = cast(List[BaseAnalysisModel], analysis.get_model())
+        models = cast(list[BaseAnalysisModel], analysis.get_model())
 
         if channel_id is not None:
             for model in models:
@@ -86,7 +86,7 @@ class MultiAnalysis:
 
         self._analysis_list.append(analysis)
 
-    def get_analyses(self) -> List[Analysis]:
+    def get_analyses(self) -> list[Analysis]:
         """
         Retrieve all stored analyses.
 
@@ -108,7 +108,7 @@ class MultiAnalysis:
         """
         return len(self._analysis_list)
 
-    def to_model(self) -> List[BaseAnalysisModel]:
+    def to_model(self) -> list[BaseAnalysisModel]:
         """
         Get a flattened list of all models from all analyses.
 
@@ -119,7 +119,7 @@ class MultiAnalysis:
         """
         return self._models
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert all collected analysis data into a structured dictionary.
 

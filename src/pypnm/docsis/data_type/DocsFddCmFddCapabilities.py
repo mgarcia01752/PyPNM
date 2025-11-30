@@ -36,9 +36,9 @@ class DocsFddCmFddBandEdgeCapabilities:
         self.index = index
         self.snmp = snmp
 
-        self.docsFddDiplexerUsUpperBandEdgeCapability: Optional[int] = None
-        self.docsFddDiplexerDsLowerBandEdgeCapability: Optional[int] = None
-        self.docsFddDiplexerDsUpperBandEdgeCapability: Optional[int] = None
+        self.docsFddDiplexerUsUpperBandEdgeCapability: int | None = None
+        self.docsFddDiplexerDsLowerBandEdgeCapability: int | None = None
+        self.docsFddDiplexerDsUpperBandEdgeCapability: int | None = None
 
         self._started:bool = False
 

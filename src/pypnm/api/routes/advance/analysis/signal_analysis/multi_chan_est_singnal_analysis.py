@@ -48,11 +48,11 @@ from pypnm.pnm.parser.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 # ──────────────────────────────────────────────────────────────
 # Aliases
 # ──────────────────────────────────────────────────────────────
-ChannelAmplitudeMap         = Dict[ChannelId, List[FloatSeries]]
-ChannelFrequencyMap         = Dict[ChannelId, FrequencySeriesHz]
-ChannelComplexMap           = Dict[ChannelId, List[ComplexArray]]
-ChannelOccupiedBwMap        = Dict[ChannelId, FrequencyHz]
-ChannelComplexSeriesMap     = Dict[ChannelId, List[ComplexSeries]]
+ChannelAmplitudeMap         = dict[ChannelId, list[FloatSeries]]
+ChannelFrequencyMap         = dict[ChannelId, FrequencySeriesHz]
+ChannelComplexMap           = dict[ChannelId, list[ComplexArray]]
+ChannelOccupiedBwMap        = dict[ChannelId, FrequencyHz]
+ChannelComplexSeriesMap     = dict[ChannelId, list[ComplexSeries]]
 
 
 # ──────────────────────────────────────────────────────────────
@@ -131,16 +131,10 @@ class MultiChanEstimationResult(BaseModel):
     analysis, and an optional error string when processing fails.
     """
     analysis_type: str = Field(..., description="Name of executed analysis type")
-    results: List[
-        Union[
-            MinAvgMaxModel,
-            GroupDelayAnalysisModel,
-            LteDetectionModel,
-            EchoDetectionIfftModel,
-            IfftMultiEchoDetectionModel,
-        ]
+    results: list[
+        MinAvgMaxModel | GroupDelayAnalysisModel | LteDetectionModel | EchoDetectionIfftModel | IfftMultiEchoDetectionModel
     ] = Field(default_factory=list, description="List of per-channel analysis results")
-    error: Optional[str] = Field(default=None, description="Error message if analysis failed")
+    error: str | None = Field(default=None, description="Error message if analysis failed")
 
     def to_json(self, indent: int = 2) -> str:
         """
@@ -193,7 +187,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         super().__init__(capt_data_agg)
         self.logger = logging.getLogger(self.__class__.__name__)
         self._analysis_type = analysis_type
-        self._results: Optional[MultiChanEstimationResult] = None
+        self._results: MultiChanEstimationResult | None = None
 
     def _process(self):
         """
@@ -207,7 +201,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         if self._results is None:
             self._results = self.__process()
 
-        models: Dict[FileName, BaseModel] = self._build_json_archive_models()
+        models: dict[FileName, BaseModel] = self._build_json_archive_models()
 
         for fname, model in models.items():
             self.register_models_for_json_archive_files(
@@ -272,7 +266,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                 )
         return self._results
 
-    def create_csv(self, **kwargs) -> List[CSVManager]:
+    def create_csv(self, **kwargs) -> list[CSVManager]:
         """
         Materialize Per-Channel Analysis Results As CSV Files.
 
@@ -292,7 +286,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         List[CSVManager]
             List of CSV managers, one per successfully exported result.
         """
-        csvs: List[CSVManager] = []
+        csvs: list[CSVManager] = []
         model = self.to_model()
 
         for r in model.results:
@@ -369,7 +363,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                         csvs.append(csv)
         return csvs
 
-    def create_matplot(self, **kwargs) -> List[MatplotManager]:
+    def create_matplot(self, **kwargs) -> list[MatplotManager]:
         """
         Generate Matplotlib Plots For Multi-ChannelEstimation Results.
 
@@ -388,7 +382,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         List[MatplotManager]
             List of plot managers corresponding to the generated figures.
         """
-        plots: List[MatplotManager] = []
+        plots: list[MatplotManager] = []
         model = self.to_model()
 
         match self._analysis_type:
@@ -484,7 +478,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
 
         return plots
 
-    def _analyze_min_avg_max(self) -> List[MinAvgMaxModel]:
+    def _analyze_min_avg_max(self) -> list[MinAvgMaxModel]:
         """
         Compute Per-Channel Min/Avg/Max Amplitude Statistics.
 
@@ -510,7 +504,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
             except Exception as e:
                 self.logger.error(f"[file={tcm.filename}] MIN_AVG_MAX parse failed: {e}")
 
-        out: List[MinAvgMaxModel] = []
+        out: list[MinAvgMaxModel] = []
 
         for ch, cplx in channel_data.items():
             stats = MinAvgMaxComplex(cplx, precision=4)
@@ -527,7 +521,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
 
         return out
 
-    def _analyze_group_delay(self) -> List[GroupDelayAnalysisModel]:
+    def _analyze_group_delay(self) -> list[GroupDelayAnalysisModel]:
         """
         Analyze group delay for each channel.
         Process:
@@ -560,7 +554,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
             except Exception as e:
                 self.logger.error(f"[file={tcm.filename}] GROUP_DELAY parse failed: {e}")
 
-        out: List[GroupDelayAnalysisModel] = []
+        out: list[GroupDelayAnalysisModel] = []
 
         for ch, cplx in channel_data.items():
 
@@ -577,7 +571,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
 
         return out
 
-    def _analyze_echo_detection_ifft(self) -> List[Union[EchoDetectionIfftModel, IfftMultiEchoDetectionModel]]:
+    def _analyze_echo_detection_ifft(self) -> list[EchoDetectionIfftModel | IfftMultiEchoDetectionModel]:
         """Build echo-detection results using IFFT (multi-echo by default)."""
         channel_data: ChannelComplexMap = {}
         obw: ChannelOccupiedBwMap = {}
@@ -591,7 +585,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
             except Exception as e:
                 self.logger.error(f"[file={tcm.filename}] ECHO_DETECTION_IFFT parse failed: {e}")
 
-        out: List[Union[EchoDetectionIfftModel, IfftMultiEchoDetectionModel]] = []
+        out: list[EchoDetectionIfftModel | IfftMultiEchoDetectionModel] = []
         for ch, cplx in channel_data.items():
             bw = obw.get(ch, 0.0)
             if not bw:
@@ -615,7 +609,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
 
         return out
 
-    def _analyze_lte_detection(self) -> List[LteDetectionModel]:
+    def _analyze_lte_detection(self) -> list[LteDetectionModel]:
         """
         Detect LTE-Style Interference Using Group-Delay Anomalies.
 
@@ -637,7 +631,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                 freqs[ch] = result.carrier_values.frequency
             except Exception as e:
                 self.logger.error(f"[file={tcm.filename}] LTE_DETECTION_PHASE_SLOPE parse failed: {e}")
-        out: List[LteDetectionModel] = []
+        out: list[LteDetectionModel] = []
         for ch, cplx in channel_data.items():
             res = GroupDelayAnomalyDetector(cplx, freqs[ch]).run(bin_widths=bin_widths, threshold=threshold)
             out.append(
@@ -650,7 +644,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
             )
         return out
 
-    def _build_json_archive_models(self) -> Dict[FileName, BaseModel]:
+    def _build_json_archive_models(self) -> dict[FileName, BaseModel]:
         """
         Build JSON Archive Models For Each Analysis Result.
 
@@ -665,7 +659,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
             Mapping of partial filenames to analysis result models suitable
             for JSON archival.
         """
-        models: Dict[FileName, BaseModel] = {}
+        models: dict[FileName, BaseModel] = {}
         model = self.to_model()
         for r in model.results:
             match self._analysis_type:

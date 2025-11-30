@@ -48,21 +48,21 @@ class MultiAnalysisRpt(ABC):
 
         self._group_time:TimeStamp    = Generate.time_stamp()
         self._base_filename: PathLike = ""
-        self._common_analysis_model: Dict[ChannelId, BaseModel] = {}
+        self._common_analysis_model: dict[ChannelId, BaseModel] = {}
 
-        self._mac_addresses: Set[MacAddress]  = set()
+        self._mac_addresses: set[MacAddress]  = set()
         self._cmts_mac_address: MacAddress = MacAddress(MacAddress.null())
         self._sys_descr_model: SystemDescriptorModel  = tcm.device_details.system_description
 
-        self.csv_files: List[PathLike]  = []
-        self.plot_files: List[PathLike] = []
-        self.json_files: List[PathLike] = []
+        self.csv_files: list[PathLike]  = []
+        self.plot_files: list[PathLike] = []
+        self.json_files: list[PathLike] = []
 
         self.logger.info(f"MultiAnalysisRpt: MAC: {self._mac_addresses}, "
                          f"Model: {self._sys_descr_model.model_dump()}, "
                          f"GroupTime: {self._group_time}")
 
-    def getMacAddresses(self) -> List[MacAddress]:
+    def getMacAddresses(self) -> list[MacAddress]:
         """Return the cable-modem MAC address associated with this report session."""
         return self._trans_collect.getMacAddresses()
 
@@ -87,7 +87,7 @@ class MultiAnalysisRpt(ABC):
             json_files   =   self.json_files,
             archive_file =   self.archive_file,)
 
-    def create_csv_fname(self, tags: List[str] = None) -> PathLike:
+    def create_csv_fname(self, tags: list[str] = None) -> PathLike:
         '''
         Build a CSV filename of the form:
             <csv_dir>/<mac>_<model>_<timestamp>[_TAGS].csv
@@ -99,7 +99,7 @@ class MultiAnalysisRpt(ABC):
             tags = []
         return f"{self._csv_dir}/{self.create_generic_fname(tags=tags, ext='csv')}"
 
-    def create_png_fname(self, tags: List[str] = None) -> PathLike:
+    def create_png_fname(self, tags: list[str] = None) -> PathLike:
         '''
         Build a PNG filename of the form:
             <png_dir>/<mac>_<model>_<timestamp>[_TAGS].png
@@ -111,7 +111,7 @@ class MultiAnalysisRpt(ABC):
             tags = []
         return f"{self._png_dir}/{self.create_generic_fname(tags=tags, ext='png')}"
 
-    def create_json_fname(self, tags: List[str] = None) -> PathLike:
+    def create_json_fname(self, tags: list[str] = None) -> PathLike:
         '''
         Build a PNG filename of the form:
             <json_dir>/<mac>_<model>_<timestamp>[_TAGS].json
@@ -123,7 +123,7 @@ class MultiAnalysisRpt(ABC):
             tags = []
         return f"{self._json_dir}/{self.create_generic_fname(tags=tags, ext='json')}"
 
-    def create_archive_fname(self, tags: List[str] = None) -> PathLike:
+    def create_archive_fname(self, tags: list[str] = None) -> PathLike:
         '''
         Build a ZIP archive filename of the form:
             <archive_dir>/<mac>_<model>_<timestamp>[_TAGS].zip
@@ -135,7 +135,7 @@ class MultiAnalysisRpt(ABC):
             tags = []
         return f"{self._archive_dir}/{self.create_generic_fname(tags=tags, ext='zip')}"
 
-    def create_generic_fname(self, tags: List[str], ext: str = "") -> str:
+    def create_generic_fname(self, tags: list[str], ext: str = "") -> str:
         """
         Generate a generic filename using the current session metadata plus tags.
 
@@ -207,7 +207,7 @@ class MultiAnalysisRpt(ABC):
 
         return self.archive_file
 
-    def _generate_fname(self, tags: List[str] = None, ext: str = "") -> str:
+    def _generate_fname(self, tags: list[str] = None, ext: str = "") -> str:
         """
         Construct a sanitized filename from:
           - MAC address (colon-free, lowercase)
@@ -248,7 +248,7 @@ class MultiAnalysisRpt(ABC):
         """Return the `TransactionCollection` instance used to collect capture files."""
         return self._trans_collect
 
-    def register_models_for_json_archive_files(self, model:BaseModel, filename_tags: List[str], append_timestamp: bool = True) -> None:
+    def register_models_for_json_archive_files(self, model:BaseModel, filename_tags: list[str], append_timestamp: bool = True) -> None:
         """Register a Pydantic model to be serialized as JSON and included in the report archive."""
 
         # model is a Pydantic BaseModel instance, but it can be any subclass
@@ -279,7 +279,7 @@ class MultiAnalysisRpt(ABC):
         pass
 
     @abstractmethod
-    def create_csv(self, **kwargs) -> List[CSVManager]:
+    def create_csv(self, **kwargs) -> list[CSVManager]:
         """
         Build one or more `CSVManager` instances ready to `write()`.
 
@@ -290,7 +290,7 @@ class MultiAnalysisRpt(ABC):
         return []
 
     @abstractmethod
-    def create_matplot(self, **kwargs) -> List[MatplotManager]:
+    def create_matplot(self, **kwargs) -> list[MatplotManager]:
         """
         Build one or more `MatplotManager` instances to render PNG figures.
 

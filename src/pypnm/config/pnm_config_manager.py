@@ -63,7 +63,7 @@ class PnmConfigManager:
         return Inet(PnmConfigManager._tftp_v6)
 
     @staticmethod
-    def get_tftp_servers() -> Tuple[Inet, Inet]:
+    def get_tftp_servers() -> tuple[Inet, Inet]:
         """
         Retrieves the TFTP server IP addresses (both IPv4 and IPv6) as a tuple of `Inet` objects.
 

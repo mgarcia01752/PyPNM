@@ -37,12 +37,12 @@ class CSVManager:
             orientation: Whether to create CSV in vertical or horizontal format
         """
         self.orientation = orientation
-        self.headers: List[str] = []
-        self.data: List[List[Any]] = []
+        self.headers: list[str] = []
+        self.data: list[list[Any]] = []
         self._header_set = False
         self._file_path: Path
 
-    def set_header(self, headers: Union[List[str], str]) -> None:
+    def set_header(self, headers: list[str] | str) -> None:
         """
         Add headers to the CSV.
 
@@ -71,7 +71,7 @@ class CSVManager:
         self.headers = [str(h).strip() for h in headers]
         self._header_set = True
 
-    def insert_row(self, row_data: Union[List[Any], Any]) -> None:
+    def insert_row(self, row_data: list[Any] | Any) -> None:
         """
         Insert a row of data.
 
@@ -107,7 +107,7 @@ class CSVManager:
 
         self.data.append(processed_row)
 
-    def insert_multiple_rows(self, rows: List[List[Any]]) -> None:
+    def insert_multiple_rows(self, rows: list[list[Any]]) -> None:
         """
         Insert multiple rows at once.
 
@@ -128,11 +128,11 @@ class CSVManager:
         """Get the number of columns"""
         return len(self.headers)
 
-    def get_headers(self) -> List[str]:
+    def get_headers(self) -> list[str]:
         """Get a copy of the headers"""
         return self.headers.copy()
 
-    def get_data(self) -> List[List[str]]:
+    def get_data(self) -> list[list[str]]:
         """Get a copy of all data rows"""
         return [row.copy() for row in self.data]
 
@@ -142,7 +142,7 @@ class CSVManager:
         self.data = []
         self._header_set = False
 
-    def set_path_fname(self, file_path: Union[str, Path]) -> None:
+    def set_path_fname(self, file_path: str | Path) -> None:
         """
         Set the file path for saving the CSV.
 

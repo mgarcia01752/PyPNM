@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Iterable, List, Optional, cast
+from typing import Any, List, Optional, cast
+from collections.abc import Iterable
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -46,7 +47,7 @@ class DsHistrogramReport(AnalysisReport):
     FNAME_TAG: str = "DsHistrogram"
 
     def __init__(self, analysis: Analysis,
-                 analysis_matplot_config: Optional[AnalysisRptMatplotConfig] = None,
+                 analysis_matplot_config: AnalysisRptMatplotConfig | None = None,
                  **kwargs) -> None:
         """
         Initialize the report builder.
@@ -64,7 +65,7 @@ class DsHistrogramReport(AnalysisReport):
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         self._results: dict[int, DsHistrogramAnalysisRpt] = {}
 
-    def create_csv(self, **kwargs: Any) -> List[CSVManager]:
+    def create_csv(self, **kwargs: Any) -> list[CSVManager]:
         """
         Emit one CSV per channel; rows are (ChannelID, BinIndex, HitCount, Symmetry, DwellCount).
 
@@ -73,7 +74,7 @@ class DsHistrogramReport(AnalysisReport):
         List[CSVManager]
             Managers with headers, rows, and target filenames set. The caller can persist them.
         """
-        csv_mgr_list: List[CSVManager] = []
+        csv_mgr_list: list[CSVManager] = []
 
         for common_model in self.get_common_analysis_model():
             model = cast(DsHistrogramAnalysisRpt, common_model)
@@ -98,7 +99,7 @@ class DsHistrogramReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self, **kwargs: Any) -> List[MatplotManager]:
+    def create_matplot(self, **kwargs: Any) -> list[MatplotManager]:
         """
         Render a per-channel histogram using `MatplotManager.plot_histogram` and pre-binned counts.
 
@@ -124,7 +125,7 @@ class DsHistrogramReport(AnalysisReport):
         List[MatplotManager]
             Plot managers with PNGs saved to disk and file paths tracked.
         """
-        out: List[MatplotManager] = []
+        out: list[MatplotManager] = []
 
         normalized: bool    = bool(kwargs.get("normalized", False))
         cumulative: bool    = bool(kwargs.get("cumulative", False))
@@ -208,7 +209,7 @@ class DsHistrogramReport(AnalysisReport):
             "hit_counts": List[int]
         }
         """
-        models: List[DsHistogramAnalysisModel] = cast(List[DsHistogramAnalysisModel], self.get_analysis_model())
+        models: list[DsHistogramAnalysisModel] = cast(list[DsHistogramAnalysisModel], self.get_analysis_model())
 
         for idx, src in enumerate(models):
             try:
@@ -235,7 +236,7 @@ class DsHistrogramReport(AnalysisReport):
                 self.logger.exception(f"Failed to process DS Histogram item {idx}: {exc}", exc_info=True)
 
     @staticmethod
-    def _align_len(seq: Iterable[T] | List[T], n: int, *, fill: T) -> List[T]:
+    def _align_len(seq: Iterable[T] | list[T], n: int, *, fill: T) -> list[T]:
         """
         Ensure `seq` has length `n` by truncation or padding with `fill`.
 

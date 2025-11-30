@@ -78,8 +78,8 @@ class GetPnmParserAndParameters(PnmHeader):
         self.pnm_type = f"{file_type_str}{file_type_num_str}"
         self.logger.debug("Processing PNM-Type: (%s)", self.pnm_type)
 
-        self._parameters_model: Optional[PnmParserParametersModel] = None
-        self._parser: Optional[PnmParsers] = None
+        self._parameters_model: PnmParserParametersModel | None = None
+        self._parser: PnmParsers | None = None
 
     def to_model(self) -> PnmParserParametersModel:
         """
@@ -113,7 +113,7 @@ class GetPnmParserAndParameters(PnmHeader):
         )
         return self._parameters_model
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Process the PNM file and return core parameters as a plain dict.
 

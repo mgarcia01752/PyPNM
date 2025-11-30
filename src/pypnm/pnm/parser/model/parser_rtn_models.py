@@ -76,7 +76,7 @@ class CmDsOfdmRxMerModel(PnmBaseModel):
     value_units:str                         = Field(default="dB", description="Non-mutable")
     values:FloatSeries                      = Field(..., description="RxMER values per active subcarrier (dB)")
     signal_statistics:SignalStatisticsModel = Field(..., description="Aggregate statistics computed from values")
-    modulation_statistics:Dict[str, Any]    = Field(..., description="Shannon-based modulation metrics")
+    modulation_statistics:dict[str, Any]    = Field(..., description="Shannon-based modulation metrics")
 
 class CmUsOfdmaPreEqModel(PnmBaseModel):
     model_config                            = ConfigDict(extra="ignore")
@@ -111,13 +111,13 @@ class OfdmFecSumCodeWordEntryModel(BaseModel):
     """
     Parallel arrays holding per-interval codeword statistics for a single OFDM profile.
     """
-    timestamp: List[TimeStamp]      = Field(..., description="Unix timestamps (seconds) for each aggregation interval")
+    timestamp: list[TimeStamp]      = Field(..., description="Unix timestamps (seconds) for each aggregation interval")
     total_codewords: CodeWordArray  = Field(..., description="Total codewords observed in each interval")
     corrected: CodeWordArray        = Field(..., description="FEC-corrected codewords per interval")
     uncorrectable: CodeWordArray    = Field(..., description="Uncorrectable codewords per interval")
 
     @model_validator(mode="after")
-    def _validate_lengths(self) -> "OfdmFecSumCodeWordEntryModel":
+    def _validate_lengths(self) -> OfdmFecSumCodeWordEntryModel:
         n = len(self.timestamp)
         if not (len(self.total_codewords) == len(self.corrected) == len(self.uncorrectable) == n):
             raise ValueError("timestamp, total_codewords, corrected, uncorrectable must have equal lengths")
@@ -132,7 +132,7 @@ class OfdmFecSumDataModel(BaseModel):
     codeword_entries: OfdmFecSumCodeWordEntryModel = Field(..., description="Per-interval codeword stats (parallel arrays)")
 
     @model_validator(mode="after")
-    def _validate_number_of_sets(self) -> "OfdmFecSumDataModel":
+    def _validate_number_of_sets(self) -> OfdmFecSumDataModel:
         if self.number_of_sets != len(self.codeword_entries.timestamp):
             raise ValueError(f"number_of_sets={self.number_of_sets} does not match entries={len(self.codeword_entries.timestamp)}")
         return self
@@ -148,7 +148,7 @@ class CmDsOfdmFecSummaryModel(BaseModel):
     mac_address: MacAddressStr                      = Field(default_factory=MacAddress.null, description="Cable modem MAC address")
     summary_type: int                               = Field(..., description="CM-OSSI SummaryType enum: other(1), interval10min(2), interval24hr(3)")
     num_profiles: int                               = Field(..., description="Number of OFDM profiles reported in this summary")
-    fec_summary_data: List[OfdmFecSumDataModel]     = Field(..., description="Per-profile FEC summary datasets")
+    fec_summary_data: list[OfdmFecSumDataModel]     = Field(..., description="Per-profile FEC summary datasets")
 
     @computed_field
     @property
@@ -183,5 +183,5 @@ class CmDsOfdmModulationProfileModel(PnmBaseModel):
     model_config = ConfigDict(extra="ignore", use_enum_values=True)
     num_profiles: int                      = Field(..., ge=0, description="Number of profiles in this capture")
     profile_data_length_bytes: int         = Field(..., ge=0, description="Length of the profile data block (bytes)")
-    profiles: List[ModulationProfileModel] = Field(default_factory=list, description="Parsed modulation profiles")
+    profiles: list[ModulationProfileModel] = Field(default_factory=list, description="Parsed modulation profiles")
 

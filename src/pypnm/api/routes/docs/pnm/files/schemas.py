@@ -23,20 +23,20 @@ class FileEntry(BaseModel):
     filename: FileName                      = Field(..., description="Name of the file")
     pnm_test_type: str                      = Field(..., description="Type of PNM test performed")
     timestamp: TimeStamp                    = Field(..., description="Capture or transaction timestamp")
-    system_description: Optional[dict]      = Field(None, description="Optional system description metadata")
+    system_description: dict | None      = Field(None, description="Optional system description metadata")
 
 
 class FileQueryResponse(BaseModel):
-    files: Dict[str, List[FileEntry]]       = Field(..., description="Mapping of MAC address to list of PNM file entries")
+    files: dict[str, list[FileEntry]]       = Field(..., description="Mapping of MAC address to list of PNM file entries")
 
 
 class UploadFileRequest(BaseModel):
     filename: FileName                      = Field(..., description="Name of the file to upload")
-    data: Optional[str]                     = Field(None, description="Optional base64-encoded or raw file data")
+    data: str | None                     = Field(None, description="Optional base64-encoded or raw file data")
 
 
 class UploadFileResponse(BaseModel):
-    mac_address: Optional[MacAddressStr]    = Field(
+    mac_address: MacAddressStr | None    = Field(
         None,
         description="MAC address associated with the uploaded file (placeholder null MAC until header inspection is wired in)",
     )
@@ -54,9 +54,9 @@ class AnalysisJsonResponse(BaseModel):
     mac_address: MacAddressStr    = Field(description="MAC address associated with the analyzed file")
     pnm_file_type: str          = Field(..., description="PNM file type")
     status: str                   = Field(..., description="Status of the analysis operation")
-    analysis: Dict                = Field(..., description="Analysis result in JSON format")
+    analysis: dict                = Field(..., description="Analysis result in JSON format")
 
 class HexDumpResponse(BaseModel):
     transaction_id: TransactionId = Field(..., description="Transaction ID associated with the PNM file.")
     bytes_per_line: int           = Field(..., description="Number of bytes rendered per hexdump output line.")
-    lines: List[str]              = Field(default_factory=list, description="Hexdump lines with offset, hex bytes, and ASCII text.")
+    lines: list[str]              = Field(default_factory=list, description="Hexdump lines with offset, hex bytes, and ASCII text.")

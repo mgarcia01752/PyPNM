@@ -59,7 +59,7 @@ async def main():
                 continue
             break
 
-    results: List[dict] = []
+    results: list[dict] = []
 
     for entry in await cm.getDocsPnmCmDsOfdmRxMerEntry():
         results.append(entry.model_dump())

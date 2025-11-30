@@ -71,7 +71,7 @@ class PyPnmOperationsAPI(AbstractService):
         Retrieve detailed metadata for a specific operation.
         """
         self.logger.info(f"Retrieving operation status for ID={operation_id}")
-        operation_info: Dict[str, Any] = {
+        operation_info: dict[str, Any] = {
             "operation_id": operation_id,
             "mac": "aa:bb:cc:dd:ee:ff",
             "group_id": "grp-001",

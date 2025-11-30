@@ -32,7 +32,7 @@ class OperationManager:
         ...
     }
     """
-    def __init__(self, capture_group_id: GroupId, db_path: Optional[Path] = None) -> None:
+    def __init__(self, capture_group_id: GroupId, db_path: Path | None = None) -> None:
         """
         Initialize a new operation manager for a given capture group.
 
@@ -58,7 +58,7 @@ class OperationManager:
         if not self.db_path.exists():
             self._atomic_write({})
 
-    def _load(self) -> Dict[str, Any]:
+    def _load(self) -> dict[str, Any]:
         """
         Load the operations DB from disk.
 
@@ -72,7 +72,7 @@ class OperationManager:
             self.logger.warning(f"Failed to load operation DB, resetting: {e}")
             return {}
 
-    def _atomic_write(self, data: Dict[str, Any]) -> None:
+    def _atomic_write(self, data: dict[str, Any]) -> None:
         """
         Atomically write the given data to the DB file.
         """
@@ -81,7 +81,7 @@ class OperationManager:
             json.dump(data, f, indent=2)
         temp.replace(self.db_path)
 
-    def _save(self, data: Dict[str, Any]) -> None:
+    def _save(self, data: dict[str, Any]) -> None:
         """
         Persist the given operations dict to disk with atomic write.
         """
@@ -124,7 +124,7 @@ class OperationManager:
         return self.operation_id
 
     @classmethod
-    def get_capture_group(cls, operation_id: OperationId, db_path: Optional[Path] = None) -> GroupId:
+    def get_capture_group(cls, operation_id: OperationId, db_path: Path | None = None) -> GroupId:
         """
         Retrieve the capture_group_id for a given operation_id.
 
@@ -151,7 +151,7 @@ class OperationManager:
             return ""
 
     @classmethod
-    def list_operations(cls, db_path: Optional[Path] = None) -> List[str]:
+    def list_operations(cls, db_path: Path | None = None) -> list[str]:
         """
         List all registered operation IDs.
 

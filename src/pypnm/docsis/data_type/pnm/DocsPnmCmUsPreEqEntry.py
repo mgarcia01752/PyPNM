@@ -5,7 +5,8 @@ import logging
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 from enum import Enum
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, List, Optional, Union
+from collections.abc import Callable
 
 from pydantic import BaseModel
 
@@ -63,7 +64,7 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
     entry: DocsPnmCmUsPreEqFields
 
     @staticmethod
-    def thousandth_db(value: Union[str, int, float]) -> float:
+    def thousandth_db(value: str | int | float) -> float:
         """
         Converts a ThousandthdB value (integer or string) to a float in dB.
         Example: 12345 -> 12.345 dB
@@ -74,7 +75,7 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
             return float("nan")
 
     @staticmethod
-    def thousandth_db_per_mhz(value: Union[str, int, float]) -> float:
+    def thousandth_db_per_mhz(value: str | int | float) -> float:
         """
         Converts a ThousandthdB/MHz value to a float in dB/MHz.
         Example: 12345 -> 12.345 dB/MHz
@@ -85,7 +86,7 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
             return float("nan")
 
     @staticmethod
-    def thousandth_ns(value: Union[str, int, float]) -> float:
+    def thousandth_ns(value: str | int | float) -> float:
         """
         Converts a value expressed in units of 0.001 nsec to nsec.
         Example: 12345 -> 12.345 nsec
@@ -96,7 +97,7 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
             return float("nan")
 
     @staticmethod
-    def thousandth_ns_per_mhz(value: Union[str, int, float]) -> float:
+    def thousandth_ns_per_mhz(value: str | int | float) -> float:
         """
         Converts a ThousandthNsec/MHz value to nsec/MHz.
         Example: 12345 -> 12.345 nsec/MHz
@@ -107,7 +108,7 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
             return float("nan")
 
     @staticmethod
-    def to_pre_eq_status(value: Union[str, int]) -> PreEqCoAdjStatus:
+    def to_pre_eq_status(value: str | int) -> PreEqCoAdjStatus:
         """
         Converts an integer value to PreEqCoAdjStatus enum.
         """
@@ -117,17 +118,17 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
             return PreEqCoAdjStatus.OTHER
 
     @staticmethod
-    def to_pre_eq_status_str(value: Union[str, int]) -> str:
+    def to_pre_eq_status_str(value: str | int) -> str:
         """
         Convert integer status to a lowercase string label (e.g. 'success').
         """
         return str(DocsPnmCmUsPreEqEntry.to_pre_eq_status(value))
 
     @classmethod
-    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsPnmCmUsPreEqEntry":
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsPnmCmUsPreEqEntry:
         logger = logging.getLogger(cls.__name__)
 
-        async def fetch(oid: str, cast_fn: Optional[Callable[[Any], Any]] = None) -> Any:
+        async def fetch(oid: str, cast_fn: Callable[[Any], Any] | None = None) -> Any:
             try:
                 result = await snmp.get(f"{oid}.{index}")
                 value = Snmp_v2c.get_result_value(result)
@@ -158,9 +159,9 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
         return cls(index=index, channel_id=channel_id, entry=fields)
 
     @classmethod
-    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsPnmCmUsPreEqEntry"]:
+    async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsPnmCmUsPreEqEntry]:
         logger = logging.getLogger(cls.__name__)
-        results: List[DocsPnmCmUsPreEqEntry] = []
+        results: list[DocsPnmCmUsPreEqEntry] = []
 
         for idx in indices:
             try:

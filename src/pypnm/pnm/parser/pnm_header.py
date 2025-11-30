@@ -5,7 +5,8 @@ from __future__ import annotations
 
 import logging
 import struct
-from typing import Any, Dict, Mapping, Optional, Union
+from typing import Any, Dict, Optional, Union
+from collections.abc import Mapping
 
 from pydantic import BaseModel, Field
 
@@ -16,7 +17,7 @@ from pypnm.pnm.parser.pnm_file_type import PnmFileType
 
 class PnmHeaderParameters(BaseModel):
     """Typed fields parsed from a PNM header."""
-    file_type: Optional[str]  = Field(default="PNN", description="PNM file type identifier (e.g., 'PNN')")
+    file_type: str | None  = Field(default="PNN", description="PNM file type identifier (e.g., 'PNN')")
     file_type_version: int    = Field(default=0, description="Numeric version of the file type (e.g., 10 for PNN10)")
     major_version: int        = Field(default=1, description="Major version of the PNM format")
     minor_version: int        = Field(default=0, description="Minor version of the PNM format")
@@ -60,7 +61,7 @@ class PnmHeader:
 
         self._pnmheader_model: PnmHeaderModel
         self._parameters: PnmHeaderParameters
-        self._file_type: Optional[bytes]   = None
+        self._file_type: bytes | None   = None
         self._file_type_num: int           = -1
         self._major_version: int           = -1
         self._minor_version: int           = -1
@@ -144,7 +145,7 @@ class PnmHeader:
         """
         return self._parameters
 
-    def _to_dict(self, header_only: bool = False) -> Dict[str, Any]:
+    def _to_dict(self, header_only: bool = False) -> dict[str, Any]:
         """
         Serialize the header to a Python dictionary.
 
@@ -158,12 +159,12 @@ class PnmHeader:
         Dict[str, Any]
             Dictionary containing the header structure and optionally the payload data.
         """
-        out: Dict[str, Any] = self.getPnmHeaderModel().model_dump(exclude_none=True)
+        out: dict[str, Any] = self.getPnmHeaderModel().model_dump(exclude_none=True)
         if not header_only:
             out["data"] = self.pnm_data.hex()
         return out
 
-    def getPnmHeader(self, header_only: bool = False) -> Dict[str, Any]:
+    def getPnmHeader(self, header_only: bool = False) -> dict[str, Any]:
         """
         Public getter (maintained for backward compatibility).
 
@@ -179,7 +180,7 @@ class PnmHeader:
         """
         return self._to_dict(header_only)
 
-    def get_pnm_file_type(self) -> Optional[PnmFileType]:
+    def get_pnm_file_type(self) -> PnmFileType | None:
         """
         Resolve the parsed PNM file type and version to a known `PnmFileType` enum.
 
@@ -253,7 +254,7 @@ class PnmHeader:
         return cls(data)
 
     @staticmethod
-    def get_model_from_dict(data: Union[Mapping[str, Any], Dict[str, Any]]) -> PnmHeaderParameters:
+    def get_model_from_dict(data: Mapping[str, Any] | dict[str, Any]) -> PnmHeaderParameters:
         """
         Build a `PnmHeaderParameters` from a known PNM header dictionary.
 

@@ -37,4 +37,4 @@ class CaptureSample(BaseModel):
     timestamp: TimeStamp            = Field(..., description="Unix timestamp (seconds since epoch) when the capture was triggered")
     transaction_id: TransactionId   = Field(...,description="TFTP transaction ID returned by the cable modem")
     filename: str                   = Field(...,description="Name of the uploaded capture file containing RxMER data")
-    error: Optional[str]            = Field(None, description="Error message if capture or upload failed (otherwise None)")
+    error: str | None            = Field(None, description="Error message if capture or upload failed (otherwise None)")

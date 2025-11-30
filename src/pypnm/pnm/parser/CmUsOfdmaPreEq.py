@@ -56,7 +56,7 @@ class CmUsOfdmaPreEq(PnmHeader):
         self._decoded_coefficients           : ComplexSeries
         self._occupied_channel_bandwidth     : FrequencyHz
         self._model                          : CmUsOfdmaPreEqModel
-        self._sm_n_format                    : Tuple[IntegerBits, FractionalBits]
+        self._sm_n_format                    : tuple[IntegerBits, FractionalBits]
 
         self.__process()
 
@@ -167,7 +167,7 @@ class CmUsOfdmaPreEq(PnmHeader):
     def to_model(self) -> CmUsOfdmaPreEqModel:
         return self._model
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert to a plain dictionary via the Pydantic model.
         """

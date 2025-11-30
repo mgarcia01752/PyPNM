@@ -47,8 +47,8 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
     def __init__(
         self,
         binary_data: bytes,
-        q_format: Tuple[IntegerBits, FractionalBits] = (IntegerBits(2), FractionalBits(13)),
-        round_precision: Optional[int] = 6,
+        q_format: tuple[IntegerBits, FractionalBits] = (IntegerBits(2), FractionalBits(13)),
+        round_precision: int | None = 6,
     ):
         """
         Parameters
@@ -62,8 +62,8 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
         """
         super().__init__(binary_data)
         self.logger = logging.getLogger(self.__class__.__name__)
-        self._q_format: Tuple[IntegerBits, FractionalBits] = q_format
-        self._round_precision: Optional[int] = round_precision
+        self._q_format: tuple[IntegerBits, FractionalBits] = q_format
+        self._round_precision: int | None = round_precision
 
         self._channel_id: ChannelId                  = INVALID_CHANNEL_ID
         self._mac_address: MacAddressStr             = MacAddress.null()
@@ -143,7 +143,7 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
     @overload
     def get_coefficients(self, precision: Literal["raw"]) -> ComplexSeries: ...
 
-    def get_coefficients(self, precision: Literal["rounded", "raw"] = "rounded") -> Union[ComplexArray, ComplexSeries]:
+    def get_coefficients(self, precision: Literal["rounded", "raw"] = "rounded") -> ComplexArray | ComplexSeries:
         """
         Retrieve channel-estimation coefficients.
 
@@ -159,7 +159,7 @@ class CmDsOfdmChanEstimateCoef(PnmHeader):
         """Return the fully-populated pydantic model representation."""
         return self._model
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Export model as a Python dict (suitable for JSON serialization)."""
         return self.to_model().model_dump()
 

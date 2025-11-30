@@ -16,7 +16,7 @@ EndianLiteral   = Literal["little", "big"]
 
 class FixedPointDecoder:
     @staticmethod
-    def decode_fixed_point(value: int, q_format: Tuple[IntegerBits, FractionalBits], signed: bool = True) -> float:
+    def decode_fixed_point(value: int, q_format: tuple[IntegerBits, FractionalBits], signed: bool = True) -> float:
         """
         Converts a fixed-point integer value to a floating-point number using the specified Q-format.
 
@@ -41,7 +41,7 @@ class FixedPointDecoder:
         return value / (2 ** frac_bits)
 
     @staticmethod
-    def decode_complex_data(data: bytes, q_format: Tuple[IntegerBits, FractionalBits], signed: bool = True, *, endian: EndianLiteral = "big") -> ComplexSeries:
+    def decode_complex_data(data: bytes, q_format: tuple[IntegerBits, FractionalBits], signed: bool = True, *, endian: EndianLiteral = "big") -> ComplexSeries:
         """
         Decodes a binary byte stream containing fixed-point complex numbers into a list of Python complex numbers.
 
@@ -72,7 +72,7 @@ class FixedPointDecoder:
         if len(data) % bytes_per_complex != 0:
             raise ValueError("Invalid input: data length must be a multiple of the complex number size.")
 
-        complex_values: List[complex] = []
+        complex_values: list[complex] = []
 
         mv = memoryview(data)
         for offset in range(0, len(data), bytes_per_complex):

@@ -10,7 +10,8 @@ from dataclasses import dataclass, replace
 from datetime import datetime
 from itertools import cycle
 from pathlib import Path
-from typing import Iterable, List, Literal, Optional, Sequence, Tuple, Union
+from typing import List, Literal, Optional, Tuple, Union
+from collections.abc import Iterable, Sequence
 
 import matplotlib
 import numpy as np
@@ -58,58 +59,58 @@ class PlotConfig:
           Useful for plotting log₂(M) positions while showing labels like ["64","256","1024"].
     """
     # Data
-    x: Optional[ArrayLike] = None
-    y: Optional[ArrayLike] = None
-    z: Optional[ArrayLike] = None
-    y_multi: Optional[List[ArrayLike]] = None
-    y_multi_label: Optional[List[str]] = None
+    x: ArrayLike | None = None
+    y: ArrayLike | None = None
+    z: ArrayLike | None = None
+    y_multi: list[ArrayLike] | None = None
+    y_multi_label: list[str] | None = None
 
     # Labels / title
-    xlabel: Optional[str] = None
-    ylabel: Optional[str] = None
-    zlabel: Optional[str] = None
-    title: Optional[str] = None
-    xlabel_prefix: Optional[str] = None
+    xlabel: str | None = None
+    ylabel: str | None = None
+    zlabel: str | None = None
+    title: str | None = None
+    xlabel_prefix: str | None = None
 
     # Limits and style
-    xlim: Optional[Tuple[Number, Number]] = None
-    ylim: Optional[Tuple[Number, Number]] = None
-    grid: Optional[bool] = None
-    legend: Optional[bool] = None
-    transparent: Optional[bool] = None
+    xlim: tuple[Number, Number] | None = None
+    ylim: tuple[Number, Number] | None = None
+    grid: bool | None = None
+    legend: bool | None = None
+    transparent: bool | None = None
 
     # Constellation data
-    qam: Optional[QamModulation] = None
-    soft: Optional[ComplexArray] = None
-    hard: Optional[ComplexArray] = None
-    show_crosshair: Optional[bool] = None
+    qam: QamModulation | None = None
+    soft: ComplexArray | None = None
+    hard: ComplexArray | None = None
+    show_crosshair: bool | None = None
 
     # Theme
-    theme: Optional[ThemeType] = None
+    theme: ThemeType | None = None
 
     # X tick formatting
-    x_tick_mode: Optional[Literal["none", "eng", "unit"]] = "none"
-    x_unit_from: Optional[Literal["hz", "khz", "mhz", "ghz"]] = "hz"
-    x_unit_out: Optional[Literal["hz", "khz", "mhz", "ghz"]] = "mhz"
-    x_tick_decimals: Optional[int] = None
-    xlabel_base: Optional[str] = None
+    x_tick_mode: Literal["none", "eng", "unit"] | None = "none"
+    x_unit_from: Literal["hz", "khz", "mhz", "ghz"] | None = "hz"
+    x_unit_out: Literal["hz", "khz", "mhz", "ghz"] | None = "mhz"
+    x_tick_decimals: int | None = None
+    xlabel_base: str | None = None
 
     # Line color controls
-    line_color: Optional[str] = None
-    line_colors: Optional[List[str]] = None
-    scatter_size: Optional[float] = None
+    line_color: str | None = None
+    line_colors: list[str] | None = None
+    scatter_size: float | None = None
 
     # X-axis visibility / human time label
     x_ticks_visible: bool = True
-    x_time_labels: Optional[Literal["none", "from_to"]] = "none"
-    x_time_input_unit: Optional[Literal["s", "ms", "ns"]] = "s"
-    x_time_format: Optional[str] = "%Y-%m-%d %H:%M:%S"
+    x_time_labels: Literal["none", "from_to"] | None = "none"
+    x_time_input_unit: Literal["s", "ms", "ns"] | None = "s"
+    x_time_format: str | None = "%Y-%m-%d %H:%M:%S"
 
     # Y tick control
-    y_ticks: Optional[List[Number]] = None
-    y_tick_labels: Optional[List[str]] = None
+    y_ticks: list[Number] | None = None
+    y_tick_labels: list[str] | None = None
 
-    def update(self, **kwargs) -> "PlotConfig":
+    def update(self, **kwargs) -> PlotConfig:
         """Create a new PlotConfig with fields replaced by kwargs."""
         return replace(self, **kwargs)
 
@@ -136,13 +137,13 @@ class MatplotManager:
 
     def __init__(
         self,
-        output_dir: Union[str, Path] = ".",
+        output_dir: str | Path = ".",
         *,
         dpi: int = 150,
-        figsize: Tuple[float, float] = (8.0, 5.0),
+        figsize: tuple[float, float] = (8.0, 5.0),
         tight_layout: bool = True,
-        default_cfg: Optional[PlotConfig] = None,
-        logger: Optional[logging.Logger] = None,
+        default_cfg: PlotConfig | None = None,
+        logger: logging.Logger | None = None,
     ) -> None:
         self.output_dir = Path(output_dir).resolve()
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -151,16 +152,16 @@ class MatplotManager:
         self.tight_layout = tight_layout
         self.default_cfg = default_cfg or PlotConfig()
         self.logger = logger or logging.getLogger(__name__)
-        self._png_files: List[Path] = []
+        self._png_files: list[Path] = []
 
     # ───────────────────────── internals ─────────────────────────
 
-    def _new_fig(self, projection: Optional[str] = None):
+    def _new_fig(self, projection: str | None = None):
         fig = plt.figure(figsize=self.figsize, dpi=self.dpi)
         ax = fig.add_subplot(111, projection=projection) if projection else fig.add_subplot(111)
         return fig, ax
 
-    def _resolve_path(self, filename: Union[str, Path]) -> Path:
+    def _resolve_path(self, filename: str | Path) -> Path:
         p = Path(filename)
         return p if p.is_absolute() else (self.output_dir / p)
 
@@ -168,11 +169,11 @@ class MatplotManager:
         self._png_files.append(fname)
         return fname
 
-    def get_png_files(self) -> List[Path]:
+    def get_png_files(self) -> list[Path]:
         """Return a list of all PNG paths created by this manager instance."""
         return self._png_files
 
-    def _merge_cfg(self, user_cfg: Optional[PlotConfig], method_defaults: PlotConfig) -> PlotConfig:
+    def _merge_cfg(self, user_cfg: PlotConfig | None, method_defaults: PlotConfig) -> PlotConfig:
         base = self.default_cfg
         def pick(top, mid, low):
             return top if top is not None else (mid if mid is not None else low)
@@ -213,7 +214,7 @@ class MatplotManager:
             y_tick_labels       = pick(user_cfg.y_tick_labels       if user_cfg else None, base.y_tick_labels,      method_defaults.y_tick_labels),
         )
 
-    def _theme_context(self, cfg: Optional[PlotConfig]):
+    def _theme_context(self, cfg: PlotConfig | None):
         theme = getattr(cfg, "theme", None) if cfg is not None else None
         if theme in ("dark", True):
             return plt.style.context("dark_background")
@@ -294,7 +295,7 @@ class MatplotManager:
                 prefix = cfg.xlabel_prefix or ""
                 ax.set_xlabel(f"{prefix}{base} ({lab_out})")
 
-    def _finish(self, fig, ax, path: Path, cfg: "PlotConfig") -> Path:
+    def _finish(self, fig, ax, path: Path, cfg: PlotConfig) -> Path:
         """
         Finalize axes styling, save PNG to disk, and register the output path.
 
@@ -353,13 +354,13 @@ class MatplotManager:
 
     # ───────────────────────── helpers ─────────────────────────
 
-    def _to_1d(self, a: Optional[ArrayLike]) -> np.ndarray:
+    def _to_1d(self, a: ArrayLike | None) -> np.ndarray:
         """Convert input to a flattened float64 numpy array (empty if None)."""
         if a is None:
             return np.array([], dtype=float)
         return np.asarray(a, dtype=float).ravel()
 
-    def _coerce_xy(self, x: Optional[ArrayLike], y: Optional[ArrayLike]) -> Tuple[np.ndarray, np.ndarray]:
+    def _coerce_xy(self, x: ArrayLike | None, y: ArrayLike | None) -> tuple[np.ndarray, np.ndarray]:
         """Validate/align X and Y arrays; auto-generate missing axis, truncate to min length."""
         xa = self._to_1d(x if x is not None else None)
         ya = self._to_1d(y if y is not None else None)
@@ -375,7 +376,7 @@ class MatplotManager:
             xa, ya = xa[:n], ya[:n]
         return xa, ya
 
-    def _split_complex_array(self, arr: Optional[ComplexArray]) -> Tuple[np.ndarray, np.ndarray]:
+    def _split_complex_array(self, arr: ComplexArray | None) -> tuple[np.ndarray, np.ndarray]:
         """Split ComplexArray into (I, Q) float arrays, accepting [N,2] or flat [2N] inputs."""
         if not arr:
             return np.array([], dtype=float), np.array([], dtype=float)
@@ -387,7 +388,7 @@ class MatplotManager:
             a = a.reshape(-1, 2)
         return a[:, 0], a[:, 1]
 
-    def _resolve_colors(self, count: int, cfg: PlotConfig) -> List[Optional[str]]:
+    def _resolve_colors(self, count: int, cfg: PlotConfig) -> list[str | None]:
         """Resolve per-series colors: cycle cfg.line_colors or use Matplotlib defaults."""
         if not cfg.line_colors:
             return [None] * count
@@ -400,15 +401,15 @@ class MatplotManager:
 
     def plot_line(
         self,
-        filename: Union[str, Path],
+        filename: str | Path,
         *,
-        x: Optional[ArrayLike] = None,
-        y: Optional[ArrayLike] = None,
-        label: Optional[str] = None,
-        linewidth: Optional[float] = None,
-        marker: Optional[str] = None,
-        color: Optional[str] = None,
-        cfg: Optional[PlotConfig] = None,
+        x: ArrayLike | None = None,
+        y: ArrayLike | None = None,
+        label: str | None = None,
+        linewidth: float | None = None,
+        marker: str | None = None,
+        color: str | None = None,
+        cfg: PlotConfig | None = None,
     ) -> Path:
         """
         Plot a single line and save as PNG.
@@ -430,12 +431,12 @@ class MatplotManager:
 
     def plot_multi_line(
         self,
-        filename: Union[str, Path],
+        filename: str | Path,
         *,
-        series: Optional[Iterable[Tuple[ArrayLike, ArrayLike, Optional[str]]]] = None,
-        linewidth: Optional[float] = None,
-        marker: Optional[str] = None,
-        cfg: Optional[PlotConfig] = None,
+        series: Iterable[tuple[ArrayLike, ArrayLike, str | None]] | None = None,
+        linewidth: float | None = None,
+        marker: str | None = None,
+        cfg: PlotConfig | None = None,
     ) -> Path:
         """
         Plot multiple line series and save as PNG.
@@ -488,7 +489,7 @@ class MatplotManager:
             self._apply_x_ticks(ax, cfg)
             return self._finish(fig, ax, self._resolve_path(filename), cfg)
 
-    def plot_multi_line_from_cfg(self, filename: Union[str, Path], *, cfg: Optional[PlotConfig] = None) -> Path:
+    def plot_multi_line_from_cfg(self, filename: str | Path, *, cfg: PlotConfig | None = None) -> Path:
         """
         Plot multiple line series using only the provided PlotConfig.
 
@@ -518,14 +519,14 @@ class MatplotManager:
 
     def plot_constellation(
         self,
-        filename: Union[str, Path],
+        filename: str | Path,
         *,
-        hard: Optional[ComplexArray] = None,
-        soft: Optional[ComplexArray] = None,
+        hard: ComplexArray | None = None,
+        soft: ComplexArray | None = None,
         show_boundaries: bool = True,
         boundary_alpha: float = 0.25,
-        show_crosshair: Optional[bool] = None,
-        cfg: Optional[PlotConfig] = None,
+        show_crosshair: bool | None = None,
+        cfg: PlotConfig | None = None,
     ) -> Path:
         """
         Plot a QAM constellation. Axis ticks are suppressed; only axis labels are shown.
@@ -668,15 +669,15 @@ class MatplotManager:
 
     def plot_scatter(
         self,
-        filename: Union[str, Path],
+        filename: str | Path,
         *,
-        x: Optional[ArrayLike] = None,
-        y: Optional[ArrayLike] = None,
-        label: Optional[str] = None,
-        marker: Optional[str] = None,
-        s: Optional[float] = None,
-        color: Optional[str] = None,
-        cfg: Optional[PlotConfig] = None,
+        x: ArrayLike | None = None,
+        y: ArrayLike | None = None,
+        label: str | None = None,
+        marker: str | None = None,
+        s: float | None = None,
+        color: str | None = None,
+        cfg: PlotConfig | None = None,
     ) -> Path:
         """
         Plot a scatter chart and save as PNG.
@@ -724,12 +725,12 @@ class MatplotManager:
 
     def plot_bar(
         self,
-        categories: Sequence[Union[str, Number]],
+        categories: Sequence[str | Number],
         values: ArrayLike,
-        filename: Union[str, Path],
+        filename: str | Path,
         *,
         orientation: str = "vertical",
-        cfg: Optional[PlotConfig] = None,
+        cfg: PlotConfig | None = None,
     ) -> Path:
         """
         Plot a bar chart (vertical or horizontal) and save as PNG.
@@ -766,18 +767,18 @@ class MatplotManager:
     def plot_histogram(
         self,
         data: ArrayLike,
-        filename: Union[str, Path],
+        filename: str | Path,
         *,
-        bins: Union[int, Sequence[Number]] = 30,
-        range: Optional[Tuple[Number, Number]] = None,
+        bins: int | Sequence[Number] = 30,
+        range: tuple[Number, Number] | None = None,
         density: bool = False,
-        weights: Optional[ArrayLike] = None,
+        weights: ArrayLike | None = None,
         orientation: Literal["vertical", "horizontal"] = "vertical",
         cumulative: bool = False,
         histtype: Literal["bar", "step", "stepfilled", "barstacked"] = "bar",
         align: Literal["mid", "left", "right"] = "mid",
-        label: Optional[str] = None,
-        cfg: Optional[PlotConfig] = None,
+        label: str | None = None,
+        cfg: PlotConfig | None = None,
     ) -> Path:
         """
         Plot a histogram and save as PNG.
@@ -830,12 +831,12 @@ class MatplotManager:
 
     def plot_step(
         self,
-        x: Optional[ArrayLike],
-        y: Optional[ArrayLike],
-        filename: Union[str, Path],
+        x: ArrayLike | None,
+        y: ArrayLike | None,
+        filename: str | Path,
         *,
         where: str = "pre",
-        cfg: Optional[PlotConfig] = None,
+        cfg: PlotConfig | None = None,
     ) -> Path:
         """
         Plot a step chart and save as PNG.
@@ -856,12 +857,12 @@ class MatplotManager:
 
     def plot_stem(
         self,
-        x: Optional[ArrayLike],
-        y: Optional[ArrayLike],
-        filename: Union[str, Path],
+        x: ArrayLike | None,
+        y: ArrayLike | None,
+        filename: str | Path,
         *,
         use_line_collection: bool = True,
-        cfg: Optional[PlotConfig] = None,
+        cfg: PlotConfig | None = None,
     ) -> Path:
         """
         Plot a stem chart and save as PNG.
@@ -882,13 +883,13 @@ class MatplotManager:
 
     def plot_errorbar(
         self,
-        x: Optional[ArrayLike],
-        y: Optional[ArrayLike],
-        yerr: Optional[ArrayLike],
-        filename: Union[str, Path],
+        x: ArrayLike | None,
+        y: ArrayLike | None,
+        yerr: ArrayLike | None,
+        filename: str | Path,
         *,
         capsize: float = 3.0,
-        cfg: Optional[PlotConfig] = None,
+        cfg: PlotConfig | None = None,
     ) -> Path:
         """
         Plot a line with error bars and save as PNG.
@@ -910,13 +911,13 @@ class MatplotManager:
 
     def plot_area(
         self,
-        x: Optional[ArrayLike],
-        y: Optional[ArrayLike],
-        filename: Union[str, Path],
+        x: ArrayLike | None,
+        y: ArrayLike | None,
+        filename: str | Path,
         *,
-        y2: Optional[ArrayLike] = None,
+        y2: ArrayLike | None = None,
         baseline: float = 0.0,
-        cfg: Optional[PlotConfig] = None,
+        cfg: PlotConfig | None = None,
     ) -> Path:
         """
         Plot a filled area (optionally between y and y2) and save as PNG.
@@ -943,16 +944,16 @@ class MatplotManager:
     def heatmap2d(
         self,
         Z: ArrayLike,
-        filename: Union[str, Path],
+        filename: str | Path,
         *,
-        x: Optional[ArrayLike] = None,
-        y: Optional[ArrayLike] = None,
+        x: ArrayLike | None = None,
+        y: ArrayLike | None = None,
         interpolation: str = "nearest",
         origin: str = "lower",
         add_colorbar: bool = True,
-        vmin: Optional[float] = None,
-        vmax: Optional[float] = None,
-        cfg: Optional[PlotConfig] = None,
+        vmin: float | None = None,
+        vmax: float | None = None,
+        cfg: PlotConfig | None = None,
     ) -> Path:
         """
         Plot a 2D heatmap and save as PNG.

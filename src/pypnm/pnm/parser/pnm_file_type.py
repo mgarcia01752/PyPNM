@@ -67,7 +67,7 @@ class PnmFileType(Enum):
         return self.get_pnm_cann()
 
     @classmethod
-    def from_name(cls, name: str) -> 'PnmFileType':
+    def from_name(cls, name: str) -> PnmFileType:
         """
         Lookup a PnmFileType by its enum member name.
 
@@ -87,7 +87,7 @@ class PnmFileType(Enum):
             raise KeyError(f"Invalid PnmFileType name: {name!r}. Valid names: {valid}") from exc
 
     @classmethod
-    def from_mmnemonic(cls, tag: str, version: int) -> 'PnmFileType':
+    def from_mmnemonic(cls, tag: str, version: int) -> PnmFileType:
         """
         Construct a PNM/PNN/LLD code from (tag, version) and return the enum member.
 
@@ -121,7 +121,7 @@ class PnmFileType(Enum):
         raise KeyError(f"Unknown code: {code!r}. Valid codes: {valid_codes}")
 
     @classmethod
-    def from_tag(cls, code: str) -> 'PnmFileType':
+    def from_tag(cls, code: str) -> PnmFileType:
         """
         Resolve a file type from a full PNM/PNN/LLD tag.
 
@@ -165,7 +165,7 @@ class PnmFileType(Enum):
         raise KeyError(f"Unknown code: {code!r}. Normalized to {s!r}. Valid codes: {valid_codes}")
 
     @classmethod
-    def fromPnmHeaderModel(cls, params: PnmHeaderParameters) -> 'PnmFileType':
+    def fromPnmHeaderModel(cls, params: PnmHeaderParameters) -> PnmFileType:
         """
         Derive a PnmFileType from a parsed PnmHeaderParameters instance.
 

@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, ClassVar, List, Optional, Union, cast
+from typing import Any, ClassVar, List, Optional, Union, cast
+from collections.abc import Callable
 
 from pydantic import BaseModel, Field
 
@@ -35,7 +36,7 @@ class DocsIf3CmSpectrumAnalysisEntry(BaseModel):
     DEBUG: ClassVar[bool] = False
 
     @classmethod
-    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsIf3CmSpectrumAnalysisEntry":
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsIf3CmSpectrumAnalysisEntry:
         """
         Fetch A Single DOCSIS 3.1 Spectrum Analysis Control/Status Row Via SNMP.
 
@@ -60,8 +61,8 @@ class DocsIf3CmSpectrumAnalysisEntry(BaseModel):
         """
         log = logging.getLogger(cls.__name__)
 
-        async def fetch(sym: str, caster: Optional[Callable[[Any], Any]] = None
-                        ) -> Optional[Union[str, int, float, bool]]:
+        async def fetch(sym: str, caster: Callable[[Any], Any] | None = None
+                        ) -> str | int | float | bool | None:
             """
             Helper To Fetch And Optionally Cast A Single SNMP Symbol For This Index.
 
@@ -74,7 +75,7 @@ class DocsIf3CmSpectrumAnalysisEntry(BaseModel):
                 val = caster(raw) if (caster and raw is not None) else raw
                 if cls.DEBUG and log.isEnabledFor(logging.DEBUG):
                     log.debug("idx=%s %s raw=%r cast=%r", index, sym, raw, val)
-                return cast(Optional[Union[str, int, float, bool]], val)
+                return cast(str | int | float | bool | None, val)
             except Exception as e:
                 if cls.DEBUG and log.isEnabledFor(logging.DEBUG):
                     log.debug("idx=%s %s error=%r", index, sym, e)
@@ -136,7 +137,7 @@ class DocsIf3CmSpectrumAnalysisEntry(BaseModel):
         return cls(index=index, entry=entry)
 
     @classmethod
-    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsIf3CmSpectrumAnalysisEntry"]:
+    async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsIf3CmSpectrumAnalysisEntry]:
         """
         Batch Fetch Multiple Spectrum Analysis Rows.
 
@@ -154,7 +155,7 @@ class DocsIf3CmSpectrumAnalysisEntry(BaseModel):
         """
         if not indices:
             return []
-        out: List[DocsIf3CmSpectrumAnalysisEntry] = []
+        out: list[DocsIf3CmSpectrumAnalysisEntry] = []
         for idx in indices:
             out.append(await cls.from_snmp(idx, snmp))
         return out

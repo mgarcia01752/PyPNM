@@ -139,7 +139,7 @@ class CmDsOfdmRxMer(PnmHeader):
     def to_model(self) -> CmDsOfdmRxMerModel:
         return self._rxmer_model
 
-    def to_dict(self) -> Dict[str, object]:
+    def to_dict(self) -> dict[str, object]:
         return self.to_model().model_dump()
 
     def to_json(self) -> str:

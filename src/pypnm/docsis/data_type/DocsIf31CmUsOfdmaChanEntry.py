@@ -4,7 +4,8 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 import logging
-from typing import Callable, List, Optional, Union
+from typing import List, Optional, Union
+from collections.abc import Callable
 
 from pydantic import BaseModel
 
@@ -13,24 +14,24 @@ from pypnm.snmp.snmp_v2c import Snmp_v2c
 
 
 class DocsIf31CmUsOfdmaChan(BaseModel):
-    docsIf31CmUsOfdmaChanChannelId: Optional[ChannelId] = None
-    docsIf31CmUsOfdmaChanConfigChangeCt: Optional[int] = None
-    docsIf31CmUsOfdmaChanSubcarrierZeroFreq: Optional[FrequencyHz] = None
-    docsIf31CmUsOfdmaChanFirstActiveSubcarrierNum: Optional[int] = None
-    docsIf31CmUsOfdmaChanLastActiveSubcarrierNum: Optional[int] = None
-    docsIf31CmUsOfdmaChanNumActiveSubcarriers: Optional[int] = None
-    docsIf31CmUsOfdmaChanSubcarrierSpacing: Optional[FrequencyHz] = None
-    docsIf31CmUsOfdmaChanCyclicPrefix: Optional[int] = None
-    docsIf31CmUsOfdmaChanRollOffPeriod: Optional[int] = None
-    docsIf31CmUsOfdmaChanNumSymbolsPerFrame: Optional[int] = None
-    docsIf31CmUsOfdmaChanTxPower: Optional[float] = None
-    docsIf31CmUsOfdmaChanPreEqEnabled: Optional[bool] = None
-    docsIf31CmStatusOfdmaUsT3Timeouts: Optional[int] = None
-    docsIf31CmStatusOfdmaUsT4Timeouts: Optional[int] = None
-    docsIf31CmStatusOfdmaUsRangingAborteds: Optional[int] = None
-    docsIf31CmStatusOfdmaUsT3Exceededs: Optional[int] = None
-    docsIf31CmStatusOfdmaUsIsMuted: Optional[bool] = None
-    docsIf31CmStatusOfdmaUsRangingStatus: Optional[str] = None
+    docsIf31CmUsOfdmaChanChannelId: ChannelId | None = None
+    docsIf31CmUsOfdmaChanConfigChangeCt: int | None = None
+    docsIf31CmUsOfdmaChanSubcarrierZeroFreq: FrequencyHz | None = None
+    docsIf31CmUsOfdmaChanFirstActiveSubcarrierNum: int | None = None
+    docsIf31CmUsOfdmaChanLastActiveSubcarrierNum: int | None = None
+    docsIf31CmUsOfdmaChanNumActiveSubcarriers: int | None = None
+    docsIf31CmUsOfdmaChanSubcarrierSpacing: FrequencyHz | None = None
+    docsIf31CmUsOfdmaChanCyclicPrefix: int | None = None
+    docsIf31CmUsOfdmaChanRollOffPeriod: int | None = None
+    docsIf31CmUsOfdmaChanNumSymbolsPerFrame: int | None = None
+    docsIf31CmUsOfdmaChanTxPower: float | None = None
+    docsIf31CmUsOfdmaChanPreEqEnabled: bool | None = None
+    docsIf31CmStatusOfdmaUsT3Timeouts: int | None = None
+    docsIf31CmStatusOfdmaUsT4Timeouts: int | None = None
+    docsIf31CmStatusOfdmaUsRangingAborteds: int | None = None
+    docsIf31CmStatusOfdmaUsT3Exceededs: int | None = None
+    docsIf31CmStatusOfdmaUsIsMuted: bool | None = None
+    docsIf31CmStatusOfdmaUsRangingStatus: str | None = None
 
 class DocsIf31CmUsOfdmaChanEntry(BaseModel):
     index: int
@@ -38,22 +39,22 @@ class DocsIf31CmUsOfdmaChanEntry(BaseModel):
     entry: DocsIf31CmUsOfdmaChan
 
     @classmethod
-    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsIf31CmUsOfdmaChanEntry":
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsIf31CmUsOfdmaChanEntry:
         logger = logging.getLogger(cls.__name__)
 
-        def tenthdBmV_to_float(value: str) -> Optional[float]:
+        def tenthdBmV_to_float(value: str) -> float | None:
             try:
                 return float(value) / 10.0
             except Exception:
                 return None
 
-        def safe_cast(value: str, cast: Callable) -> Union[int, float, str, bool, None]:
+        def safe_cast(value: str, cast: Callable) -> int | float | str | bool | None:
             try:
                 return cast(value)
             except Exception:
                 return None
 
-        async def fetch(field: str, cast: Optional[Callable] = None):
+        async def fetch(field: str, cast: Callable | None = None):
             try:
                 raw = await snmp.get(f"{field}.{index}")
                 val = Snmp_v2c.get_result_value(raw)
@@ -102,9 +103,9 @@ class DocsIf31CmUsOfdmaChanEntry(BaseModel):
         )
 
     @classmethod
-    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsIf31CmUsOfdmaChanEntry"]:
+    async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsIf31CmUsOfdmaChanEntry]:
         logger = logging.getLogger(cls.__name__)
-        results: List[DocsIf31CmUsOfdmaChanEntry] = []
+        results: list[DocsIf31CmUsOfdmaChanEntry] = []
 
         if not indices:
             logger.warning("No upstream OFDMA indices found.")

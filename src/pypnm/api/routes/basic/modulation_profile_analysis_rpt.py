@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Iterable, List, TypeVar, cast
+from typing import Any, Dict, List, TypeVar, cast
+from collections.abc import Iterable
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -31,14 +32,14 @@ from pypnm.lib.types import (
 class ModulationProfileRptModel(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
     profile_id: int = Field(..., description="Profile identifier")
-    modulation: List[str] = Field(default_factory=list, description="Per-carrier modulation label (e.g., 'QAM256')")
-    bits_per_symbol: List[int] = Field(default_factory=list, description="Per-carrier bits per symbol (derived or provided)")
-    shannon_min_mer: List[float] = Field(default_factory=list, description="Per-carrier minimum MER per Shannon (dB)")
+    modulation: list[str] = Field(default_factory=list, description="Per-carrier modulation label (e.g., 'QAM256')")
+    bits_per_symbol: list[int] = Field(default_factory=list, description="Per-carrier bits per symbol (derived or provided)")
+    shannon_min_mer: list[float] = Field(default_factory=list, description="Per-carrier minimum MER per Shannon (dB)")
 
 
 class ModulationProfileParametersAnalysisRpt(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
-    profiles: List[ModulationProfileRptModel] = Field(default_factory=list, description="All profiles for a channel")
+    profiles: list[ModulationProfileRptModel] = Field(default_factory=list, description="All profiles for a channel")
 
 
 class ModulationProfileAnalysisRptModel(CommonAnalysis):
@@ -55,14 +56,14 @@ class ModulationProfileReport(AnalysisReport):
             analysis_matplot_config = AnalysisRptMatplotConfig()
         super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("ModulationProfileReport")
-        self._results: Dict[int, ModulationProfileAnalysisRptModel] = {}
+        self._results: dict[int, ModulationProfileAnalysisRptModel] = {}
 
-    def create_csv(self, **kwargs: Any) -> List[CSVManager]:
+    def create_csv(self, **kwargs: Any) -> list[CSVManager]:
         """
         Stream validated models into CSVs. Assumes `_process()` already enforced.
         Emits one CSV per channel/profile pair.
         """
-        csv_mgr_list: List[CSVManager] = []
+        csv_mgr_list: list[CSVManager] = []
         any_models = False
 
         for common_model in self.get_common_analysis_model():
@@ -76,7 +77,7 @@ class ModulationProfileReport(AnalysisReport):
                 continue
 
             try:
-                header: List[str] = ["ChannelID", "ProfileID", "Frequency_Hz", "Modulation", "BitsPerSymbol", "ShannonMinMER_dB"]
+                header: list[str] = ["ChannelID", "ProfileID", "Frequency_Hz", "Modulation", "BitsPerSymbol", "ShannonMinMER_dB"]
 
                 for profile in model.parameters.profiles:
                     csv_mgr: CSVManager = self.csv_manager_factory()
@@ -108,7 +109,7 @@ class ModulationProfileReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self) -> List[MatplotManager]:
+    def create_matplot(self) -> list[MatplotManager]:
         """
         Generate per-channel plots, one set per profile:
         1) Bits-per-symbol vs. Frequency
@@ -123,7 +124,7 @@ class ModulationProfileReport(AnalysisReport):
         - The M-QAM axis uses evenly spaced positions at log₂(M) to avoid visually "log-like" spacing,
         while the visible tick labels are the true QAM orders (M).
         """
-        out: List[MatplotManager] = []
+        out: list[MatplotManager] = []
 
         for common_model in self.get_common_analysis_model():
             model = cast(ModulationProfileAnalysisRptModel, common_model)
@@ -143,7 +144,7 @@ class ModulationProfileReport(AnalysisReport):
                     bpsym: FloatSeries = self._align_len(profile.bits_per_symbol, n, fill=0)
                     min_mer: FloatSeries = self._align_len(profile.shannon_min_mer, n, fill=float("nan"))
                     mod_lbls: StringArray = self._align_len(profile.modulation, n, fill="UNKNOWN")
-                    mod_order: List[int] = [self._derive_qam_order(lbl) for lbl in mod_lbls]
+                    mod_order: list[int] = [self._derive_qam_order(lbl) for lbl in mod_lbls]
                 except Exception as exc:
                     self.logger.exception(f"Failed to align arrays for channel {channel_id} profile {profile_id}: {exc}", exc_info=True)
                     continue
@@ -205,7 +206,7 @@ class ModulationProfileReport(AnalysisReport):
                     from math import isfinite, log2
 
                     # Convert M to positions (bits per symbol) for linear spacing
-                    mod_bits: List[int] = []
+                    mod_bits: list[int] = []
                     for m in mod_order:
                         if m and m > 0:
                             try:
@@ -283,24 +284,24 @@ class ModulationProfileReport(AnalysisReport):
           ]
         }
         """
-        data_list: List[Dict[str, Any]] = self.get_analysis_data() or []
+        data_list: list[dict[str, Any]] = self.get_analysis_data() or []
 
         for idx, data in enumerate(data_list):
             try:
                 channel_id = ChannelId(data.get("channel_id", INVALID_CHANNEL_ID))
-                profiles_in: List[Dict[str, Any]] = data.get("profiles", [])
+                profiles_in: list[dict[str, Any]] = data.get("profiles", [])
 
                 freq_array: FrequencySeriesHz = []
-                profile_models: List[ModulationProfileRptModel] = []
+                profile_models: list[ModulationProfileRptModel] = []
 
                 for profile_entry in profiles_in:
-                    cv: Dict[str, Any] = profile_entry.get("carrier_values", {})
+                    cv: dict[str, Any] = profile_entry.get("carrier_values", {})
                     profile_id: int = int(profile_entry.get("profile_id", INVALID_PROFILE_ID))
 
                     freqs: FrequencySeriesHz = list(map(FrequencyHz, cv.get("frequency", []) or []))
-                    mod: List[str]          = list(map(str, cv.get("modulation", []) or []))
-                    bps: List[int]          = list(map(int, cv.get("bits_per_symbol", []) or []))
-                    mer: List[float]        = list(map(float, cv.get("shannon_min_mer", []) or []))
+                    mod: list[str]          = list(map(str, cv.get("modulation", []) or []))
+                    bps: list[int]          = list(map(int, cv.get("bits_per_symbol", []) or []))
+                    mer: list[float]        = list(map(float, cv.get("shannon_min_mer", []) or []))
 
                     if not bps and mod:
                         bps = [self._derive_bits_per_symbol(m) for m in mod]
@@ -336,7 +337,7 @@ class ModulationProfileReport(AnalysisReport):
     T = TypeVar("T")
 
     @staticmethod
-    def _align_len(seq: Iterable[T] | List[T], n: int, *, fill: T) -> List[T]:
+    def _align_len(seq: Iterable[T] | list[T], n: int, *, fill: T) -> list[T]:
         """
         Force a sequence to length n using truncation or padding with `fill`.
         """

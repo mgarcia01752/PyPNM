@@ -45,8 +45,8 @@ class SessionGroup:
 
     def __init__(
         self,
-        session_id: Optional[str] = None,
-        db_path: Optional[Path] = None
+        session_id: str | None = None,
+        db_path: Path | None = None
     ) -> None:
         """
         Initialize the SessionGroup manager.
@@ -74,7 +74,7 @@ class SessionGroup:
             self._atomic_write_db({})
 
         # Load in-memory state
-        self._db: Dict[str, Any] = {}
+        self._db: dict[str, Any] = {}
         self._grp_id = session_id
         self._load_db()
         self._create_group_id()
@@ -93,7 +93,7 @@ class SessionGroup:
             self.logger.error(f"Error loading DB: {e}")
             self._db = {}
 
-    def _atomic_write_db(self, data: Dict[str, Any]) -> None:
+    def _atomic_write_db(self, data: dict[str, Any]) -> None:
         """
         Atomically write the given data dict to the JSON DB file.
         """
@@ -156,7 +156,7 @@ class SessionGroup:
             self._save_db()
             self.logger.debug(f"Added txn {txn_id} to session {gid}")
 
-    def get_transactions(self) -> List[str]:
+    def get_transactions(self) -> list[str]:
         """
         Return all transaction IDs for this session (empty list if none).
         """
@@ -173,7 +173,7 @@ class SessionGroup:
             self.logger.info(f"Deleted session: {gid}")
         self._grp_id = None
 
-    def list_sessions(self) -> List[str]:
+    def list_sessions(self) -> list[str]:
         """
         List all session IDs currently in the DB.
         """

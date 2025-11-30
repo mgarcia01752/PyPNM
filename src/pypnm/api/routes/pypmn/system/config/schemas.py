@@ -9,8 +9,8 @@ from pydantic import BaseModel
 
 
 class SystemConfigModel(BaseModel):
-    FastApiRequestDefault: Dict[str, Any]
-    SNMP: Dict[str, Any]
-    PnmBulkDataTransfer: Dict[str, Any]
-    PnmFileRetrieval: Dict[str, Any]
-    logging: Dict[str, Any]
+    FastApiRequestDefault: dict[str, Any]
+    SNMP: dict[str, Any]
+    PnmBulkDataTransfer: dict[str, Any]
+    PnmFileRetrieval: dict[str, Any]
+    logging: dict[str, Any]

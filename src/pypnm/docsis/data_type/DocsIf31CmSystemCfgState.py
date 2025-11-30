@@ -35,12 +35,12 @@ class DocsIf31CmSystemCfgDiplexState:
     """
 
     index: int = 0
-    docsIf31CmSystemCfgStateDiplexerCapability: Optional[int] = None
-    docsIf31CmSystemCfgStateDiplexerCfgBandEdge: Optional[int] = None
-    docsIf31CmSystemCfgStateDiplexerDsLowerCapability: Optional[int] = None
-    docsIf31CmSystemCfgStateDiplexerCfgDsLowerBandEdge: Optional[int] = None
-    docsIf31CmSystemCfgStateDiplexerDsUpperCapability: Optional[int] = None
-    docsIf31CmSystemCfgStateDiplexerCfgDsUpperBandEdge: Optional[int] = None
+    docsIf31CmSystemCfgStateDiplexerCapability: int | None = None
+    docsIf31CmSystemCfgStateDiplexerCfgBandEdge: int | None = None
+    docsIf31CmSystemCfgStateDiplexerDsLowerCapability: int | None = None
+    docsIf31CmSystemCfgStateDiplexerCfgDsLowerBandEdge: int | None = None
+    docsIf31CmSystemCfgStateDiplexerDsUpperCapability: int | None = None
+    docsIf31CmSystemCfgStateDiplexerCfgDsUpperBandEdge: int | None = None
 
     def __init__(self, snmp: Snmp_v2c):
         self.logger = logging.getLogger(self.__class__.__name__)

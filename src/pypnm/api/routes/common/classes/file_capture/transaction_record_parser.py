@@ -27,7 +27,7 @@ class TransactionRecordParser:
         from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import (
             PnmFileTransaction,
         )
-        self.record: Optional[Dict[str, Any]] = PnmFileTransaction().get_record(transaction_id)
+        self.record: dict[str, Any] | None = PnmFileTransaction().get_record(transaction_id)
 
         if not self.record:
             raise ValueError(f"No record found for transaction ID: {transaction_id}")
@@ -44,10 +44,10 @@ class TransactionRecordParser:
     def get_filename(self) -> FileName:
         return self.record.get("filename")
 
-    def get_device_details(self) -> Optional[Dict[str, Any]]:
+    def get_device_details(self) -> dict[str, Any] | None:
         return self.record.get("device_details", {}).get("system_description", {}) if self.record else None
 
-    def get_device_model(self) -> Optional[str]:
+    def get_device_model(self) -> str | None:
         device_details = self.get_device_details()
         return device_details.get("MODEL") if device_details else None
 
@@ -55,19 +55,19 @@ class TransactionRecordParser:
         System Descriptor
     '''
 
-    def get_device_vendor(self) -> Optional[str]:
+    def get_device_vendor(self) -> str | None:
         device_details = self.get_device_details()
         return device_details.get("VENDOR") if device_details else None
 
-    def get_software_revision(self) -> Optional[str]:
+    def get_software_revision(self) -> str | None:
         device_details = self.get_device_details()
         return device_details.get("SW_REV") if device_details else None
 
-    def get_hardware_revision(self) -> Optional[str]:
+    def get_hardware_revision(self) -> str | None:
         device_details = self.get_device_details()
         return device_details.get("HW_REV") if device_details else None
 
-    def get_bootrom_version(self) -> Optional[str]:
+    def get_bootrom_version(self) -> str | None:
         device_details = self.get_device_details()
         return device_details.get("BOOTR") if device_details else None
 

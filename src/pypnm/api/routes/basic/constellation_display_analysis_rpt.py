@@ -46,15 +46,15 @@ class ConstellationDisplayReport(AnalysisReport):
             analysis_matplot_config = ConstDisplayAnalysisRptMatplotConfig()
         super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("ConstellationDisplayReport")
-        self._results: Dict[int, ConstellationDisplayAnalysisRptModel] = {}
+        self._results: dict[int, ConstellationDisplayAnalysisRptModel] = {}
         self._sig_cap_agg: SignalCaptureAggregator = SignalCaptureAggregator()
         self._matplot_config: ConstDisplayAnalysisRptMatplotConfig = analysis_matplot_config
 
-    def create_csv(self, **kwargs) -> List[CSVManager]:
+    def create_csv(self, **kwargs) -> list[CSVManager]:
         """
         Stream validated models into CSVs. Assumes `_process()` already enforced
         """
-        csv_mgr_list: List[CSVManager] = []
+        csv_mgr_list: list[CSVManager] = []
         any_models = False
 
         for common_model in self.get_common_analysis_model():
@@ -96,11 +96,11 @@ class ConstellationDisplayReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self, **kwargs) -> List[MatplotManager]:
+    def create_matplot(self, **kwargs) -> list[MatplotManager]:
         """
         Generate per-channel line and multi-line plots from validated models.
         """
-        matplot_mgr: List[MatplotManager] = []
+        matplot_mgr: list[MatplotManager] = []
         any_models:bool = False
 
         for common_model in self.get_common_analysis_model():
@@ -162,7 +162,7 @@ class ConstellationDisplayReport(AnalysisReport):
         }
 
         """
-        data_list: List[Dict[str, Any]] = self.get_analysis_data() or []
+        data_list: list[dict[str, Any]] = self.get_analysis_data() or []
 
         for idx, data in enumerate(data_list):
 

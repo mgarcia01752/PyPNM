@@ -43,7 +43,7 @@ async def main():
     logging.info(f"Connected to: {await cm.getSysDescr()}")
 
     try:
-        entries:List[DocsIf31CmUsOfdmaChanEntry] = await cm.getDocsIf31CmUsOfdmaChanEntry()
+        entries:list[DocsIf31CmUsOfdmaChanEntry] = await cm.getDocsIf31CmUsOfdmaChanEntry()
 
         if not entries:
             logging.warning("No upstream channel entries found.")

@@ -122,8 +122,8 @@ class SpectrumAnalyzerRouter:
                 self.logger.error("%s Status: %s", err, msg_rsp.status.name)
                 return SnmpResponse(mac_address=mac, status=msg_rsp.status, message=err)
 
-            measurement_stats: List[DocsIf3CmSpectrumAnalysisEntry] = cast(
-                List[DocsIf3CmSpectrumAnalysisEntry],
+            measurement_stats: list[DocsIf3CmSpectrumAnalysisEntry] = cast(
+                list[DocsIf3CmSpectrumAnalysisEntry],
                 await service.getPnmMeasurementStatistics(),)
 
             cps = CommonProcessService(msg_rsp)
@@ -133,7 +133,7 @@ class SpectrumAnalyzerRouter:
             analysis.process(cast(AnalysisProcessParameters, request.analysis.spectrum_analysis))
 
             if request.analysis.output.type == OutputType.JSON:
-                payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
+                payload: dict[str, Any] = cast(dict[str, Any], analysis.get_results())
                 DictGenerate.pop_keys_recursive(payload, ["pnm_header", "mac_address", "channel_id"])
 
                 primative = msg_rsp.payload_to_dict("primative")
@@ -217,14 +217,14 @@ class SpectrumAnalyzerRouter:
                 number_of_averages      =   request.capture_parameters.number_of_averages,
                 spectrum_retrieval_type =   request.capture_parameters.spectrum_retrieval_type)
 
-            msg_responses: List[Tuple[ChannelId, MessageResponse]] = await service.start()
+            msg_responses: list[tuple[ChannelId, MessageResponse]] = await service.start()
 
-            measurement_stats: List[DocsIf3CmSpectrumAnalysisEntry] = cast(
-                List[DocsIf3CmSpectrumAnalysisEntry],
+            measurement_stats: list[DocsIf3CmSpectrumAnalysisEntry] = cast(
+                list[DocsIf3CmSpectrumAnalysisEntry],
                 await service.getPnmMeasurementStatisticsFlat(),
             )
 
-            primative: Dict[str, Dict[Any, Any]] = {"primative": {}}
+            primative: dict[str, dict[Any, Any]] = {"primative": {}}
 
             for idx, (chan_id, msg_rsp) in enumerate(msg_responses):
                 cps_msg_rsp = CommonProcessService(msg_rsp).process()
@@ -315,14 +315,14 @@ class SpectrumAnalyzerRouter:
                 spectrum_retrieval_type =   spectrum_retrieval_type,
             )
 
-            msg_responses: List[Tuple[ChannelId, MessageResponse]] = await service.start()
+            msg_responses: list[tuple[ChannelId, MessageResponse]] = await service.start()
 
-            measurement_stats: List[DocsIf3CmSpectrumAnalysisEntry] = cast(
-                List[DocsIf3CmSpectrumAnalysisEntry],
+            measurement_stats: list[DocsIf3CmSpectrumAnalysisEntry] = cast(
+                list[DocsIf3CmSpectrumAnalysisEntry],
                 await service.getPnmMeasurementStatisticsFlat(),
             )
 
-            primative: Dict[str, Dict[Any, Any]] = {"primative": {}}
+            primative: dict[str, dict[Any, Any]] = {"primative": {}}
 
             for idx, (chan_id, msg_rsp) in enumerate(msg_responses):
                 cps_msg_rsp = CommonProcessService(msg_rsp).process()

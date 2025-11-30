@@ -25,8 +25,8 @@ class BaseDeviceResponse(BaseModel):
     """
 
     mac_address: MacAddressStr                              = Field(default=SCSC.default_mac_address, description="MAC address of the cable modem, validated and normalized")
-    status: Union[ServiceStatusCode, OperationState, str]   = Field(default="success", description="Status of the operation (e.g., 'success', 'error')")
-    message: Optional[str]                                  = Field(default=None, description="Additional informational or error message")
+    status: ServiceStatusCode | OperationState | str   = Field(default="success", description="Status of the operation (e.g., 'success', 'error')")
+    message: str | None                                  = Field(default=None, description="Additional informational or error message")
 
     @field_validator("mac_address", mode="before")
     def _normalize_mac(cls, v: str) -> str:

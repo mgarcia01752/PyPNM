@@ -31,9 +31,9 @@ class PnmFileTypeMapper:
     _file_type_to_test = {v: k for k, v in _test_to_file_type.items()}
 
     @classmethod
-    def get_file_type(cls, test: DocsPnmCmCtlTest) -> Optional[PnmFileType]:
+    def get_file_type(cls, test: DocsPnmCmCtlTest) -> PnmFileType | None:
         return cls._test_to_file_type.get(test)
 
     @classmethod
-    def get_test_type(cls, file_type: PnmFileType) -> Optional[DocsPnmCmCtlTest]:
+    def get_test_type(cls, file_type: PnmFileType) -> DocsPnmCmCtlTest | None:
         return cls._file_type_to_test.get(file_type)

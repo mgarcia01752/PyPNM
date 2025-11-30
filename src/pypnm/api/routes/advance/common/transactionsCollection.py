@@ -38,12 +38,12 @@ class TransactionCollection:
         Initialize internal storage for transaction records and indices.
         """
         self.logger = logging.getLogger(self.__class__.__name__)
-        self._records: List[TransactionCollectionModel] = []
-        self._transaction_ids: List[TransactionId] = []
-        self._transaction_models: List[TransactionCollectionModel] = []
-        self._transaction_tm: Dict[TransactionId, TransactionCollectionModel] = {}
+        self._records: list[TransactionCollectionModel] = []
+        self._transaction_ids: list[TransactionId] = []
+        self._transaction_models: list[TransactionCollectionModel] = []
+        self._transaction_tm: dict[TransactionId, TransactionCollectionModel] = {}
         self._tranaction_tm = self._transaction_tm  # alias
-        self._mac_addresses:Set[MacAddress] = set()
+        self._mac_addresses:set[MacAddress] = set()
 
     def add(self, record: TransactionRecordModel, bytes: bytes) -> bool:
         """
@@ -88,7 +88,7 @@ class TransactionCollection:
         """
         return len(self._records)
 
-    def getTransactionIds(self, sorts: Optional[List[Sort]] = None, reverse: bool = False) -> List[TransactionId]:
+    def getTransactionIds(self, sorts: list[Sort] | None = None, reverse: bool = False) -> list[TransactionId]:
         """
         Retrieve transaction IDs, optionally sorted.
 
@@ -115,8 +115,8 @@ class TransactionCollection:
         return [r.transaction_id for r in sorted_records]
 
     def getTransactionCollectionModel(self, transaction_id: TransactionId = "",
-                                      sorts: Optional[List[Sort]] = None,
-                                      reverse: bool = False) -> List[TransactionCollectionModel]:
+                                      sorts: list[Sort] | None = None,
+                                      reverse: bool = False) -> list[TransactionCollectionModel]:
         """
         Retrieve transaction models by ID or sorted collection.
 
@@ -142,7 +142,7 @@ class TransactionCollection:
         return self._sorted_records(sorts, reverse)
 
     def getTransactionBytes(self, transaction_id: TransactionId = "",
-                            sorts: Optional[List[Sort]] = None,
+                            sorts: list[Sort] | None = None,
                             reverse: bool = False) -> ByteArray:
         """
         Retrieve raw data bytes from transactions.
@@ -174,10 +174,10 @@ class TransactionCollection:
             ba.append(tcm.data)
         return ba
 
-    def getMacAddresses(self) -> List[MacAddress]:
+    def getMacAddresses(self) -> list[MacAddress]:
         return list(self._mac_addresses)
 
-    def _sorted_records(self, sorts: List[Sort], reverse: bool) -> List[TransactionCollectionModel]:
+    def _sorted_records(self, sorts: list[Sort], reverse: bool) -> list[TransactionCollectionModel]:
         """
         Internal helper to sort records based on provided sort keys.
 
@@ -204,7 +204,7 @@ class TransactionCollection:
         key_fn = self._composite_key_for_sorts(sorts)
         return sorted(self._records, key=key_fn, reverse=reverse)
 
-    def _composite_key_for_sorts(self, sorts: List[Sort]):
+    def _composite_key_for_sorts(self, sorts: list[Sort]):
         """
         Build a composite key function for multi-level sorting.
 
@@ -219,7 +219,7 @@ class TransactionCollection:
             A key function for sorting.
         """
         def key(r: TransactionCollectionModel):
-            parts: List[object] = []
+            parts: list[object] = []
 
             for s in sorts:
                 if s == Sort.ASCEND_EPOCH:

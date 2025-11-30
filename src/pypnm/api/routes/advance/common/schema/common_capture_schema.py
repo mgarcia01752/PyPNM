@@ -36,5 +36,5 @@ class MultiCaptureParametersResponse(BaseDeviceResponse):
     state:          str  = Field(..., description="Current state of the operation (e.g., 'running', 'completed', 'stopped').")
     collected:      int  = Field(..., description="Number of samples collected so far.")
     time_remaining: int  = Field(..., description="Remaining time in seconds.")
-    message:        Optional[str] = Field(default="", description="Optional human-readable message or error detail.")
+    message:        str | None = Field(default="", description="Optional human-readable message or error detail.")
 

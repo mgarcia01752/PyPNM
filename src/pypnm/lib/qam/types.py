@@ -5,7 +5,8 @@ from __future__ import annotations
 
 import math
 from enum import IntEnum
-from typing import TYPE_CHECKING, Dict, List, Mapping, Union
+from typing import TYPE_CHECKING, Dict, List, Union
+from collections.abc import Mapping
 
 from pypnm.lib.types import Complex
 
@@ -16,13 +17,13 @@ if TYPE_CHECKING:
 # ---- Public type aliases ----
 LutDict = Mapping[str, Mapping[str, object]]
 CodeWord = Union[int]
-CodeWordArray = List[CodeWord]
+CodeWordArray = list[CodeWord]
 QamSymbol = Complex
-CodeWordLut = Dict[CodeWord, QamSymbol]
-QamSymCwLut = Dict[str, CodeWordLut]
-HardDecisionArray = List[QamSymbol]
-SoftDecisionArray = List[QamSymbol]
-SymbolArray = List[QamSymbol]
+CodeWordLut = dict[CodeWord, QamSymbol]
+QamSymCwLut = dict[str, CodeWordLut]
+HardDecisionArray = list[QamSymbol]
+SoftDecisionArray = list[QamSymbol]
+SymbolArray = list[QamSymbol]
 
 __all__ = [
     "LutDict",
@@ -59,7 +60,7 @@ class QamModulation(IntEnum):
     QAM_65536   = 65536
 
     @classmethod
-    def from_value(cls, value: int) -> "QamModulation":
+    def from_value(cls, value: int) -> QamModulation:
         """Return the enum from its integer order (e.g., 64 -> QAM_64)."""
         try:
             return cls(value)
@@ -67,7 +68,7 @@ class QamModulation(IntEnum):
             return cls.UNKNOWN
 
     @classmethod
-    def from_DsOfdmModulationType(cls, mod_type: "DsOfdmModulationType | int | str") -> "QamModulation":
+    def from_DsOfdmModulationType(cls, mod_type: DsOfdmModulationType | int | str) -> QamModulation:
         """
         Map a DsOfdmModulationType (enum/int/string) to a QamModulation.
 

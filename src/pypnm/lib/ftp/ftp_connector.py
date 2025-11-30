@@ -50,7 +50,7 @@ class FTPConnector:
         self.use_tls = use_tls
         self.timeout = timeout
 
-        self.ftp: Optional[ftplib.FTP] = None
+        self.ftp: ftplib.FTP | None = None
 
     def connect(self) -> bool:
         """
@@ -96,7 +96,7 @@ class FTPConnector:
             self.logger.debug("Disconnected")
             self.ftp = None
 
-    def list_dir(self, remote_path: str = ".") -> List[str]:
+    def list_dir(self, remote_path: str = ".") -> list[str]:
         """
         List directory contents at remote_path.
 
@@ -230,7 +230,7 @@ class FTPConnector:
             self.logger.error(f"Delete failed: {e}")
             return False
 
-    def get_size(self, remote_path: str) -> Optional[int]:
+    def get_size(self, remote_path: str) -> int | None:
         """
         Get size (in bytes) of a remote file.
 
@@ -270,7 +270,7 @@ class FTPConnector:
             self.logger.error(f"Failed to change directory to {remote_path}: {e}")
             return False
 
-    def pwd(self) -> Optional[str]:
+    def pwd(self) -> str | None:
         """
         Print the current working directory on the remote FTP server.
 

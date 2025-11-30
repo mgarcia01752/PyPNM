@@ -12,8 +12,8 @@ from pypnm.docsis.data_type.sysDescr import SystemDescriptorModel
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import FileName, MacAddressStr, TimestampSec, TransactionId
 
-Record              = Dict[str, Any]
-TransactionRecord   = Dict[TransactionId, Record]
+Record              = dict[str, Any]
+TransactionRecord   = dict[TransactionId, Record]
 
 class DeviceDetailsModel(BaseModel):
     system_description: SystemDescriptorModel = Field(..., description="Parsed system descriptor")
@@ -27,7 +27,7 @@ class TransactionRecordModel(BaseModel):
     device_details: DeviceDetailsModel  = Field(..., description="Device details container")
 
     @classmethod
-    def null(cls) -> "TransactionRecordModel":
+    def null(cls) -> TransactionRecordModel:
         return cls(
             transaction_id  =   TransactionId(""),
             timestamp       =   TimestampSec(0),

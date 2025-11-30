@@ -1,7 +1,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Sequence, Union
+from typing import Any, Dict, Union
+from collections.abc import Sequence
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
@@ -29,7 +30,7 @@ class PhaseSlopeEchoDetector:
 
     def __init__(
         self,
-        H: Union[Sequence, np.ndarray],
+        H: Sequence | np.ndarray,
         f: Sequence[float],
         prop_speed_frac: float = 0.87
     ):
@@ -90,7 +91,7 @@ class PhaseSlopeEchoDetector:
         a, _ = np.linalg.lstsq(A, phi, rcond=None)[0]
         return -a / (2 * np.pi)
 
-    def detect_echo(self) -> Dict[str, Any]:
+    def detect_echo(self) -> dict[str, Any]:
         """
         Perform echo detection and return both signed and positive delays.
 
@@ -106,7 +107,7 @@ class PhaseSlopeEchoDetector:
         distance = self.v * tau_oneway
         return {'delay_rt_s': tau_rt, 'delay_s': tau_oneway, 'distance_m': distance}
 
-    def dataset_info(self) -> Dict[str, int]:
+    def dataset_info(self) -> dict[str, int]:
         """
         Metadata on number of subcarriers and snapshots.
         """
@@ -116,7 +117,7 @@ class PhaseSlopeEchoDetector:
             info['snapshots'] = M
         return info
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return all inputs and computed outputs as a dictionary.
         """

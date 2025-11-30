@@ -153,6 +153,6 @@ class MinAvgMaxComplex:
             ),
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Return the result as a dictionary (nested keys)."""
         return self.to_model().model_dump()

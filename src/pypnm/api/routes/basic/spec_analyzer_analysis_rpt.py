@@ -52,11 +52,11 @@ class SpectrumAnalyzerReport(AnalysisReport):
             analysis_matplot_config = AnalysisRptMatplotConfig()
         super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("SpectrumAnalyzerReport")
-        self._results: Dict[int, SpectrumAnalyzerAnalysisRptModel] = {}
+        self._results: dict[int, SpectrumAnalyzerAnalysisRptModel] = {}
 
-    def create_csv(self, **kwargs: Any) -> List[CSVManager]:
+    def create_csv(self, **kwargs: Any) -> list[CSVManager]:
         """Emit CSV with columns: Frequency, Magnitude(dBmV), MovingAverage."""
-        csv_mgr_list: List[CSVManager] = []
+        csv_mgr_list: list[CSVManager] = []
 
         for common_model in self.get_common_analysis_model():
             model = cast(SpectrumAnalyzerAnalysisRptModel, common_model)
@@ -81,9 +81,9 @@ class SpectrumAnalyzerReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self, **kwargs: Any) -> List[MatplotManager]:
+    def create_matplot(self, **kwargs: Any) -> list[MatplotManager]:
         """Create two figures per channel: raw spectrum and moving average."""
-        out: List[MatplotManager] = []
+        out: list[MatplotManager] = []
 
         for common_model in self.get_common_analysis_model():
             m = cast(SpectrumAnalyzerAnalysisRptModel, common_model)
@@ -147,8 +147,8 @@ class SpectrumAnalyzerReport(AnalysisReport):
 
     def _process(self) -> None:
         """Convert SpectrumAnalyzerAnalysisModel → SpectrumAnalyzerAnalysisRptModel per channel."""
-        models: List[SpectrumAnalyzerAnalysisModel] = \
-            cast(List[SpectrumAnalyzerAnalysisModel], self.get_analysis_model())
+        models: list[SpectrumAnalyzerAnalysisModel] = \
+            cast(list[SpectrumAnalyzerAnalysisModel], self.get_analysis_model())
 
         for _idx, _model in enumerate(models):
 

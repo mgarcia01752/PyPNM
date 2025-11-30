@@ -4,7 +4,8 @@ import logging
 
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-from typing import Callable, List, Optional, Union
+from typing import List, Optional, Union
+from collections.abc import Callable
 
 from pydantic import BaseModel
 
@@ -28,10 +29,10 @@ class DocsPnmCmDsConstDispMeasEntry(BaseModel):
     entry: DocsPnmCmDsConstDispFields
 
     @classmethod
-    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsPnmCmDsConstDispMeasEntry":
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsPnmCmDsConstDispMeasEntry:
         logger = logging.getLogger(cls.__name__)
 
-        async def fetch(oid: str, cast: Optional[Callable] = None) -> Union[str, int, bool, None]:
+        async def fetch(oid: str, cast: Callable | None = None) -> str | int | bool | None:
             try:
                 result = await snmp.get(f"{oid}.{index}")
                 value = Snmp_v2c.get_result_value(result)
@@ -78,9 +79,9 @@ class DocsPnmCmDsConstDispMeasEntry(BaseModel):
         return cls(index=index, channel_id=index, entry=entry)
 
     @classmethod
-    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsPnmCmDsConstDispMeasEntry"]:
+    async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsPnmCmDsConstDispMeasEntry]:
         logger = logging.getLogger(cls.__name__)
-        results: List[DocsPnmCmDsConstDispMeasEntry] = []
+        results: list[DocsPnmCmDsConstDispMeasEntry] = []
 
         for idx in indices:
             try:

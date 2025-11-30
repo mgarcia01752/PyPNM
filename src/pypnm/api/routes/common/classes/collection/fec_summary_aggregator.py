@@ -32,14 +32,14 @@ class FecSummaryTotalsModel(BaseModel):
     start:       TimeStamp                       = Field(..., description="Start timestamp for the aggregated FEC interval.")
     end:         TimeStamp                       = Field(..., description="End timestamp for the aggregated FEC interval.")
     channel_id:  ChannelId                       = Field(..., description="OFDM downstream channel identifier.")
-    summary:     List[ProfileSummaryTotalsModel] = Field(..., description="List of profile-level FEC summaries within the interval.")
+    summary:     list[ProfileSummaryTotalsModel] = Field(..., description="List of profile-level FEC summaries within the interval.")
 
 class TimeStampProfileCollectionModel(BaseModel):
     timestamp:  TimeStamp                                   = Field(..., description="Capture timestamp (epoch seconds).")
-    profiles:   Dict[ProfileId, ProfileSummaryTotalsModel]  = Field(..., description="Mapping of profile_id → FEC summary totals for that timestamp.")
+    profiles:   dict[ProfileId, ProfileSummaryTotalsModel]  = Field(..., description="Mapping of profile_id → FEC summary totals for that timestamp.")
 
 
-TimeStampProfileCollection = Dict[TimeStamp, TimeStampProfileCollectionModel]
+TimeStampProfileCollection = dict[TimeStamp, TimeStampProfileCollectionModel]
 
 
 class FecSummaryAggregator(MultiPnmCollection):
@@ -58,7 +58,7 @@ class FecSummaryAggregator(MultiPnmCollection):
         """
         super().__init__(CmDsOfdmFecSummary)
         self.logger = logging.getLogger(self.__class__.__name__)
-        self._store_channel_timestamps: Dict[ChannelId, Dict[TimeStamp, TimeStampProfileCollectionModel]] = {}
+        self._store_channel_timestamps: dict[ChannelId, dict[TimeStamp, TimeStampProfileCollectionModel]] = {}
 
     @override
     def add(self, obj: MultiPnmCollectionObject) -> None:
@@ -91,7 +91,7 @@ class FecSummaryAggregator(MultiPnmCollection):
         """
         return FecSummaryType.TEN_MIN
 
-    def get_profile_ids(self, channel_id: ChannelId) -> List[ProfileId]:
+    def get_profile_ids(self, channel_id: ChannelId) -> list[ProfileId]:
         """
         Return sorted list of profile IDs for a channel.
 
@@ -113,7 +113,7 @@ class FecSummaryAggregator(MultiPnmCollection):
             s.update(bucket.profiles.keys())
         return sorted(s, key=int)
 
-    def get_timestamps(self, channel_id: ChannelId, profile_id: ProfileId) -> List[TimeStamp]:
+    def get_timestamps(self, channel_id: ChannelId, profile_id: ProfileId) -> list[TimeStamp]:
         """Return sorted timestamps for which a profile has data in a channel.
 
         Parameters
@@ -131,7 +131,7 @@ class FecSummaryAggregator(MultiPnmCollection):
         channel_store = self._store_channel_timestamps.get(channel_id)
         if not channel_store:
             return []
-        out: List[TimeStamp] = []
+        out: list[TimeStamp] = []
         for ts, bucket in channel_store.items():
             if profile_id in bucket.profiles:
                 out.append(ts)
@@ -163,7 +163,7 @@ class FecSummaryAggregator(MultiPnmCollection):
             return False
         return profile_id in bucket.profiles
 
-    def get_entry(self, channel_id: ChannelId, profile_id: ProfileId, timestamp: TimeStamp, closest_entry: int = 0) -> Optional[TimeStampProfileCollectionModel]:
+    def get_entry(self, channel_id: ChannelId, profile_id: ProfileId, timestamp: TimeStamp, closest_entry: int = 0) -> TimeStampProfileCollectionModel | None:
         """Retrieve the TimeStampProfileCollectionModel at an exact or nearest timestamp containing the profile.
 
         Behavior
@@ -224,7 +224,7 @@ class FecSummaryAggregator(MultiPnmCollection):
                 channel_id  =   channel_id,
                 summary     =   [],)
 
-        ts_range:List[TimeStamp] = [ts for ts in channel_store.keys() if start_time <= ts <= end_time]
+        ts_range:list[TimeStamp] = [ts for ts in channel_store.keys() if start_time <= ts <= end_time]
         ts_range.sort()
 
         if not ts_range:
@@ -237,7 +237,7 @@ class FecSummaryAggregator(MultiPnmCollection):
 
         self.logger.debug(f"Channel {channel_id} -> Found {len(ts_range)} timestamps in range: {ts_range}")
 
-        profile_totals: Dict[ProfileId, CodewordSummaryTotalsModel] = {}
+        profile_totals: dict[ProfileId, CodewordSummaryTotalsModel] = {}
 
         for ts in ts_range:
             bucket = channel_store[ts]
@@ -262,7 +262,7 @@ class FecSummaryAggregator(MultiPnmCollection):
         if not profile_totals:
             self.logger.warning(f"No profile entries aggregated for ch={channel_id} in range ({start_time} - {end_time})")
 
-        summary_list: List[ProfileSummaryTotalsModel] = [
+        summary_list: list[ProfileSummaryTotalsModel] = [
             ProfileSummaryTotalsModel(profile_id    =   pid,
                                       summary       =   totals)
             for pid, totals in profile_totals.items()

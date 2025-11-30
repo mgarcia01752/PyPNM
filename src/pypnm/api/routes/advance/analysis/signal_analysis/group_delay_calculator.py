@@ -3,7 +3,8 @@
 
 from __future__ import annotations
 
-from typing import Final, List, Literal, Sequence, Tuple, Union
+from typing import Final, List, Literal, Tuple, Union
+from collections.abc import Sequence
 
 import numpy as np
 from numpy.typing import NDArray
@@ -55,7 +56,7 @@ class GroupDelayCalculatorFullModel(BaseModel):
     """
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    freqs: List[FrequencyHz] = Field(..., description="K-length frequency axis (Hz)")
+    freqs: list[FrequencyHz] = Field(..., description="K-length frequency axis (Hz)")
     tau_g: FloatSeries       = Field(..., description="K-length group delay (s)")
 
     @field_validator("tau_g")
@@ -91,7 +92,7 @@ class GroupDelayCalculatorSnapshotModel(BaseModel):
                 raise ValueError("Snapshot matrix must be rectangular (all rows same length).")
         return v
 
-    def shape(self) -> Tuple[int, int]:
+    def shape(self) -> tuple[int, int]:
         """Return the matrix shape as (snapshots M, subcarriers K)."""
         return len(self.taus), len(self.taus[0])
 
@@ -105,7 +106,7 @@ class GroupDelayCalculatorMedianModel(BaseModel):
     """
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    freqs:   List[FrequencyHz] = Field(..., description="K-length frequency axis (Hz)")
+    freqs:   list[FrequencyHz] = Field(..., description="K-length frequency axis (Hz)")
     tau_med: FloatSeries       = Field(..., description="K-length median group delay (s)")
 
     @field_validator("tau_med")
@@ -131,9 +132,9 @@ class GroupDelayCalculatorModel(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, populate_by_name=True)
 
     dataset_info:         GroupDelayCalculatorDatasetInfo   = Field(..., description="Dataset shape metadata")
-    freqs:                List[FrequencyHz]                 = Field(..., description="K-length frequency axis (Hz)")
+    freqs:                list[FrequencyHz]                 = Field(..., description="K-length frequency axis (Hz)")
     complex_unit:         Literal["[Real, Imaginary]"]      = Field("[Real, Imaginary]", description="Complex encoding")
-    H_raw:                List[ComplexArray]                = Field(..., description="MxK complex channel estimates as (re, im)")
+    H_raw:                list[ComplexArray]                = Field(..., description="MxK complex channel estimates as (re, im)")
     H_avg:                ComplexArray                      = Field(..., description="K complex average across snapshots as (re, im)")
     group_delay_full:     GroupDelayCalculatorFullModel     = Field(..., description="Per-subcarrier group delay for averaged channel")
     snapshot_group_delay: GroupDelayCalculatorSnapshotModel = Field(..., description="Per-snapshot group delay matrix")
@@ -164,13 +165,13 @@ class GroupDelayCalculatorModel(BaseModel):
 
     @field_validator("H_raw")
     @classmethod
-    def _coerce_and_check_raw(cls, v: List[ComplexArray], info) -> List[ComplexArray]:
+    def _coerce_and_check_raw(cls, v: list[ComplexArray], info) -> list[ComplexArray]:
         """Coerce raw channel matrix into (re, im) pairs and validate its M×K shape."""
         freqs = info.data.get("freqs", [])
         if not v or not v[0]:
             raise ValueError("H_raw must be non-empty M×K.")
         K = len(freqs)
-        out: List[ComplexArray] = []
+        out: list[ComplexArray] = []
         for row in v:
             if len(row) != K:
                 raise ValueError("H_raw must be rectangular and match frequency axis length.")
@@ -222,11 +223,7 @@ class GroupDelayCalculator:
 
     def __init__(
         self,
-        H: Union[
-            Sequence[complex],              # 1D complex (K,)
-            Sequence[Sequence[complex]],    # 2D complex (M, K)
-            Sequence[Sequence[float]]       # 2D real/imag (M, K, 2) , (No Phase Information, all real values)
-        ],
+        H: Sequence[complex] | Sequence[Sequence[complex]] | Sequence[Sequence[float]],
         freqs: Sequence[float]
     ):
         """
@@ -291,7 +288,7 @@ class GroupDelayCalculator:
         # Precompute the snapshot-averaged channel (K,) for later use.
         self.H_avg: NDArray[np.complex128] = np.mean(self.H_raw, axis=0)
 
-    def compute_group_delay_full(self) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
+    def compute_group_delay_full(self) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
         """
         Compute per-subcarrier group delay on the averaged channel.
 
@@ -380,7 +377,7 @@ class GroupDelayCalculator:
         # Return full M×K matrix of group delay.
         return taus
 
-    def median_group_delay(self) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
+    def median_group_delay(self) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
         """
         Compute the median group delay across snapshots for each subcarrier.
 
@@ -402,7 +399,7 @@ class GroupDelayCalculator:
         return self.f, tau_med
 
     @staticmethod
-    def _complex_matrix_to_pairs(mat: NDArray[np.complex128]) -> List[ComplexArray]:
+    def _complex_matrix_to_pairs(mat: NDArray[np.complex128]) -> list[ComplexArray]:
         """
         Encode a complex matrix as `(re, im)` pairs.
 
@@ -417,7 +414,7 @@ class GroupDelayCalculator:
             Nested list of `(re, im)` pairs with shape M×K.
         """
         M, K = mat.shape
-        out: List[ComplexArray] = []
+        out: list[ComplexArray] = []
         # Convert each complex element to its explicit real/imag tuple.
         for m in range(M):
             row: ComplexArray = [(float(np.real(v)), float(np.imag(v))) for v in mat[m]]
@@ -465,10 +462,10 @@ class GroupDelayCalculator:
         dataset = GroupDelayCalculatorDatasetInfo(subcarriers=K, snapshots=M)
 
         # Convert frequency axis to FrequencyHz wrappers for the model.
-        freqs_list: List[FrequencyHz]       = [FrequencyHz(f) for f in self.f.tolist()]
+        freqs_list: list[FrequencyHz]       = [FrequencyHz(f) for f in self.f.tolist()]
 
         # Encode raw and averaged complex data as (re, im) tuples.
-        H_raw_pairs: List[ComplexArray]     = self._complex_matrix_to_pairs(self.H_raw)
+        H_raw_pairs: list[ComplexArray]     = self._complex_matrix_to_pairs(self.H_raw)
         H_avg_pairs: ComplexArray           = self._complex_vector_to_pairs(self.H_avg)
 
         # Compute group delay views.

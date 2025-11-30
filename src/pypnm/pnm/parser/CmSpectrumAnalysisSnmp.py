@@ -49,7 +49,7 @@ class CmSpectrumAnalysisSnmp:
 
         all_freqs: FrequencySeriesHz = []
         all_amplitudes: FloatSeries = []
-        amplitude_chunks: List[bytes] = []
+        amplitude_chunks: list[bytes] = []
 
         total_bins_count = 0
         first_group_total_bins: int = 0
@@ -85,9 +85,9 @@ class CmSpectrumAnalysisSnmp:
                 self.logger.warning(f"Failed to unpack amplitudes at offset {offset}: {exc}")
                 break
 
-            amplitudes_dbmv: List[float] = [a / self.AMPLITUDE_SCALE_DBMV for a in amplitudes]
+            amplitudes_dbmv: list[float] = [a / self.AMPLITUDE_SCALE_DBMV for a in amplitudes]
             freq_start_hz = float(ch_center_freq - (freq_span // 2))
-            freqs: List[float] = [freq_start_hz + float(i * bin_spacing) for i in range(num_bins)]
+            freqs: list[float] = [freq_start_hz + float(i * bin_spacing) for i in range(num_bins)]
 
             all_freqs.extend(freqs)
             all_amplitudes.extend(amplitudes_dbmv)
@@ -148,7 +148,7 @@ class CmSpectrumAnalysisSnmp:
         """
         return self.data
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Serialize the SNMP spectrum analysis results to a dictionary.
 

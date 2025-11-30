@@ -46,15 +46,15 @@ class SNMPv3(BaseModel):
         privProtocol (Optional[Literal["DES","AES"]]): Privacy protocol.
         privPassword (Optional[str]): Privacy password.
     """
-    username: Optional[str] = Field(default=None, description="Username; if omitted, system default is used")
+    username: str | None = Field(default=None, description="Username; if omitted, system default is used")
     securityLevel: Literal["noAuthNoPriv","authNoPriv","authPriv"] = Field(default="noAuthNoPriv", description="SNMPv3 security level")
-    authProtocol: Optional[Literal["MD5","SHA"]] = Field(default="SHA", description="Authentication protocol")
-    authPassword: Optional[str] = Field(default="password", description="Authentication password")
-    privProtocol: Optional[Literal["DES","AES"]] = Field(default="AES", description="Privacy protocol")
-    privPassword: Optional[str] = Field(default="password", description="Privacy password")
+    authProtocol: Literal["MD5", "SHA"] | None = Field(default="SHA", description="Authentication protocol")
+    authPassword: str | None = Field(default="password", description="Authentication password")
+    privProtocol: Literal["DES", "AES"] | None = Field(default="AES", description="Privacy protocol")
+    privPassword: str | None = Field(default="password", description="Privacy password")
 
     @model_validator(mode="after")
-    def check_v3_fields(self) -> "SNMPv3":
+    def check_v3_fields(self) -> SNMPv3:
         """
         Ensure that authentication and privacy fields are present based on securityLevel.
         """

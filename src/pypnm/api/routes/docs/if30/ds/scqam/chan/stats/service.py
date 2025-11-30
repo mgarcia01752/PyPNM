@@ -43,7 +43,7 @@ class DsScQamChannelService:
                              inet=Inet(ip_address),
                              write_community = snmp_config.snmp_v2c.community)
 
-    async def get_scqam_chan_entries(self) -> List[Dict]:
+    async def get_scqam_chan_entries(self) -> list[dict]:
         """
         Retrieve and process DOCSIS SC-QAM downstream channel entries.
 
@@ -51,10 +51,10 @@ class DsScQamChannelService:
             List[Dict]: A list of dictionaries representing successfully retrieved
                         and populated SC-QAM downstream channel entries.
         """
-        entries: List[DocsIfDownstreamChannelEntry] = await self.cm.getDocsIfDownstreamChannel()
+        entries: list[DocsIfDownstreamChannelEntry] = await self.cm.getDocsIfDownstreamChannel()
         return [entry.model_dump() for entry in entries]
 
-    async def get_scqam_chan_codeword_error_rate(self, time_elapse:float = 5) -> List[Dict]:
+    async def get_scqam_chan_codeword_error_rate(self, time_elapse:float = 5) -> list[dict]:
         """
         Retrieve codeword error rate for all downstream SC-QAM channels.
         Args:

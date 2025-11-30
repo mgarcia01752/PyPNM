@@ -18,7 +18,7 @@ class LogFile:
     @classmethod
     def write(cls,
               fname: PathLike,
-              data: Union[BaseModel, dict[Any, Any], str, bytes],
+              data: BaseModel | dict[Any, Any] | str | bytes,
               log_dir:PathLike = SystemConfigSettings.log_dir ) -> None:
         """
         Write log data.

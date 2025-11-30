@@ -68,7 +68,7 @@ class NumericScaler:
 
     # ----------------- core helpers -----------------
     @staticmethod
-    def _to_1d(values: Optional[ArrayLike]) -> np.ndarray:
+    def _to_1d(values: ArrayLike | None) -> np.ndarray:
         if values is None:
             return np.array([], dtype=float)
         return np.asarray(values, dtype=float).ravel()
@@ -78,7 +78,7 @@ class NumericScaler:
         return float(base) ** exp
 
     @classmethod
-    def _normalize_prefix(cls, p: Optional[str], system: str) -> Tuple[str, int]:
+    def _normalize_prefix(cls, p: str | None, system: str) -> tuple[str, int]:
         """Return (canonical_prefix, exponent) for given prefix/synonym."""
         if p is None or p == "":
             return ("", 0)
@@ -116,9 +116,9 @@ class NumericScaler:
         self,
         values: ArrayLike,
         *,
-        target: Optional[str] = None,
-        system: Optional[str] = None,
-    ) -> Tuple[np.ndarray, Dict[str, Any]]:
+        target: str | None = None,
+        system: str | None = None,
+    ) -> tuple[np.ndarray, dict[str, Any]]:
         """
         Scale `values` so numbers are expressed in the `target` prefix.
 
@@ -150,10 +150,10 @@ class NumericScaler:
         self,
         values: ArrayLike,
         *,
-        from_prefix: Optional[str] = None,
-        to_prefix: Optional[str] = None,
-        system: Optional[str] = None,
-    ) -> Tuple[np.ndarray, Dict[str, Any]]:
+        from_prefix: str | None = None,
+        to_prefix: str | None = None,
+        system: str | None = None,
+    ) -> tuple[np.ndarray, dict[str, Any]]:
         """
         Convert from one prefix to another (e.g., from 'M' to 'k').
 
@@ -192,10 +192,10 @@ class NumericScaler:
         self,
         values: ArrayLike,
         *,
-        system: Optional[str] = None,
-        target_range: Tuple[float, float] = (1.0, 999.9),
+        system: str | None = None,
+        target_range: tuple[float, float] = (1.0, 999.9),
         strategy: str = "max",
-    ) -> Tuple[np.ndarray, Dict[str, Any]]:
+    ) -> tuple[np.ndarray, dict[str, Any]]:
         """
         Choose a prefix so scaled data falls into `target_range`.
 
@@ -265,8 +265,8 @@ class NumericScaler:
     def format_axis_label(
         base: str,
         *,
-        unit: Optional[str] = None,
-        meta: Optional[Dict[str, Any]] = None,
+        unit: str | None = None,
+        meta: dict[str, Any] | None = None,
         style: str = "prefix",
     ) -> str:
         """

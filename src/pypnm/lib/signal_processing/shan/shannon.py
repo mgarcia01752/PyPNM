@@ -12,7 +12,7 @@ from pypnm.lib.types import FloatSeries, SNRdB, SNRln
 from pypnm.pnm.parser.CmDsOfdmModulationProfile import ModulationOrderType
 
 BitsPerSymbol       = int
-BitPerSymToQamMod   = Dict[BitsPerSymbol, str]
+BitPerSymToQamMod   = dict[BitsPerSymbol, str]
 
 class Shannon:
     QAM_MODULATIONS: ClassVar[BitPerSymToQamMod] = {
@@ -45,7 +45,7 @@ class Shannon:
         return self.snr_db
 
     @classmethod
-    def from_modulation(cls, modulation_name: str) -> "Shannon":
+    def from_modulation(cls, modulation_name: str) -> Shannon:
         """
         Create a ModulationEstimator instance from a known modulation name (e.g., "qam_256").
         Assumes ideal Shannon conditions to reverse-calculate approximate SNR (dB).
@@ -63,7 +63,7 @@ class Shannon:
         return cls(snr_db)
 
     @classmethod
-    def from_modulation_type(cls, mod_ord_type: ModulationOrderType) -> "Shannon":
+    def from_modulation_type(cls, mod_ord_type: ModulationOrderType) -> Shannon:
         """
         Create a ModulationEstimator instance from a known modulation name (e.g., "qam_256").
         Assumes ideal Shannon conditions to reverse-calculate approximate SNR (dB).
@@ -129,7 +129,7 @@ class Shannon:
         return cast(SNRdB, 10 * math.log10(snr_linear))
 
     @staticmethod
-    def snr_to_limit(snr: Union[float, FloatSeries, np.ndarray]) -> List[BitsPerSymbol]:
+    def snr_to_limit(snr: float | FloatSeries | np.ndarray) -> list[BitsPerSymbol]:
         """
         Calculate the Shannon capacity limit (bits/s/Hz) for given SNR value(s),
         rounding down to the nearest whole bit (since fractional bits aren't realizable).
@@ -153,7 +153,7 @@ class Shannon:
         return limits.tolist()
 
     @staticmethod
-    def snr_to_snr_limit(snr_db:List[SNRdB]) -> List[SNRdB]:
+    def snr_to_snr_limit(snr_db:list[SNRdB]) -> list[SNRdB]:
         """
         Take the SNR and Calculate the closest supported modulation limit.
         Returns:
@@ -166,10 +166,10 @@ class Shannon:
         snr_array = np.array(snr_db, dtype=float)
 
         # Calculate Shannon limits for each SNR value
-        limits:List[BitsPerSymbol] = Shannon.snr_to_limit(snr_array)
+        limits:list[BitsPerSymbol] = Shannon.snr_to_limit(snr_array)
 
         # Convert bits back to dB
-        shannon_limits:List[SNRdB] = [Shannon.bits_to_snr(bits) for bits in limits]
+        shannon_limits:list[SNRdB] = [Shannon.bits_to_snr(bits) for bits in limits]
 
         return shannon_limits
 

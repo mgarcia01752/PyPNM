@@ -210,8 +210,8 @@ class QamLutManager:
         return [(float(re), float(im)) for re, im in a]
 
     def get_symbol_codeword(
-        self, qam_mod: QamModulation, symbol: Tuple[float, float]
-    ) -> Optional[CodeWord]:
+        self, qam_mod: QamModulation, symbol: tuple[float, float]
+    ) -> CodeWord | None:
         """
         Reverse-map a constellation point to the nearest LUT codeword.
 
@@ -346,7 +346,7 @@ class QamLutManager:
         return est_mod
 
     @staticmethod
-    def _infer_bits_per_symbol(keys_sorted: List[int]) -> int:
+    def _infer_bits_per_symbol(keys_sorted: list[int]) -> int:
         """
         Infer bits-per-symbol from the LUT codeword key set.
 

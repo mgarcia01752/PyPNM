@@ -30,7 +30,7 @@ class InetGenerate:
         return " ".join(f"0x{int(octet, 10):02X}" for octet in ipv4_address.split("."))
 
     @staticmethod
-    def inet_to_binary(inet: str) -> Optional[bytes]:
+    def inet_to_binary(inet: str) -> bytes | None:
         """
         Convert an IP address (IPv4 or IPv6) to its binary representation.
 
@@ -47,7 +47,7 @@ class InetGenerate:
             return None
 
     @staticmethod
-    def binary_to_inet(binary_address: bytes) -> Optional[str]:
+    def binary_to_inet(binary_address: bytes) -> str | None:
         """
         Convert a binary representation of an IP address (IPv4 or IPv6) back to its string format.
 

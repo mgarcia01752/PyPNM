@@ -27,13 +27,13 @@ class AbstractService:
             Registry mapping operation IDs to service instances.
     """
     #Maintain singleton mapping of operation_id to service instances
-    __SERVICE_STORE: Dict[OperationId, AbstractCaptureService] = {}
+    __SERVICE_STORE: dict[OperationId, AbstractCaptureService] = {}
 
     def __init__(self) -> None:
         """
         Initialize the internal service registry.
         """
-        self._service_store: Dict[OperationId, AbstractCaptureService] = {}
+        self._service_store: dict[OperationId, AbstractCaptureService] = {}
         self.logger = logging.getLogger(self.__class__.__name__)
 
     async def updateServiceStore(self, operation_id: OperationId, service: AbstractCaptureService) -> None:
@@ -49,7 +49,7 @@ class AbstractService:
         """
         self.__SERVICE_STORE[operation_id] = service
 
-    async def loadService(self, service_cls: Type[T], *args: Any, **kwargs: Any) -> Tuple[GroupId, OperationId]:
+    async def loadService(self, service_cls: type[T], *args: Any, **kwargs: Any) -> tuple[GroupId, OperationId]:
         """
         Instantiate, start, and register a capture service.
 
@@ -93,7 +93,7 @@ class AbstractService:
         except KeyError as err:
             raise KeyError(f"No service loaded for operation_id '{operation_id}'") from err
 
-    def getActiveServices(self) -> Dict[OperationId, AbstractCaptureService]:
+    def getActiveServices(self) -> dict[OperationId, AbstractCaptureService]:
         """
         Retrieve all currently active services.
 
@@ -102,7 +102,7 @@ class AbstractService:
         """
         self.logger.info(f'Retrieving active services. Current store: {self._service_store.keys()}')
 
-        active_services: Dict[OperationId, AbstractCaptureService] = {}
+        active_services: dict[OperationId, AbstractCaptureService] = {}
 
         for operation_id in self._service_store.keys():
             self.logger.info(f"Active service: operation_id={operation_id}")

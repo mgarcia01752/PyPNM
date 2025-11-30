@@ -11,14 +11,14 @@ from typing import Optional
 
 @dataclass
 class DocsPnmBulkDataGroup:
-    docsPnmBulkDestIpAddrType: Optional[int]    # e.g., 1 for IPv4, 2 for IPv6
-    docsPnmBulkDestIpAddr: Optional[str]        # string form of IP address
-    docsPnmBulkDestPath: Optional[str]          # path as a string (URL or file path)
-    docsPnmBulkUploadControl: Optional[int]     # control flag or enum
+    docsPnmBulkDestIpAddrType: int | None    # e.g., 1 for IPv4, 2 for IPv6
+    docsPnmBulkDestIpAddr: str | None        # string form of IP address
+    docsPnmBulkDestPath: str | None          # path as a string (URL or file path)
+    docsPnmBulkUploadControl: int | None     # control flag or enum
 
-    docsPnmBulkFileName: Optional[str]          # name of the file
-    docsPnmBulkFileControl: Optional[int]       # control flag or enum
-    docsPnmBulkFileUploadStatus: Optional[int]  # status flag or enum
+    docsPnmBulkFileName: str | None          # name of the file
+    docsPnmBulkFileControl: int | None       # control flag or enum
+    docsPnmBulkFileUploadStatus: int | None  # status flag or enum
 
     def __post_init__(self):
         if self.docsPnmBulkDestIpAddr:
@@ -30,6 +30,6 @@ class DocsPnmBulkDataGroup:
 @dataclass
 class DocsPnmBulkFileEntry:
     index: int
-    docsPnmBulkFileName: Optional[str] = None
-    docsPnmBulkFileControl: Optional[int] = None
-    docsPnmBulkFileUploadStatus: Optional[int] = None
+    docsPnmBulkFileName: str | None = None
+    docsPnmBulkFileControl: int | None = None
+    docsPnmBulkFileUploadStatus: int | None = None

@@ -17,7 +17,7 @@ from pypnm.lib.types import (
 
 DeviceDetailsPayload = Union[
     SystemDescriptorModel,
-    SystemDescriptor, str, Dict[str, Any],
+    SystemDescriptor, str, dict[str, Any],
     None,]
 
 class EntryDict(TypedDict):
@@ -25,7 +25,7 @@ class EntryDict(TypedDict):
     file_name: FileName
     file_type: str
     capture_time: CaptureTime
-    channel_id: Optional[ChannelId]
+    channel_id: ChannelId | None
     device_details: DeviceDetailsPayload
     data: bytes
     mac_address: MacAddressStr
@@ -37,8 +37,8 @@ class Sort(enum.Enum):
     MAC_ADDRESS     = enum.auto()
 
 
-TransactionFile             = Tuple[TransactionId, FileName, bytes]
-TransactionFileCollection   = List[TransactionFile]
-FlatIndex                   = Dict[MacAddressStr, List[EntryDict]]
-GroupedIndex                = Dict[MacAddressStr, Dict[int, List[EntryDict]]]
-SortOrder                   = List[Sort]
+TransactionFile             = tuple[TransactionId, FileName, bytes]
+TransactionFileCollection   = list[TransactionFile]
+FlatIndex                   = dict[MacAddressStr, list[EntryDict]]
+GroupedIndex                = dict[MacAddressStr, dict[int, list[EntryDict]]]
+SortOrder                   = list[Sort]

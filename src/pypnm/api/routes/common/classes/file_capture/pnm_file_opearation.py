@@ -72,7 +72,7 @@ class OperationCaptureGroupResolver:
     # ------------------------------------------------------------------ #
     # Internal JSON helpers
     # ------------------------------------------------------------------ #
-    def _load_json(self, path: Path) -> Dict[str, dict]:
+    def _load_json(self, path: Path) -> dict[str, dict]:
         try:
             with path.open("r") as f:
                 data = json.load(f)
@@ -90,7 +90,7 @@ class OperationCaptureGroupResolver:
     # ------------------------------------------------------------------ #
     # Resolution helpers
     # ------------------------------------------------------------------ #
-    def get_capture_group_id(self, operation_id: OperationId) -> Optional[GroupId]:
+    def get_capture_group_id(self, operation_id: OperationId) -> GroupId | None:
         """
         Resolve A Capture Group Identifier From An Operation ID.
 
@@ -112,7 +112,7 @@ class OperationCaptureGroupResolver:
 
         return capture_group_id
 
-    def get_transaction_ids_for_capture_group(self, capture_group_id: GroupId) -> List[TransactionId]:
+    def get_transaction_ids_for_capture_group(self, capture_group_id: GroupId) -> list[TransactionId]:
         """
         Resolve All Transaction IDs Belonging To A Capture Group.
 
@@ -136,7 +136,7 @@ class OperationCaptureGroupResolver:
 
         return [TransactionId(str(tid)) for tid in txns]
 
-    def get_transaction_ids_for_operation(self, operation_id: OperationId) -> List[TransactionId]:
+    def get_transaction_ids_for_operation(self, operation_id: OperationId) -> list[TransactionId]:
         """
         Resolve All Transaction IDs Associated With An Operation ID.
 
@@ -149,7 +149,7 @@ class OperationCaptureGroupResolver:
             return []
         return self.get_transaction_ids_for_capture_group(capture_group_id)
 
-    def get_transaction_models_for_operation(self, operation_id: OperationId) -> List[TransactionRecordModel]:
+    def get_transaction_models_for_operation(self, operation_id: OperationId) -> list[TransactionRecordModel]:
         """
         Resolve TransactionRecordModel Instances For An Operation ID.
 
@@ -165,7 +165,7 @@ class OperationCaptureGroupResolver:
             return []
 
         txn_store = PnmFileTransaction()
-        models: List[TransactionRecordModel] = []
+        models: list[TransactionRecordModel] = []
 
         for tid in txn_ids:
             model = txn_store.getRecordModel(tid)

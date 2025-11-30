@@ -4,7 +4,8 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 import logging
-from typing import Callable, Dict, List, Literal, Optional, Tuple
+from typing import Dict, List, Literal, Optional, Tuple
+from collections.abc import Callable
 
 import numpy as np
 
@@ -42,14 +43,14 @@ class SignalCaptureAggregator:
         *,
         reducer: Literal["mean", "max", "min", "sum"] | Callable[[NDArrayF64], float] = "mean",
         fill_value: float = 0.0,
-        logger_name: Optional[str] = None,
+        logger_name: str | None = None,
     ) -> None:
         self.logger = logging.getLogger(logger_name or self.__class__.__name__)
         # Store raw points: x -> list[y] (to allow duplicate inserts before reduction)
-        self._points: Dict[float, List[float]] = {}
+        self._points: dict[float, list[float]] = {}
         # Reconstructed grid (set by reconstruct)
-        self._grid_x: Optional[NDArrayF64] = None
-        self._grid_y: Optional[NDArrayF64] = None
+        self._grid_x: NDArrayF64 | None = None
+        self._grid_y: NDArrayF64 | None = None
         self._reconstructed: bool = False
         self._reducer = self._resolve_reducer(reducer)
         self._fill_value = float(fill_value)
@@ -101,11 +102,11 @@ class SignalCaptureAggregator:
     def reconstruct(
         self,
         *,
-        step: Optional[float] = None,
-        tolerance: Optional[float] = None,
-        fill_value: Optional[float] = None,
-        reducer: Optional[Callable[[NDArrayF64], float]] = None,
-    ) -> Tuple[NDArrayF64, NDArrayF64]:
+        step: float | None = None,
+        tolerance: float | None = None,
+        fill_value: float | None = None,
+        reducer: Callable[[NDArrayF64], float] | None = None,
+    ) -> tuple[NDArrayF64, NDArrayF64]:
         """
         Build a continuous (grid_x, grid_y) representation.
 
@@ -159,7 +160,7 @@ class SignalCaptureAggregator:
         grid_y = np.full_like(grid_x, fill, dtype=np.float64)
 
         # Accumulate samples per bin
-        bins: List[List[float]] = [[] for _ in range(n_bins)]
+        bins: list[list[float]] = [[] for _ in range(n_bins)]
 
         for x_val, y_list in self._points.items():
             # snap x to nearest grid index
@@ -186,7 +187,7 @@ class SignalCaptureAggregator:
         self.logger.info("Reconstruction complete: %d bins (step=%g, tol=%g)", n_bins, step, tol)
         return grid_x, grid_y
 
-    def get_series(self) -> Tuple[NDArrayF64, NDArrayF64]:
+    def get_series(self) -> tuple[NDArrayF64, NDArrayF64]:
         """
         Return (x, y) as arrays.
         - If reconstruct() has been called: returns (grid_x, grid_y).
@@ -225,7 +226,7 @@ class SignalCaptureAggregator:
     ) -> Callable[[NDArrayF64], float]:
         if callable(reducer):
             return reducer
-        table: Dict[str, Callable[[NDArrayF64], float]] = {
+        table: dict[str, Callable[[NDArrayF64], float]] = {
             "mean": lambda a: float(np.mean(a)) if a.size else 0.0,
             "max":  lambda a: float(np.max(a)) if a.size else 0.0,
             "min":  lambda a: float(np.min(a)) if a.size else 0.0,

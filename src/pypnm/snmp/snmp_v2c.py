@@ -82,9 +82,9 @@ class Snmp_v2c:
 
     async def get(
         self,
-        oid: Union[str, Tuple[str, str, int]],
-        timeout: Optional[float] = None,
-        retries: Optional[int] = None,
+        oid: str | tuple[str, str, int],
+        timeout: float | None = None,
+        retries: int | None = None,
     ):
         """
         Perform an SNMP GET operation.
@@ -130,7 +130,7 @@ class Snmp_v2c:
 
         return varBinds
 
-    async def walk(self, oid: Union[str, Tuple[str, str, int]]) -> Optional[List[ObjectType]]:
+    async def walk(self, oid: str | tuple[str, str, int]) -> list[ObjectType] | None:
         """
         Perform an SNMP WALK operation.
 
@@ -146,7 +146,7 @@ class Snmp_v2c:
 
         identity = self._to_object_identity(oid)
         obj = ObjectType(identity)
-        results: List[ObjectType] = []
+        results: list[ObjectType] = []
 
         transport = await UdpTransportTarget.create((self._host, self._port),
                                                     timeout=self._timeout,
@@ -187,7 +187,7 @@ class Snmp_v2c:
 
         return results if results else None
 
-    async def set(self, oid: str, value: Union[str, int], value_type: Type)-> Optional[List[ObjectType]]:
+    async def set(self, oid: str, value: str | int, value_type: type)-> list[ObjectType] | None:
         """
         Perform an SNMP SET operation with explicit value type.
 
@@ -244,7 +244,7 @@ class Snmp_v2c:
         self._snmp_engine.close_dispatcher()
 
     @staticmethod
-    def resolve_oid(oid: Union[str, Tuple[str, str, int]]) -> str:
+    def resolve_oid(oid: str | tuple[str, str, int]) -> str:
         """
         Resolves symbolic OIDs with optional numeric suffixes.
 
@@ -287,7 +287,7 @@ class Snmp_v2c:
         return bool(re.fullmatch(r"\.?(\d+\.)+\d+", oid))
 
     @staticmethod
-    def get_result_value(pysnmp_get_result) -> Optional[str]:
+    def get_result_value(pysnmp_get_result) -> str | None:
         """
         Extract the value from a pysnmp GET result.
 
@@ -314,7 +314,7 @@ class Snmp_v2c:
             return None
 
     @staticmethod
-    def extract_last_oid_index(snmp_responses: List[ObjectType]) -> List[int]:
+    def extract_last_oid_index(snmp_responses: list[ObjectType]) -> list[int]:
         """
         Extract the last index from a list of SNMP responses.
 
@@ -333,7 +333,7 @@ class Snmp_v2c:
         return last_oid_indexes
 
     @staticmethod
-    def extract_oid_indices(snmp_responses: List[ObjectType],num_indices: int = 1) -> List[List[int]]:
+    def extract_oid_indices(snmp_responses: list[ObjectType],num_indices: int = 1) -> list[list[int]]:
         """
         Extract the last `num_indices` components from the OID index of each SNMP response.
 
@@ -365,7 +365,7 @@ class Snmp_v2c:
         return extracted_indices
 
     @staticmethod
-    def snmp_get_result_value(snmp_responses: List[ObjectType]) -> List[str]:
+    def snmp_get_result_value(snmp_responses: list[ObjectType]) -> list[str]:
         """
         Extract the result value from a list of SNMP responses.
 
@@ -378,7 +378,7 @@ class Snmp_v2c:
         return [str(value[1]) for value in snmp_responses]
 
     @staticmethod
-    def snmp_get_result_bytes(snmp_responses: List[ObjectType]) -> List[bytes]:
+    def snmp_get_result_bytes(snmp_responses: list[ObjectType]) -> list[bytes]:
         """
         Extract raw byte values from a list of SNMP ObjectType responses.
 
@@ -402,7 +402,7 @@ class Snmp_v2c:
         return result
 
     @staticmethod
-    def snmp_get_result_last_idx_value(snmp_responses: List[ObjectType]) -> List[Tuple[int, str]]:
+    def snmp_get_result_last_idx_value(snmp_responses: list[ObjectType]) -> list[tuple[int, str]]:
         """
         Extract the last index and value from each SNMP response.
 
@@ -422,8 +422,8 @@ class Snmp_v2c:
 
     T = TypeVar("T", int, str)
     @staticmethod
-    def snmp_get_result_last_idx_force_value_type(snmp_responses: List[ObjectType],
-                                                  value_type: Type[T] = str) -> List[Tuple[int, T]]:
+    def snmp_get_result_last_idx_force_value_type(snmp_responses: list[ObjectType],
+                                                  value_type: type[T] = str) -> list[tuple[int, T]]:
         """
         Extract the last index and value from each SNMP response,
         casting the value to the requested type (int or str).
@@ -436,7 +436,7 @@ class Snmp_v2c:
             List of (last index, value) pairs, where `value` is of type `value_type`.
         """
         logger = logging.getLogger(__name__)
-        result: List[Tuple[int, T]] = []
+        result: list[tuple[int, T]] = []
 
         for obj in snmp_responses:
             # 1) extract index
@@ -451,7 +451,7 @@ class Snmp_v2c:
             raw_val = obj[1]
             try:
                 if value_type is int:
-                    cast_val: Union[int, str] = int(raw_val)
+                    cast_val: int | str = int(raw_val)
                 else:
                     cast_val = str(raw_val)
             except Exception as e:
@@ -464,7 +464,7 @@ class Snmp_v2c:
         return result
 
     @staticmethod
-    def snmp_set_result_value(snmp_set_response: str) -> List[str]:
+    def snmp_set_result_value(snmp_set_response: str) -> list[str]:
         """
         Extracts value(s) from an SNMP SET response string.
 
@@ -488,7 +488,7 @@ class Snmp_v2c:
         return  [str(value[1]) for value in snmp_set_response]
 
     @staticmethod
-    def get_oid_index(oid: str) -> Optional[int]:
+    def get_oid_index(oid: str) -> int | None:
         """
         Extract the index (last sub-identifier) from an OID string.
 
@@ -626,7 +626,7 @@ class Snmp_v2c:
     # Private Methods #
     ###################
 
-    def _to_object_identity(self, oid: Union[str, Tuple[str, str, int]]) -> ObjectIdentity:
+    def _to_object_identity(self, oid: str | tuple[str, str, int]) -> ObjectIdentity:
         """
         Internal helper to resolve an OID.
 

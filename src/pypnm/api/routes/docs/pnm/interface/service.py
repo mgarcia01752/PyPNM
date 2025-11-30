@@ -28,7 +28,7 @@ class InterfaceStatsService:
                              inet=Inet(ip_address),
                              write_community=write_community)
 
-    async def get_interface_stat_entries(self) -> Dict[str, List[Dict]]:
+    async def get_interface_stat_entries(self) -> dict[str, list[dict]]:
         """
         Fetches interface statistics from the cable modem, grouped by interface type.
 
@@ -37,5 +37,5 @@ class InterfaceStatsService:
             name (e.g., 'docsCableDownstream') and the value is a list of corresponding
             interface statistics dictionaries.
         """
-        interface_stat: Dict[str, List[Dict]] = await self.cm.getInterfaceStatistics()
+        interface_stat: dict[str, list[dict]] = await self.cm.getInterfaceStatistics()
         return interface_stat

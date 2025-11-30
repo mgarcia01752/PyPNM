@@ -28,15 +28,15 @@ class CmSymbolCapture(PnmHeader):
         self.logger = logging.getLogger(self.__class__.__name__)
 
         # Additional attributes specific to CmSymbolCapture
-        self.channel_id: Optional[int] = None
-        self.mac_address: Optional[str] = None
-        self.subcarrier_zero_frequency: Optional[int] = None
-        self.sample_rate: Optional[int] = None
-        self.fft_size: Optional[int] = None
-        self.trigger_group_id: Optional[int] = None
-        self.transaction_id: Optional[int] = None
-        self.capture_data_length: Optional[int] = None
-        self.capture_data: Optional[bytes] = None
+        self.channel_id: int | None = None
+        self.mac_address: str | None = None
+        self.subcarrier_zero_frequency: int | None = None
+        self.sample_rate: int | None = None
+        self.fft_size: int | None = None
+        self.trigger_group_id: int | None = None
+        self.transaction_id: int | None = None
+        self.capture_data_length: int | None = None
+        self.capture_data: bytes | None = None
 
     def process_cm_symbol_capture(self) -> None:
         if self.get_pnm_file_type() != PnmFileType.SYMBOL_CAPTURE:
@@ -61,7 +61,7 @@ class CmSymbolCapture(PnmHeader):
         self.capture_data_length = cm_symbol_capture_size[7]
         self.capture_data = self.pnm_data[calcsize(cm_symbol_capture_format):]
 
-    def process_capture_data(self, sm_n_format: Tuple[IntegerBits, FractionalBits] = (IntegerBits(3), FractionalBits(12))) -> Optional[ComplexSeries]:
+    def process_capture_data(self, sm_n_format: tuple[IntegerBits, FractionalBits] = (IntegerBits(3), FractionalBits(12))) -> ComplexSeries | None:
         """
         Process Capture Data.
         Returns a list of complex numbers containing the data (I, Q) for each sample.
@@ -71,7 +71,7 @@ class CmSymbolCapture(PnmHeader):
         capture_data = FixedPointDecoder.decode_complex_data(self.capture_data, sm_n_format)
         return capture_data
 
-    def get_cm_symbol_capture(self) -> Optional[dict]:
+    def get_cm_symbol_capture(self) -> dict | None:
         return {
             'DS Channel Id': self.channel_id,
             'CM MAC Address': self.mac_address,

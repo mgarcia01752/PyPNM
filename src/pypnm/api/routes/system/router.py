@@ -37,7 +37,7 @@ class SystemRouter:
     def __init__(
         self,
         prefix: str = "/system",
-        tags: List[Union[str, Enum]] = None):
+        tags: list[str | Enum] = None):
         if tags is None:
             tags = ["DOCSIS System"]
         self.router = APIRouter(prefix=prefix, tags=tags)
@@ -81,7 +81,7 @@ class SystemRouter:
                     detail="Failed to retrieve sysDescr") from exc
 
         @self.router.post("/upTime", response_model=Union[SysUpTimeResponse, SnmpResponse])
-        async def get_uptime(request: SysRequest) -> Union[SysUpTimeResponse, SnmpResponse] :
+        async def get_uptime(request: SysRequest) -> SysUpTimeResponse | SnmpResponse :
             """
             **Fetch DOCSIS Device System Uptime**
 

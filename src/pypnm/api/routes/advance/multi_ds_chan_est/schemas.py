@@ -28,7 +28,7 @@ from pypnm.lib.types import GroupId, OperationId
 class AnalysisDataModel(BaseModel):
     """Typed container for analysis output."""
     analysis_type: str              = Field(..., description="Executed analysis type name.")
-    results: List[Dict[str, Any]]   = Field(..., description="List of per-channel analysis results (min/avg/max, group delay, anomalies, etc.).")
+    results: list[dict[str, Any]]   = Field(..., description="List of per-channel analysis results (min/avg/max, group delay, anomalies, etc.).")
 
 class MultiChanEstAnalysisContainerModel(BaseModel):
     """Model for Multi-ChannelEstimation analysis types."""

@@ -7,7 +7,8 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Any, Dict, Mapping, cast
+from typing import Any, Dict, cast
+from collections.abc import Mapping
 
 from pydantic import ValidationError
 
@@ -352,7 +353,7 @@ class JsonTransactionDb:
             self.logger.error(f"JSON DB root in {db_path} is not an object, got {type(obj).__name__}")
             return JsonTransactionDbModel()
 
-        records: Dict[TransactionId, JsonTransactionRecordModel] = {}
+        records: dict[TransactionId, JsonTransactionRecordModel] = {}
         for tx_id, payload in obj.items():
             if not isinstance(payload, dict):
                 self.logger.error(f"Transaction '{tx_id}' in {db_path} is not an object; skipping")

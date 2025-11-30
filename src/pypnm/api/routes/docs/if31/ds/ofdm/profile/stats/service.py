@@ -35,7 +35,7 @@ class OfdmProfileStatsService:
     @staticmethod
     async def fetch_profile_stats(mac_address: MacAddressStr,
                                   ip_address: InetAddressStr,
-                                  snmp_config: SNMPConfig) -> List[Dict[str, Any]]:
+                                  snmp_config: SNMPConfig) -> list[dict[str, Any]]:
         """
         Fetches OFDM downstream profile statistics from the cable modem.
 

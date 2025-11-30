@@ -23,7 +23,7 @@ class ClabsDocsisVersion(IntEnum):
         return self.name.replace("DOCSIS_", "DOCSIS ").replace("_", ".")
 
     @classmethod
-    def from_value(cls, value: int) -> "ClabsDocsisVersion":
+    def from_value(cls, value: int) -> ClabsDocsisVersion:
         try:
             return cls(value)
         except ValueError:

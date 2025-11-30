@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, ClassVar, List, cast
+from typing import Any, ClassVar, List, cast
+from collections.abc import Callable
 
 from pydantic import BaseModel
 
@@ -35,7 +36,7 @@ class DocsPnmCmOfdmChanEstCoefEntry(BaseModel):
     DEBUG: ClassVar[bool] = False
 
     @classmethod
-    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsPnmCmOfdmChanEstCoefEntry":
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsPnmCmOfdmChanEstCoefEntry:
         log = logging.getLogger(cls.__name__)
 
         async def fetch(sym: str, caster: Callable[[Any], Any]) -> Any:
@@ -80,10 +81,10 @@ class DocsPnmCmOfdmChanEstCoefEntry(BaseModel):
         return cls(index=index, channel_id=index, entry=entry)
 
     @classmethod
-    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsPnmCmOfdmChanEstCoefEntry"]:
+    async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsPnmCmOfdmChanEstCoefEntry]:
         if not indices:
             return []
-        out: List[DocsPnmCmOfdmChanEstCoefEntry] = []
+        out: list[DocsPnmCmOfdmChanEstCoefEntry] = []
         for idx in indices:
             out.append(await cls.from_snmp(idx, snmp))
         return out

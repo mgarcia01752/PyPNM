@@ -36,7 +36,7 @@ class CmSpectrumAnalyzerModel(BaseModel):
     bin_frequency_spacing: int                      = Field(..., gt=0, description="Frequency spacing between adjacent bins in Hz.")
     spectrum_analysis_data_length: int              = Field(..., ge=0, description="Length of the raw spectrum analysis data buffer (bytes).")
     spectrum_analysis_data: bytes                   = Field(..., description="Raw spectrum analysis payload (bytes).")
-    amplitude_bin_segments_float: List[FloatSeries] = Field(..., description="Amplitude values per bin (float dB), concatenated across segments.")
+    amplitude_bin_segments_float: list[FloatSeries] = Field(..., description="Amplitude values per bin (float dB), concatenated across segments.")
 
     @field_serializer("spectrum_analysis_data")
     def _ser_spectrum_analysis_data(self, v: bytes, _info) -> str:
@@ -70,7 +70,7 @@ class CmSpectrumAnalysis(PnmHeader):
         self._spectrum_analysis_data_length: int
         self._spectrum_analysis_data: bytes
         self._bin_frequency_spacing: int
-        self._amplitude_bin_segments_float: List[FloatSeries] = []
+        self._amplitude_bin_segments_float: list[FloatSeries] = []
         self._number_of_bin_segments: int
         self._num_of_bin_segments:int = 0
 
@@ -179,7 +179,7 @@ class CmSpectrumAnalysis(PnmHeader):
         """
         return self._model
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """
         Return the spectrum analysis results as a dictionary.
 

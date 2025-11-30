@@ -20,7 +20,7 @@ def _hdr(msg: str) -> None:
 
 
 def resolve_config(
-    ip: Optional[str], mac: Optional[str], read_comm: Optional[str], timeout: Optional[int]
+    ip: str | None, mac: str | None, read_comm: str | None, timeout: int | None
 ):
     ip_s = ip or S.default_ip_address
     mac_s = mac or S.default_mac_address
@@ -29,7 +29,7 @@ def resolve_config(
     return ip_s, mac_s, rc, to
 
 
-async def preflight(ip: Optional[str], mac: Optional[str], read_comm: Optional[str], timeout: Optional[int]) -> int:
+async def preflight(ip: str | None, mac: str | None, read_comm: str | None, timeout: int | None) -> int:
     ip_s, mac_s, rc, to = resolve_config(ip, mac, read_comm, timeout)
 
     _hdr("Preflight Inputs")

@@ -16,7 +16,7 @@ class ConfigManager:
     Example: src/pypnm/system.json
     """
 
-    def __init__(self, config_path: Optional[str] = None) -> None:
+    def __init__(self, config_path: str | None = None) -> None:
 
         CONFIG_NAME = "system.json"
         CONFIG_DIR = "settings"
@@ -37,10 +37,10 @@ class ConfigManager:
         """Loads the configuration JSON from disk."""
         if not os.path.exists(self._config_path):
             raise FileNotFoundError(f"Config file not found: {self._config_path}")
-        with open(self._config_path, "r") as f:
+        with open(self._config_path) as f:
             self._config_data = json.load(f)
 
-    def get(self, *keys: str, fallback: Optional[Any] = None) -> Any:
+    def get(self, *keys: str, fallback: Any | None = None) -> Any:
         """
         Retrieves a deeply nested value from the config.
 

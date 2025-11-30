@@ -44,7 +44,7 @@ class SystemDescriptor:
     _PATTERN: ClassVar[re.Pattern] = re.compile(r"<<\s*(.*?)\s*>>")
 
     @classmethod
-    def parse(cls, system_description: str) -> "SystemDescriptor":
+    def parse(cls, system_description: str) -> SystemDescriptor:
         """
         Parse a sysDescr string of the form:
            <<HW_REV: xxx; VENDOR: xxx; BOOTR: xxx; SW_REV: xxx; MODEL: xxx>>
@@ -55,7 +55,7 @@ class SystemDescriptor:
             raise ValueError(f"Invalid format, missing <<...>>: {system_description}")
         content = match.group(1)
         entries = [item.strip() for item in content.split(";") if item.strip()]
-        data: Dict[str, str] = {}
+        data: dict[str, str] = {}
         for entry in entries:
             if ':' not in entry:
                 raise ValueError(f"Invalid field entry '{entry}' in sysDescr")
@@ -91,7 +91,7 @@ class SystemDescriptor:
             is_empty    =   self.is_empty()
         )
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str]:
         """
         Serialize the SysDescr fields to a dict.
         """
@@ -107,7 +107,7 @@ class SystemDescriptor:
         return self._is_empty
 
     @classmethod
-    def load_from_dict(cls, data: Dict[str, str]) -> "SystemDescriptor":
+    def load_from_dict(cls, data: dict[str, str]) -> SystemDescriptor:
         """
         Load a SysDescr from a dictionary.
         """
@@ -120,7 +120,7 @@ class SystemDescriptor:
         )
 
     @classmethod
-    def empty(cls) -> "SystemDescriptor":
+    def empty(cls) -> SystemDescriptor:
         """
         Return an empty SysDescr (all fields blank).
         """

@@ -20,12 +20,12 @@ StartFrequency      = FrequencyHz
 PlcFrequency        = FrequencyHz
 EndFrequency        = FrequencyHz
 CenterFrequency     = FrequencyHz
-OfdmSpectrumBw      = Tuple[StartFrequency, PlcFrequency, EndFrequency]
-OfdmSpectrumBwLut   = Dict[ChannelId, OfdmSpectrumBw]
-ScQamSpectrumBw     = Tuple[StartFrequency, CenterFrequency, EndFrequency]
-ScQamSpectrumBwLut  = Dict[ChannelId, ScQamSpectrumBw]
-CommonChannelSpectumBwLut  = Dict[ChannelId, Tuple[StartFrequency, Union[CenterFrequency, PlcFrequency], EndFrequency]]
-CommonSpectrumBw    = Tuple[StartFrequency, CenterFrequency, EndFrequency]
+OfdmSpectrumBw      = tuple[StartFrequency, PlcFrequency, EndFrequency]
+OfdmSpectrumBwLut   = dict[ChannelId, OfdmSpectrumBw]
+ScQamSpectrumBw     = tuple[StartFrequency, CenterFrequency, EndFrequency]
+ScQamSpectrumBwLut  = dict[ChannelId, ScQamSpectrumBw]
+CommonChannelSpectumBwLut  = dict[ChannelId, tuple[StartFrequency, CenterFrequency | PlcFrequency, EndFrequency]]
+CommonSpectrumBw    = tuple[StartFrequency, CenterFrequency, EndFrequency]
 
 class CommonSpectrumChannelAnalyzer(ABC):
     def __init__(self, cm: CableModem) -> None:
@@ -34,10 +34,10 @@ class CommonSpectrumChannelAnalyzer(ABC):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.log_prefix = f"[{self.__class__.__name__}]"
         self._pnm_test_type = DocsPnmCmCtlTest.SPECTRUM_ANALYZER
-        self._measurement_stat: Dict[ChannelId, List[DocsIf3CmSpectrumAnalysisEntry]] = {}
+        self._measurement_stat: dict[ChannelId, list[DocsIf3CmSpectrumAnalysisEntry]] = {}
 
     @abstractmethod
-    async def start(self, capture_per_channel: bool = False) -> List[Tuple[ChannelId, MessageResponse]]:
+    async def start(self, capture_per_channel: bool = False) -> list[tuple[ChannelId, MessageResponse]]:
         """
         Start the spectrum analyzer measurement on the cable modem.
         Parameters
@@ -59,7 +59,7 @@ class CommonSpectrumChannelAnalyzer(ABC):
         """
         pass
 
-    async def getPnmMeasurementStatistics(self) -> Dict[ChannelId, List[DocsIf3CmSpectrumAnalysisEntry]]:
+    async def getPnmMeasurementStatistics(self) -> dict[ChannelId, list[DocsIf3CmSpectrumAnalysisEntry]]:
         """
         Return the raw PNM measurement statistics keyed by channel.
 
@@ -71,7 +71,7 @@ class CommonSpectrumChannelAnalyzer(ABC):
         """
         return self._measurement_stat
 
-    async def getPnmMeasurementStatisticsFlat(self) -> List[DocsIf3CmSpectrumAnalysisEntry]:
+    async def getPnmMeasurementStatisticsFlat(self) -> list[DocsIf3CmSpectrumAnalysisEntry]:
         """
         Return a flattened list of all PNM measurement entries across channels.
 
@@ -84,7 +84,7 @@ class CommonSpectrumChannelAnalyzer(ABC):
         List[DocsIf3CmSpectrumAnalysisEntry]
             Flattened list of measurement entries aggregated from all channels.
         """
-        entries: List[DocsIf3CmSpectrumAnalysisEntry] = []
+        entries: list[DocsIf3CmSpectrumAnalysisEntry] = []
         for channel_entries in self._measurement_stat.values():
             entries.extend(channel_entries)
         return entries

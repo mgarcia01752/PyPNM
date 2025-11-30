@@ -4,7 +4,8 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 import logging
-from typing import Callable, List, Optional, Union
+from typing import List, Optional, Union
+from collections.abc import Callable
 
 from pydantic import BaseModel
 
@@ -12,32 +13,32 @@ from pypnm.snmp.snmp_v2c import Snmp_v2c
 
 
 class DocsIfUpstreamEntry(BaseModel):
-    docsIfUpChannelId: Optional[int] = None
-    docsIfUpChannelFrequency: Optional[int] = None
-    docsIfUpChannelWidth: Optional[int] = None
-    docsIfUpChannelModulationProfile: Optional[int] = None
-    docsIfUpChannelSlotSize: Optional[int] = None
-    docsIfUpChannelTxTimingOffset: Optional[int] = None
-    docsIfUpChannelRangingBackoffStart: Optional[int] = None
-    docsIfUpChannelRangingBackoffEnd: Optional[int] = None
-    docsIfUpChannelTxBackoffStart: Optional[int] = None
-    docsIfUpChannelTxBackoffEnd: Optional[int] = None
-    docsIfUpChannelType: Optional[int] = None
-    docsIfUpChannelCloneFrom: Optional[int] = None
-    docsIfUpChannelUpdate: Optional[bool] = None
-    docsIfUpChannelStatus: Optional[int] = None
-    docsIfUpChannelPreEqEnable: Optional[bool] = None
+    docsIfUpChannelId: int | None = None
+    docsIfUpChannelFrequency: int | None = None
+    docsIfUpChannelWidth: int | None = None
+    docsIfUpChannelModulationProfile: int | None = None
+    docsIfUpChannelSlotSize: int | None = None
+    docsIfUpChannelTxTimingOffset: int | None = None
+    docsIfUpChannelRangingBackoffStart: int | None = None
+    docsIfUpChannelRangingBackoffEnd: int | None = None
+    docsIfUpChannelTxBackoffStart: int | None = None
+    docsIfUpChannelTxBackoffEnd: int | None = None
+    docsIfUpChannelType: int | None = None
+    docsIfUpChannelCloneFrom: int | None = None
+    docsIfUpChannelUpdate: bool | None = None
+    docsIfUpChannelStatus: int | None = None
+    docsIfUpChannelPreEqEnable: bool | None = None
 
     # DOCS-IF3-MIB extensions
-    docsIf3CmStatusUsTxPower: Optional[float] = None
-    docsIf3CmStatusUsT3Timeouts: Optional[int] = None
-    docsIf3CmStatusUsT4Timeouts: Optional[int] = None
-    docsIf3CmStatusUsRangingAborteds: Optional[int] = None
-    docsIf3CmStatusUsModulationType: Optional[int] = None
-    docsIf3CmStatusUsEqData: Optional[str] = None
-    docsIf3CmStatusUsT3Exceededs: Optional[int] = None
-    docsIf3CmStatusUsIsMuted: Optional[bool] = None
-    docsIf3CmStatusUsRangingStatus: Optional[int] = None
+    docsIf3CmStatusUsTxPower: float | None = None
+    docsIf3CmStatusUsT3Timeouts: int | None = None
+    docsIf3CmStatusUsT4Timeouts: int | None = None
+    docsIf3CmStatusUsRangingAborteds: int | None = None
+    docsIf3CmStatusUsModulationType: int | None = None
+    docsIf3CmStatusUsEqData: str | None = None
+    docsIf3CmStatusUsT3Exceededs: int | None = None
+    docsIf3CmStatusUsIsMuted: bool | None = None
+    docsIf3CmStatusUsRangingStatus: int | None = None
 
 class DocsIfUpstreamChannelEntry(BaseModel):
     index: int
@@ -45,22 +46,22 @@ class DocsIfUpstreamChannelEntry(BaseModel):
     entry: DocsIfUpstreamEntry
 
     @classmethod
-    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsIfUpstreamChannelEntry":
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsIfUpstreamChannelEntry:
         logger = logging.getLogger(cls.__name__)
 
-        def tenthdBmV_to_float(value: str) -> Optional[float]:
+        def tenthdBmV_to_float(value: str) -> float | None:
             try:
                 return float(value) / 10.0
             except Exception:
                 return None
 
-        def safe_cast(value: str, cast: Callable) -> Union[int, float, str, bool, None]:
+        def safe_cast(value: str, cast: Callable) -> int | float | str | bool | None:
             try:
                 return cast(value)
             except Exception:
                 return None
 
-        async def fetch(field: str, cast: Optional[Callable] = None):
+        async def fetch(field: str, cast: Callable | None = None):
             try:
                 raw = await snmp.get(f"{field}.{index}")
                 val = Snmp_v2c.get_result_value(raw)
@@ -116,9 +117,9 @@ class DocsIfUpstreamChannelEntry(BaseModel):
         )
 
     @classmethod
-    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsIfUpstreamChannelEntry"]:
+    async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsIfUpstreamChannelEntry]:
         logger = logging.getLogger(cls.__name__)
-        results: List[DocsIfUpstreamChannelEntry] = []
+        results: list[DocsIfUpstreamChannelEntry] = []
 
         if not indices:
             logger.warning("No upstream ATDMA indices found.")

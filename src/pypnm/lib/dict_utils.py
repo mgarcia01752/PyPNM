@@ -4,7 +4,8 @@
 # pypnm/lib/dict_utils.py
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional, Set, Union
+from typing import Any, Dict, Optional, Set, Union
+from collections.abc import Iterable, Mapping, MutableMapping
 
 from pydantic import BaseModel
 
@@ -70,8 +71,8 @@ class DictGenerate:
         Any
             The cleaned structure (same object when in_place=True where possible).
         """
-        targets: Set[str] = set(keys_to_remove)
-        targets_lower: Set[str] | None = {k.lower() for k in targets} if not case_sensitive else None
+        targets: set[str] = set(keys_to_remove)
+        targets_lower: set[str] | None = {k.lower() for k in targets} if not case_sensitive else None
 
         def _walk(node: Any) -> Any:
             if isinstance(node, dict):
@@ -112,15 +113,15 @@ class DictGenerate:
     # ---------------------------
     @staticmethod
     def models_to_nested_dict(
-        items: Iterable[Union["BaseModel", Mapping[Union[int, str], Any]]],
+        items: Iterable[BaseModel | Mapping[int | str, Any]],
         parent_key: str,
         *,
-        by: Optional[str] = None,
+        by: str | None = None,
         by_alias: bool = True,
         exclude_none: bool = True,
         exclude_unset: bool = False,
         exclude_defaults: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Build a nested dict from a list of Pydantic BaseModels (or already-dumped dicts).
 
@@ -138,7 +139,7 @@ class DictGenerate:
             - If `by` is provided and an item lacks that field/attribute.
             - If duplicate `by` keys are encountered.
         """
-        def dump_one(obj: Union["BaseModel", Mapping[str, Any]]) -> Dict[str, Any]:
+        def dump_one(obj: BaseModel | Mapping[str, Any]) -> dict[str, Any]:
             if isinstance(obj, BaseModel):  # type: ignore[arg-type]
                 if hasattr(obj, "model_dump"):
                     return obj.model_dump(
@@ -160,7 +161,7 @@ class DictGenerate:
             out_list = [dump_one(item) for item in items]
             return {parent_key: out_list}
 
-        keyed: Dict[Any, Dict[str, Any]] = {}
+        keyed: dict[Any, dict[str, Any]] = {}
         for item in items:
             payload = dump_one(item)
 

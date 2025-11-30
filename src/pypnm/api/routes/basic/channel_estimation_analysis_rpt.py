@@ -65,14 +65,14 @@ class ChanEstimationReport(AnalysisReport):
             analysis_matplot_config = AnalysisRptMatplotConfig()
         super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger("ChanEstimationReport")
-        self._results: Dict[int, ChanEstimationAnalysisRptModel] = {}
+        self._results: dict[int, ChanEstimationAnalysisRptModel] = {}
         self._sig_cap_agg: SignalCaptureAggregator = SignalCaptureAggregator()
 
-    def create_csv(self, **kwargs) -> List[CSVManager]:
+    def create_csv(self, **kwargs) -> list[CSVManager]:
         """
         Stream validated models into CSVs. Assumes `_process()` already enforced.
         """
-        csv_mgr_list: List[CSVManager] = []
+        csv_mgr_list: list[CSVManager] = []
         any_models: bool = False
 
         for common_model in self.get_common_analysis_model():
@@ -112,7 +112,7 @@ class ChanEstimationReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self, **kwargs) -> List[MatplotManager]:
+    def create_matplot(self, **kwargs) -> list[MatplotManager]:
         """
         Generate per-channel line and multi-line plots from validated models.
         """
@@ -121,9 +121,9 @@ class ChanEstimationReport(AnalysisReport):
             EchoDetector,
         )
 
-        matplot_mgr: List[MatplotManager] = []
+        matplot_mgr: list[MatplotManager] = []
         any_models: bool = False
-        chan_id_list: List[ChannelId] = []
+        chan_id_list: list[ChannelId] = []
 
         for common_model in self.get_common_analysis_model():
             any_models = True
@@ -273,7 +273,7 @@ class ChanEstimationReport(AnalysisReport):
                 matplot_mgr.append(mgr)
 
                 # Residuals (dB)
-                residuals = cast(ArrayLike, [d - h for d, h in zip(cast(List[float], db), yhat_db, strict=False)])
+                residuals = cast(ArrayLike, [d - h for d, h in zip(cast(list[float], db), yhat_db, strict=False)])
 
                 cfg = PlotConfig(
                     title           = f"Residual Ripple (dB) - OFDM Channel: {channel_id}  "
@@ -350,8 +350,8 @@ class ChanEstimationReport(AnalysisReport):
                     )
 
                     tr = det.time_response(window="hann", direct_at_zero=True, normalize_power=True)
-                    time_axis_us: List[float] = [t * 1e6 for t in tr.time_axis_s]
-                    mag_list: List[float] = tr.time_response
+                    time_axis_us: list[float] = [t * 1e6 for t in tr.time_axis_s]
+                    mag_list: list[float] = tr.time_response
 
                     cfg = PlotConfig(
                         title           = f"{title_prefix} · IFFT Time Response |h(t)|"
@@ -386,7 +386,7 @@ class ChanEstimationReport(AnalysisReport):
         Normalize validated `DsChannelEstAnalysisModel` items into `ChanEstimationAnalysis`
         and register them for reporting/plotting.
         """
-        data_list: List[DsChannelEstAnalysisModel] = cast(List[DsChannelEstAnalysisModel], self.get_analysis_model())
+        data_list: list[DsChannelEstAnalysisModel] = cast(list[DsChannelEstAnalysisModel], self.get_analysis_model())
 
         for idx, data in enumerate(data_list):
             try:
@@ -401,8 +401,8 @@ class ChanEstimationReport(AnalysisReport):
                 group_delay: FloatSeries = list(cv.group_delay.magnitude)
 
                 # Coerce -> float and ensure finiteness
-                def coerce_finite(seq, name: str) -> List[float]:
-                    out: List[float] = []
+                def coerce_finite(seq, name: str) -> list[float]:
+                    out: list[float] = []
                     for v in seq:
                         fv = float(v)
                         if not math.isfinite(fv):

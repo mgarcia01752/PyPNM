@@ -54,7 +54,7 @@ class RxMerMarginRouter:
         @self.router.post(f"/{self.base_endpoint}/getMeasurementTemplate",
                           response_model=Union[SnmpResponse],
                           responses=FAST_API_RESPONSE,)
-        async def get_measurement_template(request: PnmRequest) -> Union[SnmpResponse]:
+        async def get_measurement_template(request: PnmRequest) -> SnmpResponse:
             """
             📘 [API Guide - MER Margin Measurement Template](https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/single/ds/ofdm/mer-margin.md#get-measurement-template)
             """
@@ -75,7 +75,7 @@ class RxMerMarginRouter:
                     status=status, message=msg)
 
             service = CmDsOfdmMerMarginService(cm)
-            template:Dict[str, List[Dict]] = await service.getMeasurementTemplate()
+            template:dict[str, list[dict]] = await service.getMeasurementTemplate()
 
             return SnmpResponse(
                 mac_address=mac,

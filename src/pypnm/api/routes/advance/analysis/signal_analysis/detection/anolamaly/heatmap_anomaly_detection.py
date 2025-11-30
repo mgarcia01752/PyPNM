@@ -29,7 +29,7 @@ class HeatmapAnomalyDetector:
         self.threshold: float = threshold
         self.zmap: np.ndarray = None  # will be computed
         self.mask: np.ndarray = None
-        self.boxes: List[Tuple[int, int, int, int]] = []
+        self.boxes: list[tuple[int, int, int, int]] = []
 
     def compute_zmap(self) -> np.ndarray:
         """
@@ -59,7 +59,7 @@ class HeatmapAnomalyDetector:
         self.mask = np.abs(self.zmap) > self.threshold
         return self.mask
 
-    def find_boxes(self) -> List[Tuple[int, int, int, int]]:
+    def find_boxes(self) -> list[tuple[int, int, int, int]]:
         """
         Identify connected components in the anomaly mask (4-connectivity)
         and compute their bounding boxes.
@@ -73,7 +73,7 @@ class HeatmapAnomalyDetector:
 
         visited = np.zeros_like(self.mask, dtype=bool)
         rows, cols = self.data.shape
-        boxes: List[Tuple[int, int, int, int]] = []
+        boxes: list[tuple[int, int, int, int]] = []
 
         def neighbors(r: int, c: int):
             for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
@@ -105,7 +105,7 @@ class HeatmapAnomalyDetector:
         self.boxes = boxes
         return boxes
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         """
         Convert the detected boxes into a JSON-friendly dictionary.
 

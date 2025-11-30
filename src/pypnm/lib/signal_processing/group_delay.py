@@ -37,7 +37,7 @@ class GroupDelayResult(BaseModel):
     freq_hz: ArrayLikeF64        = Field(default_factory=list, description="Frequency axis (Hz) per bin.")
     group_delay_s: ArrayLikeF64  = Field(default_factory=list, description="Group delay per bin (seconds).")
     group_delay_us: ArrayLikeF64 = Field(default_factory=list, description="Group delay per bin (microseconds).")
-    valid_mask: List[bool]       = Field(default_factory=list, description="True where output is valid (active bins & finite H).")
+    valid_mask: list[bool]       = Field(default_factory=list, description="True where output is valid (active bins & finite H).")
     mean_group_delay_us: float   = Field(default=np.nan, description="Mean group delay over valid bins (microseconds).")
     params: dict                 = Field(default_factory=dict, description="Computation parameters (df_hz, f0_hz, unwrap, edge_order, smooth_win).")
 
@@ -100,13 +100,13 @@ class GroupDelay:
         self,
         H: ComplexArray,
         *,
-        freq_hz: Optional[ArrayLikeF64]     = None,
-        df_hz: Optional[Number]             = None,
+        freq_hz: ArrayLikeF64 | None     = None,
+        df_hz: Number | None             = None,
         f0_hz: float                        = 0.0,
-        active_mask: Optional[ArrayLikeF64] = None,
+        active_mask: ArrayLikeF64 | None = None,
         unwrap: bool                        = True,
         edge_order: int                     = 2,
-        smooth_win: Optional[int]           = None,
+        smooth_win: int | None           = None,
     ) -> None:
         """
         Initialize a GroupDelay computation.
@@ -162,11 +162,11 @@ class GroupDelay:
         *,
         df_hz: float,
         f0_hz: float = 0.0,
-        active_mask: Optional[ArrayLikeF64] = None,
-        smooth_win: Optional[int] = None,
+        active_mask: ArrayLikeF64 | None = None,
+        smooth_win: int | None = None,
         unwrap: bool = True,
         edge_order: int = 2,
-    ) -> "GroupDelay":
+    ) -> GroupDelay:
         """
         Construct from a standard OFDM channel estimate using constant spacing.
 
@@ -235,7 +235,7 @@ class GroupDelay:
                 smooth_win  =   self._smooth_win,),
         )
 
-    def to_tuple(self) -> Tuple[np.ndarray, np.ndarray]:
+    def to_tuple(self) -> tuple[np.ndarray, np.ndarray]:
         """
         Get frequency axis and group delay in seconds as NumPy arrays.
 
@@ -363,7 +363,7 @@ class GroupDelay:
         return (a[:, 0] + 1j * a[:, 1]).astype(np.complex128, copy=False)
 
     @staticmethod
-    def _validate_smooth_win(win: Optional[int]) -> Optional[int]:
+    def _validate_smooth_win(win: int | None) -> int | None:
         """
         Validate the smoothing window.
 
@@ -392,7 +392,7 @@ class GroupDelay:
         return win
 
     @staticmethod
-    def _resolve_mask(mask: Optional[ArrayLikeF64], n: int) -> np.ndarray:
+    def _resolve_mask(mask: ArrayLikeF64 | None, n: int) -> np.ndarray:
         """
         Normalize/validate the active-bin mask.
 
@@ -465,10 +465,10 @@ class GroupDelay:
 
     @staticmethod
     def _resolve_freq_inputs(
-        freq_hz: Optional[ArrayLikeF64],
-        df_hz: Optional[Number],
+        freq_hz: ArrayLikeF64 | None,
+        df_hz: Number | None,
         n: int,
-    ) -> Tuple[Optional[np.ndarray], Optional[float]]:
+    ) -> tuple[np.ndarray | None, float | None]:
         """
         Validate and resolve frequency inputs (`freq_hz` XOR `df_hz`).
 

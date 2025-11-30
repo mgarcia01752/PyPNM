@@ -88,8 +88,8 @@ class ModulationProfileRouter:
                 err = "Unable to complete Modulation Profile measurement."
                 return SnmpResponse(mac_address=mac, message=err, status=msg_rsp.status)
 
-            measurement_stats:List[DocsPnmCmDsOfdmModProfEntry] = \
-                cast(List[DocsPnmCmDsOfdmModProfEntry], await service.getPnmMeasurementStatistics())
+            measurement_stats:list[DocsPnmCmDsOfdmModProfEntry] = \
+                cast(list[DocsPnmCmDsOfdmModProfEntry], await service.getPnmMeasurementStatistics())
 
             cps = CommonProcessService(msg_rsp)
             msg_rsp = cps.process()
@@ -97,7 +97,7 @@ class ModulationProfileRouter:
             analysis = Analysis(AnalysisType.BASIC, msg_rsp)
 
             if request.analysis.output.type == OutputType.JSON:
-                payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
+                payload: dict[str, Any] = cast(dict[str, Any], analysis.get_results())
 
                 primative = msg_rsp.payload_to_dict('primative')
                 DictGenerate.pop_keys_recursive(primative, ["device_details", "modulation_statistics"])

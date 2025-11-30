@@ -54,15 +54,15 @@ class SSHConnector:
         if not isinstance(transfer_mode, SecureTransferMode):
             raise ValueError("transfer_mode must be a SecureTransferMode enum")
         self.transfer_mode = transfer_mode
-        self.ssh_client: Optional[paramiko.SSHClient] = None
-        self.sftp_client: Optional[paramiko.SFTPClient] = None
-        self.private_key_path: Optional[str] = None
-        self.password: Optional[str] = None
+        self.ssh_client: paramiko.SSHClient | None = None
+        self.sftp_client: paramiko.SFTPClient | None = None
+        self.private_key_path: str | None = None
+        self.password: str | None = None
 
     def connect(
         self,
-        password: Optional[str] = None,
-        private_key_path: Optional[str] = None,
+        password: str | None = None,
+        private_key_path: str | None = None,
         auto_add_policy: bool = True,
     ) -> bool:
         """
@@ -229,11 +229,11 @@ class SSHConnector:
 
     def _build_scp_command(
         self,
-        local_src: Optional[str] = None,
-        remote_src: Optional[str] = None,
-        remote_dest: Optional[str] = None,
-        local_dest: Optional[str] = None,
-    ) -> Optional[List[str]]:
+        local_src: str | None = None,
+        remote_src: str | None = None,
+        remote_dest: str | None = None,
+        local_dest: str | None = None,
+    ) -> list[str] | None:
         """
         Constructs a safe SCP command list or returns None if unavailable.
         """
@@ -243,7 +243,7 @@ class SSHConnector:
             src, dest = remote_src, local_dest
         else:
             raise ValueError("Provide either (local_src and remote_dest) or (remote_src and local_dest)")
-        parts: List[str] = []
+        parts: list[str] = []
         if self.private_key_path:
             parts = ["scp", "-o", "StrictHostKeyChecking=no", "-i", self.private_key_path, "-P", str(self.port)]
         elif self.password and shutil.which("sshpass"):
@@ -253,7 +253,7 @@ class SSHConnector:
         parts += [src, dest]
         return parts
 
-    def execute_command(self, command: str) -> Tuple[str, str, int]:
+    def execute_command(self, command: str) -> tuple[str, str, int]:
         """
         Runs a remote shell command via Paramiko.
         """
@@ -308,7 +308,7 @@ class SSHConnector:
         self.logger.error(f"Key install failed: {err}")
         return False
 
-    def list_remote_directory(self, remote_path: str = ".") -> List[str]:
+    def list_remote_directory(self, remote_path: str = ".") -> list[str]:
         """
         Lists a directory via SFTP.
         """
@@ -332,5 +332,5 @@ class SSHConnector:
             path += f"/{part}"
             try:
                 self.sftp_client.stat(path)
-            except IOError:
+            except OSError:
                 self.sftp_client.mkdir(path)

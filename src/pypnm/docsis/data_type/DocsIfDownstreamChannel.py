@@ -3,7 +3,8 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 import logging
-from typing import Callable, List, Optional, Union
+from typing import List, Optional, Union
+from collections.abc import Callable
 
 from pydantic import BaseModel
 
@@ -56,19 +57,19 @@ class DocsIfDownstreamEntry(BaseModel):
         Extended RxMER (dB), from ``docsIf3SignalQualityExtRxMER``.
     """
     docsIfDownChannelId: ChannelId = INVALID_CHANNEL_ID
-    docsIfDownChannelFrequency: Optional[FrequencyHz] = None
-    docsIfDownChannelWidth: Optional[FrequencyHz] = None
-    docsIfDownChannelModulation: Optional[int] = None
-    docsIfDownChannelInterleave: Optional[int] = None
-    docsIfDownChannelPower: Optional[float] = None
-    docsIfSigQUnerroreds: Optional[int] = None
-    docsIfSigQCorrecteds: Optional[int] = None
-    docsIfSigQUncorrectables: Optional[int] = None
-    docsIfSigQMicroreflections: Optional[int] = None
-    docsIfSigQExtUnerroreds: Optional[int] = None
-    docsIfSigQExtCorrecteds: Optional[int] = None
-    docsIfSigQExtUncorrectables: Optional[int] = None
-    docsIf3SignalQualityExtRxMER: Optional[float] = None
+    docsIfDownChannelFrequency: FrequencyHz | None = None
+    docsIfDownChannelWidth: FrequencyHz | None = None
+    docsIfDownChannelModulation: int | None = None
+    docsIfDownChannelInterleave: int | None = None
+    docsIfDownChannelPower: float | None = None
+    docsIfSigQUnerroreds: int | None = None
+    docsIfSigQCorrecteds: int | None = None
+    docsIfSigQUncorrectables: int | None = None
+    docsIfSigQMicroreflections: int | None = None
+    docsIfSigQExtUnerroreds: int | None = None
+    docsIfSigQExtCorrecteds: int | None = None
+    docsIfSigQExtUncorrectables: int | None = None
+    docsIf3SignalQualityExtRxMER: float | None = None
 
 
 class DocsIfDownstreamChannelEntry(BaseModel):
@@ -105,7 +106,7 @@ class DocsIfDownstreamChannelEntry(BaseModel):
     entry: DocsIfDownstreamEntry
 
     @classmethod
-    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsIfDownstreamChannelEntry":
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsIfDownstreamChannelEntry:
         """
         Build an instance by querying SNMP for a single downstream SC-QAM index.
 
@@ -136,25 +137,25 @@ class DocsIfDownstreamChannelEntry(BaseModel):
         """
         logger = logging.getLogger(cls.__name__)
 
-        def tenthdBmV_to_float(value: str) -> Optional[float]:
+        def tenthdBmV_to_float(value: str) -> float | None:
             try:
                 return float(value) / 10.0
             except Exception:
                 return None
 
-        def to_float(value: str) -> Optional[float]:
+        def to_float(value: str) -> float | None:
             try:
                 return float(value)
             except Exception:
                 return None
 
-        def safe_cast(value: str, cast: Callable) -> Union[int, float, str, bool, None]:
+        def safe_cast(value: str, cast: Callable) -> int | float | str | bool | None:
             try:
                 return cast(value)
             except Exception:
                 return None
 
-        async def fetch(field: str, cast: Optional[Callable] = None):
+        async def fetch(field: str, cast: Callable | None = None):
             try:
                 raw = await snmp.get(f"{field}.{index}")
                 val = Snmp_v2c.get_result_value(raw)
@@ -203,7 +204,7 @@ class DocsIfDownstreamChannelEntry(BaseModel):
         )
 
     @classmethod
-    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsIfDownstreamChannelEntry"]:
+    async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsIfDownstreamChannelEntry]:
         """
         Fetch multiple downstream SC-QAM entries in a single call.
 
@@ -228,7 +229,7 @@ class DocsIfDownstreamChannelEntry(BaseModel):
         [1, 2, 3]
         """
         logger = logging.getLogger(cls.__name__)
-        results: List[DocsIfDownstreamChannelEntry] = []
+        results: list[DocsIfDownstreamChannelEntry] = []
 
         if not indices:
             logger.warning("No downstream SC-QAM channel indices provided.")

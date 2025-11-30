@@ -57,7 +57,7 @@ class InterfaceStatsRouter:
                 return SnmpResponse( mac_address=mac, status=status, message=msg)
 
             service = InterfaceStatsService(mac_address=mac, ip_address=ip, write_community=community)
-            data: Dict[str, List[Dict]] = await service.get_interface_stat_entries()
+            data: dict[str, list[dict]] = await service.get_interface_stat_entries()
 
             return SnmpResponse(mac_address=mac,
                                 status=ServiceStatusCode.SUCCESS,

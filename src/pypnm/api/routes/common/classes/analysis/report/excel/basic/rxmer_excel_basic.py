@@ -36,7 +36,7 @@ class RxMerExcelBasic:
     """
 
     def __init__(self,
-        analysis: Union[Analysis, List[Dict]],
+        analysis: Analysis | list[dict],
         output_dir: Path):
 
         self.logger = logging.getLogger("RxMerExcelBasic")
@@ -44,7 +44,7 @@ class RxMerExcelBasic:
         self.output_dir = output_dir
         self.mac_address:MacAddress = None
 
-    def build(self, filename: Optional[str] = None) -> Tuple[Path, List[str]]:
+    def build(self, filename: str | None = None) -> tuple[Path, list[str]]:
         """
         Build and save the XLSX report.
 
@@ -58,7 +58,7 @@ class RxMerExcelBasic:
         workbook = Workbook()
         workbook.remove(workbook.active)
 
-        sheet_names: List[str] = []
+        sheet_names: list[str] = []
 
         # Get the raw list of instances
         if hasattr(self.analysis, "get_results"):

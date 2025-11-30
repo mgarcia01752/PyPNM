@@ -37,11 +37,11 @@ class CmDocsDevService:
     def get_mac_address(self) -> MacAddressStr:
         return self._mac.mac_address
 
-    async def fetch_event_log(self) -> List[EventLogEntry]:
+    async def fetch_event_log(self) -> list[EventLogEntry]:
         """
         Fetch DOCSIS event log entries and return a list of structured models.
         """
-        raw_entries: List[dict] = await self._cm.getDocsDevEventEntry(to_dict=True)
+        raw_entries: list[dict] = await self._cm.getDocsDevEventEntry(to_dict=True)
 
         log_entries = []
         for raw in raw_entries:

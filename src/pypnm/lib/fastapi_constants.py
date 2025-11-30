@@ -6,7 +6,7 @@ from typing import Any, Dict, cast
 
 from pypnm.lib.types import HttpRtnCode
 
-FAST_API_RESPONSE: Dict[int | str, Dict[str, Any]] = {
+FAST_API_RESPONSE: dict[int | str, dict[str, Any]] = {
     cast(HttpRtnCode, 200): {
         "description": "JSON payload, downloadable archive, or raw binary content, depending on endpoint and request.output.type",
         "content": {

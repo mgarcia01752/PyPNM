@@ -59,7 +59,7 @@ class AbstractCaptureService(ABC):
         self.duration = duration
         self.interval = interval
         self.time_remaining:int = 0
-        self._ops: Dict[str, Dict[str, Any]] = {}
+        self._ops: dict[str, dict[str, Any]] = {}
         self.logger = logging.getLogger(self.__class__.__name__)
         try:
             self._cap_group = CaptureGroup()
@@ -70,7 +70,7 @@ class AbstractCaptureService(ABC):
         self._capture_group_id: GroupId = GroupId("")
         self._operation_id: OperationId = OperationId("")
 
-    async def start(self) -> Tuple[GroupId, OperationId]:
+    async def start(self) -> tuple[GroupId, OperationId]:
         """
         Create a new capture group and operation, then schedule the background runner.
 
@@ -202,7 +202,7 @@ class AbstractCaptureService(ABC):
     def getOperationID(self) -> OperationId:
         return self._operation_id
 
-    def getOperation(self, operation_id:OperationId) -> Dict[str, Dict[str, Any]]:
+    def getOperation(self, operation_id:OperationId) -> dict[str, dict[str, Any]]:
         return self._ops[operation_id]
 
     def getOperationState(self,operation_id:OperationId) -> OperationState:
@@ -215,7 +215,7 @@ class AbstractCaptureService(ABC):
     def getOperationFinalInvocation(self, operation_id:OperationId) -> bool:
             return self._ops[operation_id]["final_invocation"]
 
-    def status(self, operation_id: OperationId) -> Dict[str, Any]:
+    def status(self, operation_id: OperationId) -> dict[str, Any]:
         """
         Get the current state and sample count for a capture operation.
 
@@ -237,7 +237,7 @@ class AbstractCaptureService(ABC):
             "time_remaining": op.get("time_remaining", 0)
         }
 
-    def results(self, operation_id: OperationId) -> List[CaptureSample]:
+    def results(self, operation_id: OperationId) -> list[CaptureSample]:
         """
         Retrieve all CaptureSample objects collected for the operation.
 
@@ -266,7 +266,7 @@ class AbstractCaptureService(ABC):
             op["state"] = OperationState.STOPPED
             self.logger.info(f"[{operation_id}] Stopped by user")
 
-    def _process_captures(self, msg_rsp: MessageResponse) -> List[CaptureSample]:
+    def _process_captures(self, msg_rsp: MessageResponse) -> list[CaptureSample]:
         """
         Parse a raw MessageResponse into a list of CaptureSample objects.
 
@@ -287,7 +287,7 @@ class AbstractCaptureService(ABC):
                                   filename          =   "",
                                   error             =   err)]
 
-        samples: List[CaptureSample] = []
+        samples: list[CaptureSample] = []
         for idx, entry in enumerate(payload):
             try:
                 status_str, msg_type, body = MessageResponse.get_payload_msg(entry) # type: ignore

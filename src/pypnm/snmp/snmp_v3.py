@@ -115,16 +115,16 @@ class Snmp_v3:
     # Public API (signatures align with Snmp_v2c; behavior is stubbed)
     # ─────────────────────────────────────────────────────────────────────
 
-    async def get(self, oid: Union[str, Tuple[str, str, int]],
-                  timeout: Optional[int] = None,
-                  retries: Optional[int] = None):
+    async def get(self, oid: str | tuple[str, str, int],
+                  timeout: int | None = None,
+                  retries: int | None = None):
         """
         Stub for SNMP GET (v3).
         """
         self.logger.debug("Snmp_v3.get(%r) called (stub).", oid)
         raise NotImplementedError("Snmp_v3.get is not implemented yet.")
 
-    async def walk(self, oid: Union[str, Tuple[str, str, int]]):
+    async def walk(self, oid: str | tuple[str, str, int]):
         """
         Stub for SNMP WALK (v3).
         """
@@ -150,7 +150,7 @@ class Snmp_v3:
     # ─────────────────────────────────────────────────────────────────────
 
     @staticmethod
-    def resolve_oid(oid: Union[str, Tuple[str, str, int]]) -> str:
+    def resolve_oid(oid: str | tuple[str, str, int]) -> str:
         """
         Placeholder resolver. When you wire v3, either import COMPILED_OIDS
         or reuse shared resolver utilities.

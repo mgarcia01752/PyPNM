@@ -39,12 +39,12 @@ class SpacedFrequencyAxisHz(BaseModel):
 class GroupDelayOptions(BaseModel):
     """Options controlling group-delay calculation and post-processing."""
     sign: SignConvention      = Field(default=SignConvention.PLUS, description="PLUS or MINUS convention.")
-    smooth_win: Optional[int] = Field(default=None, description="Centered moving-average window (odd, ≥3).")
+    smooth_win: int | None = Field(default=None, description="Centered moving-average window (odd, ≥3).")
     enforce_nonnegative: bool = Field(default=False, description="Clamp negative τ(s) to 0.0 if True.")
 
     @field_validator("smooth_win")
     @classmethod
-    def _validate_smooth_win(cls, v: Optional[int]) -> Optional[int]:
+    def _validate_smooth_win(cls, v: int | None) -> int | None:
         if v is None:
             return None
         if not isinstance(v, int) or v < 3 or (v % 2) == 0:
@@ -90,7 +90,7 @@ class OFDMGroupDelay(BaseModel):
     H: ComplexSeries                 = Field(..., description="Channel estimate H[k] as Python complex list.")
     axis: SpacedFrequencyAxisHz      = Field(..., description="Frequency origin and uniform spacing (Hz).")
     options: GroupDelayOptions       = Field(default_factory=GroupDelayOptions, description="Computation options.")
-    active_mask: Optional[IntSeries] = Field(default=None, description="1=active bin, 0=inactive; defaults to all 1s.")
+    active_mask: IntSeries | None = Field(default=None, description="1=active bin, 0=inactive; defaults to all 1s.")
 
     # Private caches (Pydantic v2: use PrivateAttr for underscore names)
     _freq_hz: FrequencySeriesHz   = PrivateAttr(default_factory=list)

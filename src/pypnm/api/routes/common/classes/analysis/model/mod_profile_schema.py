@@ -20,16 +20,16 @@ class CarrierValuesSplitModel(BaseModel):
     """Parallel-array layout (compact, vector-friendly)."""
     layout: Literal["split"]     = Field("split", description="Layout discriminator")
     frequency: FrequencySeriesHz = Field(default_factory=list, description="Frequencies (Hz)")
-    modulation: List[str]        = Field(default_factory=list, description="Per-carrier modulation names")
+    modulation: list[str]        = Field(default_factory=list, description="Per-carrier modulation names")
     shannon_min_mer: FloatSeries = Field(default_factory=list, description="Per-carrier Shannon minimum MER (dB)")
 
 class CarrierValuesListModel(BaseModel):
     """Verbose list layout (easier for debugging/logging)."""
     layout: Literal["list"]      = Field("list", description="Layout discriminator")
-    carriers: List[CarrierItemModel] = Field(default_factory=list, description="Per-carrier records")
+    carriers: list[CarrierItemModel] = Field(default_factory=list, description="Per-carrier records")
 
 CarrierValuesModel = Annotated[
-    Union[CarrierValuesSplitModel, CarrierValuesListModel],
+    CarrierValuesSplitModel | CarrierValuesListModel,
     Field(discriminator="layout")
 ]
 

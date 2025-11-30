@@ -115,8 +115,8 @@ class ConstellationDisplayRouter:
                 self.logger.error(err)
                 return SnmpResponse(mac_address=mac, message=err, status=msg_rsp.status)
 
-            measurement_stats:List[DocsPnmCmDsConstDispMeasEntry] = \
-                cast(List[DocsPnmCmDsConstDispMeasEntry], await service.getPnmMeasurementStatistics())
+            measurement_stats:list[DocsPnmCmDsConstDispMeasEntry] = \
+                cast(list[DocsPnmCmDsConstDispMeasEntry], await service.getPnmMeasurementStatistics())
 
             cps = CommonProcessService(msg_rsp)
             msg_rsp = cps.process()
@@ -124,7 +124,7 @@ class ConstellationDisplayRouter:
             analysis = Analysis(AnalysisType.BASIC, msg_rsp)
 
             if request.analysis.output.type == OutputType.JSON:
-                payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
+                payload: dict[str, Any] = cast(dict[str, Any], analysis.get_results())
                 payload.update(msg_rsp.payload_to_dict())
 
                 DictGenerate.pop_keys_recursive(payload, ["pnm_header", "data"])

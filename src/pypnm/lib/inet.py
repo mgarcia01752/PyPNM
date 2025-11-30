@@ -34,7 +34,7 @@ class Inet:
         """Returns the stored IP address."""
         return self._inet
 
-    def same_inet_version(self, other: "Inet") -> bool:
+    def same_inet_version(self, other: Inet) -> bool:
         """
         Checks if another Inet instance has the same IP version.
 

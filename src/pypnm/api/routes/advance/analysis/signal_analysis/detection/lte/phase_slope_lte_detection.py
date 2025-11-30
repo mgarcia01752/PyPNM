@@ -20,8 +20,8 @@ class GroupDelayAnomalyDetector:
     """
     def __init__(
         self,
-        H_snapshots: Union[np.ndarray, List],
-        freqs: Union[np.ndarray, List[float]],
+        H_snapshots: np.ndarray | list,
+        freqs: np.ndarray | list[float],
         prop_speed_frac: float = 1.0
     ):
         """
@@ -75,7 +75,7 @@ class GroupDelayAnomalyDetector:
         # Propagation speed in medium
         self.v = 299_792_458 * prop_speed_frac
 
-    def compute_group_delay(self, H: Optional[np.ndarray] = None) -> np.ndarray:
+    def compute_group_delay(self, H: np.ndarray | None = None) -> np.ndarray:
         """
         Compute the per-subcarrier one-way group delay via finite differences.
 
@@ -126,7 +126,7 @@ class GroupDelayAnomalyDetector:
         self,
         tau: np.ndarray,
         bin_width: float
-    ) -> Dict[Tuple[float, float], float]:
+    ) -> dict[tuple[float, float], float]:
         """
         Partition the frequency band into bins and compute local delay variability.
 
@@ -145,7 +145,7 @@ class GroupDelayAnomalyDetector:
         """
         f_min, f_max = self.f[0], self.f[-1]
         edges = np.arange(f_min, f_max + bin_width, bin_width)
-        local_sigma: Dict[Tuple[float, float], float] = {}
+        local_sigma: dict[tuple[float, float], float] = {}
         for start, end in zip(edges[:-1], edges[1:], strict=False):
             idx = (self.f >= start) & (self.f < end)
             if np.sum(idx) < 2:
@@ -158,7 +158,7 @@ class GroupDelayAnomalyDetector:
         tau: np.ndarray,
         threshold: float,
         bin_width: float
-    ) -> List[Tuple[float, float, float]]:
+    ) -> list[tuple[float, float, float]]:
         """
         Identify frequency bins whose variability deviates from global flatness.
 
@@ -179,7 +179,7 @@ class GroupDelayAnomalyDetector:
         """
         sigma_total = self.global_flatness(tau)
         local_sigma = self.local_variability(tau, bin_width)
-        anomalies: List[Tuple[float, float, float]] = []
+        anomalies: list[tuple[float, float, float]] = []
         for (start, end), sigma_j in local_sigma.items():
             delta = abs(sigma_j - sigma_total)
             if delta > threshold:
@@ -190,8 +190,8 @@ class GroupDelayAnomalyDetector:
         self,
         threshold: float,
         initial_bin: float,
-        refinements: List[float]
-    ) -> Dict[Tuple[float, float], Any]:
+        refinements: list[float]
+    ) -> dict[tuple[float, float], Any]:
         """
         Perform a hierarchical scan: start coarse, then refine flagged bins.
 
@@ -210,7 +210,7 @@ class GroupDelayAnomalyDetector:
             Mapping from coarse bin to a dict containing 'delta' and,
             for each refinement level, a list of finer anomalies.
         """
-        results: Dict[Tuple[float, float], Any] = {}
+        results: dict[tuple[float, float], Any] = {}
         tau_global = self.compute_group_delay()
         anomalies = self.detect_anomalies(tau_global, threshold, initial_bin)
         for start, end, delta in anomalies:
@@ -227,8 +227,8 @@ class GroupDelayAnomalyDetector:
     def run(
         self,
         threshold: float,
-        bin_widths: List[float]
-    ) -> Dict[str, Any]:
+        bin_widths: list[float]
+    ) -> dict[str, Any]:
         """
         Execute the full analysis pipeline: global flatness and multi-resolution scan.
 

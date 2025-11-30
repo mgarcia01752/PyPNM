@@ -5,7 +5,8 @@ from __future__ import annotations
 
 import logging
 from enum import Enum
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
+from collections.abc import Mapping, Sequence
 
 import numpy as np
 
@@ -178,27 +179,27 @@ class Analysis:
                  skip_automatic_process: bool = False) -> None:
 
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
-        self.analysis_type: "AnalysisType"      = analysis_type
-        self.msg_response: "MessageResponse"    = msg_response
+        self.analysis_type: AnalysisType      = analysis_type
+        self.msg_response: MessageResponse    = msg_response
         self._cable_type: CableType             = cable_type
-        payload: Dict[Union[int, str], Any]     = msg_response.payload_to_dict() or {}
+        payload: dict[int | str, Any]     = msg_response.payload_to_dict() or {}
         _raw_data                               = payload.get("data", [])
 
-        self._result_model:List[BaseAnalysisModel] = []
-        self._processed_pnm_type:List[PnmFileType] = []
+        self._result_model:list[BaseAnalysisModel] = []
+        self._processed_pnm_type:list[PnmFileType] = []
         self._skip_automatic_process = skip_automatic_process
 
         # Defining DataTypes
         self._analysis_para:AnalysisProcessParameters = AnalysisProcessParameters()
 
         if isinstance(_raw_data, Mapping):
-            self.measurement_data: List[Dict[str, Any]] = [dict(_raw_data)]
+            self.measurement_data: list[dict[str, Any]] = [dict(_raw_data)]
         elif isinstance(_raw_data, Sequence) and not isinstance(_raw_data, (str, bytes, bytearray)):
             self.measurement_data = [dict(m) for m in _raw_data]
         else:
             self.measurement_data = []
 
-        self._analysis_dict: List[Dict[str, Any]] = []
+        self._analysis_dict: list[dict[str, Any]] = []
 
         if self.logger.isEnabledFor(logging.DEBUG):
             self.save_message_response(self.msg_response)
@@ -235,7 +236,7 @@ class Analysis:
 
                 continue
 
-            pnm_header: Dict[str, Any] = measurement.get("pnm_header") or {}
+            pnm_header: dict[str, Any] = measurement.get("pnm_header") or {}
             channel_id: int =  measurement.get("channel_id", INVALID_CHANNEL_ID)
 
             self.logger.debug(f"PNM-HEADER[{idx}]: {pnm_header}")
@@ -361,10 +362,10 @@ class Analysis:
         else:
             self.logger.error(f"Unknown PNM file type: ({pnm_file_type})")
 
-    def get_pnm_type(self) -> List[PnmFileType]:
+    def get_pnm_type(self) -> list[PnmFileType]:
         return self._processed_pnm_type
 
-    def get_results(self, full_dict: bool = True) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
+    def get_results(self, full_dict: bool = True) -> dict[str, Any] | list[dict[str, Any]]:
         """
         Return accumulated analysis results.
 
@@ -374,7 +375,7 @@ class Analysis:
         - full_dict=False -> if exactly one result: dict
                             else: {"analysis": [dict, dict, ...]}
         """
-        results: List[Dict[str, Any]] = self._analysis_dict
+        results: list[dict[str, Any]] = self._analysis_dict
 
         if full_dict:
             return {"analysis": results}
@@ -384,7 +385,7 @@ class Analysis:
 
         return {"analysis": results}
 
-    def get_model(self) -> Union[BaseAnalysisModel, List[BaseAnalysisModel]]:
+    def get_model(self) -> BaseAnalysisModel | list[BaseAnalysisModel]:
         """Get the accumulated analysis results (typed models).
 
         Returns
@@ -394,7 +395,7 @@ class Analysis:
         """
         return self._result_model
 
-    def get_dicts(self) -> List[Dict[str,Any]]:
+    def get_dicts(self) -> list[dict[str,Any]]:
         return self._analysis_dict
 
     def save_message_response(self, msg_response: MessageResponse) -> None:
@@ -406,7 +407,7 @@ class Analysis:
             Source container that will be serialized to disk. The filename
             includes the MAC address (if present) and a timestamp.
         """
-        msg_rsp_dict:Dict[Any, Any] = msg_response.payload_to_dict()
+        msg_rsp_dict:dict[Any, Any] = msg_response.payload_to_dict()
         mac = msg_rsp_dict.get('mac_address')
         fname = f'{SystemConfigSettings().message_response_dir}/{mac}_{Generate.time_stamp()}.msg'
         self.logger.debug(f'Saving Message Response: {fname}')
@@ -425,7 +426,7 @@ class Analysis:
         """
         self._result_model.append(model)
 
-    def __update_result_dict(self, model_dict:Dict[str,Any]):
+    def __update_result_dict(self, model_dict:dict[str,Any]):
         """Append a plain-dict analysis result to the results cache.
 
         Parameters
@@ -444,7 +445,7 @@ class Analysis:
         model: BaseAnalysisModel,
         analysis_type: AnalysisType = AnalysisType.BASIC,
         cable_type: CableType = CableType.RG6,
-    ) -> "Analysis":
+    ) -> Analysis:
         """
         Construct an Analysis instance from an existing analysis model.
 
@@ -468,7 +469,7 @@ class Analysis:
             An Analysis object whose result caches are populated from `model`.
         """
         # Infer the corresponding PNM file type from the model class
-        pnm_type: Optional[PnmFileType]
+        pnm_type: PnmFileType | None
         if isinstance(model, DsChannelEstAnalysisModel):
             pnm_type = PnmFileType.OFDM_CHANNEL_ESTIMATE_COEFFICIENT
         elif isinstance(model, ConstellationDisplayAnalysisModel):
@@ -512,7 +513,7 @@ class Analysis:
     #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 
     @classmethod
-    def basic_analysis_rxmer(cls, measurement: Dict[str, Any]) -> DsRxMerAnalysisModel:
+    def basic_analysis_rxmer(cls, measurement: dict[str, Any]) -> DsRxMerAnalysisModel:
         """
         Perform basic RxMER (Receive Modulation Error Ratio) analysis.
 
@@ -578,7 +579,7 @@ class Analysis:
                 return int(RxMerCarrierType.NORMAL.value)
 
         # carrier_status will be List[int]
-        carrier_status: List[int] = [classify(v) for v in values]
+        carrier_status: list[int] = [classify(v) for v in values]
 
         if not (len(freqs) == len(magnitudes) == len(carrier_status)):
             raise ValueError(
@@ -593,7 +594,7 @@ class Analysis:
                                                            cast(ArrayLike,freqs)).regression_line())
         )
 
-        csm:Dict[str, Any] = {
+        csm:dict[str, Any] = {
             RxMerCarrierType.EXCLUSION.name.lower(): RxMerCarrierType.EXCLUSION.value,
             RxMerCarrierType.CLIPPED.name.lower(): RxMerCarrierType.CLIPPED.value,
             RxMerCarrierType.NORMAL.name.lower(): RxMerCarrierType.NORMAL.value,
@@ -622,7 +623,7 @@ class Analysis:
         return out
 
     @classmethod
-    def basic_analysis_ds_chan_est(cls, measurement: Dict[str, Any], cable_type: CableType = CableType.RG6) -> DsChannelEstAnalysisModel:
+    def basic_analysis_ds_chan_est(cls, measurement: dict[str, Any], cable_type: CableType = CableType.RG6) -> DsChannelEstAnalysisModel:
         """
         Perform downstream channel-estimation analysis.
 
@@ -872,9 +873,9 @@ class Analysis:
             schemes     = profile.get("schemes", []) or []
 
             freq_list: FrequencySeriesHz    = []
-            mod_list:  List[str]    = []
-            shan_list: List[float]  = []
-            carrier_items: List[CarrierItemModel] = []
+            mod_list:  list[str]    = []
+            shan_list: list[float]  = []
+            carrier_items: list[CarrierItemModel] = []
 
             freq_ptr = start_freq
 
@@ -953,7 +954,7 @@ class Analysis:
         return out
 
     @classmethod
-    def basic_analysis_us_ofdma_pre_equalization(cls, measurement: Dict[str, Any]) -> UsOfdmaUsPreEqAnalysisModel:
+    def basic_analysis_us_ofdma_pre_equalization(cls, measurement: dict[str, Any]) -> UsOfdmaUsPreEqAnalysisModel:
         """
         Perform Upstream OFDMA Pre-Equalization Analysis.
 
@@ -1136,7 +1137,7 @@ class Analysis:
         return result_model
 
     @classmethod
-    def basic_analysis_ds_constellation_display(cls, measurement: Dict[str, Any]) -> ConstellationDisplayAnalysisModel:
+    def basic_analysis_ds_constellation_display(cls, measurement: dict[str, Any]) -> ConstellationDisplayAnalysisModel:
         """
         Build a minimal constellation analysis payload from a downstream OFDM
         measurement dictionary.
@@ -1197,7 +1198,7 @@ class Analysis:
         )
 
     @classmethod
-    def basic_analysis_ds_histogram(cls, measurement: Dict[str, Any]) -> DsHistogramAnalysisModel:
+    def basic_analysis_ds_histogram(cls, measurement: dict[str, Any]) -> DsHistogramAnalysisModel:
         """
         Build a :class:`DsHistogramAnalysisModel` from a downstream histogram payload.
 
@@ -1229,7 +1230,7 @@ class Analysis:
         )
 
     @classmethod
-    def basic_analysis_ds_ofdm_fec_summary(cls, measurement: Dict[str, Any]) -> OfdmFecSummaryAnalysisModel:
+    def basic_analysis_ds_ofdm_fec_summary(cls, measurement: dict[str, Any]) -> OfdmFecSummaryAnalysisModel:
         """
         Build an OfdmFecSummaryAnalysisModel from a DS OFDM FEC summary payload.
 
@@ -1258,7 +1259,7 @@ class Analysis:
                 profiles       = [],
             )
 
-        out_profiles: List[OfdmFecSummaryProfileModel] = []
+        out_profiles: list[OfdmFecSummaryProfileModel] = []
 
         for idx, prof in enumerate(prof_iter):
             # Profile id + declared sets field name differs per shape.
@@ -1342,7 +1343,7 @@ class Analysis:
         )
 
     @classmethod
-    def basic_analysis_spectrum_analyzer(cls, measurement: Dict[str, Any], analysis_parameters: Optional[AnalysisProcessParameters]) -> SpectrumAnalyzerAnalysisModel:
+    def basic_analysis_spectrum_analyzer(cls, measurement: dict[str, Any], analysis_parameters: AnalysisProcessParameters | None) -> SpectrumAnalyzerAnalysisModel:
         """
         Build SpectrumAnalyzerAnalysisModel from converted PNM measurement:
         """
@@ -1372,7 +1373,7 @@ class Analysis:
             bins_per_seg = len(segments[0])
 
         # Normalize each segment length to bins_per_seg (clip/pad NaN)
-        norm_segments: List[List[float]] = []
+        norm_segments: list[list[float]] = []
         for s in segments:
             if len(s) >= bins_per_seg:
                 norm_segments.append([float(x) for x in s[:bins_per_seg]])
@@ -1450,7 +1451,7 @@ class Analysis:
         )
 
     @classmethod
-    def basic_analysis_spectrum_analyzer_snmp(cls, measurement: Dict[str, Any], analysis_parameters: Optional[AnalysisProcessParameters] = None,) -> SpectrumAnalyzerAnalysisModel:
+    def basic_analysis_spectrum_analyzer_snmp(cls, measurement: dict[str, Any], analysis_parameters: AnalysisProcessParameters | None = None,) -> SpectrumAnalyzerAnalysisModel:
         log = logging.getLogger(f"{cls.__name__}")
 
         freqs: FrequencySeriesHz = list(measurement.get("frequency", []) or [])
@@ -1578,7 +1579,7 @@ class Analysis:
                                                            cast(ArrayLike, freqs)).regression_line())
         )
 
-        csm: Dict[str, Any] = {
+        csm: dict[str, Any] = {
             RxMerCarrierType.EXCLUSION.name.lower(): RxMerCarrierType.EXCLUSION.value,
             RxMerCarrierType.CLIPPED.name.lower():   RxMerCarrierType.CLIPPED.value,
             RxMerCarrierType.NORMAL.name.lower():    RxMerCarrierType.NORMAL.value,
@@ -2014,7 +2015,7 @@ class Analysis:
         """
         log = logging.getLogger(f"{cls.__name__}")
 
-        profiles: List[OfdmFecSummaryProfileModel] = []
+        profiles: list[OfdmFecSummaryProfileModel] = []
 
         for _idx, prof in enumerate(model.fec_summary_data or []):
             cwe = prof.codeword_entries
@@ -2259,7 +2260,7 @@ class Analysis:
         """
         log = logging.getLogger(f"{cls.__name__}")
 
-        values = cast(Sequence[Union[complex, Sequence[float]]], getattr(model, "values", []))
+        values = cast(Sequence[complex | Sequence[float]], getattr(model, "values", []))
         if not values:
             raise ValueError("Echo detection requires non-empty channel-estimation values.")
 

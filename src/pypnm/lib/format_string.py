@@ -4,13 +4,14 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 import string
-from typing import Any, Iterable, Optional
+from typing import Any, Optional
+from collections.abc import Iterable
 
 
 class Format:
 
     @staticmethod
-    def join_paren(values: Optional[Iterable[Any]], sep: str = ", ", empty: str = "—") -> str:
+    def join_paren(values: Iterable[Any] | None, sep: str = ", ", empty: str = "—") -> str:
         """
         Join items into a comma-separated string wrapped in parentheses.
         Uses only built-ins (str(), join) and strict typing.

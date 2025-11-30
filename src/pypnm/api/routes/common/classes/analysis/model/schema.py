@@ -5,7 +5,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Literal, Mapping, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
+from collections.abc import Mapping
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -79,8 +80,8 @@ class ConstellationDisplayAnalysisModel(BaseAnalysisModel):
     """Canonical payload for a constellation display dataset. Use `from_measurement(...)` to build from a raw measurement dict."""
 
     model_config = ConfigDict(populate_by_name=True)
-    num_sample_symbols: Optional[int]           = Field(default=None, ge=0, description="Number of constellation symbols captured.")
-    modulation_order: Optional[QamModulation]   = Field(default=QamModulation.UNKNOWN, description="Modulation order (e.g., 16, 64, 256).")
+    num_sample_symbols: int | None           = Field(default=None, ge=0, description="Number of constellation symbols captured.")
+    modulation_order: QamModulation | None   = Field(default=QamModulation.UNKNOWN, description="Modulation order (e.g., 16, 64, 256).")
     complex_unit: Literal["[Real, Imaginary]"]  = Field(default="[Real, Imaginary]", description="Units for the complex pairs (I=Real, Q=Imaginary).")
     soft: ComplexArray                          = Field(default=[(0,0)], description="IQ soft decisions as (real, imag) float pairs.")
     hard: ComplexArray                          = Field(default=[(0,0)], description="IQ hard decisions as (real, imag) float pairs.")
@@ -105,7 +106,7 @@ class FecSummaryCodeWordModel(BaseModel):
     ``total_codewords[i]``, ``corrected[i]``, and ``uncorrected[i]``.
     """
     model_config                    = ConfigDict(populate_by_name=True, extra="ignore")
-    timestamps: List[TimestampSec]  = Field(default_factory=list, description="Epoch timestamps (seconds) per codeword sample.")
+    timestamps: list[TimestampSec]  = Field(default_factory=list, description="Epoch timestamps (seconds) per codeword sample.")
     total_codewords: CodeWordArray  = Field(default_factory=list, description="Total codewords observed per timestamp.")
     corrected: CodeWordArray        = Field(default_factory=list, description="Corrected codewords per timestamp.")
     uncorrected: CodeWordArray      = Field(default_factory=list, description="Uncorrectable codewords per timestamp.")
@@ -125,10 +126,10 @@ class OfdmFecSummaryAnalysisModel(BaseAnalysisModel):
     summaries in ``profiles``.
     """
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
-    profiles: List[OfdmFecSummaryProfileModel] = Field(default_factory=list, description="All per-profile FEC summaries for the channel.")
+    profiles: list[OfdmFecSummaryProfileModel] = Field(default_factory=list, description="All per-profile FEC summaries for the channel.")
 
 class RxMerCarrierValuesModel(BaseModel):
-    carrier_status_map: Dict[str, Any]  = Field(..., description="Mapping of carrier states to numeric codes (e.g., exclusion=0, clipped=1, normal=2).")
+    carrier_status_map: dict[str, Any]  = Field(..., description="Mapping of carrier states to numeric codes (e.g., exclusion=0, clipped=1, normal=2).")
     magnitude_unit: str                 = Field(default="dB", description="Unit for RxMER magnitudes.")
     frequency_unit: str                 = Field(default="Hz", description="Unit for subcarrier frequencies.")
     carrier_count: int                  = Field(..., description="Number of subcarriers represented.")
@@ -165,7 +166,7 @@ class DsModulationProfileAnalysisModel(BaseAnalysisModel):
 
     frequency_unit: Literal["Hz"]     = Field("Hz", description="Frequency unit")
     shannon_min_unit: Literal["dB"]   = Field("dB", description="Shannon minimum MER unit")
-    profiles: List[ProfileAnalysisEntryModel] = Field(default_factory=list, description="Per-profile results")
+    profiles: list[ProfileAnalysisEntryModel] = Field(default_factory=list, description="Per-profile results")
 
 class OfdmaUsPreEqCarrierModel(ComplexDataCarrierModel):
     """"""

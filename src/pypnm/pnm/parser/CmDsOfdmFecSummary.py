@@ -58,7 +58,7 @@ class CmDsOfdmFecSummary(PnmHeader):
 
         self.__process()
 
-    def __expected_ts_step(self) -> Optional[int]:
+    def __expected_ts_step(self) -> int | None:
         """
         Return the expected timestamp step (seconds) for the current summary type.
 
@@ -69,7 +69,7 @@ class CmDsOfdmFecSummary(PnmHeader):
         """
         return FEC_SUMMARY_TYPE_STEP_SECONDS.get(int(self._summary_type))
 
-    def __check_timestamp_sequence(self, profile_id: int, ts: List[int], step: int) -> None:
+    def __check_timestamp_sequence(self, profile_id: int, ts: list[int], step: int) -> None:
         """
         Validate that timestamps are strictly monotonic with the expected cadence.
 
@@ -143,7 +143,7 @@ class CmDsOfdmFecSummary(PnmHeader):
         self._num_profiles = num_profiles
 
         pos = SUMMARY_HDR.size
-        profile_entries: List[OfdmFecSumDataModel] = []
+        profile_entries: list[OfdmFecSumDataModel] = []
 
         for profile_index in range(self._num_profiles):
             if len(mv) < pos + PROFILE_HDR.size:
@@ -169,7 +169,7 @@ class CmDsOfdmFecSummary(PnmHeader):
             set_bytes_len = number_of_sets * SET_REC.size
             sets_slice = mv[pos:pos + set_bytes_len]
 
-            ts: List[TimeStamp] = []
+            ts: list[TimeStamp] = []
             tc: CodeWordArray = []
             cc: CodeWordArray = []
             uc: CodeWordArray = []
@@ -188,7 +188,7 @@ class CmDsOfdmFecSummary(PnmHeader):
 
             step = self.__expected_ts_step()
             if step is not None:
-                self.__check_timestamp_sequence(int(profile_id), cast(List[int], ts), int(step))
+                self.__check_timestamp_sequence(int(profile_id), cast(list[int], ts), int(step))
             else:
                 self.logger.warning(
                     "Skipping cadence validation for summary_type=%d ('%s'), profile=%d",
@@ -198,7 +198,7 @@ class CmDsOfdmFecSummary(PnmHeader):
                 )
 
             cwe_model = OfdmFecSumCodeWordEntryModel(
-                timestamp       = cast(List[TimeStamp], ts),
+                timestamp       = cast(list[TimeStamp], ts),
                 total_codewords = cast(CodeWordArray, tc),
                 corrected       = cast(CodeWordArray, cc),
                 uncorrectable   = cast(CodeWordArray, uc),
@@ -217,7 +217,7 @@ class CmDsOfdmFecSummary(PnmHeader):
                 len(profile_entries), self._num_profiles,
             )
 
-        first_timestamp: Optional[CaptureTime] = None
+        first_timestamp: CaptureTime | None = None
         if profile_entries and profile_entries[0].codeword_entries.timestamp:
             first_timestamp = cast(CaptureTime, profile_entries[0].codeword_entries.timestamp[0])
 
@@ -241,5 +241,5 @@ class CmDsOfdmFecSummary(PnmHeader):
         """Return the structured pydantic model for the parsed FEC summary."""
         return self._model
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return self._model.model_dump()

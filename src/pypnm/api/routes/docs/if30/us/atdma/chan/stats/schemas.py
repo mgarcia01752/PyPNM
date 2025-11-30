@@ -15,4 +15,4 @@ class UsScQamChannelRequest(BaseModel):
 class UsScQamChannelEntryResponse(BaseModel):
     index: int = Field(..., description="Upstream channel table index")
     channel_id: int = Field(..., description="docsIfUpChannelId")
-    entry: Dict[str, Any] = Field(..., description="All other DOCSIS Upstream channel fields")
+    entry: dict[str, Any] = Field(..., description="All other DOCSIS Upstream channel fields")

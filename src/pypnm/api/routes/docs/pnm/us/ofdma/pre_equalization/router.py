@@ -87,8 +87,8 @@ class UsOfdmaPreEqualizationRouter:
                 err = "Unable to complete Upstream OFDMA Pre-Equalization measurement."
                 return SnmpResponse(mac_address=mac, message=err, status=msg_rsp.status)
 
-            measurement_stats:List[DocsPnmCmUsPreEqEntry] = \
-                cast(List[DocsPnmCmUsPreEqEntry], await service.getPnmMeasurementStatistics())
+            measurement_stats:list[DocsPnmCmUsPreEqEntry] = \
+                cast(list[DocsPnmCmUsPreEqEntry], await service.getPnmMeasurementStatistics())
 
             cps = CommonProcessService(msg_rsp)
             msg_rsp = cps.process()
@@ -96,11 +96,11 @@ class UsOfdmaPreEqualizationRouter:
             analysis = Analysis(AnalysisType.BASIC, msg_rsp)
 
             if request.analysis.output.type == OutputType.JSON:
-                payload: Dict[str, Any] = cast(Dict[str, Any], analysis.get_results())
+                payload: dict[str, Any] = cast(dict[str, Any], analysis.get_results())
 
                 # Clean up payload by removing unneeded or redundant sections
                 DictGenerate.pop_keys_recursive(payload, ["pnm_header"])
-                primative:Dict[Any,Any] = msg_rsp.payload_to_dict('primative')
+                primative:dict[Any,Any] = msg_rsp.payload_to_dict('primative')
                 DictGenerate.pop_keys_recursive(primative, ["device_details"])
                 payload.update(primative)
                 payload.update(DictGenerate.models_to_nested_dict(measurement_stats, 'measurement_stats',))

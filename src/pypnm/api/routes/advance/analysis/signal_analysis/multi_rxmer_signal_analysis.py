@@ -75,24 +75,24 @@ class ProfileEntryModel(BaseModel):
 class ChannelOfdmProfilePerf01Model(MultiRxMerAnalysisBaseModel):
     avg_mer:            FloatSeries             = Field(..., description="Per-subcarrier average MER (dB).")
     mer_shannon_limits: FloatSeries             = Field(..., description="Per-subcarrier Shannon limits derived from avg MER.")
-    profiles:           List[ProfileEntryModel] = Field(..., description="Per-capture per-profile deltas/limits.")
+    profiles:           list[ProfileEntryModel] = Field(..., description="Per-capture per-profile deltas/limits.")
 
 class ChannelHeatMapModel(MultiRxMerAnalysisBaseModel):
-    timestamps:  List[TimestampSec]     = Field(..., description="Capture timestamps (epoch) for rows of the heatmap.")
-    values:      List[MagnitudeSeries]  = Field(..., description="Matrix: rows=captures, cols=subcarriers; MER values.")
+    timestamps:  list[TimestampSec]     = Field(..., description="Capture timestamps (epoch) for rows of the heatmap.")
+    values:      list[MagnitudeSeries]  = Field(..., description="Matrix: rows=captures, cols=subcarriers; MER values.")
 
 MultiRxMerTemporalObjType   = Union[CmDsOfdmRxMer, CmDsOfdmFecSummary, CmDsOfdmModulationProfile]
-MinAvgMaxMap                = Dict[ChannelId, MinAvgMaxAnalysisModel]
-OfdmProfilePerf01Map        = Dict[ChannelId, ChannelOfdmProfilePerf01Model]
-HeatMapMap                  = Dict[ChannelId, ChannelHeatMapModel]
-TemporalMapping             = Tuple[CaptureTime, MultiRxMerTemporalObjType]
+MinAvgMaxMap                = dict[ChannelId, MinAvgMaxAnalysisModel]
+OfdmProfilePerf01Map        = dict[ChannelId, ChannelOfdmProfilePerf01Model]
+HeatMapMap                  = dict[ChannelId, ChannelHeatMapModel]
+TemporalMapping             = tuple[CaptureTime, MultiRxMerTemporalObjType]
 MultiRxMerAnalysisMap       = Union[MinAvgMaxMap, OfdmProfilePerf01Map, HeatMapMap]
 
 class MultiRxMerAnalysisResult(BaseModel):
     mac_address:   MacAddressStr              = Field(..., description="Cable modem MAC address associated with this analysis.")
     analysis_type: MultiRxMerAnalysisType     = Field(..., description="Type of multi-RxMER analysis performed.")
     data:          MultiRxMerAnalysisMap      = Field(..., description="Analysis results mapping (per-channel model).")
-    error:         Optional[str]              = Field(default="", description="Optional error message if analysis failed.")
+    error:         str | None              = Field(default="", description="Optional error message if analysis failed.")
 
 
 # ---------------------------
@@ -106,10 +106,10 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
         super().__init__(capt_data_agg)
         self.logger = logging.getLogger(self.__class__.__name__)
         self.analysis_type = analysis_type
-        self._model: Optional[MultiRxMerAnalysisResult] = None
-        self._mac: Optional[MacAddressStr] = None
+        self._model: MultiRxMerAnalysisResult | None = None
+        self._mac: MacAddressStr | None = None
 
-        self._sorted_temporal_mapping: List[TemporalMapping] = []
+        self._sorted_temporal_mapping: list[TemporalMapping] = []
         self._analysis_map: MultiRxMerAnalysisMap = {}
         self._is_process:bool = False
 
@@ -151,20 +151,20 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
         return self._model
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return self.to_model().model_dump()
 
     # -----------------------
     # Internals
     # -----------------------
 
-    def _get_temporal_pnm_data(self) -> List[TemporalMapping]:
+    def _get_temporal_pnm_data(self) -> list[TemporalMapping]:
         self.logger.debug(f'Temporal PNM Data - Record Count: [{len(self._sorted_temporal_mapping)}]')
         return self._sorted_temporal_mapping
 
-    def _get_capture_times(self, channel_id:ChannelId, obj_type:type) -> List[TimestampSec]:
+    def _get_capture_times(self, channel_id:ChannelId, obj_type:type) -> list[TimestampSec]:
 
-        capture_times: List[TimestampSec] = []
+        capture_times: list[TimestampSec] = []
 
         for capture_time, obj in self._get_temporal_pnm_data():
 
@@ -207,8 +207,8 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
         """
         self.logger.debug('Building MinAvgMax Signal Analysis')
 
-        chan_series: Dict[ChannelId, List[MagnitudeSeries]] = {}
-        chan_freq: Dict[ChannelId, FrequencySeriesHz] = {}
+        chan_series: dict[ChannelId, list[MagnitudeSeries]] = {}
+        chan_freq: dict[ChannelId, FrequencySeriesHz] = {}
         mamap: MinAvgMaxMap = {}
 
         for _, obj in self._get_temporal_pnm_data():
@@ -260,8 +260,8 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
         self.logger.info('Building RxMER HeatMap Signal Analysis')
 
         # Store per-channel temporal data
-        channel_data: Dict[ChannelId, List[MagnitudeSeries]] = {}
-        channel_freqs: Dict[ChannelId, FrequencySeriesHz] = {}
+        channel_data: dict[ChannelId, list[MagnitudeSeries]] = {}
+        channel_freqs: dict[ChannelId, FrequencySeriesHz] = {}
         heatmap_map: HeatMapMap = {}
 
         # Aggregate values for each capture per channel
@@ -283,7 +283,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
         for ch_id, magnitudes in channel_data.items():
             self.logger.debug('Building ChannelHeatMapModel for Channel: %s', ch_id)
 
-            timestamps: List[TimestampSec] = self._get_capture_times(ch_id, CmDsOfdmRxMer)
+            timestamps: list[TimestampSec] = self._get_capture_times(ch_id, CmDsOfdmRxMer)
             frequencies: FrequencySeriesHz = channel_freqs.get(ch_id, [])
 
             heatmap_map[ch_id] = ChannelHeatMapModel(
@@ -357,7 +357,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
             start, stop = TimeStamp(capture_times[0]), TimeStamp(capture_times[-1])
             fec_summary = fec_sum_agg.get_summary_totals(ch_id, start, stop)
 
-            profile_entries: List[ProfileEntryModel] = []
+            profile_entries: list[ProfileEntryModel] = []
 
             for mod_analysis in mod_analysis_list:
                 # Each DsModulationProfileAnalysisModel corresponds to a snapshot
@@ -420,8 +420,8 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
         # Convert Transactions to PNM RxMER Data
         tc = self.getTransactionCollection()
-        tcms:List[TransactionCollectionModel] = tc.getTransactionCollectionModel()
-        temporal_mapping:Dict[CaptureTime, Union[CmDsOfdmRxMer, CmDsOfdmFecSummary, CmDsOfdmModulationProfile]] = {}
+        tcms:list[TransactionCollectionModel] = tc.getTransactionCollectionModel()
+        temporal_mapping:dict[CaptureTime, CmDsOfdmRxMer | CmDsOfdmFecSummary | CmDsOfdmModulationProfile] = {}
 
         self.logger.info(f'TransactionCollectionModel Count: {len(tcms)}')
 
@@ -469,13 +469,13 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
         self._dispatch_build()
 
-    def create_csv(self, **kwargs) -> List[CSVManager]:
+    def create_csv(self, **kwargs) -> list[CSVManager]:
         """
         Build CSV outputs for supported analysis types.
         Currently implemented for MIN_AVG_MAX only.
         """
         self.logger.debug("Processing Multi-RxMER Analysis CSV Report")
-        out: List[CSVManager] = []
+        out: list[CSVManager] = []
         model = self.to_model()
 
         if self.analysis_type == MultiRxMerAnalysisType.MIN_AVG_MAX:
@@ -559,13 +559,13 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
         return out
 
-    def create_matplot(self, **kwargs) -> List[MatplotManager]:
+    def create_matplot(self, **kwargs) -> list[MatplotManager]:
         """
         Build MatPlot PNG outputs for supported analysis types.
         Currently implemented for MIN_AVG_MAX only.
         """
         self.logger.debug("Processing Multi-RxMER Analysis MatPlot Report")
-        out: List[MatplotManager] = []
+        out: list[MatplotManager] = []
         model = self.to_model()
 
         if self.analysis_type == MultiRxMerAnalysisType.MIN_AVG_MAX:
@@ -709,7 +709,7 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
     def _parse_rxmer_heatmap_series(self):
         pass
 
-    def _build_frequencies(self, model: Union[CmDsOfdmRxMerModel, FrequencySeriesHz, None]) -> FrequencySeriesHz:
+    def _build_frequencies(self, model: CmDsOfdmRxMerModel | FrequencySeriesHz | None) -> FrequencySeriesHz:
         """
         Build absolute subcarrier center frequencies (Hz) for the RxMER series.
         """

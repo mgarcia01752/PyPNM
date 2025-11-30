@@ -7,7 +7,8 @@ import logging
 import tarfile
 import zipfile
 from pathlib import Path
-from typing import Dict, Iterable, List, Literal, Optional
+from typing import Dict, List, Literal, Optional
+from collections.abc import Iterable
 
 from pypnm.lib.types import PathLike
 
@@ -19,8 +20,8 @@ TarFormatKey            = Literal["tar", "gztar", "bztar", "xztar"]
 ArchiveFormatKey        = Literal["zip"] | TarFormatKey
 ArchiveMemberName       = str
 ArchiveMemberIterable   = Iterable[ArchiveMemberName]
-ZipCompressionMap       = Dict[CompressionKey, int]
-TarModeMap              = Dict[TarFormatKey, str]
+ZipCompressionMap       = dict[CompressionKey, int]
+TarModeMap              = dict[TarFormatKey, str]
 
 
 class ArchiveManager:
@@ -62,7 +63,7 @@ class ArchiveManager:
     # Detection / Listing
     # ──────────────────────────────────────────────────────────────────────────
     @staticmethod
-    def detect_format(archive_path: PathLike) -> Optional[str]:
+    def detect_format(archive_path: PathLike) -> str | None:
         """
         Guess format from file suffix.
 
@@ -87,7 +88,7 @@ class ArchiveManager:
         return None
 
     @staticmethod
-    def list_contents(archive_path: PathLike, fmt: Optional[str] = None) -> List[str]:
+    def list_contents(archive_path: PathLike, fmt: str | None = None) -> list[str]:
         """
         Return member names in the archive.
 
@@ -123,9 +124,9 @@ class ArchiveManager:
         *,
         mode: Literal["w", "a"] = "w",
         compression: CompressionKey = "zipdeflated",
-        arcbase: Optional[PathLike] = None,
+        arcbase: PathLike | None = None,
         preserve_tree: bool = False,
-        arcname_map: Optional[Dict[PathLike, str]] = None,
+        arcname_map: dict[PathLike, str] | None = None,
         skip_missing: bool = True,
         remove_duplicate_files: bool = True,
     ) -> Path:
@@ -196,9 +197,9 @@ class ArchiveManager:
         archive_path: PathLike,
         *,
         fmt: TarFormatKey = "gztar",
-        arcbase: Optional[PathLike] = None,
+        arcbase: PathLike | None = None,
         preserve_tree: bool = False,
-        arcname_map: Optional[Dict[PathLike, str]] = None,
+        arcname_map: dict[PathLike, str] | None = None,
         skip_missing: bool = True,
         overwrite: bool = True,
     ) -> Path:
@@ -286,10 +287,10 @@ class ArchiveManager:
         archive_path: PathLike,
         dest_dir: PathLike,
         *,
-        fmt: Optional[ArchiveFormatKey] = None,
-        members: Optional[ArchiveMemberIterable] = None,
+        fmt: ArchiveFormatKey | None = None,
+        members: ArchiveMemberIterable | None = None,
         overwrite: bool = True,
-    ) -> List[Path]:
+    ) -> list[Path]:
         """
         Extract Archive Contents Into A Target Directory With Path Traversal Protection.
 
@@ -345,7 +346,7 @@ class ArchiveManager:
         if fmt is None:
             raise ValueError(f"Unsupported or undetected archive format for: {archive_path}")
 
-        extracted: List[Path] = []
+        extracted: list[Path] = []
 
         # ── ZIP ───────────────────────────────────────────────────────────────
         if fmt == "zip":
@@ -430,10 +431,10 @@ class ArchiveManager:
         raise ValueError(f"Unsupported or undetected archive format for: {archive_path}")
 
     @staticmethod
-    def __remove_duplicates(files: Iterable[PathLike]) -> List[Path]:
+    def __remove_duplicates(files: Iterable[PathLike]) -> list[Path]:
         """Ensure each path exists and appears only once (order preserved)."""
         seen: set[Path] = set()
-        out:  List[Path] = []
+        out:  list[Path] = []
         for f in files:
             p = Path(f)
             if not p.exists():

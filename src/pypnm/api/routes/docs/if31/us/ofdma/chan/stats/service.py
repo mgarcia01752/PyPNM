@@ -27,14 +27,14 @@ class UsOfdmChannelService:
                              inet=Inet(ip_address),
                              write_community = snmp_config.snmp_v2c.community)
 
-    async def get_ofdma_chan_entries(self) -> List[Dict]:
+    async def get_ofdma_chan_entries(self) -> list[dict]:
         """
         Retrieves and populates all OFDMA upstream channel entries.
 
         Returns:
             List[dict]: List of dictionaries with `index`, `channel_id`, and `entry` keys.
         """
-        entries: List[DocsIf31CmUsOfdmaChanEntry] = await self.cm.getDocsIf31CmUsOfdmaChanEntry()
+        entries: list[DocsIf31CmUsOfdmaChanEntry] = await self.cm.getDocsIf31CmUsOfdmaChanEntry()
 
         result = []
         for entry in entries:

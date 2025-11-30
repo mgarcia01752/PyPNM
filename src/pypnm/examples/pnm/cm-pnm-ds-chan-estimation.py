@@ -64,7 +64,7 @@ async def main():
                 continue
             break
 
-    results: List[dict] = []
+    results: list[dict] = []
 
     for entry in await cm.getDocsPnmCmOfdmChanEstCoefEntry():
         results.append(entry.model_dump())

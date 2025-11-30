@@ -36,7 +36,7 @@ class CmUsOfdmaPreEqService(CommonMeasureService):
     def __init__(
         self,
         cable_modem: CableModem,
-        tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
+        tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
         tftp_path: str = PnmConfigManager.get_tftp_path()
     ):
         super().__init__(

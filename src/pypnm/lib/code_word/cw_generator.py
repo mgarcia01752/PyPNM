@@ -21,7 +21,7 @@ class CodeWordGenerator:
       by an 8-bit LFSR with polynomial taps x^8 + x^6 + x^5 + x^4 + 1.
     """
 
-    PRBS = List[Number]
+    PRBS = list[Number]
 
     def __init__(self, *, seed: int = 0xA5, taps: int = 0b10110111) -> None:
         """
@@ -59,7 +59,7 @@ class CodeWordGenerator:
         # Local LFSR state so multiple calls to generate() are deterministic and independent
         state = self._seed
 
-        def lfsr_step(s: int) -> Tuple[int, int]:
+        def lfsr_step(s: int) -> tuple[int, int]:
             """One 8-bit LFSR step (right-shift). Returns (new_state, output_bit)."""
             out = s & 0x01  # LSB as the generated bit
             s >>= 1
@@ -110,7 +110,7 @@ class CodeWordGenerator:
         return out
 
     # ──────────────────────────── internals ────────────────────────────
-    def _lfsr_step(self, s: int) -> Tuple[int, int]:
+    def _lfsr_step(self, s: int) -> tuple[int, int]:
         """
         One 8-bit LFSR step using the configured taps.
         Returns (new_state, output_bit), where output_bit is the LSB of prior state.

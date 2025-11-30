@@ -6,7 +6,8 @@ from __future__ import annotations
 
 import logging
 from math import ceil, log2
-from typing import List, Literal, Optional, Sequence, Tuple, TypeAlias
+from typing import List, Literal, Optional, Tuple, TypeAlias
+from collections.abc import Sequence
 
 import numpy as np
 from numpy.typing import NDArray
@@ -68,8 +69,8 @@ class EchoPath(BaseModel):
 
 class TimeResponse(BaseModel):
     n_fft: int                  = Field(..., description="Size of IFFT used to compute h(t)")
-    time_axis_s: List[float]    = Field(..., description="Uniform time axis in seconds, length n_fft")
-    time_response: List[float]  = Field(..., description="Magnitude |h(t)| aligned per direct_at_zero")
+    time_axis_s: list[float]    = Field(..., description="Uniform time axis in seconds, length n_fft")
+    time_response: list[float]  = Field(..., description="Magnitude |h(t)| aligned per direct_at_zero")
 
 
 class EchoDetectorReport(BaseModel):
@@ -79,13 +80,13 @@ class EchoDetectorReport(BaseModel):
     velocity_factor: float                  = Field(..., description="Velocity factor used for distance conversion")
     prop_speed_mps: float                   = Field(..., description="Propagation speed v = c * VF (m/s)")
     direct_path: DirectPath                 = Field(..., description="Estimated direct-path parameters")
-    echoes: List[EchoPath]                  = Field(..., description="List of detected echo paths (may be empty)")
+    echoes: list[EchoPath]                  = Field(..., description="List of detected echo paths (may be empty)")
     threshold_frac: float                   = Field(..., description="Fraction of direct-path magnitude used as detection threshold")
     guard_bins: int                         = Field(..., description="Bins skipped immediately after direct path before echo search")
     min_separation_s: float                 = Field(..., description="Minimum separation enforced between accepted echo peaks (seconds)")
-    max_delay_s: Optional[float]            = Field(..., description="Maximum echo time considered (seconds), None → full span")
+    max_delay_s: float | None            = Field(..., description="Maximum echo time considered (seconds), None → full span")
     max_peaks: int                          = Field(..., description="Maximum number of echo peaks returned")
-    time_response: Optional[TimeResponse]   = Field(default=None, description="Optional time response output for plotting")
+    time_response: TimeResponse | None   = Field(default=None, description="Optional time response output for plotting")
 
 
 class EchoDetector:
@@ -106,9 +107,9 @@ class EchoDetector:
         self,
         freq_data: NDArrayF64 | NDArrayC128 | Sequence,
         subcarrier_spacing_hz: float,
-        n_fft: Optional[int] = None,
+        n_fft: int | None = None,
         cable_type: CableTypes = "RG6",
-        channel_id: Optional[ChannelId] = None,
+        channel_id: ChannelId | None = None,
     ) -> None:
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
         if subcarrier_spacing_hz <= 0.0:
@@ -166,7 +167,7 @@ class EchoDetector:
         window: WindowMode = "hann",
         direct_at_zero: bool = True,
         normalize_power: bool = True,
-        fs_time_hz: Optional[float] = None,
+        fs_time_hz: float | None = None,
     ) -> TimeResponse:
         """
         Compute the IFFT time response |h(t)| and return it for plotting.
@@ -207,18 +208,18 @@ class EchoDetector:
         self,
         threshold_frac: float = DEFAULT_THRESHOLD_FRAC,
         threshold_mode: ThresholdMode = "fractional",
-        threshold_db_down: Optional[float] = None,
+        threshold_db_down: float | None = None,
         guard_bins: int = DEFAULT_GUARD_BINS,
         min_separation_s: float = 0.0,
-        max_delay_s: Optional[float] = DEFAULT_MAX_DELAY_S,
+        max_delay_s: float | None = DEFAULT_MAX_DELAY_S,
         max_peaks: int = DEFAULT_MAX_PEAKS,
         include_time_response: bool = False,
         direct_at_zero: bool = True,
         window: WindowMode = "hann",
         normalize_power: bool = True,
         edge_guard_bins: int = DEFAULT_EDGE_GUARD_BINS,
-        fs_time_hz: Optional[float] = None,
-        min_detect_distance_ft: Optional[float] = 10.0,
+        fs_time_hz: float | None = None,
+        min_detect_distance_ft: float | None = 10.0,
     ) -> EchoDetectorReport:
         """
         Detect echo peaks via IFFT magnitude thresholding and greedy spacing.
@@ -314,7 +315,7 @@ class EchoDetector:
 
         # Candidate selection
         if i_stop <= start_idx:
-            candidates: List[int] = []
+            candidates: list[int] = []
         else:
             thr = thr_frac_resolved * direct_amp
             idx_range = np.arange(start_idx, i_stop, dtype=int)
@@ -326,7 +327,7 @@ class EchoDetector:
 
         # Greedy enforce spacing by amplitude
         candidates.sort(key=lambda i: float(mag[i]), reverse=True)
-        selected: List[int] = []
+        selected: list[int] = []
         for i in candidates:
             if len(selected) >= max_peaks:
                 break
@@ -339,7 +340,7 @@ class EchoDetector:
         time_axis = np.arange(n_fft, dtype=float) / fs_time
         v = self._v
 
-        def _mk_path(i: int, amp: float) -> Tuple[int, float, float, float, float]:
+        def _mk_path(i: int, amp: float) -> tuple[int, float, float, float, float]:
             t = time_axis[i]
             d_m = 0.5 * v * t
             return i, t, amp, d_m, d_m * FEET_PER_METER
@@ -347,13 +348,13 @@ class EchoDetector:
         di, dt, da, ddm, ddf = _mk_path(i0, direct_amp)
         direct = DirectPath(bin_index=di, time_s=dt, amplitude=da, distance_m=ddm, distance_ft=ddf)
 
-        echoes: List[EchoPath] = []
+        echoes: list[EchoPath] = []
         for i in selected:
             i_, t, a, dm, df = _mk_path(i, float(mag[i]))
             echoes.append(EchoPath(bin_index=i_, time_s=t, amplitude=a, distance_m=dm, distance_ft=df))
         self.logger.debug("Echo count: %d", len(echoes))
 
-        tr: Optional[TimeResponse] = None
+        tr: TimeResponse | None = None
         if include_time_response:
             tr = TimeResponse(n_fft=n_fft, time_axis_s=time_axis.tolist(), time_response=mag.astype(float).tolist())
             self.logger.debug("Time response included in report")
@@ -412,7 +413,7 @@ class EchoDetector:
         window: WindowMode = "hann",
         direct_at_zero: bool = True,
         normalize_power: bool = True,
-        fs_time_hz: Optional[float] = None,
+        fs_time_hz: float | None = None,
     ) -> IfftTimeResponse:
         """
         Compute the complex IFFT time series h(t) for external plotting.
@@ -489,7 +490,7 @@ class EchoDetector:
         window: WindowMode,
         direct_at_zero: bool,
         normalize_power: bool,
-    ) -> Tuple[NDArrayF64, int]:
+    ) -> tuple[NDArrayF64, int]:
         """Compute |h(t)| magnitude and return (mag, direct_index_before_roll_or_zero)."""
         Hw = self._apply_window(self._H_in, window)
         self.logger.debug("Window applied: mode=%s", window)
@@ -523,7 +524,7 @@ class EchoDetector:
         return int(np.ceil(t_min * fs))
 
     @staticmethod
-    def _coerce_freq_data(freq_data: NDArrayF64 | NDArrayC128 | Sequence) -> Tuple[NDArrayC128, int]:
+    def _coerce_freq_data(freq_data: NDArrayF64 | NDArrayC128 | Sequence) -> tuple[NDArrayC128, int]:
         """Coerce input to a single complex H(f) of shape (N,) and return (H, snapshots)."""
         arr = np.asarray(freq_data)
         if arr.ndim == 1:

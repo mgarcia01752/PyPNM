@@ -20,9 +20,9 @@ MultiPnmCollectionObject = Union[
 ]
 
 MultiPnmCollectionType = Union[
-    Type[CmDsOfdmRxMer],
-    Type[CmDsOfdmModulationProfile],
-    Type[CmDsOfdmFecSummary],
+    type[CmDsOfdmRxMer],
+    type[CmDsOfdmModulationProfile],
+    type[CmDsOfdmFecSummary],
 ]
 
 
@@ -34,7 +34,7 @@ class MultiPnmCollection(ABC):
     at (channel_id, capture_time). Provides common add/get/list behavior.
     """
 
-    def __init__(self, collection_type: Union[MultiPnmCollectionType, Tuple[MultiPnmCollectionType, ...]]) -> None:
+    def __init__(self, collection_type: MultiPnmCollectionType | tuple[MultiPnmCollectionType, ...]) -> None:
         """
         Initialize the collection with the allowed capture object type(s).
 
@@ -47,10 +47,10 @@ class MultiPnmCollection(ABC):
         """
         self.logger = logging.getLogger(self.__class__.__name__)
         self._mac_address: MacAddressStr = MacAddress.null()
-        self._store: Dict[ChannelId, Dict[CaptureTime, MultiPnmCollectionObject]] = {}
+        self._store: dict[ChannelId, dict[CaptureTime, MultiPnmCollectionObject]] = {}
 
         if isinstance(collection_type, tuple):
-            self._collection_types: Tuple[MultiPnmCollectionType, ...] = collection_type
+            self._collection_types: tuple[MultiPnmCollectionType, ...] = collection_type
         else:
             self._collection_types = (collection_type,)
 
@@ -106,13 +106,13 @@ class MultiPnmCollection(ABC):
 
         self.__update_mac(cast(MacAddressStr, m.mac_address))
 
-    def get_channel_ids(self) -> List[ChannelId]:
+    def get_channel_ids(self) -> list[ChannelId]:
         """
         Return all channel IDs currently present in the collection, sorted ascending.
         """
         return sorted(self._store.keys())
 
-    def length(self, channel_id: Optional[ChannelId] = None) -> int:
+    def length(self, channel_id: ChannelId | None = None) -> int:
         """
         Return the number of stored captures.
 
@@ -133,7 +133,7 @@ class MultiPnmCollection(ABC):
             return len(self._store[channel_id])
         return sum(len(captures) for captures in self._store.values())
 
-    def get_capture_times(self, channel_id: ChannelId) -> List[CaptureTime]:
+    def get_capture_times(self, channel_id: ChannelId) -> list[CaptureTime]:
         """
         Return all capture timestamps for a given channel, sorted ascending.
 
@@ -152,11 +152,11 @@ class MultiPnmCollection(ABC):
         return sorted(self._store[channel_id].keys())
 
     @overload
-    def get(self, channel_id: ChannelId) -> List[Tuple[CaptureTime, MultiPnmCollectionObject]]: ...
+    def get(self, channel_id: ChannelId) -> list[tuple[CaptureTime, MultiPnmCollectionObject]]: ...
     @overload
-    def get(self, channel_id: ChannelId, capture_time: CaptureTime) -> Optional[MultiPnmCollectionObject]: ...
+    def get(self, channel_id: ChannelId, capture_time: CaptureTime) -> MultiPnmCollectionObject | None: ...
 
-    def get(self, channel_id: ChannelId, capture_time: Optional[CaptureTime] = None):
+    def get(self, channel_id: ChannelId, capture_time: CaptureTime | None = None):
         """
         Retrieve capture data for a channel.
 
@@ -239,5 +239,5 @@ class MultiPnmCollection(ABC):
             If the `timestamp` list is empty.
         """
         model = fec_summary.to_model()
-        timestamps:List[TimeStamp] = model.fec_summary_data[0].codeword_entries.timestamp
+        timestamps:list[TimeStamp] = model.fec_summary_data[0].codeword_entries.timestamp
         return min(timestamps)

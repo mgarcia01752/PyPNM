@@ -43,18 +43,18 @@ class FileProcessor:
                 return data
         except FileNotFoundError:
             self.logger.error(f"File not found: {self.filepath}")
-        except IOError as e:
+        except OSError as e:
             self.logger.error(f"Error reading file {self.filepath}: {e}")
         return b""
 
     def write_file(
         self,
-        data: Union[bytes, str, dict],
+        data: bytes | str | dict,
         *,
         append: bool = False,
-        archive_path: Optional[PathLike] = None,
+        archive_path: PathLike | None = None,
         archive_format: Literal["zip", "gztar", "bztar", "xztar", "tar"] = "zip",
-        arcname: Optional[str] = None,
+        arcname: str | None = None,
     ) -> bool:
         """
         Writes data to the file. Optionally archives the written file.
@@ -104,14 +104,14 @@ class FileProcessor:
     # ──────────────────────────────────────────────────────────────────────
     def write_csv(
         self,
-        data: List[Union[Dict[str, Any], List[Any]]],
-        headers: Optional[List[str]] = None,
+        data: list[dict[str, Any] | list[Any]],
+        headers: list[str] | None = None,
         *,
         append: bool = False,
-        filepath: Optional[PathLike] = None,
-        archive_path: Optional[PathLike] = None,
+        filepath: PathLike | None = None,
+        archive_path: PathLike | None = None,
         archive_format: Literal["zip", "gztar", "bztar", "xztar", "tar"] = "zip",
-        arcname: Optional[str] = None,
+        arcname: str | None = None,
     ) -> bool:
         """
         Writes tabular data to a CSV file (dict rows or list rows). Optionally archives it.
@@ -175,8 +175,8 @@ class FileProcessor:
         *,
         archive_path: PathLike,
         archive_format: Literal["zip", "gztar", "bztar", "xztar", "tar"] = "zip",
-        arcname: Optional[str] = None,
-        file_to_archive: Optional[PathLike] = None,
+        arcname: str | None = None,
+        file_to_archive: PathLike | None = None,
         overwrite: bool = False,
     ) -> Path:
         """
@@ -256,8 +256,8 @@ class FileProcessor:
         self,
         *,
         bytes_per_line: int = DEFAULT_HEXDUMP_BYTES_PER_LINE,
-        limit_bytes: Optional[int] = None,
-    ) -> List[str]:
+        limit_bytes: int | None = None,
+    ) -> list[str]:
         """
         Generate a hexdump view of the file contents as text lines.
 
@@ -289,7 +289,7 @@ class FileProcessor:
         if limit_bytes is not None and limit_bytes > 0:
             data = data[:limit_bytes]
 
-        lines: List[str] = []
+        lines: list[str] = []
         offset: int      = 0
         total_len: int   = len(data)
 

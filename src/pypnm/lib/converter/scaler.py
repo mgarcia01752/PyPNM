@@ -4,7 +4,8 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Sequence, Union
+from typing import List, Union
+from collections.abc import Sequence
 
 import numpy as np
 from numpy.typing import NDArray
@@ -92,7 +93,7 @@ class AutoUnitScaler:
         return PerValueRescaled(vals, scales, units)
 
     @staticmethod
-    def format_units(pvr: PerValueRescaled, fmt: str = ".6g") -> List[str]:
+    def format_units(pvr: PerValueRescaled, fmt: str = ".6g") -> list[str]:
         return [f"{v:{fmt}} {u}" for v, u in zip(pvr.values.tolist(), pvr.units.tolist(), strict=False)]
 
 

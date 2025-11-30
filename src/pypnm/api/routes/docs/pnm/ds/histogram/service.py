@@ -42,7 +42,7 @@ class CmDsHistogramService(CommonMeasureService):
         self,
         cable_modem: CableModem,
         sample_duration: int = 10,
-        tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
+        tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
         tftp_path: str = PnmConfigManager.get_tftp_path()
     ):
         """

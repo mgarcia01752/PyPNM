@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, ClassVar, List, Optional, Union, cast
+from typing import Any, ClassVar, List, Optional, Union, cast
+from collections.abc import Callable
 
 from pydantic import BaseModel
 
@@ -27,13 +28,13 @@ class DocsPnmCmDsOfdmModProfEntry(BaseModel):
     DEBUG: ClassVar[bool] = False
 
     @classmethod
-    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsPnmCmDsOfdmModProfEntry":
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsPnmCmDsOfdmModProfEntry:
         log = logging.getLogger(cls.__name__)
 
         async def fetch(
             sym: str,
-            caster: Optional[Callable[[Any], Any]] = None,
-        ) -> Optional[Union[str, int, float, bool]]:
+            caster: Callable[[Any], Any] | None = None,
+        ) -> str | int | float | bool | None:
             try:
                 res = await snmp.get(f"{sym}.{index}")
                 raw = Snmp_v2c.get_result_value(res)
@@ -76,10 +77,10 @@ class DocsPnmCmDsOfdmModProfEntry(BaseModel):
         return cls(index=index, channel_id=index, entry=entry)
 
     @classmethod
-    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsPnmCmDsOfdmModProfEntry"]:
+    async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsPnmCmDsOfdmModProfEntry]:
         if not indices:
             return []
-        out: List[DocsPnmCmDsOfdmModProfEntry] = []
+        out: list[DocsPnmCmDsOfdmModProfEntry] = []
         for idx in indices:
             out.append(await cls.from_snmp(idx, snmp))
         return out

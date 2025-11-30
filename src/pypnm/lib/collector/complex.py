@@ -33,7 +33,7 @@ class ComplexCollector:
         """Retrieve all stored complex numbers as a list of (real, imag) tuples."""
         return list(self._values)
 
-    def as_parts(self) -> Tuple[List[float], List[float]]:
+    def as_parts(self) -> tuple[list[float], list[float]]:
         """
         Retrieve real and imaginary parts separately.
 

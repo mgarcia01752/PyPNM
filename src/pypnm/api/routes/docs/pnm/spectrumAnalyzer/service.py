@@ -62,7 +62,7 @@ class CmSpectrumAnalysisService(CommonMeasureService):
 
     def __init__(self,
         cable_modem: CableModem,
-        tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
+        tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
         tftp_path: str = PnmConfigManager.get_tftp_path(),*,
         capture_parameters: SpecAnCapturePara,):
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -119,7 +119,7 @@ class OfdmChanSpecAnalyzerService(CommonMeasureService):
     def __init__(
         self,
         cable_modem: CableModem,
-        tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
+        tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
         tftp_path: str = PnmConfigManager.get_tftp_path(),
     ):
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -153,7 +153,7 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
     """
 
     def __init__(self, cable_modem: CableModem,
-                 _tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
+                 _tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
                  number_of_averages: int = 2,
                  spectrum_retrieval_type:SpectrumRetrievalType = SpectrumRetrievalType.FILE,):
         super().__init__(cable_modem)
@@ -163,7 +163,7 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
         self._pnm_test_type = DocsPnmCmCtlTest.SPECTRUM_ANALYZER
         self.log_prefix = f"DsOfdmChannelSpectrumAnalyzer - CM {self._cm.get_mac_address}"
 
-    async def start(self, capture_per_channel: bool = False) -> List[Tuple[ChannelId, MessageResponse]]:
+    async def start(self, capture_per_channel: bool = False) -> list[tuple[ChannelId, MessageResponse]]:
         """
         Run Spectrum Captures Across All OFDM Channels
 
@@ -199,8 +199,8 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
           capture here; the capture aligns to the *first* and *last* frequencies
           (start/end) as provided by the OFDM channel range.
         """
-        channel_specCapture:List[Tuple[ChannelId, SpecAnCapturePara]] = []
-        out:List[Tuple[ChannelId, MessageResponse]] = []
+        channel_specCapture:list[tuple[ChannelId, SpecAnCapturePara]] = []
+        out:list[tuple[ChannelId, MessageResponse]] = []
 
         # Compute the bandwidth mapping for all OFDM channels
         bw_by_channel: OfdmSpectrumBwLut = await self.calculate_channel_spectrum_bandwidth()
@@ -267,7 +267,7 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
         """
         out: CommonChannelSpectumBwLut = {}
 
-        channels: List[DocsIf31CmDsOfdmChanChannelEntry] = await self._cm.getDocsIf31CmDsOfdmChanEntry()
+        channels: list[DocsIf31CmDsOfdmChanChannelEntry] = await self._cm.getDocsIf31CmDsOfdmChanEntry()
         if not channels:
             self.logger.warning("No downstream OFDM channels returned from cable modem.")
             return out
@@ -355,7 +355,7 @@ class ScQamChanSpecAnalyzerService(CommonMeasureService):
     def __init__(
         self,
         cable_modem: CableModem,
-        tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
+        tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
         tftp_path: str = PnmConfigManager.get_tftp_path(),
     ):
         """
@@ -397,7 +397,7 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
     """
 
     def __init__(self, cable_modem: CableModem,
-                 tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
+                 tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
                  number_of_averages: int = 1,
                  spectrum_retrieval_type:SpectrumRetrievalType = SpectrumRetrievalType.FILE,):
         super().__init__(cable_modem)
@@ -409,7 +409,7 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
         self.log_prefix = f"DsScQamChannelSpectrumAnalyzer - CM {self._cm.get_mac_address}"
         self._test_mode = False
 
-    async def start(self, capture_per_channel: bool = False) -> List[Tuple[ChannelId, MessageResponse]]:
+    async def start(self, capture_per_channel: bool = False) -> list[tuple[ChannelId, MessageResponse]]:
         """
         Run Spectrum Captures Across All SC-QAM Channels
 
@@ -438,8 +438,8 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
         list[tuple[ChannelId, MessageResponse]]
             Per-channel results from the spectrum analyzer run.
         """
-        channel_spec_capture: List[Tuple[ChannelId, SpecAnCapturePara]] = []
-        out: List[Tuple[ChannelId, MessageResponse]] = []
+        channel_spec_capture: list[tuple[ChannelId, SpecAnCapturePara]] = []
+        out: list[tuple[ChannelId, MessageResponse]] = []
 
         bw_by_channel: ScQamSpectrumBwLut = await self.calculate_channel_spectrum_bandwidth()
 
@@ -501,7 +501,7 @@ class DsScQamChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
         """
         out: CommonChannelSpectumBwLut = {}
 
-        channels: List[DocsIfDownstreamChannelEntry] = await self._cm.getDocsIfDownstreamChannel()
+        channels: list[DocsIfDownstreamChannelEntry] = await self._cm.getDocsIfDownstreamChannel()
         if not channels:
             self.logger.warning("No downstream SC-QAM channels returned from cable modem.")
             return out

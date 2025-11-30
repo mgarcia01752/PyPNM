@@ -9,7 +9,7 @@ from struct import calcsize, unpack
 from typing import TYPE_CHECKING, Annotated, Any, Dict, List, Union, cast
 
 from pydantic import BaseModel, ConfigDict, Field
-from typing_extensions import Literal
+from typing import Literal
 
 from pypnm.lib.constants import KHZ
 from pypnm.lib.types import FrequencySeriesHz, ProfileId
@@ -56,14 +56,14 @@ class SkipModulationProfileSchemaModel(BaseModel):
     num_subcarriers: int              = Field(..., ge=0, description="Number of affected subcarriers")
 
 SchemeModel = Annotated[
-    Union[RangeModulationProfileSchemaModel, SkipModulationProfileSchemaModel],
+    RangeModulationProfileSchemaModel | SkipModulationProfileSchemaModel,
     Field(discriminator="schema_type")]
 
 class ModulationProfileModel(BaseModel):
     """One OFDM modulation profile (profile_id + list of scheme chunks)."""
     model_config = ConfigDict(extra="ignore")
     profile_id: ProfileId       = Field(..., ge=0, description="Profile identifier")
-    schemes: List[SchemeModel]  = Field(default_factory=list, description="Schema chunks composing the profile")
+    schemes: list[SchemeModel]  = Field(default_factory=list, description="Schema chunks composing the profile")
 
 
 class CmDsOfdmModulationProfile(PnmHeader):
@@ -144,7 +144,7 @@ class CmDsOfdmModulationProfile(PnmHeader):
             profiles                        =   profiles,
         )
 
-    def _parse_profiles(self, blob: bytes) -> List[ModulationProfileModel]:
+    def _parse_profiles(self, blob: bytes) -> list[ModulationProfileModel]:
         """
         Parse a profile section from the binary blob.
 
@@ -156,7 +156,7 @@ class CmDsOfdmModulationProfile(PnmHeader):
             * schema 1 (skip):  [1:1][main_order:1][skip_order:1][num_subcarriers:2]
         """
         offset = 0
-        results: List[ModulationProfileModel] = []
+        results: list[ModulationProfileModel] = []
 
         # Discover each [profile_id, payload]
         while offset < len(blob):
@@ -175,7 +175,7 @@ class CmDsOfdmModulationProfile(PnmHeader):
 
             # Decode payload
             pos = 0
-            schemes: List[SchemeModel] = []
+            schemes: list[SchemeModel] = []
 
             while pos < len(payload):
                 try:
@@ -244,7 +244,7 @@ class CmDsOfdmModulationProfile(PnmHeader):
         f_zero = int(self._model.subcarrier_zero_frequency)
         first_idx = int(self._model.first_active_subcarrier_index)
         #TODO: Need to calculate the number of subcarries using Profile-A
-        n = int(0)
+        n = 0
 
         if spacing <= 0 or n <= 0:
             return []
@@ -270,7 +270,7 @@ class CmDsOfdmModulationProfile(PnmHeader):
         """
         return self._model
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return the parsed modulation profile as a Python dictionary.
 

@@ -43,7 +43,7 @@ class DbLinearConverter:
     @staticmethod
     def linear_to_db(
         values: FloatSeries,
-        ref: Optional[float] = None,
+        ref: float | None = None,
         eps: float = 1e-20,
     ) -> FloatSeries:
         """
@@ -100,7 +100,7 @@ class DbLinearConverter:
     @staticmethod
     def complex_to_db(
         values: ComplexArray,
-        ref: Optional[Union[float, Literal["max"]]] = None,
+        ref: float | Literal["max"] | None = None,
         eps: float = 1e-20,
     ) -> FloatSeries:
         """

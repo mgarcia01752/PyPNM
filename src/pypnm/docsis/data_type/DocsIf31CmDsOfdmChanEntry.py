@@ -3,7 +3,8 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 import logging
-from typing import Callable, List, Optional, Union
+from typing import List, Optional, Union
+from collections.abc import Callable
 
 from pydantic import BaseModel
 
@@ -22,21 +23,21 @@ class DocsIf31CmDsOfdmChanEntry(BaseModel):
     - Presence of fields depends on device/MIB support.
     """
     docsIf31CmDsOfdmChanChannelId:                ChannelId = INVALID_CHANNEL_ID
-    docsIf31CmDsOfdmChanChanIndicator:            Optional[int] = None
-    docsIf31CmDsOfdmChanSubcarrierZeroFreq:       Optional[FrequencyHz] = None
-    docsIf31CmDsOfdmChanFirstActiveSubcarrierNum: Optional[int] = None
-    docsIf31CmDsOfdmChanLastActiveSubcarrierNum:  Optional[int] = None
-    docsIf31CmDsOfdmChanNumActiveSubcarriers:     Optional[int] = None
-    docsIf31CmDsOfdmChanSubcarrierSpacing:        Optional[int] = None
-    docsIf31CmDsOfdmChanCyclicPrefix:             Optional[int] = None
-    docsIf31CmDsOfdmChanRollOffPeriod:            Optional[int] = None
-    docsIf31CmDsOfdmChanPlcFreq:                  Optional[FrequencyHz] = None
-    docsIf31CmDsOfdmChanNumPilots:                Optional[int] = None
-    docsIf31CmDsOfdmChanTimeInterleaverDepth:     Optional[int] = None
-    docsIf31CmDsOfdmChanPlcTotalCodewords:        Optional[int] = None
-    docsIf31CmDsOfdmChanPlcUnreliableCodewords:   Optional[int] = None
-    docsIf31CmDsOfdmChanNcpTotalFields:           Optional[int] = None
-    docsIf31CmDsOfdmChanNcpFieldCrcFailures:      Optional[int] = None
+    docsIf31CmDsOfdmChanChanIndicator:            int | None = None
+    docsIf31CmDsOfdmChanSubcarrierZeroFreq:       FrequencyHz | None = None
+    docsIf31CmDsOfdmChanFirstActiveSubcarrierNum: int | None = None
+    docsIf31CmDsOfdmChanLastActiveSubcarrierNum:  int | None = None
+    docsIf31CmDsOfdmChanNumActiveSubcarriers:     int | None = None
+    docsIf31CmDsOfdmChanSubcarrierSpacing:        int | None = None
+    docsIf31CmDsOfdmChanCyclicPrefix:             int | None = None
+    docsIf31CmDsOfdmChanRollOffPeriod:            int | None = None
+    docsIf31CmDsOfdmChanPlcFreq:                  FrequencyHz | None = None
+    docsIf31CmDsOfdmChanNumPilots:                int | None = None
+    docsIf31CmDsOfdmChanTimeInterleaverDepth:     int | None = None
+    docsIf31CmDsOfdmChanPlcTotalCodewords:        int | None = None
+    docsIf31CmDsOfdmChanPlcUnreliableCodewords:   int | None = None
+    docsIf31CmDsOfdmChanNcpTotalFields:           int | None = None
+    docsIf31CmDsOfdmChanNcpFieldCrcFailures:      int | None = None
 
 
 class DocsIf31CmDsOfdmChanChannelEntry(BaseModel):
@@ -57,16 +58,16 @@ class DocsIf31CmDsOfdmChanChannelEntry(BaseModel):
     entry: DocsIf31CmDsOfdmChanEntry
 
     @classmethod
-    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsIf31CmDsOfdmChanChannelEntry":
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsIf31CmDsOfdmChanChannelEntry:
         logger = logging.getLogger(cls.__name__)
 
-        def safe_cast(value: str, cast: Callable) -> Union[int, float, str, bool, None]:
+        def safe_cast(value: str, cast: Callable) -> int | float | str | bool | None:
             try:
                 return cast(value)
             except Exception:
                 return None
 
-        async def fetch(field: str, cast: Optional[Callable] = None):
+        async def fetch(field: str, cast: Callable | None = None):
             try:
                 raw = await snmp.get(f"{field}.{index}")
                 val = Snmp_v2c.get_result_value(raw)
@@ -116,9 +117,9 @@ class DocsIf31CmDsOfdmChanChannelEntry(BaseModel):
         )
 
     @classmethod
-    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsIf31CmDsOfdmChanChannelEntry"]:
+    async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsIf31CmDsOfdmChanChannelEntry]:
         logger = logging.getLogger(cls.__name__)
-        results: List[DocsIf31CmDsOfdmChanChannelEntry] = []
+        results: list[DocsIf31CmDsOfdmChanChannelEntry] = []
 
         if not indices:
             logger.warning("No OFDM channel indices provided.")
@@ -134,7 +135,7 @@ class DocsIf31CmDsOfdmChanChannelEntry(BaseModel):
 
     # NEW: entries-only helper to accommodate your existing method signature.
     @classmethod
-    async def get_entries(cls, snmp: Snmp_v2c, indices: List[int]) -> List[DocsIf31CmDsOfdmChanEntry]:
+    async def get_entries(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsIf31CmDsOfdmChanEntry]:
         """
         Convenience wrapper that returns only the `DocsIf31CmDsOfdmChanEntry`
         objects (no channel wrapper), preserving a return type of

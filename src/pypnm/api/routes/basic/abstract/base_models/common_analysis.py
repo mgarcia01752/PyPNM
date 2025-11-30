@@ -31,6 +31,6 @@ class CommonAnalysis(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
     channel_id: ChannelId                 = Field(..., description="Channel ID")
-    raw_x: Union[FloatSeries, IntSeries]  = Field(default=[], description="Typically Frequency or index")
-    raw_y: Union[FloatSeries, IntSeries]  = Field(default=[], description="Typically Magnitude (dB/sec)")
+    raw_x: FloatSeries | IntSeries  = Field(default=[], description="Typically Frequency or index")
+    raw_y: FloatSeries | IntSeries  = Field(default=[], description="Typically Magnitude (dB/sec)")
     raw_complex: ComplexArray             = Field(default=[], description="Optional complex series aligned to raw_x/raw_y")

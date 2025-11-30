@@ -36,7 +36,7 @@ async def main():
 
     logging.info(f"Connected to: {await cm.getSysDescr()}")
 
-    objs:List[DocsFddCmFddSystemCfgState] = await cm.getDocsFddCmFddBandEdgeCapabilities()
+    objs:list[DocsFddCmFddSystemCfgState] = await cm.getDocsFddCmFddBandEdgeCapabilities()
 
     for obj in objs:
         logging.info(obj.to_dict())

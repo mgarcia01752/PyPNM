@@ -48,7 +48,7 @@ class CmDsOfdmConstDisplayService(CommonMeasureService):
     def __init__(self, cable_modem: CableModem,
                  modulation_order_offset: int = ConstelDisplayConst.MODULATION_OFFSET.value,
                  number_sample_symbol:int = ConstelDisplayConst.NUM_SAMPLE_SYMBOL.value,
-                 tftp_servers: Tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
+                 tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
                  tftp_path: str = PnmConfigManager.get_tftp_path()):
         super().__init__(DocsPnmCmCtlTest.DS_CONSTELLATION_DISP,
                         cable_modem,

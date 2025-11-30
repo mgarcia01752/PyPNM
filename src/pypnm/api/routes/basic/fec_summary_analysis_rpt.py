@@ -5,7 +5,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Mapping, Sequence, Tuple, cast
+from typing import Any, Dict, List, Tuple, cast
+from collections.abc import Mapping, Sequence
 
 from pydantic import Field
 
@@ -59,10 +60,10 @@ class FecSummaryAnalysisReport(AnalysisReport):
             analysis_matplot_config = AnalysisRptMatplotConfig()
         super().__init__(analysis, analysis_matplot_config)
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
-        self._results: Dict[int, FecSummaryAnalysisRptModel] = {}
+        self._results: dict[int, FecSummaryAnalysisRptModel] = {}
 
     @staticmethod
-    def _as_seq(x: Any) -> List[Any]:
+    def _as_seq(x: Any) -> list[Any]:
         """Convert input to list; None→[], tuples/arrays→list, scalars→[x]."""
         if x is None:
             return []
@@ -93,7 +94,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
 
     def _resolve_codewords(
         self, profile_entry: Any
-    ) -> Tuple[List[Any], List[int], List[int], List[int], Dict[str, int]]:
+    ) -> tuple[list[Any], list[int], list[int], list[int], dict[str, int]]:
         """
         Resolve (timestamps, total, corrected, uncorrected) arrays from schema variants.
 
@@ -103,7 +104,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
             Timestamps, totals, corrected, uncorrected, and a small shape dict for logging.
         """
         cw = self._get(profile_entry, "codewords", "codeword_entries", "entries", "codeword")
-        shape: Dict[str, int] = {}
+        shape: dict[str, int] = {}
         candidates = [cw, self._get(cw, "values"), self._get(cw, "data")]
 
         ts = tc = cc = uc = []
@@ -138,14 +139,14 @@ class FecSummaryAnalysisReport(AnalysisReport):
 
     def _log_preview(self, ch: ChannelId, profile: str, ts: Sequence[Any], tc: Sequence[int], cc: Sequence[int], uc: Sequence[int]) -> None:
         """Log a short preview of the first few points for debugging."""
-        def head(seq: Sequence[Any], k: int = 5) -> List[Any]:
+        def head(seq: Sequence[Any], k: int = 5) -> list[Any]:
             return list(seq[:k])
         self.logger.debug(
             "Preview ch=%s prof=%s ts[:5]=%s total[:5]=%s corr[:5]=%s unc[:5]=%s",
             int(ch), profile, head(ts), head(tc), head(cc), head(uc),
         )
 
-    def create_csv(self, **kwargs: Any) -> List[CSVManager]:
+    def create_csv(self, **kwargs: Any) -> list[CSVManager]:
         """
         Produce CSV files with per-timestamp codeword counters for each channel/profile.
 
@@ -154,7 +155,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
         List[CSVManager]
             Managers pointing at the generated CSV files.
         """
-        mgr_out: List[CSVManager] = []
+        mgr_out: list[CSVManager] = []
         for common_model in self.get_common_analysis_model():
             c_model = cast(FecSummaryAnalysisRptModel, common_model)
             channel_id: int = int(c_model.channel_id)
@@ -184,7 +185,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
                     self.logger.exception("Failed to create CSV for channel %s (profile %s): %s", channel_id, profile, exc)
         return mgr_out
 
-    def create_matplot(self, **kwargs: Any) -> List[MatplotManager]:
+    def create_matplot(self, **kwargs: Any) -> list[MatplotManager]:
         """
         Produce PNG plots (Total/Corrected/Uncorrected) for each channel/profile.
 
@@ -198,7 +199,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
         List[MatplotManager]
             Managers used to generate and reference plot outputs.
         """
-        mgr_out: List[MatplotManager] = []
+        mgr_out: list[MatplotManager] = []
         for common_model in self.get_common_analysis_model():
             c_model = cast(FecSummaryAnalysisRptModel, common_model)
             ch_id: ChannelId = ChannelId(c_model.channel_id)
@@ -253,7 +254,7 @@ class FecSummaryAnalysisReport(AnalysisReport):
         --------
         The analysis model list is `List[OfdmFecSummaryAnalysisModel]`.
         """
-        models: List[OfdmFecSummaryAnalysisModel] = cast(List[OfdmFecSummaryAnalysisModel], self.get_analysis_model())
+        models: list[OfdmFecSummaryAnalysisModel] = cast(list[OfdmFecSummaryAnalysisModel], self.get_analysis_model())
         for model in models:
             channel_id: int = int(model.channel_id)
             a_model = FecSummaryAnalysisRptModel(channel_id=channel_id, parameters=model)

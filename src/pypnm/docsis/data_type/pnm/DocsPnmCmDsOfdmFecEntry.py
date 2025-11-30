@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, ClassVar, List, Optional, Union, cast
+from typing import Any, ClassVar, List, Optional, Union, cast
+from collections.abc import Callable
 
 from pydantic import BaseModel, Field
 
@@ -27,7 +28,7 @@ class DocsPnmCmDsOfdmFecEntry(BaseModel):
     DEBUG: ClassVar[bool] = False
 
     @classmethod
-    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> "DocsPnmCmDsOfdmFecEntry":
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsPnmCmDsOfdmFecEntry:
         """
         Fetch a single DOCSIS Downstream OFDM FEC Summary control/status row via SNMP.
 
@@ -50,15 +51,15 @@ class DocsPnmCmDsOfdmFecEntry(BaseModel):
         """
         log = logging.getLogger(cls.__name__)
 
-        async def fetch(sym: str, caster: Optional[Callable[[Any], Any]] = None
-                        ) -> Optional[Union[str, int, float, bool]]:
+        async def fetch(sym: str, caster: Callable[[Any], Any] | None = None
+                        ) -> str | int | float | bool | None:
             try:
                 res = await snmp.get(f"{sym}.{index}")
                 raw = Snmp_v2c.get_result_value(res)
                 val = caster(raw) if (caster and raw is not None) else raw
                 if cls.DEBUG and log.isEnabledFor(logging.DEBUG):
                     log.debug("idx=%s %s raw=%r cast=%r", index, sym, raw, val)
-                return cast(Optional[Union[str, int, float, bool]], val)
+                return cast(str | int | float | bool | None, val)
             except Exception as e:
                 if cls.DEBUG and log.isEnabledFor(logging.DEBUG):
                     log.debug("idx=%s %s error=%r", index, sym, e)
@@ -110,7 +111,7 @@ class DocsPnmCmDsOfdmFecEntry(BaseModel):
         return cls(index=index, entry=entry)
 
     @classmethod
-    async def get(cls, snmp: Snmp_v2c, indices: List[int]) -> List["DocsPnmCmDsOfdmFecEntry"]:
+    async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsPnmCmDsOfdmFecEntry]:
         """
         Batch fetch multiple OFDM FEC Summary rows.
 
@@ -128,7 +129,7 @@ class DocsPnmCmDsOfdmFecEntry(BaseModel):
         """
         if not indices:
             return []
-        out: List[DocsPnmCmDsOfdmFecEntry] = []
+        out: list[DocsPnmCmDsOfdmFecEntry] = []
         for idx in indices:
             out.append(await cls.from_snmp(idx, snmp))
         return out

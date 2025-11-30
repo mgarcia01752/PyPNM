@@ -40,18 +40,18 @@ class PnmMacInjector(PnmHeader):
 
     def __init__(
         self,
-        file_path: Union[str, Path],
+        file_path: str | Path,
         backup: bool = True
     ):
         # Load raw bytes and parse header
         self.file_path = Path(file_path)
         self.raw_bytes = self.file_path.read_bytes()
         super().__init__(self.raw_bytes)
-        self.modified_bytes: Optional[bytes] = None
+        self.modified_bytes: bytes | None = None
         self.backup = backup
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def set_mac_address(self, mac: str, offset: Optional[int] = None) -> None:
+    def set_mac_address(self, mac: str, offset: int | None = None) -> None:
         """
         Overwrite 6 bytes at given offset in the PNM file with the new MAC address.
 
@@ -97,7 +97,7 @@ class PnmMacInjector(PnmHeader):
         )
         self.logger.debug(f"MAC {mac} injected at offset {offset}")
 
-    def save(self, out_path: Optional[Union[str, Path]] = None) -> Path:
+    def save(self, out_path: str | Path | None = None) -> Path:
         """
         Save the modified bytes back to disk, optionally to a new path.
         Creates a backup of the original if enabled.
