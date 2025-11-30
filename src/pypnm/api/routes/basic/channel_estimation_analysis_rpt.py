@@ -68,7 +68,7 @@ class ChanEstimationReport(AnalysisReport):
         self._results: dict[int, ChanEstimationAnalysisRptModel] = {}
         self._sig_cap_agg: SignalCaptureAggregator = SignalCaptureAggregator()
 
-    def create_csv(self, **kwargs) -> list[CSVManager]:
+    def create_csv(self, **kwargs: object) -> list[CSVManager]:
         """
         Stream validated models into CSVs. Assumes `_process()` already enforced.
         """
@@ -112,7 +112,7 @@ class ChanEstimationReport(AnalysisReport):
 
         return csv_mgr_list
 
-    def create_matplot(self, **kwargs) -> list[MatplotManager]:
+    def create_matplot(self, **kwargs: object) -> list[MatplotManager]:
         """
         Generate per-channel line and multi-line plots from validated models.
         """
@@ -401,7 +401,7 @@ class ChanEstimationReport(AnalysisReport):
                 group_delay: FloatSeries = list(cv.group_delay.magnitude)
 
                 # Coerce -> float and ensure finiteness
-                def coerce_finite(seq, name: str) -> list[float]:
+                def coerce_finite(seq: ArrayLike, name: str) -> list[float]:
                     out: list[float] = []
                     for v in seq:
                         fv = float(v)

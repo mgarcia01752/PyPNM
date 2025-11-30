@@ -15,9 +15,9 @@ early termination, and post‑capture analysis.
   * [5) Analysis](#5-analysis)
 * [Timing & Polling](#timing--polling)
 * [Plot Examples](#plot-examples)
-  * [Min‑Avg‑Max Line Plot](#min‑avg‑max-line-plot)
+  * [Min‑Avg‑Max Line Plot](#min-avg-max-line-plot)
   * [RxMER Heat Map](#rxmer-heat-map)
-  * [OFDM Profile Performance 1 Overlay](#ofdm-profile-performance-1-overlay)
+  * [OFDM Profile Performance 1 Overlay](#ofdm-profile-performance-1-overlay)
 * [Response Field Reference](#response-field-reference)
   * [Start / Status / Stop](#start--status--stop)
   * [Download ZIP](#download-zip)
@@ -177,11 +177,11 @@ aabbccddeeff_lpet3_1763007737_160_rxmer_heat_map.png
 
 **Analysis Types** (`analysis.type`)
 
-| Type                         | Description                          | `measure.mode` |
+| Type                         | Description                          | `measure.mode`|
 | ---------------------------- | ------------------------------------ | ------------- |
-| `min-avg-max`                | Min/avg/max RxMER across samples     | `0`           |
-| `rxmer-heat-map`             | Time × Frequency heatmap grid        | `0`           |
-| `ofdm-profile-performance-1` | Per‑subcarrier performance metrics   | `0` or `1`    |
+| `min-avg-max`                | Min/Avg/Max RxMER across samples     | `0` or `1`    |
+| `rxmer-heat-map`             | Time × Frequency heatmap grid        | `0` or `1`    |
+| `ofdm-profile-performance-1` | Per‑subcarrier performance metrics   | `1`           |
 
 **Output Types** (`analysis.output.type`)
 
@@ -215,7 +215,7 @@ aabbccddeeff_lpet3_1763007737_160_rxmer_heat_map.png
 
 ## Plot Examples
 
-### Min‑Avg‑Max Line Plot
+### Min-Avg-Max Line Plot
 
 | Plot | Description | Note |
 | ---- | ----------- | ---- |
@@ -227,7 +227,7 @@ aabbccddeeff_lpet3_1763007737_160_rxmer_heat_map.png
 | ---- | ----------- | ---- |
 | [Heat-Map](./images/multi-rxmer/160_rxmer_heat_map.png) | Time × Frequency heatmap grid. | Constant dark Line indicating low RxMER |
 
-### OFDM Profile Performance 1 Overlay
+### OFDM Profile Performance 1 Overlay
 
 | Plot | Profile | Description |
 | ---- | :-----: | ----------- |

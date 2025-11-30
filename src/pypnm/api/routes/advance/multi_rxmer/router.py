@@ -92,7 +92,7 @@ class MultiRxMerRouter(AbstractService):
             response_model=MultiRxMerStartResponse | SnmpResponse,
             summary="Start a Multi-RxMER capture",
             responses=FAST_API_RESPONSE,)
-        async def start_multi_rxmer(request: MultiRxMerRequest):
+        async def start_multi_rxmer(request: MultiRxMerRequest) -> SnmpResponse | MultiRxMerStartResponse:
             """
             Start Multi-RxMER Capture
 
