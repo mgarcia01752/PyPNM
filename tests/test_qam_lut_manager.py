@@ -7,7 +7,8 @@ import numpy as np
 import pytest
 
 from pypnm.lib.qam.types import QamModulation
-from pypnm.lib.qam.lut_mgr import QamLutManager  # adjust import if your path differs
+from pypnm.lib.qam.lut_mgr import QamLutManager
+from pypnm.lib.types import QamSymbol
 
 
 @pytest.fixture()
@@ -59,13 +60,14 @@ def test_get_codeword_symbol_multi_symbol_msb_vs_lsb(mgr_qam4: QamLutManager) ->
 
 def test_get_scale_factor(mgr_qam4: QamLutManager) -> None:
     sf = mgr_qam4.get_scale_factor(QamModulation.QAM_4)
+    # QamScale is a NewType over float; numeric comparison still holds.
     assert sf == 0.5
 
 
 def test_scale_soft_decisions_scales_points(mgr_qam4: QamLutManager) -> None:
-    soft = [(2.0, -2.0), (4.0, 0.0)]
+    soft: list[QamSymbol] = [(2.0, -2.0), (4.0, 0.0)]
     out = mgr_qam4.scale_soft_decisions(QamModulation.QAM_4, soft)
-    # scale_factor=0.5
+    # scale_factor=0.5 → multiplier convention: values are multiplied directly
     assert out == [(1.0, -1.0), (2.0, 0.0)]
 
 
@@ -88,15 +90,15 @@ def test_get_symbol_codeword_exact_and_nearest(mgr_qam4: QamLutManager) -> None:
 def test_infer_modulation_order_qam4(mgr_qam4: QamLutManager) -> None:
     # Build a small cloud around the 4 hard points
     rng = np.random.default_rng(0)
-    base = np.array([(-1,-1), (-1,1), (1,-1), (1,1)], dtype=float)
-    samples = (base + 0.02 * rng.standard_normal(base.shape)).tolist()
+    base = np.array([(-1, -1), (-1, 1), (1, -1), (1, 1)], dtype=float)
+    samples: list[QamSymbol] = (base + 0.02 * rng.standard_normal(base.shape)).tolist()
     est = mgr_qam4.infer_modulation_order(samples, threshold=0.15)
     assert est == QamModulation.QAM_4
 
 
 def test_infer_modulation_order_unknown_on_mismatch(mgr_qam4: QamLutManager) -> None:
     # Few random points not matching a known cluster count well
-    samples = [(0.1, 0.2), (0.15, -0.1), (-0.2, 0.05)]
+    samples: list[QamSymbol] = [(0.1, 0.2), (0.15, -0.1), (-0.2, 0.05)]
     est = mgr_qam4.infer_modulation_order(samples, threshold=0.15)
     # Could be UNKNOWN depending on clustering result; enforce not a high-order guess
     assert est in (QamModulation.UNKNOWN, QamModulation.QAM_4)

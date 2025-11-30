@@ -59,10 +59,14 @@ TwoDFloatSeries: TypeAlias  = list[FloatSeries]
 FloatSequence: TypeAlias    = Sequence[float]
 
 # Complex number encodings (JSON-safe)
-Complex                  = tuple[float, float]  # (re, im)
-ComplexArray: TypeAlias  = list[Complex]        # K × (re, im)
-ComplexSeries: TypeAlias = list[complex]        # Python complex list (internal use)
+Complex                  = tuple[float, float]          # (re, im)
+ComplexArray: TypeAlias  = list[Complex]                # K × (re, im)
+ComplexSeries: TypeAlias = list[complex]                # Python complex list (internal use)
 ComplexMatrix: TypeAlias = list[ComplexArray]
+
+# QAM-specific aliases
+QamSymbol                = Complex                      # Single (I, Q) point
+QamCodeWordLut           = dict[int, QamSymbol]         # codeword → (I, Q)
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Modulation profile identifiers
@@ -72,9 +76,9 @@ ProfileId = NewType("ProfileId", int)
 # ────────────────────────────────────────────────────────────────────────────────
 # Paths / filesystem
 # ────────────────────────────────────────────────────────────────────────────────
-PathLike  = str | Path
-PathArray = list[PathLike]
-FileNameStr = NewType("FileNameStr", str)
+PathLike     = str | Path
+PathArray    = list[PathLike]
+FileNameStr  = NewType("FileNameStr", str)
 
 # ────────────────────────────────────────────────────────────────────────────────
 # JSON-like structures for REST I/O
@@ -140,7 +144,7 @@ MerSeriesdB: TypeAlias       = FloatSeries
 ShannonSeriesdB: TypeAlias   = FloatSeries
 MagnitudeSeries: TypeAlias   = FloatSeries
 
-BitsPerSymbol       = NewType("BitsPerSymbol", int)
+BitsPerSymbol           = NewType("BitsPerSymbol", int)
 BitsPerSymbolSeries: TypeAlias = list[BitsPerSymbol]
 
 Microseconds = NewType("Microseconds", float)
@@ -172,6 +176,8 @@ __all__ = [
     "FloatSeries", "TwoDFloatSeries", "FloatSequence", "IntSeries",
     # complex
     "Complex", "ComplexArray", "ComplexSeries",
+    # QAM
+    "QamSymbol", "QamCodeWordLut",
     # paths
     "PathLike", "PathArray", "FileNameStr",
     # JSON
@@ -189,5 +195,5 @@ __all__ = [
     "FrequencySeriesHz", "MerSeriesdB", "ShannonSeriesdB", "MagnitudeSeries",
     # modulation/profile & misc
     "ProfileId", "BitsPerSymbol", "BitsPerSymbolSeries", "Microseconds",
-    "HttpRtnCode", "InterfaceIndex", "EntryIndex"
+    "HttpRtnCode", "InterfaceIndex", "EntryIndex",
 ]
