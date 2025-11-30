@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pypnm.api.routes.common.classes.file_capture.types import (
     DeviceDetailsModel,

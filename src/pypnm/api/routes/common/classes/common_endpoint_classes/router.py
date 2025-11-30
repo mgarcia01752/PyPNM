@@ -1,15 +1,12 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+from __future__ import annotations
 
 __skip_autoregister__ = True
 
 import logging
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import List, Union
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
@@ -59,7 +56,7 @@ class PnmFastApiRouter(BaseFastApiRouter, ABC):
     def _add_routes(self):
 
         @self.router.post(f"/{self._base_endpoint}/getMeasurement",
-                          response_model=Union[PnmMeasurementResponse, SnmpResponse],
+                          response_model=PnmMeasurementResponse | SnmpResponse,
                           description=self.set_measurement_description)
         async def get_measurement(request: PnmRequest) -> PnmMeasurementResponse | SnmpResponse:
             try:
@@ -71,7 +68,7 @@ class PnmFastApiRouter(BaseFastApiRouter, ABC):
                 raise HTTPException(status_code=500, detail=f"Measurement retrieval failed: {str(e)}") from e
 
         @self.router.post(f"/{self._base_endpoint}/getAnalysis",
-                          response_model=Union[PnmAnalysisResponse, SnmpResponse],
+                          response_model=PnmAnalysisResponse | SnmpResponse,
                           response_model_exclude_unset=True,
                           description=self.set_analysis_description)
         async def get_analysis(request: PnmAnalysisRequest) -> PnmAnalysisResponse | SnmpResponse:

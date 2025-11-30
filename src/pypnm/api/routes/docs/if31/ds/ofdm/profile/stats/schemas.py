@@ -1,15 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-"""
-Module: docs.if31.ds.ofdm_profile_stats.schemas
-
-Defines Pydantic models for DOCSIS 3.1 Downstream OFDM Profile Statistics.
-"""
-
 from __future__ import annotations
-
-from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 

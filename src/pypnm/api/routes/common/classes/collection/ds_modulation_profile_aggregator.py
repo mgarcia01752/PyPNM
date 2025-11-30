@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional, overload
+from typing import overload
 
 from pydantic import BaseModel, Field
 from typing_extensions import override

@@ -1,9 +1,9 @@
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+from __future__ import annotations
+
 import logging
-from typing import Any, List, Optional, overload
+from typing import Any, overload
 
 from pydantic import BaseModel, Field, model_validator
 from typing_extensions import override

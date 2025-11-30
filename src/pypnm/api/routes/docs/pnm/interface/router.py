@@ -4,7 +4,6 @@ from __future__ import annotations
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 import logging
-from typing import Dict, List, Union
 
 from fastapi import APIRouter
 
@@ -35,7 +34,7 @@ class InterfaceStatsRouter:
 
     def _add_routes(self):
         @self.router.post("/stats",
-                          response_model=Union[SnmpResponse],
+                          response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
         async def get_interface_stats(request: SnmpRequest) -> SnmpResponse:
             """

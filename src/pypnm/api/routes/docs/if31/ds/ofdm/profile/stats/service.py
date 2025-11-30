@@ -1,16 +1,10 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-"""
-Module: docs.if31.ds.ofdm_profile_stats.service
-
-Defines a service class for fetching DOCSIS 3.1 downstream OFDM profile statistics from a cable modem.
-"""
-
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
 from pypnm.api.routes.common.classes.common_endpoint_classes.schema.base_connect_request import (
     SNMPConfig,

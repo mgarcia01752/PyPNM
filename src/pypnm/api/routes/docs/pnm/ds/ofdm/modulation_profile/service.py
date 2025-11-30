@@ -1,10 +1,9 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
 
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
 import logging
-from typing import Tuple
 
 from pypnm.api.routes.common.extended.common_measure_service import CommonMeasureService
 from pypnm.config.pnm_config_manager import PnmConfigManager

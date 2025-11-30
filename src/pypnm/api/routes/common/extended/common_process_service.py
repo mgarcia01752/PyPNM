@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict
 
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import (
     PnmFileTransaction,

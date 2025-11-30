@@ -1,15 +1,12 @@
-
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+from __future__ import annotations
 
 __skip_autoregister__ = True
 
 import logging
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import List
 
 from fastapi import APIRouter, HTTPException
 

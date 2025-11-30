@@ -1,10 +1,8 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
 
-from typing import Dict, List
-
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
 from pydantic import BaseModel, Field
 
 from pypnm.api.routes.common.classes.common_endpoint_classes.schemas import PnmRequest

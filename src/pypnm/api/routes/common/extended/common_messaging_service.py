@@ -1,12 +1,11 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
 
-import json
-
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+import json
+from typing import Any
 
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.config.pnm_config_manager import SystemConfigSettings

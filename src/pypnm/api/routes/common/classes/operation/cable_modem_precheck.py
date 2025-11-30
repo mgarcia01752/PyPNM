@@ -1,16 +1,10 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
-"""
-Module: common_endpoint_classes.schema.precheck
-
-Defines a pre-check service for CableModem connectivity,
-verifying reachability via ping, SNMP, and optional DOCSIS version compatibility.
-"""
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, Tuple
+
 from collections.abc import Iterable
 
 from pypnm.api.routes.common.service.status_codes import ServiceStatusCode

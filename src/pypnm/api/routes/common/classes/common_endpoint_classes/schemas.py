@@ -1,8 +1,8 @@
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
-from typing import Any, Dict, Optional
+from __future__ import annotations
+
+from typing import Any
 
 from pydantic import Field, field_validator
 
@@ -12,7 +12,7 @@ from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp imp
     CommonResponse,
     CommonSingleCaptureAnalysisRequest,
 )
-from pypnm.lib.types import ChannelId, TransactionId
+from pypnm.lib.types import ChannelId, FileNameStr, TransactionId
 
 
 class PnmRequest(CommonRequest):
@@ -25,7 +25,7 @@ class PnmResponse(CommonResponse):
 
 class PnmFileRequest(CommonRequest):
     """Request model used when the operation requires access to a specific PNM file."""
-    file_name: str                  = Field(..., description="Name of the file associated with the MAC address.")
+    file_name: FileNameStr          = Field(..., description="Name of the file associated with the MAC address.")
     transaction_id: TransactionId   = Field(description="Transaction identifier to track file operations or correlate requests.")
 
 class PnmChannelEntryResponse(CommonResponse):
@@ -36,8 +36,8 @@ class PnmChannelEntryResponse(CommonResponse):
 
 class PnmFileResponse(CommonResponse):
     """Response model for file-related operations, such as retrieving or listing PNM files."""
-    file_name: str = Field(..., description="Name of the PNM-related file returned by the operation.")
-    data: bytes | str | Any | None = Field(default=None,description="Contents of the file or relevant metadata (could be binary or string).")
+    file_name: FileNameStr          = Field(..., description="Name of the PNM-related file returned by the operation.")
+    data: bytes | str | Any | None  = Field(default=None,description="Contents of the file or relevant metadata (could be binary or string).")
 
 class PnmAnalysisResponse(CommonResponse):
     """Response model that contains data structured for plotting PNM metrics."""

@@ -1,11 +1,10 @@
-from __future__ import annotations
-
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+from __future__ import annotations
+
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from pypnm.api.routes.common.classes.file_capture.pnm_file_transaction import (
     PnmFileTransaction,

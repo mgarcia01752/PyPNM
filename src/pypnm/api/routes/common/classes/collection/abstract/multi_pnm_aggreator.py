@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Tuple, Type, Union, cast, overload
+from typing import cast, overload
 
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import CaptureTime, ChannelId, MacAddressStr, TimeStamp
@@ -13,18 +13,8 @@ from pypnm.pnm.parser.CmDsOfdmFecSummary import CmDsOfdmFecSummary
 from pypnm.pnm.parser.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
 from pypnm.pnm.parser.CmDsOfdmRxMer import CmDsOfdmRxMer
 
-MultiPnmCollectionObject = Union[
-    CmDsOfdmRxMer,
-    CmDsOfdmModulationProfile,
-    CmDsOfdmFecSummary,
-]
-
-MultiPnmCollectionType = Union[
-    type[CmDsOfdmRxMer],
-    type[CmDsOfdmModulationProfile],
-    type[CmDsOfdmFecSummary],
-]
-
+MultiPnmCollectionObject = CmDsOfdmRxMer | CmDsOfdmModulationProfile | CmDsOfdmFecSummary
+MultiPnmCollectionType = type[CmDsOfdmRxMer] | type[CmDsOfdmModulationProfile] | type[CmDsOfdmFecSummary]
 
 class MultiPnmCollection(ABC):
     """

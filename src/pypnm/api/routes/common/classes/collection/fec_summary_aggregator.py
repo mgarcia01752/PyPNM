@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 from typing_extensions import override
@@ -14,15 +13,16 @@ from pypnm.api.routes.common.classes.collection.abstract.multi_pnm_aggreator imp
     MultiPnmCollectionObject,
 )
 from pypnm.docsis.cm_snmp_operation import FecSummaryType
+from pypnm.lib.qam.types import CodeWord
 from pypnm.lib.types import ChannelId, TimeStamp
 from pypnm.pnm.parser.CmDsOfdmFecSummary import CmDsOfdmFecSummary
 from pypnm.pnm.parser.CmDsOfdmModulationProfile import ProfileId
 
 
 class CodewordSummaryTotalsModel(BaseModel):
-    total_codewords: int    = Field(..., description="Total codewords observed")
-    corrected: int          = Field(..., description="FEC-corrected codewords")
-    uncorrectable: int      = Field(..., description="Uncorrectable codewords")
+    total_codewords: CodeWord    = Field(..., description="Total codewords observed")
+    corrected: CodeWord          = Field(..., description="FEC-corrected codewords")
+    uncorrectable: CodeWord      = Field(..., description="Uncorrectable codewords")
 
 class ProfileSummaryTotalsModel(BaseModel):
     profile_id: ProfileId                 = Field(..., description="Modulation profile identifier.")

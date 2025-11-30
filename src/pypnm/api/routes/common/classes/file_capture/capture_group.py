@@ -9,7 +9,7 @@ import time
 import uuid
 from json import JSONDecodeError
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.types import GroupId, TransactionId

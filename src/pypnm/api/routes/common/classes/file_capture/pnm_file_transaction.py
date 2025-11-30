@@ -1,14 +1,14 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 from __future__ import annotations
 
 import hashlib
 
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
 import json
 import logging
 import time
 from pathlib import Path
-from typing import Dict, List
 
 from pypnm.api.routes.common.classes.file_capture.transaction_record_parser import (
     TransactionRecordParser,

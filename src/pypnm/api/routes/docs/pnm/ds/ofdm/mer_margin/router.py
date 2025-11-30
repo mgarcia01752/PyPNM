@@ -1,10 +1,9 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
 
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
 import logging
-from typing import Dict, List, Union
 
 from fastapi import APIRouter
 
@@ -52,7 +51,7 @@ class RxMerMarginRouter:
     def _add_routes(self):
 
         @self.router.post(f"/{self.base_endpoint}/getMeasurementTemplate",
-                          response_model=Union[SnmpResponse],
+                          response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
         async def get_measurement_template(request: PnmRequest) -> SnmpResponse:
             """
@@ -118,7 +117,7 @@ class RxMerMarginRouter:
                 message="MER Margin test triggered successfully")
 
         @self.router.post(f"/{self.base_endpoint}/getAnalysis",
-                          response_model=Union[PnmAnalysisResponse, SnmpResponse])
+                          response_model=PnmAnalysisResponse | SnmpResponse)
         async def get_analysis(request: PnmMerMarginRequest):
             """
             Retrieves the MER Margin analysis results from the cable modem.
@@ -147,7 +146,7 @@ class RxMerMarginRouter:
             return await service.get_analysis()
 
         @self.router.post(f"/{self.base_endpoint}/getMeasurementStatistics",
-                          response_model=Union[SnmpResponse])
+                          response_model=SnmpResponse)
         async def get_measurement_statistics(request: PnmRequest):
             """
             Returns current MER Margin measurement configuration and status.
