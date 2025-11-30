@@ -78,7 +78,7 @@ class PnmFileManager:
             summary="Download A PNM File By Transaction ID",
             responses=FAST_API_RESPONSE
         )
-        def download_file_via_transaction_id(transaction_id: TransactionId = Path(..., description="Transaction ID of the file to download")):
+        def download_file_via_transaction_id(transaction_id: TransactionId = Path(description="Transaction ID of the file to download"),):  # noqa: B008
             """
             **Download PNM Measurement File By Transaction ID**
 

@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-
 from pydantic import BaseModel, Field
 
 from pypnm.api.routes.common.classes.common_endpoint_classes.common_req_resp import (

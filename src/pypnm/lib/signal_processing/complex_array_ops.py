@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-
 import numpy as np
 
 from pypnm.lib.types import ArrayLikeF64, ComplexArray, FloatSeries, Number

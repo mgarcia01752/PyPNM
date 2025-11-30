@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-
 from pydantic import BaseModel, Field, field_validator
 
 from pypnm.api.routes.advance.common.operation_state import OperationState
