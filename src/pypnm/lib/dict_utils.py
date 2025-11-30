@@ -46,12 +46,12 @@ class DictGenerate:
     # ---------------------------
     @staticmethod
     def pop_keys_recursive(
-        obj: Any,
+        obj: object,
         keys_to_remove: Iterable[str],
         *,
         case_sensitive: bool = True,
         in_place: bool = True,
-    ) -> Any:
+    ) -> object:
         """
         Recursively remove keys from nested dict/list/tuple/set structures.
 
@@ -74,7 +74,7 @@ class DictGenerate:
         targets: set[str] = set(keys_to_remove)
         targets_lower: set[str] | None = {k.lower() for k in targets} if not case_sensitive else None
 
-        def _walk(node: Any) -> Any:
+        def _walk(node: object) -> object:
             if isinstance(node, dict):
                 d = node if in_place else dict(node)
 
