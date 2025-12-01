@@ -388,56 +388,61 @@ class ChanEstimationReport(AnalysisReport):
         """
         data_list: list[DsChannelEstAnalysisModel] = cast(list[DsChannelEstAnalysisModel], self.get_analysis_model())
 
+        # Coerce -> float and ensure finiteness
+        def coerce_finite(seq: ArrayLike, name: str) -> list[float]:
+            out: list[float] = []
+            for v in seq:
+                fv = float(v)
+                if not math.isfinite(fv):
+                    raise ValueError(f"non-finite {name} value: {v!r}")
+                out.append(fv)
+            return out
+
         for idx, data in enumerate(data_list):
+            # Pull strongly-typed fields directly from BaseModel
+            channel_id: ChannelId = data.channel_id
+
+            # Carrier values block
+            cv: ChanEstCarrierModel  = cast(ChanEstCarrierModel, data.carrier_values)
+            x_raw: FloatSeries       = list(cv.frequency)
+            y_raw: FloatSeries       = list(cv.magnitudes)
+            cplex: ComplexArray      = list(cv.complex)
+            group_delay: FloatSeries = list(cv.group_delay.magnitude)
+
             try:
-                # Pull strongly-typed fields directly from BaseModel
-                channel_id: ChannelId = data.channel_id
-
-                # Carrier values block
-                cv: ChanEstCarrierModel  = cast(ChanEstCarrierModel, data.carrier_values)
-                x_raw: FloatSeries       = list(cv.frequency)
-                y_raw: FloatSeries       = list(cv.magnitudes)
-                cplex: ComplexArray      = list(cv.complex)
-                group_delay: FloatSeries = list(cv.group_delay.magnitude)
-
-                # Coerce -> float and ensure finiteness
-                def coerce_finite(seq: ArrayLike, name: str) -> list[float]:
-                    out: list[float] = []
-                    for v in seq:
-                        fv = float(v)
-                        if not math.isfinite(fv):
-                            raise ValueError(f"non-finite {name} value: {v!r}")
-                        out.append(fv)
-                    return out
-
                 x: FloatSeries = coerce_finite(x_raw, "raw_x")
                 y: FloatSeries = coerce_finite(y_raw, "raw_y")
-                y_hat: FloatSeries = cast(FloatSeries, LinearRegression1D(cast(ArrayLike, y)).fitted_values())
-
-                params = ChanEstimationParametersRptModel(
-                    regression_line     =   y_hat,
-                    group_delay         =   group_delay,
-                )
-
-                model = ChanEstimationAnalysisRptModel(
-                    channel_id         =   channel_id,
-                    raw_x              =   x,
-                    raw_y              =   y,
-                    raw_complex        =   cplex,
-                    parameters         =   params,
-                )
-
-                # Register model for downstream CSV/plot generation
-                self.register_common_analysis_model(channel_id, model)
-
-                # Add to Signal Capture Aggregator
-                self.logger.debug(
-                    "Adding Channel Estimation, ChannelID: %s for aggregated signal capture", channel_id
-                )
-                self._sig_cap_agg.add_series(cast(ArrayLike, x), cast(ArrayLike, y))
-
-            except Exception as exc:
+            except (ValueError, TypeError) as exc:
                 self.logger.exception("Failed to process Channel Estimation item %d: Reason: %s", idx, exc)
+                continue
+
+            try:
+                y_hat: FloatSeries = cast(FloatSeries, LinearRegression1D(cast(ArrayLike, y)).fitted_values())
+            except Exception as exc:
+                self.logger.exception("Failed to compute regression for item %d: Reason: %s", idx, exc)
+                continue
+
+            params = ChanEstimationParametersRptModel(
+                regression_line     =   y_hat,
+                group_delay         =   group_delay,
+            )
+
+            model = ChanEstimationAnalysisRptModel(
+                channel_id         =   channel_id,
+                raw_x              =   x,
+                raw_y              =   y,
+                raw_complex        =   cplex,
+                parameters         =   params,
+            )
+
+            # Register model for downstream CSV/plot generation
+            self.register_common_analysis_model(channel_id, model)
+
+            # Add to Signal Capture Aggregator
+            self.logger.debug(
+                "Adding Channel Estimation, ChannelID: %s for aggregated signal capture", channel_id
+            )
+            self._sig_cap_agg.add_series(cast(ArrayLike, x), cast(ArrayLike, y))
 
         # Finalize signal capture aggregation
         self._sig_cap_agg.reconstruct()

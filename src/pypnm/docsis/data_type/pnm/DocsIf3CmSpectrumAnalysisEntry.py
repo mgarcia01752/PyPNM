@@ -155,7 +155,4 @@ class DocsIf3CmSpectrumAnalysisEntry(BaseModel):
         """
         if not indices:
             return []
-        out: list[DocsIf3CmSpectrumAnalysisEntry] = []
-        for idx in indices:
-            out.append(await cls.from_snmp(idx, snmp))
-        return out
+        return [await cls.from_snmp(idx, snmp) for idx in indices]

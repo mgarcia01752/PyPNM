@@ -7,15 +7,17 @@ from pathlib import Path
 
 from pypnm.config.config_manager import ConfigManager
 from pypnm.lib.types import InetAddressStr, IPv4Str, IPv6Str, MacAddressStr
+
+
 class classproperty:
     """Descriptor for class-level properties that reload config on each access."""
     def __init__(self, f: Callable[[type], object]) -> None:
         self.f = f
-        
+
     def __get__(self, instance: object | None, owner: type | None) -> object:
         # Return the computed class-level property value (typed as 'object' instead of 'Any')
         return self.f(owner)
-    
+
 class SystemConfigSettings:
     """Provides dynamically reloaded system configuration via class properties."""
     _cfg = ConfigManager()

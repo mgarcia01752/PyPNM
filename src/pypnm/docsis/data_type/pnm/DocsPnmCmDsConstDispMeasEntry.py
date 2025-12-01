@@ -81,12 +81,14 @@ class DocsPnmCmDsConstDispMeasEntry(BaseModel):
     async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsPnmCmDsConstDispMeasEntry]:
         logger = logging.getLogger(cls.__name__)
         results: list[DocsPnmCmDsConstDispMeasEntry] = []
+        errors: list[tuple[int, Exception]] = []
 
         for idx in indices:
-            try:
-                entry = await cls.from_snmp(idx, snmp)
+            entry = await cls.from_snmp(idx, snmp)
+            if entry is not None:
                 results.append(entry)
-            except Exception as e:
-                logger.warning(f"Failed to fetch Constellation Display entry for index {idx}: {e}")
+
+        for idx, error in errors:
+            logger.warning(f"Failed to fetch Constellation Display entry for index {idx}: {error}")
 
         return results

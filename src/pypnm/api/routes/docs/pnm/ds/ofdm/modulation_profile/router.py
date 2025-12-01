@@ -8,7 +8,6 @@ from typing import Any, cast
 
 from fastapi import APIRouter
 
-
 from pypnm.api.routes.basic.abstract.analysis_report import AnalysisRptMatplotConfig
 from pypnm.api.routes.basic.modulation_profile_analysis_rpt import (
     ModulationProfileReport,
@@ -33,7 +32,11 @@ from pypnm.api.routes.common.service.status_codes import ServiceStatusCode
 from pypnm.api.routes.docs.pnm.ds.ofdm.modulation_profile.service import (
     CmDsOfdmModProfileService,
 )
-from pypnm.api.routes.docs.pnm.files.service import FileResponse, FileType, PnmFileService
+from pypnm.api.routes.docs.pnm.files.service import (
+    FileResponse,
+    FileType,
+    PnmFileService,
+)
 from pypnm.docsis.cable_modem import CableModem
 from pypnm.docsis.data_type.pnm.DocsPnmCmDsOfdmModProfEntry import (
     DocsPnmCmDsOfdmModProfEntry,

@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
 import logging
+from collections.abc import Iterable, Sequence
 from typing import cast
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -222,8 +222,8 @@ class DsHistrogramReport(AnalysisReport):
         """
         models: list[DsHistogramAnalysisModel] = cast(list[DsHistogramAnalysisModel], self.get_analysis_model())
 
-        for idx, src in enumerate(models):
-            try:
+        try:
+            for _idx, src in enumerate(models):
                 channel_id: ChannelId   = ChannelId(getattr(src, "channel_id", INVALID_CHANNEL_ID))
                 symmetry: int           = int(src.symmetry)
                 dwell_counts: IntSeries = list(src.dwell_counts)
@@ -243,8 +243,8 @@ class DsHistrogramReport(AnalysisReport):
                 )
                 self.register_common_analysis_model(channel_id, model)
 
-            except Exception as exc:
-                self.logger.exception(f"Failed to process DS Histogram item {idx}: {exc}", exc_info=True)
+        except Exception as exc:
+            self.logger.exception(f"Failed to process DS Histogram items: {exc}", exc_info=True)
 
     @staticmethod
     def _align_len(seq: Iterable[T] | list[T], n: int, *, fill: T) -> list[T]:

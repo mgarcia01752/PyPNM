@@ -1,8 +1,9 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
 
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
+import contextlib
 import enum
 import logging
 import os
@@ -10,7 +11,6 @@ import shutil
 import subprocess
 
 import paramiko
-import contextlib
 
 
 class SecureTransferMode(enum.Enum):

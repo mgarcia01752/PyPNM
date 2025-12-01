@@ -3,9 +3,9 @@
 
 from __future__ import annotations
 
-from enum import Enum
 import logging
 import re
+from enum import Enum
 from typing import NoReturn
 
 from pypnm.lib.inet import Inet

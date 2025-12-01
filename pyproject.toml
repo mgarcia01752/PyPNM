@@ -193,7 +193,7 @@ exclude        = [
 #   - D (pydocstyle): conflicts with custom docstring rules.
 #   - C90 / PL (mccabe / pylint families): very noisy, low signal for this project.
 
-select = ["F", "E", "W", "I", "B", "UP", "ANN", "SIM"]
+select = ["F", "E", "W", "I", "B", "UP", "ANN", "SIM", "PERF"]
 ignore = [
   "E501",
   "B006"

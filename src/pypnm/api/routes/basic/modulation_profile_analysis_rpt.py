@@ -286,8 +286,8 @@ class ModulationProfileReport(AnalysisReport):
         """
         data_list: list[dict[str, Any]] = self.get_analysis_data() or []
 
-        for idx, data in enumerate(data_list):
-            try:
+        try:
+            for _idx, data in enumerate(data_list):
                 channel_id = ChannelId(data.get("channel_id", INVALID_CHANNEL_ID))
                 profiles_in: list[dict[str, Any]] = data.get("profiles", [])
 
@@ -331,8 +331,8 @@ class ModulationProfileReport(AnalysisReport):
 
                 self.register_common_analysis_model(channel_id, model)
 
-            except Exception as exc:
-                self.logger.exception(f"Failed to process Modulation Profile item {idx}: {exc}", exc_info=True)
+        except Exception as exc:
+            self.logger.exception(f"Failed to process Modulation Profile data: {exc}", exc_info=True)
 
     T = TypeVar("T")
 

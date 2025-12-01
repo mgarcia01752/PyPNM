@@ -120,8 +120,7 @@ class PnmFileManager:
             summary="Download A PNM File By Operation ID",
             responses=FAST_API_RESPONSE
         )
-        def download_file_via_operationID(operation_id: OperationId = Path(..., description="Operation ID of the file to download")
-                                          ) -> FileResponse:  # noqa: B008
+        def download_file_via_operationID(operation_id: OperationId = Path(..., description="Operation ID of the file to download")) -> FileResponse:  # noqa: B008
             """
             **Download PNM Measurement File By Operation ID**
 
@@ -142,8 +141,7 @@ class PnmFileManager:
             summary="Upload A PNM File",
             responses=FAST_API_RESPONSE,
         )
-        async def upload_file(file: UploadFile = File(description="Raw PNM capture file (e.g., RxMER, constellation, histogram, spectrum)",),
-                              ) -> JSONResponse: # noqa: B008
+        async def upload_file(file: UploadFile = File(description="Raw PNM capture file (e.g., RxMER, constellation, histogram, spectrum)",),) -> JSONResponse: # noqa: B008
             """
             **Upload A PNM Binary File Into The PyPNM Transaction Database**
 

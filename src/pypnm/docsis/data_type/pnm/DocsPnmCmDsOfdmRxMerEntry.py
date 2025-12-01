@@ -98,7 +98,4 @@ class DocsPnmCmDsOfdmRxMerEntry(BaseModel):
     async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsPnmCmDsOfdmRxMerEntry]:
         if not indices:
             return []
-        out: list[DocsPnmCmDsOfdmRxMerEntry] = []
-        for idx in indices:
-            out.append(await cls.from_snmp(idx, snmp))
-        return out
+        return [await cls.from_snmp(idx, snmp) for idx in indices]

@@ -38,7 +38,7 @@ class DocsIf31CmUsOfdmaChanEntry(BaseModel):
     entry: DocsIf31CmUsOfdmaChan
 
     @classmethod
-    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsIf31CmUsOfdmaChanEntry:
+    async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsIf31CmUsOfdmaChanEntry | None:
         logger = logging.getLogger(cls.__name__)
 
         def tenthdBmV_to_float(value: str) -> float | None:
@@ -95,27 +95,23 @@ class DocsIf31CmUsOfdmaChanEntry(BaseModel):
             docsIf31CmStatusOfdmaUsRangingStatus            =   await fetch("docsIf31CmStatusOfdmaUsRangingStatus", str)
         )
 
-        return cls(
-            index           =   index,
-            channel_id      =   entry.docsIf31CmUsOfdmaChanChannelId or 0,
-            entry           =   entry
-        )
+        try:
+            return cls(
+                index           =   index,
+                channel_id      =   entry.docsIf31CmUsOfdmaChanChannelId or 0,
+                entry           =   entry
+            )
+        except Exception as e:
+            logger.warning(f"Failed to retrieve OFDMA channel {index}: {e}")
+            return None
 
     @classmethod
     async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsIf31CmUsOfdmaChanEntry]:
-        logger = logging.getLogger(cls.__name__)
         results: list[DocsIf31CmUsOfdmaChanEntry] = []
 
-        if not indices:
-            logger.warning("No upstream OFDMA indices found.")
-            return results
-
         for index in indices:
-
-            try:
-                result = await cls.from_snmp(index, snmp)
+            result = await cls.from_snmp(index, snmp)
+            if result is not None:
                 results.append(result)
-            except Exception as e:
-                logger.warning(f"Failed to retrieve OFDMA channel {index}: {e}")
 
         return results

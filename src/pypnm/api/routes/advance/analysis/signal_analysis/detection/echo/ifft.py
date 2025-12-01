@@ -8,7 +8,7 @@ from typing import Final, Literal
 
 import numpy as np
 from numpy.typing import NDArray
-from pydantic import BaseModel, ConfigDict, Field, field_validator, ValidationInfo
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 
 from pypnm.lib.constants import FEET_PER_METER, SPEED_OF_LIGHT, CableTypes
 from pypnm.lib.types import ChannelId, ComplexArray, FloatSeries
@@ -239,11 +239,7 @@ def _local_maxima_indices(mag: NDArray[np.float64]) -> list[int]:
     """Return indices i that are local maxima: mag[i] >= mag[i-1] and > mag[i+1]."""
     if mag.size < 3:
         return []
-    idxs: list[int] = []
-    for i in range(1, mag.size - 1):
-        if mag[i] >= mag[i - 1] and mag[i] > mag[i + 1]:
-            idxs.append(i)
-    return idxs
+    return [i for i in range(1, mag.size - 1) if mag[i] >= mag[i - 1] and mag[i] > mag[i + 1]]
 
 # ──────────────────────────────────────────────────────────────
 # IFFT Echo Detector (implementation)
@@ -334,10 +330,7 @@ class IfftEchoDetector:
     def _mat_to_pairs(mat: NDArray[np.complex128]) -> list[ComplexArray]:
         """Encode a complex matrix as (re, im) pairs, row-wise."""
         M, _ = mat.shape
-        out: list[ComplexArray] = []
-        for m in range(M):
-            out.append([(float(np.real(v)), float(np.imag(v))) for v in mat[m]])
-        return out
+        return [[(float(np.real(v)), float(np.imag(v))) for v in mat[m]] for m in range(M)]
 
     # ──────────────────────────────────────────────────────────
     # Core operations

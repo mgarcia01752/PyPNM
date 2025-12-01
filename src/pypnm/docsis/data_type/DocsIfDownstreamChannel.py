@@ -238,7 +238,7 @@ class DocsIfDownstreamChannelEntry(BaseModel):
             try:
                 result = await cls.from_snmp(index, snmp)
                 results.append(result)
-            except Exception as e:
+            except Exception as e:  # noqa: PERF203
                 logger.warning(f"Failed to retrieve downstream channel {index}: {e}")
 
         return results

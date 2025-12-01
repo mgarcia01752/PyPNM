@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Mapping, Sequence
 from enum import Enum
-from typing import Any, NoReturn, cast
+from typing import Any, cast
 
 import numpy as np
 

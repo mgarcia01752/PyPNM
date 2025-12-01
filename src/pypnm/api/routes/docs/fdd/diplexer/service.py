@@ -66,13 +66,13 @@ class FddDiplexerBandEdgeCapabilityService:
         fdd_band_edge_list: list[DocsFddCmFddBandEdgeCapabilities] | None = \
             await self.cm.getDocsFddCmFddBandEdgeCapabilities(create_and_start=False)
 
-        entries: list[dict] = []
-
         if fdd_band_edge_list is None:
-            return entries
+            return []
 
-        for fdd_band_edge in fdd_band_edge_list:
-            if await fdd_band_edge.start():
-                entries.append(fdd_band_edge.to_dict())
+        entries = [
+            fdd_band_edge.to_dict()
+            for fdd_band_edge in fdd_band_edge_list
+            if await fdd_band_edge.start()
+        ]
 
         return entries

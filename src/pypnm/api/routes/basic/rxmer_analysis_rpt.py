@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import math
 import re
@@ -24,7 +25,6 @@ from pypnm.lib.format_string import Format
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.shan.series import Shannon
 from pypnm.lib.types import ArrayLike, FloatSeries, FrequencySeriesHz, IntSeries
-import contextlib
 
 
 class RxMerParametersAnalysisRpt(BaseModel):
@@ -248,25 +248,24 @@ class RxMerAnalysisReport(AnalysisReport):
 
         analysis_models: list[DsRxMerAnalysisModel] = cast(list[DsRxMerAnalysisModel], self.get_analysis_model())
 
-        for idx, data in enumerate(analysis_models):
+        def coerce_finite(seq: ArrayLike, name: str) -> list[float]:
+            '''coerce -> float (and finiteness)'''
+            out: list[float] = []
+            for v in seq:
+                fv = float(v)
+                if not math.isfinite(fv):
+                    raise ValueError(f"non-finite {name} value: {v!r}")
+                out.append(fv)
+            return out
 
+        def process_single_model(idx: int, data: DsRxMerAnalysisModel) -> tuple[bool, str]:
+            """Process a single analysis model, returning success status and error message."""
             try:
-
                 channel_id      = data.channel_id
                 x_raw           = data.carrier_values.frequency
                 y_raw           = data.carrier_values.magnitude
                 snr_db_limit    = data.modulation_statistics.snr_db_min
                 mod_count:dict[str,int] = data.modulation_statistics.supported_modulation_counts
-
-                def coerce_finite(seq: ArrayLike, name: str) -> list[float]:
-                    '''coerce -> float (and finiteness)'''
-                    out: list[float] = []
-                    for v in seq:
-                        fv = float(v)
-                        if not math.isfinite(fv):
-                            raise ValueError(f"non-finite {name} value: {v!r}")
-                        out.append(fv)
-                    return out
 
                 x = coerce_finite(x_raw, "raw_x")
                 y = coerce_finite(y_raw, "raw_y")
@@ -295,8 +294,14 @@ class RxMerAnalysisReport(AnalysisReport):
                 self.logger.debug(f"Adding OFDM RxMER Channel: {channel_id} for aggregated signal capture")
                 self._sig_cap_agg.add_series(cast(ArrayLike, x_raw),cast(ArrayLike, y_raw))
 
+                return True, ""
             except Exception as exc:
-                self.logger.exception("Failed to process RxMER item %d: %s", idx, exc)
+                return False, str(exc)
+
+        for idx, data in enumerate(analysis_models):
+            success, error_msg = process_single_model(idx, data)
+            if not success:
+                self.logger.exception("Failed to process RxMER item %d: %s", idx, error_msg)
 
         # Finalize signal capture aggregation
         self._sig_cap_agg.reconstruct()

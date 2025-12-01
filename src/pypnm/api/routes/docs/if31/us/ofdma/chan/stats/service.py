@@ -36,11 +36,10 @@ class UsOfdmChannelService:
         entries: list[DocsIf31CmUsOfdmaChanEntry] = await self.cm.getDocsIf31CmUsOfdmaChanEntry()
 
         result = []
-        for entry in entries:
-            try:
+        try:
+            for entry in entries:
                 result.append(entry.model_dump())
-            except Exception as e:
-                self.logger.warning(f"Skipping invalid entry at index {entry.index}: {e}")
-                continue
+        except Exception as e:
+            self.logger.warning(f"Skipping invalid entry at index {entry.index}: {e}")
 
         return result

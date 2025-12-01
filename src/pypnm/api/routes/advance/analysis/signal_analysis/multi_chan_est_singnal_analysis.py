@@ -490,8 +490,8 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         channel_data: ChannelComplexMap = {}
         freqs: ChannelFrequencyMap = {}
 
-        for tcm in self._trans_collect.getTransactionCollectionModel():
-            try:
+        try:
+            for tcm in self._trans_collect.getTransactionCollectionModel():
                 model  = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
                 result = Analysis.basic_analysis_ds_chan_est_from_model(model)
                 ch     = ChannelId(result.channel_id)
@@ -501,8 +501,8 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
 
                 freqs[ch] = result.carrier_values.frequency
 
-            except Exception as e:
-                self.logger.error(f"[file={tcm.filename}] MIN_AVG_MAX parse failed: {e}")
+        except Exception as e:
+            self.logger.error(f"MIN_AVG_MAX parse failed: {e}")
 
         out: list[MinAvgMaxModel] = []
 
@@ -536,9 +536,8 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         channel_data: ChannelComplexMap = {}
         chan_freqs_map: ChannelFrequencyMap = {}
 
-        for tcm in self._trans_collect.getTransactionCollectionModel():
-
-            try:
+        try:
+            for tcm in self._trans_collect.getTransactionCollectionModel():
                 # Build model from capture data
                 model = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
 
@@ -551,8 +550,8 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
                 # Map channel to frequency bins
                 chan_freqs_map[ch] = result.carrier_values.frequency
 
-            except Exception as e:
-                self.logger.error(f"[file={tcm.filename}] GROUP_DELAY parse failed: {e}")
+        except Exception as e:
+            self.logger.error(f"GROUP_DELAY parse failed: {e}")
 
         out: list[GroupDelayAnalysisModel] = []
 
@@ -575,15 +574,16 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         """Build echo-detection results using IFFT (multi-echo by default)."""
         channel_data: ChannelComplexMap = {}
         obw: ChannelOccupiedBwMap = {}
-        for tcm in self._trans_collect.getTransactionCollectionModel():
-            try:
+
+        try:
+            for tcm in self._trans_collect.getTransactionCollectionModel():
                 model   = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
                 result  = Analysis.basic_analysis_ds_chan_est_from_model(model)
                 ch      = ChannelId(result.channel_id)
                 obw[ch] = result.carrier_values.occupied_channel_bandwidth
                 channel_data.setdefault(ch, []).append(result.carrier_values.complex)
-            except Exception as e:
-                self.logger.error(f"[file={tcm.filename}] ECHO_DETECTION_IFFT parse failed: {e}")
+        except Exception as e:
+            self.logger.error(f"ECHO_DETECTION_IFFT parse failed: {e}")
 
         out: list[EchoDetectionIfftModel | IfftMultiEchoDetectionModel] = []
         for ch, cplx in channel_data.items():
@@ -622,15 +622,17 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         freqs: ChannelFrequencyMap = {}
         threshold = 1e-9
         bin_widths = [1e6, 5e5, 1e5]
-        for tcm in self._trans_collect.getTransactionCollectionModel():
-            try:
+
+        try:
+            for tcm in self._trans_collect.getTransactionCollectionModel():
                 model = CmDsOfdmChanEstimateCoef(tcm.data).to_model()
                 result = Analysis.basic_analysis_ds_chan_est_from_model(model)
                 ch = ChannelId(result.channel_id)
                 channel_data.setdefault(ch, []).append(result.carrier_values.complex)
                 freqs[ch] = result.carrier_values.frequency
-            except Exception as e:
-                self.logger.error(f"[file={tcm.filename}] LTE_DETECTION_PHASE_SLOPE parse failed: {e}")
+        except Exception as e:
+            self.logger.error(f"LTE_DETECTION_PHASE_SLOPE parse failed: {e}")
+
         out: list[LteDetectionModel] = []
         for ch, cplx in channel_data.items():
             res = GroupDelayAnomalyDetector(cplx, freqs[ch]).run(bin_widths=bin_widths, threshold=threshold)

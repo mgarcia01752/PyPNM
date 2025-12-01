@@ -39,7 +39,7 @@ class SnmpFastApiRouter(ABC):
         self._add_routes()
 
     def _add_routes(self) -> None:
-        @self.router.post(f"/{self._base_endpoint}/getMeasurement", 
+        @self.router.post(f"/{self._base_endpoint}/getMeasurement",
                           response_model=SnmpResponse,
                           responses=FAST_API_RESPONSE,)
         async def get_measurement(request: BaseDeviceConnectRequest) -> SnmpResponse:

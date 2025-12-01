@@ -303,9 +303,18 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
         """
         models: list[UsOfdmaUsPreEqAnalysisModel] = cast(list[UsOfdmaUsPreEqAnalysisModel], self.get_analysis_model())
 
-        for idx, model in enumerate(models):
+        # Coerce -> float and ensure finiteness
+        def coerce_finite(seq: ArrayLike, name: str) -> list[float]:
+            out: list[float] = []
+            for v in seq:
+                fv = float(v)
+                if not math.isfinite(fv):
+                    raise ValueError(f"non-finite {name} value: {v!r}")
+                out.append(fv)
+            return out
 
-            try:
+        try:
+            for _idx, model in enumerate(models):
                 channel_id: ChannelId              = model.channel_id
                 subcarrier_spacing: FrequencyHz    = model.subcarrier_spacing
 
@@ -315,16 +324,6 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                 y_raw: FloatSeries                 = list(cv.magnitudes)
                 cplex: ComplexArray                = list(cv.complex)
                 group_delay: FloatSeries           = list(cv.group_delay.magnitude)
-
-                # Coerce -> float and ensure finiteness
-                def coerce_finite(seq: ArrayLike, name: str) -> list[float]:
-                    out: list[float] = []
-                    for v in seq:
-                        fv = float(v)
-                        if not math.isfinite(fv):
-                            raise ValueError(f"non-finite {name} value: {v!r}")
-                        out.append(fv)
-                    return out
 
                 x: FloatSeries      = coerce_finite(x_raw, "raw_x")
                 y: FloatSeries      = coerce_finite(y_raw, "raw_y")
@@ -371,8 +370,8 @@ class CmUsOfdmaPreEqReport(AnalysisReport):
                 self.logger.debug(f"Adding OFDMA US Pre-EQ series, ChannelID: {channel_id} for aggregated signal capture")
                 self._sig_cap_agg.add_series(x, y)
 
-            except Exception as exc:
-                self.logger.exception(f"Failed to process OFDMA US Pre-EQ item {idx}: Reason: {exc}")
+        except Exception as exc:
+            self.logger.exception(f"Failed to process OFDMA US Pre-EQ items: Reason: {exc}")
 
         # Finalize signal capture aggregation
         self._sig_cap_agg.reconstruct()

@@ -141,7 +141,7 @@ class FecSummaryType(Enum):
         return {e.name: e.value for e in cls}
 
     @classmethod
-    def from_value(cls, value: int) -> Self:
+    def from_value(cls, value: int) -> FecSummaryType:
         try:
             return cls(value)
         except ValueError as err:
@@ -324,11 +324,11 @@ class CmSnmpOperation:
             return indexes
 
         # Iterate through results and filter by the specified DOCSIS interface type
-        for result in results:
-            try:
-                ifType_name = doc_if_type.name
-                ifType_value = doc_if_type.value
+        ifType_name = doc_if_type.name
+        ifType_value = doc_if_type.value
 
+        try:
+            for result in results:
                 # Compare ifType value with the result value
                 if ifType_value == int(result[1]):
                     self.logger.debug(f"ifType-Name: ({ifType_name}) -> ifType-Value: ({ifType_value}) -> Found: {result}")
@@ -339,8 +339,8 @@ class CmSnmpOperation:
                         indexes.append(index)
                     else:
                         self.logger.warning(f"Invalid OID index for result: {result}")
-            except Exception as e:
-                self.logger.error(f"Error processing result {result}: {e}")
+        except Exception as e:
+            self.logger.error(f"Error processing results: {e}")
 
         # Return the list of found indexes
         return indexes

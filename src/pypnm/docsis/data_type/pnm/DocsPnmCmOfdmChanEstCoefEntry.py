@@ -3,9 +3,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections.abc import Callable
-from typing import Any, ClassVar, TypeVar, Optional, cast
+from typing import Any, ClassVar, TypeVar, cast
 
 from pydantic import BaseModel
 
@@ -41,7 +42,7 @@ class DocsPnmCmOfdmChanEstCoefEntry(BaseModel):
 
         T = TypeVar("T")
 
-        async def fetch(sym: str, caster: Callable[[Any], T]) -> Optional[T]:
+        async def fetch(sym: str, caster: Callable[[Any], T]) -> T | None:
             res = await snmp.get(f"{sym}.{index}")
             raw = Snmp_v2c.get_result_value(res)
             val = None if raw is None else caster(raw)
@@ -81,12 +82,9 @@ class DocsPnmCmOfdmChanEstCoefEntry(BaseModel):
             docsPnmCmOfdmChEstCoefGrpDelayMean         = int(gd_mean),
         )
         return cls(index=index, channel_id=index, entry=entry)
-
     @classmethod
     async def get(cls, snmp: Snmp_v2c, indices: list[int]) -> list[DocsPnmCmOfdmChanEstCoefEntry]:
         if not indices:
             return []
-        out: list[DocsPnmCmOfdmChanEstCoefEntry] = []
-        for idx in indices:
-            out.append(await cls.from_snmp(idx, snmp))
-        return out
+        return await asyncio.gather(*[cls.from_snmp(idx, snmp) for idx in indices])
+

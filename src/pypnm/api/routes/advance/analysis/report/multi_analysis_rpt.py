@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 import logging
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 from pydantic import BaseModel
@@ -24,8 +24,9 @@ from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.db.json_transaction import JsonTransactionDb
 from pypnm.lib.mac_address import MacAddress, cast
 from pypnm.lib.matplot.manager import MatplotManager
-from pypnm.lib.types import ChannelId, PathArray, PathLike, JSONScalar, TimeStamp
+from pypnm.lib.types import ChannelId, JSONScalar, PathArray, PathLike, TimeStamp
 from pypnm.lib.utils import Generate, TimeUnit
+
 
 class MultiAnalysisRpt(ABC):
     """

@@ -108,7 +108,4 @@ class DocsPnmCmDsHistEntry(BaseModel):
         """
         if not indices:
             return []
-        out: list[DocsPnmCmDsHistEntry] = []
-        for idx in indices:
-            out.append(await cls.from_snmp(idx, snmp))
-        return out
+        return [await cls.from_snmp(idx, snmp) for idx in indices]

@@ -112,8 +112,7 @@ class CmDsConstDispMeas(PnmHeader):
         while offset + self.CONST_DISPLAY_DATA_COMPLEX_LENGTH <= len(raw):
             decoded = FixedPointDecoder.decode_complex_data(raw[offset:offset + 4], cast(tuple[IntegerBits, FractionalBits], (2, 13)))
 
-            for pt in decoded:
-                decode_list.append([float(pt.real), float(pt.imag)])
+            decode_list.extend([[float(pt.real), float(pt.imag)] for pt in decoded])
 
             offset += 4
 

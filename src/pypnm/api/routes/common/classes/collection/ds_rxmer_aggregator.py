@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, overload
+from typing import overload
 
 from pydantic import BaseModel, Field, model_validator
 from typing_extensions import override
@@ -134,20 +134,17 @@ class DsRxMerAggregator(MultiPnmCollection):
         captures: list[CmDsOfdmRxMer] = []
         if channel_id is None:
             for ch_map in self._store.values():
-                for _, obj in ch_map.items():
-                    if isinstance(obj, CmDsOfdmRxMer):
-                        captures.append(obj)
+                captures.extend([obj for obj in ch_map.values() if isinstance(obj, CmDsOfdmRxMer)])
         else:
             if capture_time is None:
-                for _, obj in sorted(self._store.get(channel_id, {}).items(), key=lambda kv: kv[0]):
-                    if isinstance(obj, CmDsOfdmRxMer):
-                        captures.append(obj)
+                captures.extend([obj for _, obj in sorted(self._store.get(channel_id, {}).items(), key=lambda kv: kv[0]) if isinstance(obj, CmDsOfdmRxMer)])
             else:
-                obj = self.get(channel_id, capture_time)
+                obj = self._store.get(channel_id, {}).get(capture_time)
                 if isinstance(obj, CmDsOfdmRxMer):
                     captures.append(obj)
         if not captures:
             return None
+
         payload = [m.model_dump() for m in (o.to_model() for o in captures)]
         return Analysis.basic_analysis_rxmer(payload)
 

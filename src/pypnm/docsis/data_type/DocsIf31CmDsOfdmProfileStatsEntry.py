@@ -58,8 +58,8 @@ class DocsIf31CmDsOfdmProfileStatsEntry:
 
             for profile_index in profile_idx_list:
                 profile_data = {}
-                for attr, transform in fields.items():
-                    try:
+                try:
+                    for attr, transform in fields.items():
                         oid = f"{COMPILED_OIDS[attr]}.{self.index}.{profile_index}"
                         result = await self.snmp.get(oid)
                         value_list = Snmp_v2c.get_result_value(result)
@@ -69,9 +69,12 @@ class DocsIf31CmDsOfdmProfileStatsEntry:
                             profile_data[attr] = None
                         else:
                             profile_data[attr] = transform(value_list)
-                    except Exception as e:
-                        self.logger.warning(f"Failed to fetch {attr} for profile {profile_index}: {e}")
-                        profile_data[attr] = None
+                except Exception as e:
+                    self.logger.warning(f"Failed to fetch data for profile {profile_index}: {e}")
+                    # Fill remaining fields with None
+                    for attr in fields:
+                        if attr not in profile_data:
+                            profile_data[attr] = None
 
                 self.profile_stats[profile_index] = profile_data
 

@@ -338,8 +338,8 @@ class FileProcessor:
     def __enter__(self) -> FileProcessor:
         return self
 
-    def __exit__(self, exc_type: type | None, 
-                 exc_value: BaseException | None, 
+    def __exit__(self, exc_type: type | None,
+                 exc_value: BaseException | None,
                  traceback: TracebackType | None) -> Literal[False]:
         self.close()
         if exc_type:

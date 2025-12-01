@@ -40,12 +40,15 @@ class DsOfdmChannelService:
             return []
 
         result = []
-        for entry in entries:
-            try:
-                result.append(entry.model_dump())
-            except ValueError as e:
-                self.logger.warning(f"Skipping incomplete entry at index {entry.index}: {e}")
-                continue
+        try:
+            for entry in entries:
+                # Check if entry has required attributes before dumping
+                if hasattr(entry, 'model_dump') and hasattr(entry, 'index'):
+                    result.append(entry.model_dump())
+                else:
+                    self.logger.warning("Skipping entry with missing attributes")
+        except (ValueError, AttributeError) as e:
+            self.logger.error(f"Error processing OFDM channel entries: {e}")
 
         if not result:
             self.logger.warning("No valid OFDM channel entries found.")

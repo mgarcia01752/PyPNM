@@ -125,10 +125,11 @@ class DocsIf31CmDsOfdmChanChannelEntry(BaseModel):
             return results
 
         for i in indices:
-            try:
-                results.append(await cls.from_snmp(i, snmp))
-            except Exception as e:
-                logger.warning(f"Failed to retrieve OFDM channel {i}: {e}")
+            entry = await cls.from_snmp(i, snmp)
+            if entry.entry.docsIf31CmDsOfdmChanChannelId != INVALID_CHANNEL_ID:
+                results.append(entry)
+            else:
+                logger.warning(f"Failed to retrieve OFDM channel {i}: invalid channel ID")
 
         return results
 

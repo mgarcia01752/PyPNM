@@ -164,9 +164,8 @@ class ConstellationDisplayReport(AnalysisReport):
         """
         data_list: list[dict[str, Any]] = self.get_analysis_data() or []
 
-        for idx, data in enumerate(data_list):
-
-            try:
+        try:
+            for _idx, data in enumerate(data_list):
                 channel_id          = int(data.get("channel_id", INVALID_CHANNEL_ID))
                 modulation_order    = data.get("modulation_order", QamModulation.UNKNOWN)
                 hard                = data.get("hard", [])
@@ -190,5 +189,5 @@ class ConstellationDisplayReport(AnalysisReport):
                 # Must register Model
                 self.register_common_analysis_model(channel_id, model)
 
-            except Exception as exc:
-                self.logger.exception(f"Failed to process Channel Estimation item {idx}: Reason: {exc}")
+        except Exception as exc:
+            self.logger.exception(f"Failed to process Channel Estimation data: Reason: {exc}")

@@ -68,11 +68,15 @@ class DocsPnmCmDsOfdmMerMarEntry(BaseModel):
         logger = logging.getLogger(cls.__name__)
         results: list[DocsPnmCmDsOfdmMerMarEntry] = []
 
-        for idx in indices:
-            try:
-                entry = await cls.from_snmp(idx, snmp)
-                results.append(entry)
-            except Exception as e:
-                logger.warning(f"Failed to fetch OFDM MER Margin entry for index {idx}: {e}")
+        import asyncio
+
+        tasks = [cls.from_snmp(idx, snmp) for idx in indices]
+        gathered_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        for idx, result in zip(indices, gathered_results, strict=False):
+            if isinstance(result, Exception):
+                logger.warning(f"Failed to fetch OFDM MER Margin entry for index {idx}: {result}")
+            else:
+                results.append(result)
 
         return results

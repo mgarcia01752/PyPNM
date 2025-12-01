@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from enum import Enum
-from typing import Any, TypeVar
+from typing import TypeVar
 
 from pydantic import BaseModel
 
@@ -127,17 +127,16 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
 
     @classmethod
     async def from_snmp(cls, index: int, snmp: Snmp_v2c) -> DocsPnmCmUsPreEqEntry:
+        logger = logging.getLogger(cls.__name__)
         async def fetch(oid: str, cast_fn: Callable[[object], T] | None = None) -> T | object | None:
             try:
                 result = await snmp.get(f"{oid}.{index}")
                 value = Snmp_v2c.get_result_value(result)
                 if value is None:
                     return None
-                return cast_fn(value) if cast_fn else value
             except Exception as e:
                 logger.warning("Fetch error for %s.%s: %s", oid, index, e)
                 return None
-                logger.warning("Fetch error for %s.%s: %s", oid, index, e)
                 return None
 
         fields = DocsPnmCmUsPreEqFields(
@@ -164,11 +163,16 @@ class DocsPnmCmUsPreEqEntry(BaseModel):
         logger = logging.getLogger(cls.__name__)
         results: list[DocsPnmCmUsPreEqEntry] = []
 
-        for idx in indices:
+        async def fetch_entry(idx: int) -> DocsPnmCmUsPreEqEntry | None:
             try:
-                entry = await cls.from_snmp(idx, snmp)
-                results.append(entry)
+                return await cls.from_snmp(idx, snmp)
             except Exception as e:
                 logger.warning("Failed to fetch US PreEq entry for index %s: %s", idx, e)
+                return None
+
+        for idx in indices:
+            entry = await fetch_entry(idx)
+            if entry is not None:
+                results.append(entry)
 
         return results

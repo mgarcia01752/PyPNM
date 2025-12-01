@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, MutableMapping
-from typing import Any, Union
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -74,7 +74,7 @@ class DictGenerate:
         targets: set[str] = set(keys_to_remove)
         targets_lower: set[str] | None = {k.lower() for k in targets} if not case_sensitive else None
 
-        NodeType = Union[dict[str, object], list[object], tuple[object, ...], set[object], object]
+        NodeType = dict[str, object] | list[object] | tuple[object, ...] | set[object] | object
 
         def _walk(node: NodeType) -> NodeType:
             if isinstance(node, dict):

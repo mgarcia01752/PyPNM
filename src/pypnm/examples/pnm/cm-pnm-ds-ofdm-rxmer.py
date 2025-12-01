@@ -58,10 +58,7 @@ async def main() -> None:
                 continue
             break
 
-    results: list[dict] = []
-
-    for entry in await cm.getDocsPnmCmDsOfdmRxMerEntry():
-        results.append(entry.model_dump())
+    results: list[dict] = [entry.model_dump() for entry in await cm.getDocsPnmCmDsOfdmRxMerEntry()]
 
     filename = f".data/pnm/DocsPnmCmDsOfdmRxMerEntry-{args.mac}-{Generate.time_stamp()}.json"
     json_data = json.dumps(results, indent=2)

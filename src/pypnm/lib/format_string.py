@@ -5,6 +5,7 @@ from __future__ import annotations
 # Copyright (c) 2025 Maurice Garcia
 import string
 from collections.abc import Iterable
+from typing import Any
 
 
 class Format:
