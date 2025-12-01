@@ -1,220 +1,239 @@
-# PyPNM Test Guide (pytest)
+# PyPNM – pytest Usage Guide
 
-This page is the main index for testing PyPNM with `pytest`. It covers setup, running unit and integration tests, markers, logging, coverage, and common troubleshooting patterns.
+Consistent, fast, and repeatable testing for the PyPNM codebase using `pytest`.
 
-## Quick Start
+## 1. Test Layout In PyPNM
 
-```bash
-# From repo root, in your virtualenv
-pip install -e ".[dev]"         # installs pytest, pytest-cov, pytest-asyncio, etc.
-pytest -q                       # run the whole suite
+PyPNM follows a standard `src/` + `tests/` layout:
+
+- Application code: `src/pypnm/...`
+- Tests: `tests/`
+
+Typical patterns:
+
+- Unit and parsing tests: `tests/test_*.py`
+- PNM file parsing tests: `tests/test_pnm_*.py`
+- Integration tests (cable modem SNMP): `tests/test_cable_modem_*.py` (gated by markers and env vars)
+
+pytest automatically discovers tests that follow these naming conventions.
+
+## 2. Default pytest Configuration
+
+pytest is configured via `pyproject.toml` under `[tool.pytest.ini_options]`. Key settings:
+
+```toml
+[tool.pytest.ini_options]
+minversion   = "8.0"
+pythonpath   = ["src"]
+testpaths    = ["tests"]
+addopts      = "-ra -q --strict-markers --tb=short -m 'not cm_it'"
+asyncio_mode = "auto"
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(levelname)s %(name)s:%(lineno)d | %(message)s"
+log_cli_date_format = "%H:%M:%S"
+markers = [
+  "asyncio: mark test as asyncio-based (requires pytest-asyncio)",
+  "cm_it: cable modem integration tests (enable with -m cm_it)",
+  "slow: slow tests",
+  "net: network-required tests",
+  "pnm: PNM file parsing tests",
+]
 ```
 
-Common invocations:
+Implications:
+
+- `pythonpath=["src"]` lets tests import `pypnm` without extra sys.path hacks.
+- `testpaths=["tests"]` keeps discovery limited and fast.
+- `addopts` by default:
+  - `-ra` short summary of skipped/xfailed tests
+  - `-q` quiet output (per-test lines suppressed)
+  - `--strict-markers` enforces marker registration
+  - `--tb=short` compact tracebacks
+  - `-m 'not cm_it'` skips cable-modem integration tests by default
+- `asyncio_mode="auto"` enables seamless async tests using `pytest-asyncio`.
+- CLI logging is enabled at `INFO` with a consistent format.
+
+## 3. Everyday Commands
+
+All commands assume you are in the project root (for example `~/Projects/PyPNM`) and have the dev dependencies installed:
 
 ```bash
-pytest -vv                                   # verbose
-pytest -k rxmer                              # substring match on test names/paths
-pytest -m pnm                                # only PNM parser tests
-pytest -m "pnm and not slow"                 # combine markers
-pytest tests/test_pnm_rxmer_parse.py::test_rxmer_file_loads_and_models_ok
+pip install -e '.[dev]'
 ```
 
-## Project Test Layout
+### 3.1 Fast default suite
 
-- `tests/` – all tests live here.
-- `tests/_data/` – sample PNM binaries used by parser tests:
-  - `rxmer.bin`, `fec_summary.bin`, `const_display.bin`,
-    `histogram.bin`, `modulation_profile.bin`, `channel_estimation.bin`,
-    `spectrum_analyzer.bin`
-- Integration tests for real gear (SNMP, ping) are also under `tests/` and use markers to opt-in.
-
-Python path during tests is configured to include `src/` (see `pyproject.toml`).
-
-## Markers
-
-Markers are configured in `pyproject.toml` under `[tool.pytest.ini_options]`.
-
-Currently available:
-
-- `pnm` – PNM file parsing and processing tests (use sample binaries in `tests/_data/`)
-- `net` – tests that require real network access (for example, SNMP to a CM)
-- `slow` – long-running tests
-
-Examples:
+Run the standard test suite (unit + parsing + markers, no `cm_it` integration tests):
 
 ```bash
-pytest -m pnm
-pytest -m "net and not slow"
+pytest
 ```
 
-> If you see `Failed: 'XYZ' not found in markers`, add the marker to `pyproject.toml` under `markers = [...]`.
+This uses the `addopts` defined in `pyproject.toml`.
 
-## Async Tests
+### 3.2 Focus on a single file or test
 
-We use `pytest-asyncio` (mode = auto). You can write async tests as usual:
+Single file:
+
+```bash
+pytest tests/test_pnm_histogram_parse.py
+```
+
+Single test within a file:
+
+```bash
+pytest tests/test_pnm_histogram_parse.py::test_hist_parses_and_model_shape
+```
+
+### 3.3 More verbose output
+
+To temporarily override `-q` and get per-test lines, append `-v`:
+
+```bash
+pytest -v
+```
+
+You can combine this with explicit paths or markers as needed.
+
+## 4. Markers And Test Selection
+
+PyPNM uses markers to group tests by behavior and dependencies. All markers are registered in `pyproject.toml` and enforced via `--strict-markers`.
+
+| Marker     | Purpose                                       | Example usage                                |
+|------------|-----------------------------------------------|----------------------------------------------|
+| `pnm`      | PNM file parsing and model-shape tests        | `pytest -m pnm`                              |
+| `asyncio`  | Async tests using `pytest-asyncio`            | `pytest -m asyncio -v`                       |
+| `net`      | Tests requiring live network connectivity     | `pytest -m net`                              |
+| `slow`     | Long-running or heavy tests                   | `pytest -m slow -v`                          |
+| `cm_it`    | Cable-modem integration tests (SNMP, hardware)| `pytest -m cm_it`                            |
+
+Combine markers with boolean expressions:
+
+```bash
+# All PNM parsing tests that are not slow
+pytest -m "pnm and not slow"
+
+# All network tests including their detailed output
+pytest -m net -v
+```
+
+The default `addopts` excludes `cm_it`, so you must explicitly opt in to those tests.
+
+## 5. Cable-Modem Integration Tests (`cm_it`)
+
+Hardware integration tests are guarded by:
+
+- Marker: `cm_it`
+- An environment variable: `PNM_CM_IT=1`
+
+To run them:
+
+```bash
+export PNM_CM_IT=1
+pytest -m cm_it -v
+```
+
+Typical behavior:
+
+- If `PNM_CM_IT` is not set, tests will be skipped with a message such as:
+  `Hardware integration disabled. Set PNM_CM_IT=1 to run.`
+- The default suite (`pytest` with `addopts`) uses `-m 'not cm_it'`, so these tests never run accidentally.
+
+Use these tests sparingly (for example, before a release or when validating hardware-related changes).
+
+## 6. Async Tests And `pytest-asyncio`
+
+PyPNM includes `pytest-asyncio` in its development dependencies and sets `asyncio_mode="auto"`. This supports:
+
+- `async def` test functions
+- Async fixtures
+
+A typical async test looks like:
 
 ```python
 import pytest
 
 @pytest.mark.asyncio
-async def test_async_thing():
-    ...
+async def test_snmp_async_round_trip(snmp_client) -> None:
+    result = await snmp_client.get("sysDescr.0")
+    assert "LANCity" in result
 ```
 
-You can also run sync wrappers around async calls using `asyncio.run(...)` as needed.
+Key points:
 
-## Logging and Debugging
+- The `@pytest.mark.asyncio` marker is optional when `asyncio_mode="auto"`, but it is declared as a marker for clarity and selection.
+- Async tests are discovered and run like any other test.
 
-Enable live logs during test runs:
+## 7. Coverage With pytest
 
-```bash
-pytest -vv -o log_cli=true -o log_cli_level=DEBUG
-```
-
-Per-module logging can be controlled in code via standard `logging.getLogger(__name__)` usage.
-
-We also silence some upstream deprecation warnings from `pysmi` and `pysnmp` via `filterwarnings` in `pyproject.toml`. To see everything, run with:
-
-```bash
-pytest -W default
-```
-
-## Coverage
-
-We ship `pytest-cov` for coverage reporting:
+Coverage is configured via `[tool.coverage.*]` in `pyproject.toml`. To run tests with coverage information:
 
 ```bash
 pytest --cov=pypnm --cov-report=term-missing
-pytest --cov=pypnm --cov-report=html  # writes htmlcov/index.html
 ```
 
-## Real-Gear (SNMP) Integration Tests
+This:
 
-Some tests talk to actual devices (ping and SNMP). They are opt-in by marker:
+- Measures coverage over the `pypnm` package
+- Shows a terminal report with missing lines per file
+
+You can add `--cov-report=html` to generate an HTML report:
 
 ```bash
-# Only run networked tests
-pytest -m net -vv
-
-# Or run a single test module
-pytest tests/test_cable_modem_snmpv2_integration.py -vv -m net
+pytest --cov=pypnm --cov-report=term-missing --cov-report=html
 ```
 
-Environment setup (examples):
+The HTML report is usually written to `htmlcov/index.html` and can be opened in a browser.
 
-- Target CM IP or hostname – set in the test module or via environment variable.
-- SNMP – community string, port, and timeouts should be configured either in environment (`.env`) or test fixtures.
+## 8. Integration With The PyPNM QA Checker
 
-If you consistently see timeouts in CI but not locally, consider:
-
-- Increasing SNMP timeouts and retries in the fixture.
-- Ensuring the test network path is reachable from your runner.
-- Skipping with `-m "not net"` for CI workflows that lack device access.
-
-## PNM Parser Tests
-
-PNM parsers are tested against sample files under `tests/_data/`. Typical checks include:
-
-- Header parsing (`PnmHeader`)
-- Model shape and fields for each parser
-- Numeric ranges and monotonic sequences (for example, frequencies, amplitudes)
-- JSON and dict round-trip
-
-Run all PNM parser tests:
+The `pypnm-software-qa-checker` helper runs pytest as part of the QA suite. A typical invocation:
 
 ```bash
-pytest -m pnm -vv
+pypnm-software-qa-checker
 ```
 
-Example: focus only on RxMER tests:
+By default, this will:
 
-```bash
-pytest -k rxmer -m pnm -vv
-```
+- Run `ruff check` for static analysis
+- Run `pytest` with the configuration described above
+- Run `pycycle --here` for import cycle detection
 
-## Test Selection Cheatsheet
+You can use that script as a single entry point before committing or pushing changes.
 
-```bash
-pytest -k "spectrum and not json"           # include/exclude by name
-pytest tests/test_pnm_histogram_parse.py    # by file
-pytest path/to/test_file.py::test_case      # single test
-```
+## 9. Troubleshooting
 
-## Useful Options
+### 9.1 pytest: command not found
 
-- `-x` – stop after first failure
-- `--maxfail=2` – stop after 2 failures
-- `-q` – quiet
-- `-vv` – very verbose
-- `--lf` – run last failed tests
-- `--ff` – run failed first, then rest
-- `--durations=10` – show 10 slowest tests
-
-## CI Hints
-
-- Skip network-dependent tests unless runners have access:
+- Ensure the virtual environment is active.
+- Confirm that `pytest` is installed:
 
   ```bash
-  pytest -m "not net"
+  pip show pytest
   ```
 
-- Generate coverage suitable for CI:
+- If needed, reinstall dev dependencies:
 
   ```bash
-  pytest --cov=pypnm --cov-report=xml
+  pip install -e '.[dev]'
   ```
 
-- Optionally cache `.pytest_cache/` between runs to speed up incremental testing.
+### 9.2 Marker-related errors
 
-## Troubleshooting
+If you see `PytestUnknownMarkWarning` or marker errors:
 
-**Marker not found**
+- Ensure markers are registered in `pyproject.toml` under `markers`.
+- Because `--strict-markers` is enabled, any new marker must be added there.
+- Re-run pytest after updating `pyproject.toml`.
 
-```text
-Failed: 'pnm' not found in `markers` configuration option
-```
+### 9.3 Async test failures
 
-Add `pnm` to `pyproject.toml` under `[tool.pytest.ini_options].markers`.
+If async tests fail due to event-loop issues:
 
-**ImportError / ModuleNotFoundError**
+- Verify that `pytest-asyncio` is installed in your environment.
+- Ensure you are not manually configuring another asyncio plugin that conflicts with `asyncio_mode="auto"`.
 
-- Ensure `src/` is on the path (it is by default via `pyproject.toml`).
-- Use `pip install -e .` (editable) to keep imports working during development.
-
-**Asyncio timeouts**
-
-- Use `pytest -vv -o log_cli=true` to see where it hangs.
-- Wrap awaits with `asyncio.wait_for(..., timeout=SECONDS)` in tests when appropriate.
-
-**Deprecation warnings from pysmi/pysnmp**
-
-- The newer API is used where possible.
-- In tests, `filterwarnings` suppresses the known deprecations (see `pyproject.toml`).
-
-## Reference: Our pytest Config (excerpt)
-
-From `pyproject.toml`:
-
-```toml
-[tool.pytest.ini_options]
-minversion = "8.0"
-pythonpath = ["src"]
-testpaths  = ["tests"]
-addopts    = "-ra -q --strict-markers --tb=short"
-markers = [
-  "slow: slow tests",
-  "net: network-required tests",
-  "pnm: PNM parser tests",
-]
-# Optional noise control
-filterwarnings = [
-  "ignore:.*getReadersFromUrls.*:DeprecationWarning:pysmi.reader.url",
-  "ignore:.*addSources.*:DeprecationWarning:pysnmp.smi.compiler",
-  "ignore:.*addSearchers.*:DeprecationWarning:pysnmp.smi.compiler",
-  "ignore:.*addBorrowers.*:DeprecationWarning:pysnmp.smi.compiler",
-]
-```
 
 ## See Also
 

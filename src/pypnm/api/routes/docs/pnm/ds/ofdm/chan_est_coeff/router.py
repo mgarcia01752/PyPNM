@@ -109,7 +109,7 @@ class ChannelEstimationCoefficientRouter:
                 DictGenerate.pop_keys_recursive(payload, ["pnm_header", "complex"])
                 primative = msg_rsp.payload_to_dict('primative')
                 DictGenerate.pop_keys_recursive(primative, ["device_details"])
-                payload.update(primative)
+                payload.update({str(k): v for k, v in primative.items()})
                 payload.update(DictGenerate.models_to_nested_dict(measurement_stats, 'measurement_stats',))
 
                 return PnmAnalysisResponse(

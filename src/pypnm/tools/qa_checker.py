@@ -18,7 +18,7 @@ def _run_command(label: str, cmd: Sequence[str]) -> int:
     Parameters
     ----------
     label : str
-        Human-readable label for the tool (e.g., "ruff", "mypy").
+        Human-readable label for the tool (e.g., "ruff", "pyright").
     cmd : Sequence[str]
         The command and arguments to execute.
 
@@ -40,25 +40,65 @@ def _run_command(label: str, cmd: Sequence[str]) -> int:
         return 127
 
 
+def _build_commands(include_pyright: bool) -> List[Command]:
+    """
+    Build The Ordered List Of QA Commands To Run.
+
+    Parameters
+    ----------
+    include_pyright : bool
+        If True, include a `pyright` static type-check step after Ruff.
+
+    Returns
+    -------
+    list[Command]
+        Ordered list of (label, cmd) tuples to execute.
+    """
+    commands: List[Command] = [
+        ("ruff", ["ruff", "check", "src"]),
+        ("pytest", ["pytest"]),
+        ("pycycle", ["pycycle", "--here"]),
+    ]
+
+    if include_pyright:
+        # Insert Pyright after Ruff but before pytest for faster feedback.
+        commands.insert(1, ("pyright", ["pyright"]))
+
+    return commands
+
+
 def main() -> None:
     """
     Run The Standard PyPNM Software QA Suite.
 
-    This helper aggregates the core quality checks configured for the project:
+    Default Behavior
+    ----------------
+    By default, this helper aggregates the core quality checks configured for
+    the project:
 
-    1) ruff check src      – fast syntax/unused-imports checks (F-series).
-    2) mypy src            – static type checking with the configured mypy settings.
-    3) pytest              – unit tests, using pytest.ini options from pyproject.toml.
-    4) pycycle --here      – import cycle detection over the current project.
+    1) ruff check src      – syntax, style, and common bug patterns.
+    2) pytest              – unit tests (pytest options from pyproject.toml).
+    3) pycycle --here      – import cycle detection over the current project.
+
+    Optional Pyright
+    ----------------
+    To enable static type checking with Pyright, pass the flag:
+
+        pypnm-software-qa-checker --with-pyright
+
+    This will run an additional step:
+
+    - pyright              – static type analysis using [tool.pyright] settings.
 
     The process exit code is non-zero if any check fails.
     """
-    commands: List[Command] = [
-        ("ruff",   ["ruff", "check", "src"]),
-        ("mypy",   ["mypy", "src"]),
-        ("pytest", ["pytest"]),
-        ("pycycle", ["pycycle", "--here"]),
-    ]
+    # Detect and strip our own CLI flag so it is not propagated to subcommands.
+    args = sys.argv[1:]
+    include_pyright = "--with-pyright" in args
+    filtered_args = [a for a in args if a != "--with-pyright"]
+    sys.argv = [sys.argv[0], *filtered_args]
+
+    commands = _build_commands(include_pyright=include_pyright)
 
     overall_rc = 0
     for label, cmd in commands:

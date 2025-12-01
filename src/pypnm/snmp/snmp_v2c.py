@@ -19,7 +19,7 @@ from pysnmp.hlapi.v3arch.asyncio import (
     set_cmd,
     walk_cmd,
 )
-from pysnmp.proto.rfc1902 import OctetString
+from pysnmp.proto.rfc1902 import Integer32, OctetString
 
 from pypnm.config.pnm_config_manager import SystemConfigSettings
 from pypnm.lib.constants import T
@@ -643,7 +643,7 @@ class Snmp_v2c:
             self.logger.debug(f"Resolving OID string: {oid}")
             return ObjectIdentity(oid)
 
-    def _raise_on_snmp_error(self, errorIndication: Exception | str | None, errorStatus: object | None, errorIndex: int | None) -> None:
+    def _raise_on_snmp_error(self, errorIndication: Exception | str | None, errorStatus: object | None, errorIndex: Integer32 | int | None) -> None:
         """
         Raises RuntimeError if any SNMP error is detected.
 

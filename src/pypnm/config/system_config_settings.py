@@ -312,17 +312,17 @@ class SystemConfigSettings:
             "PnmFileRetrieval", "retrival_method", "methods", "https", "port"))
 
     # Logging
-    @classproperty
+    @classmethod
     def log_level(cls) -> str:
-        return cls._cfg.get("logging", "log_level")
+        return cls._cfg.get("logging", "log_level") or "INFO"
 
-    @classproperty
+    @classmethod
     def log_dir(cls) -> str:
-        return cls._cfg.get("logging", "log_dir")
+        return cls._cfg.get("logging", "log_dir") or ""
 
-    @classproperty
+    @classmethod
     def log_filename(cls) -> str:
-        return cls._cfg.get("logging", "log_filename")
+        return cls._cfg.get("logging", "log_filename") or ""
 
     @classmethod
     def initialize_directories(cls) -> None:
@@ -337,7 +337,7 @@ class SystemConfigSettings:
             cls.png_dir,
             cls.archive_dir,
             cls.message_response_dir,
-            cls.log_dir,
+            cls.log_dir(),
         ]
         for directory in directories:
             Path(directory).mkdir(parents=True, exist_ok=True)

@@ -143,7 +143,7 @@ class SpectrumAnalyzerRouter:
                     primative,
                     ["device_details", "channel_id", "amplitude_bin_segments_float"],
                 )
-                payload.update(primative)
+                payload.update(cast(dict[str, Any], primative))
                 payload.update(
                     DictGenerate.models_to_nested_dict(
                         measurement_stats,

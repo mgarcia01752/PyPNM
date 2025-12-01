@@ -81,18 +81,19 @@ class ChannelHeatMapModel(MultiRxMerAnalysisBaseModel):
     timestamps:  list[TimestampSec]     = Field(..., description="Capture timestamps (epoch) for rows of the heatmap.")
     values:      list[MagnitudeSeries]  = Field(..., description="Matrix: rows=captures, cols=subcarriers; MER values.")
 
-MultiRxMerTemporalObjType   = CmDsOfdmRxMer |CmDsOfdmFecSummary |CmDsOfdmModulationProfile
+MultiRxMerTemporalObjType   = CmDsOfdmRxMer | CmDsOfdmFecSummary | CmDsOfdmModulationProfile
+TemporalMapping             = tuple[CaptureTime, MultiRxMerTemporalObjType]
+
 MinAvgMaxMap                = dict[ChannelId, MinAvgMaxAnalysisModel]
 OfdmProfilePerf01Map        = dict[ChannelId, ChannelOfdmProfilePerf01Model]
 HeatMapMap                  = dict[ChannelId, ChannelHeatMapModel]
-TemporalMapping             = tuple[CaptureTime, MultiRxMerTemporalObjType]
-MultiRxMerAnalysisMap       = MinAvgMaxMap |OfdmProfilePerf01Map |HeatMapMap
+MultiRxMerAnalysisMap       = MinAvgMaxMap | OfdmProfilePerf01Map | HeatMapMap
 
 class MultiRxMerAnalysisResult(BaseModel):
-    mac_address:   MacAddressStr              = Field(..., description="Cable modem MAC address associated with this analysis.")
-    analysis_type: MultiRxMerAnalysisType     = Field(..., description="Type of multi-RxMER analysis performed.")
-    data:          MultiRxMerAnalysisMap      = Field(..., description="Analysis results mapping (per-channel model).")
-    error:         str | None              = Field(default="", description="Optional error message if analysis failed.")
+    mac_address:   MacAddressStr            = Field(..., description="Cable modem MAC address associated with this analysis.")
+    analysis_type: MultiRxMerAnalysisType   = Field(..., description="Type of multi-RxMER analysis performed.")
+    data:          MultiRxMerAnalysisMap    = Field(..., description="Analysis results mapping (per-channel model).")
+    error:         str | None               = Field(default="", description="Optional error message if analysis failed.")
 
 
 # ---------------------------
@@ -569,9 +570,9 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
         model = self.to_model()
 
         if self.analysis_type == MultiRxMerAnalysisType.MIN_AVG_MAX:
-            data  = cast(MinAvgMaxMap, model.data)
+            data1  = cast(MinAvgMaxMap, model.data)
 
-            for channel_id, ch_model in data.items():
+            for channel_id, ch_model in data1.items():
                 freq_hz  = cast(ArrayLike, ch_model.frequency)
                 freq_khz = cast(ArrayLike,freq_hz)
 
@@ -606,9 +607,9 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 out.append(mat_mgr)
 
         elif self.analysis_type == MultiRxMerAnalysisType.RXMER_HEAT_MAP:
-            data  = cast(HeatMapMap, model.data)
+            data2  = cast(HeatMapMap, model.data)
 
-            for ch_id, ch_model in data.items():
+            for ch_id, ch_model in data2.items():
                 ch_model = cast(ChannelHeatMapModel, ch_model)
 
                 Z = np.asarray(ch_model.values, dtype=float)
@@ -658,9 +659,9 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
                 out.append(mat_mgr)
 
         elif self.analysis_type == MultiRxMerAnalysisType.OFDM_PROFILE_PERFORMANCE_1:
-            data  = cast(OfdmProfilePerf01Map, model.data)
+            data3  = cast(OfdmProfilePerf01Map, model.data)
 
-            for ch_id, ch_model in data.items():
+            for ch_id, ch_model in data3.items():
                 ch_model = cast(ChannelOfdmProfilePerf01Model, ch_model)
 
                 if not ch_model.profiles:
@@ -725,6 +726,6 @@ class MultiRxMerSignalAnalysis(MultiAnalysisRpt):
 
         start_freq  = freq_zero + (spacing * active_idx)
 
-        freqs: FrequencySeriesHz = [int(start_freq + (i * spacing)) for i in range(num_idx)]
+        freqs: FrequencySeriesHz = cast(FrequencySeriesHz,[start_freq + (i * spacing) for i in range(num_idx)])
         return freqs
 

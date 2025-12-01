@@ -135,7 +135,7 @@ class MultiDsChanEstRouter(AbstractService):
 
             svc: MultiChannelEstimationService = cast(MultiChannelEstimationService, self.getService(operation_id))
             samples = svc.results(operation_id)
-            pnm_dir, mac = SystemConfigSettings.pnm_dir, svc.cm.get_mac_address.mac_address
+            pnm_dir, mac = str(SystemConfigSettings.pnm_dir), svc.cm.get_mac_address.mac_address
             buf = io.BytesIO()
 
             with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:

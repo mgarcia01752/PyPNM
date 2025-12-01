@@ -105,7 +105,7 @@ class RxMerRouter:
                 DictGenerate.pop_keys_recursive(payload, ["pnm_header", "modulations", "snr_db_values"])
                 primative = msg_rsp.payload_to_dict('primative')
                 DictGenerate.pop_keys_recursive(primative, ["device_details", "modulation_statistics"])
-                payload.update(primative)
+                payload.update({str(k): v for k, v in primative.items()})
                 payload.update(DictGenerate.models_to_nested_dict(measurement_stats, 'measurement_stats',))
 
                 return PnmAnalysisResponse(

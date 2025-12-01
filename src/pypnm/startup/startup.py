@@ -21,9 +21,9 @@ class StartUp:
         """
         SystemConfigSettings.initialize_directories()
 
-        LoggerConfigurator(SystemConfigSettings.log_dir,
-                           SystemConfigSettings.log_filename,
-                           SystemConfigSettings.log_level)
+        LoggerConfigurator(SystemConfigSettings.log_dir(),
+                           SystemConfigSettings.log_filename(),
+                           SystemConfigSettings.log_level())
 
 
 

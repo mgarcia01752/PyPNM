@@ -127,12 +127,12 @@ class ConstellationDisplayRouter:
 
             if request.analysis.output.type == OutputType.JSON:
                 payload: dict[str, Any] = cast(dict[str, Any], analysis.get_results())
-                payload.update(msg_rsp.payload_to_dict())
+                payload.update({k: v for k, v in msg_rsp.payload_to_dict().items() if isinstance(k, str)})
 
                 DictGenerate.pop_keys_recursive(payload, ["pnm_header", "data"])
                 primative = msg_rsp.payload_to_dict('primative')
                 DictGenerate.pop_keys_recursive(primative, ["device_details"])
-                payload.update(primative)
+                payload.update({k: v for k, v in primative.items() if isinstance(k, str)})
                 payload.update(DictGenerate.models_to_nested_dict(measurement_stats, 'measurement_stats',))
 
                 return PnmAnalysisResponse(

@@ -70,7 +70,7 @@ class PnmFileManager:
             """
             request = FileQueryRequest(mac_address=mac_address)
             result = PnmFileService().search_files(request)
-            return JSONResponse(content=result.model_dump())
+            return result
 
         @self.router.get(
             "/download/transactionID/{transaction_id}",

@@ -54,7 +54,6 @@ ChannelComplexMap           = dict[ChannelId, list[ComplexArray]]
 ChannelOccupiedBwMap        = dict[ChannelId, FrequencyHz]
 ChannelComplexSeriesMap     = dict[ChannelId, list[ComplexSeries]]
 
-
 # ──────────────────────────────────────────────────────────────
 # Models
 # ──────────────────────────────────────────────────────────────
@@ -122,6 +121,12 @@ class EchoDetectionIfftModel(BaseModel):
     impulse_response: FloatSeries   = Field(..., description="Impulse-response magnitude vs delay")
     sample_rate: float              = Field(..., description="Sample rate used for IFFT (Hz)")
 
+ChannelEstimationAnalysisRpt =  MinAvgMaxModel              | \
+                                GroupDelayAnalysisModel     | \
+                                LteDetectionModel           | \
+                                EchoDetectionIfftModel      | \
+                                IfftMultiEchoDetectionModel | \
+                                EchoDetectionPhaseSlopeModel
 
 class MultiChanEstimationResult(BaseModel):
     """
@@ -130,11 +135,9 @@ class MultiChanEstimationResult(BaseModel):
     Wraps the executed analysis type, per-channel result models for that
     analysis, and an optional error string when processing fails.
     """
-    analysis_type: str = Field(..., description="Name of executed analysis type")
-    results: list[
-        MinAvgMaxModel | GroupDelayAnalysisModel | LteDetectionModel | EchoDetectionIfftModel | IfftMultiEchoDetectionModel
-    ] = Field(default_factory=list, description="List of per-channel analysis results")
-    error: str | None = Field(default=None, description="Error message if analysis failed")
+    analysis_type: str                          = Field(..., description="Name of executed analysis type")
+    results: list[ChannelEstimationAnalysisRpt] = Field(default_factory=list, description="List of per-channel analysis results")
+    error: str | None                           = Field(default=None, description="Error message if analysis failed")
 
     def to_json(self, indent: int = 2) -> str:
         """
@@ -225,15 +228,17 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         mac = self.getMacAddresses()[0]
         self.logger.info(f"[_process] {self._analysis_type.name} for MAC={mac}")
 
+        data: list[ChannelEstimationAnalysisRpt] = []
+
         match self._analysis_type:
             case MultiChanEstAnalysisType.MIN_AVG_MAX:
-                data = self._analyze_min_avg_max()
+                data = cast(list[ChannelEstimationAnalysisRpt], self._analyze_min_avg_max())
             case MultiChanEstAnalysisType.GROUP_DELAY:
-                data = self._analyze_group_delay()
+                data = cast(list[ChannelEstimationAnalysisRpt], self._analyze_group_delay())
             case MultiChanEstAnalysisType.LTE_DETECTION_PHASE_SLOPE:
-                data = self._analyze_lte_detection()
+                data = cast(list[ChannelEstimationAnalysisRpt], self._analyze_lte_detection())
             case MultiChanEstAnalysisType.ECHO_DETECTION_IFFT:
-                data = self._analyze_echo_detection_ifft()
+                data = cast(list[ChannelEstimationAnalysisRpt], self._analyze_echo_detection_ifft())
             case _:
                 raise ValueError(f"Unsupported analysis type: {self._analysis_type}")
 
@@ -570,7 +575,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
 
         return out
 
-    def _analyze_echo_detection_ifft(self) -> list[EchoDetectionIfftModel | IfftMultiEchoDetectionModel]:
+    def _analyze_echo_detection_ifft(self) -> list[IfftMultiEchoDetectionModel]:
         """Build echo-detection results using IFFT (multi-echo by default)."""
         channel_data: ChannelComplexMap = {}
         obw: ChannelOccupiedBwMap = {}
@@ -585,14 +590,14 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
         except Exception as e:
             self.logger.error(f"ECHO_DETECTION_IFFT parse failed: {e}")
 
-        out: list[EchoDetectionIfftModel | IfftMultiEchoDetectionModel] = []
+        out: list[IfftMultiEchoDetectionModel] = []
         for ch, cplx in channel_data.items():
             bw = obw.get(ch, 0.0)
             if not bw:
                 continue
 
             # Use the multi-echo detector; include time response for plotting
-            det_model = IfftEchoDetector(cplx, sample_rate=float(bw)).detect_multiple_reflections(
+            det_model = IfftEchoDetector(cast(Sequence[Sequence[complex]], cplx), sample_rate=float(bw)).detect_multiple_reflections(
                 cable_type              =   "RG6",
                 threshold_frac          =   0.5,
                 guard_bins              =   1,
@@ -635,7 +640,7 @@ class MultiChanEstimationSignalAnalysis(MultiAnalysisRpt):
 
         out: list[LteDetectionModel] = []
         for ch, cplx in channel_data.items():
-            res = GroupDelayAnomalyDetector(cplx, freqs[ch]).run(bin_widths=bin_widths, threshold=threshold)
+            res = GroupDelayAnomalyDetector(cplx, list(freqs[ch])).run(bin_widths=bin_widths, threshold=threshold)
             out.append(
                 LteDetectionModel(
                     channel_id      =   ch,

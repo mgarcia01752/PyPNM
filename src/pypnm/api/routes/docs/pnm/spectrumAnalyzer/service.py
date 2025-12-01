@@ -153,7 +153,7 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
     """
 
     def __init__(self, cable_modem: CableModem,
-                 _tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
+                 tftp_servers: tuple[Inet, Inet] = PnmConfigManager.get_tftp_servers(),
                  number_of_averages: int = 2,
                  spectrum_retrieval_type:SpectrumRetrievalType = SpectrumRetrievalType.FILE,) -> None:
         super().__init__(cable_modem)
@@ -162,6 +162,7 @@ class DsOfdmChannelSpectrumAnalyzer(CommonSpectrumChannelAnalyzer):
         self._spectrum_retrieval_type = spectrum_retrieval_type
         self._pnm_test_type = DocsPnmCmCtlTest.SPECTRUM_ANALYZER
         self.log_prefix = f"DsOfdmChannelSpectrumAnalyzer - CM {self._cm.get_mac_address}"
+        self._tftp_servers = tftp_servers
 
     async def start(self, capture_per_channel: bool = False) -> list[tuple[ChannelId, MessageResponse]]:
         """

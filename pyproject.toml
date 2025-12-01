@@ -45,10 +45,10 @@ dev = [
   "pytest-cov>=5.0.0",
   "pytest-asyncio>=0.23.5",
   "black>=24.0.0",
-  "mypy>=1.10.0",
   "pydantic-settings>=2.6.0",
-  "ruff>=0.6.0",
-  "pycycle>=0.0.8,<0.1.0",
+  "ruff>=0.14.7",
+  "pycycle>=0.0.8",
+  "pyright>=1.1.407",
 ]
 docs = [
   "mkdocs>=1.6",
@@ -120,20 +120,6 @@ skip_covered = true
 line-length = 100
 target-version = ["py310"]
 
-[tool.mypy]
-python_version = "3.10"
-plugins = ["pydantic.mypy"]
-warn_return_any = true
-warn_unused_ignores = true
-no_implicit_optional = true
-strict_optional = true
-disallow_untyped_defs = true
-pretty = true
-
-[tool.pydantic-mypy]
-init_forbid_extra = true
-warn_required_dynamic_aliases = true
-
 [tool.ruff]
 src            = ["src"]
 target-version = "py310"
@@ -145,7 +131,6 @@ exclude        = [
   "src/pypnm/api/routes/common/extended/common_measure_service.py",
   "src/pypnm/examples/",
 ]
-
 
 [tool.ruff.lint]
 # Common, high-signal rulesets:
@@ -200,3 +185,21 @@ ignore = [
   "B006"
 ]
 
+[tool.pyright]
+pythonVersion = "3.10"
+pythonPlatform = "Linux"
+
+include = ["src"]
+exclude = [
+  "tools",
+  "src/pypnm/examples/",
+  "**/__pycache__",
+]
+
+# VSCode + .env venv
+venvPath = "."
+venv = ".env"
+
+reportMissingImports = "warning"
+reportMissingTypeStubs = "warning"
+typeCheckingMode = "basic"

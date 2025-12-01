@@ -17,7 +17,8 @@ This ensures the following tools are available (as defined in `pyproject.toml`):
 
 - `ruff` – linting and unused-code detection
 - `pytest` – unit and integration tests
-- `pycycle` – import cycle detection (installed separately via `pip install pycycle` if not already present)
+- `pycycle` – import cycle detection
+- `pyright` – optional static type checking (when enabled via CLI flag)
 
 ## 2. Command Overview
 
@@ -27,58 +28,52 @@ Once installed via `pyproject.toml` as a console script, the QA checker is avail
 pypnm-software-qa-checker [OPTIONS]
 ```
 
-By default (with no options), it runs a **full QA sweep** over your project:
+By default (with no options), it runs a **standard QA sweep** over your project:
 
-1. `ruff check src tests`  
-2. `pytest`  
+1. `ruff check src`
+2. `pytest`
 3. `pycycle --here` (from the project root)
 
 Each step is run in sequence; if any step fails (non-zero exit code), the script exits with that code and
 prints the failing command.
 
+If you enable the optional Pyright step (see below), it will run **after Ruff** and **before pytest**.
+
 ## 3. Options
 
-The CLI is designed to be simple and focused on the PyPNM layout (`src/` and `tests/`).
+The CLI is intentionally minimal and focused on the PyPNM layout (`src/`).
 
-> Note: The exact options must match the implementation in `pypnm/tools/pypnm_software_qa_checker.py`.
-> The list below describes the **intended** interface.
+| Option            | Description                                                                                     |
+|-------------------|-------------------------------------------------------------------------------------------------|
+| `--with-pyright`  | Add a `pyright` static type-check step after Ruff and before pytest.                            |
 
-| Option           | Description                                                                                         |
-|------------------|-----------------------------------------------------------------------------------------------------|
-| `--unused-only`  | Run only the **unused-code** checks via `ruff` (unused imports and unused local variables).        |
-| `--no-tests`     | Skip running `pytest`.                                                                             |
-| `--no-cycle`     | Skip running `pycycle --here` (import cycle detection).                                            |
-| `-h`, `--help`   | Show help and exit.                                                                                |
+Any additional arguments you pass are forwarded to underlying tools where applicable (for example, `pytest`
+arguments will still behave as expected when appended after the QA checker command).
 
-### 3.1 Unused-only mode
+### 3.1 Enabling Pyright
 
-When you only want to look for unused imports and unused local variables, use:
+When you want to run a deeper static analysis pass with Pyright in addition to the default checks, use:
 
 ```bash
-pypnm-software-qa-checker --unused-only
+pypnm-software-qa-checker --with-pyright
 ```
 
-This is equivalent to running:
+This is effectively equivalent to:
 
-```bash
-ruff check src tests --select F401,F841
-```
+1. `ruff check src`
+2. `pyright`
+3. `pytest`
+4. `pycycle --here`
 
-Where:
-
-- `F401` – unused imports  
-- `F841` – local variable assigned but never used  
-
-In `--unused-only` mode:
-
-- No tests are run
-- No cycle checks are run
+If Pyright is not installed or not on `PATH`, the QA checker will report it as “NOT FOUND” and continue
+based on Pyright’s exit status.
 
 ## 4. Typical Workflows
 
-### 4.1 Full QA before pushing
+### 4.1 Full QA before pushing (fast path, no Pyright)
 
-Use this when you are about to push a feature branch or submit a PR:
+Use this when you are about to push a feature branch or submit a PR and you want a quick but comprehensive
+check (lint + tests + cycle detection):
 
 ```bash
 pypnm-software-qa-checker
@@ -86,40 +81,38 @@ pypnm-software-qa-checker
 
 Effectively runs:
 
-- Lint (including style / unused / basic correctness via `ruff`)
+- Lint (style / unused / basic correctness via `ruff`)
 - Tests (`pytest`)
 - Import cycle detection (`pycycle --here`)
 
-### 4.2 Quick unused-code cleanup
+### 4.2 Full QA including Pyright
 
-Use this when you are doing refactors and just want to strip unused imports/locals:
-
-```bash
-pypnm-software-qa-checker --unused-only
-```
-
-You can also call `ruff` directly if you want more control:
+Use this when you want to include static type checking via Pyright (for example before a release or when
+working on critical modules):
 
 ```bash
-ruff check src tests --select F401,F841
+pypnm-software-qa-checker --with-pyright
 ```
 
-### 4.3 Skip long-running tests
+Effectively runs:
 
-If you have expensive tests and only want lint + cycle detection:
+- Lint (`ruff check src`)
+- Static type checking (`pyright`)
+- Tests (`pytest`)
+- Import cycle detection (`pycycle --here`)
+
+### 4.3 Running individual tools directly
+
+You can still run each tool directly when you need fine-grained control:
 
 ```bash
-pypnm-software-qa-checker --no-tests
+ruff check src
+pytest -m 'not slow'
+pycycle --here
+pyright
 ```
 
-### 4.4 Skip cycle detection
-
-If you already know your imports are clean and just want lint + tests:
-
-```bash
-pypnm-software-qa-checker --no-cycle
-```
-
+The QA checker is simply a convenience wrapper that standardizes a good default sequence for PyPNM.
 
 ## 5. Exit Codes and CI Integration
 
@@ -135,11 +128,11 @@ A simple GitHub Actions step could look like:
   run: pypnm-software-qa-checker
 ```
 
-For a faster CI job that only cares about lint + tests (no cycle detection):
+To include Pyright as well:
 
 ```yaml
-- name: PyPNM software QA (no cycle)
-  run: pypnm-software-qa-checker --no-cycle
+- name: PyPNM software QA (with Pyright)
+  run: pypnm-software-qa-checker --with-pyright
 ```
 
 ## 6. Troubleshooting
@@ -159,18 +152,21 @@ For a faster CI job that only cares about lint + tests (no cycle detection):
   pip show pypnm
   ```
 
-### 6.2 Ruff or pytest not installed
+### 6.2 Ruff, Pyright, pytest, or pycycle not installed
 
-If the script reports that it cannot find `ruff` or `pytest`, verify that:
+If the script reports that it cannot find `ruff`, `pyright`, `pytest`, or `pycycle`, verify that:
 
 - You are in the environment where `.[dev]` was installed.
-- `ruff` and `pytest` appear in `pip list`.
+- The tools appear in `pip list` for that environment.
+
+If you prefer not to install Pyright, simply avoid the `--with-pyright` flag; the default QA sweep does
+not require it.
 
 ## 7. Where the Script Lives
 
 The recommended layout is:
 
-- Script module: `src/pypnm/tools/pypnm_software_qa_checker.py`
+- Script module: `src/pypnm/tools/qa_checker.py`
 - Console entry point in `pyproject.toml`:
 
   ```toml
@@ -178,7 +174,7 @@ The recommended layout is:
   pypnm      = "pypnm.cli:main"
   docs-serve = "mkdocs.__main__:serve"
   docs-build = "mkdocs.__main__:build"
-  pypnm-software-qa-checker = "pypnm.tools.pypnm_software_qa_checker:main"
+  pypnm-software-qa-checker  = "pypnm.tools.qa_checker:main"
   ```
 
 This keeps all tooling namespaced under `pypnm.tools` while giving you a short,

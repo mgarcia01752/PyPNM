@@ -104,7 +104,7 @@ class ModulationProfileRouter:
             if request.analysis.output.type == OutputType.JSON:
                 payload: dict[str, Any] = cast(dict[str, Any], analysis.get_results())
 
-                primative = msg_rsp.payload_to_dict('primative')
+                primative = cast(dict[str, Any], msg_rsp.payload_to_dict('primative'))
                 DictGenerate.pop_keys_recursive(primative, ["device_details", "modulation_statistics"])
                 payload.update(primative)
                 payload.update(DictGenerate.models_to_nested_dict(measurement_stats, 'measurement_stats'))

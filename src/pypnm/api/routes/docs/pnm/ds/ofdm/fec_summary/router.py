@@ -111,7 +111,7 @@ class FecSummaryRouter:
 
                 primative = msg_rsp.payload_to_dict('primative')
                 DictGenerate.pop_keys_recursive(primative, ["device_details"])
-                payload.update(msg_rsp.payload_to_dict("primative"))
+                payload.update(cast(dict[str, Any], msg_rsp.payload_to_dict("primative")))
 
                 payload.update(DictGenerate.models_to_nested_dict(measurement_stats, 'measurement_stats',))
 
