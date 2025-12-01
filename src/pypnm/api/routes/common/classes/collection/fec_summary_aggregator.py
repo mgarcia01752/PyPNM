@@ -224,7 +224,7 @@ class FecSummaryAggregator(MultiPnmCollection):
                 channel_id  =   channel_id,
                 summary     =   [],)
 
-        ts_range:list[TimeStamp] = [ts for ts in channel_store.keys() if start_time <= ts <= end_time]
+        ts_range:list[TimeStamp] = [ts for ts in channel_store if start_time <= ts <= end_time]
         ts_range.sort()
 
         if not ts_range:

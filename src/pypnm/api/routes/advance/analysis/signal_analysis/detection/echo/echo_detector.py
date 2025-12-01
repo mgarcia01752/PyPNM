@@ -556,9 +556,9 @@ class EchoDetector:
     def _pad_or_crop(H: NDArrayC128, n_fft: int) -> NDArrayC128:
         """Zero-pad or crop H to length n_fft."""
         N = int(H.size)
-        if N == n_fft:
+        if n_fft == N:
             return H
-        if N < n_fft:
+        if n_fft > N:
             out = np.zeros(n_fft, dtype=np.complex128)
             out[:N] = H
             return out

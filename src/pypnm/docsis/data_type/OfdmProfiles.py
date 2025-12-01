@@ -87,10 +87,7 @@ class OfdmProfiles:
             value = int.from_bytes(raw, byteorder='big')  # DOCSIS is MSB-first
         elif isinstance(raw, str):
             raw = raw.strip()
-            if raw.startswith("0x"):
-                value = int(raw, 16)
-            else:
-                value = int(raw)
+            value = int(raw, 16) if raw.startswith("0x") else int(raw)
         else:
             raise TypeError("Expected bytes or string as input")
 

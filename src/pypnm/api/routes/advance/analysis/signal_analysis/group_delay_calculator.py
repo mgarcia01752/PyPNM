@@ -273,7 +273,7 @@ class GroupDelayCalculator:
         elif H_complex.ndim == 2:
             # Multiple snapshots: verify subcarrier count matches frequency axis.
             M, K = H_complex.shape
-            if K != self.f.size:
+            if self.f.size != K:
                 raise ValueError(f"Each snapshot must have length {self.f.size}, got {K}")
             self.H_raw = H_complex
         else:

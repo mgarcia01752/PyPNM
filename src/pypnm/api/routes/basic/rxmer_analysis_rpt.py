@@ -24,6 +24,7 @@ from pypnm.lib.format_string import Format
 from pypnm.lib.matplot.manager import MatplotManager, PlotConfig
 from pypnm.lib.signal_processing.shan.series import Shannon
 from pypnm.lib.types import ArrayLike, FloatSeries, FrequencySeriesHz, IntSeries
+import contextlib
 
 
 class RxMerParametersAnalysisRpt(BaseModel):
@@ -322,10 +323,8 @@ class RxMerAnalysisReport(AnalysisReport):
             if isinstance(key, str):
                 m_match = re.search(r"(\d+)", key)
                 if m_match:
-                    try:
+                    with contextlib.suppress(Exception):
                         m = int(m_match.group(1))
-                    except Exception:
-                        pass
             if m is None:
                 self.logger.warning("Skipping unsupported modulation key: %r", key)
                 continue

@@ -268,7 +268,4 @@ class QamByteToSymbolMapper:
         if keys_sorted[0] != 0 or keys_sorted[-1] != M - 1:
             return False
         # contiguous check
-        for i, k in enumerate(keys_sorted):
-            if k != i:
-                return False
-        return True
+        return all(k == i for i, k in enumerate(keys_sorted))

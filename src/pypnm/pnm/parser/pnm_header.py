@@ -275,9 +275,6 @@ class PnmHeader:
         PnmHeaderParameters
 .
         """
-        if "pnm_header" in data:
-            header_data = data["pnm_header"]
-        else:
-            header_data = data
+        header_data = data.get("pnm_header", data)
 
         return PnmHeaderParameters(**header_data)

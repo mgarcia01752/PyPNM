@@ -48,9 +48,7 @@ class FddDiplexerBandEdgeCapabilityService:
                              write_community=snmp_config.snmp_v2c.community)
 
     def isDocsis40(self) -> bool:
-        if self.cm.getDocsisBaseCapability() != ClabsDocsisVersion.DOCSIS_40:
-            return False
-        return True
+        return self.cm.getDocsisBaseCapability() == ClabsDocsisVersion.DOCSIS_40
 
     async def getFddDiplexerBandEdgeCapabilityEntries(self) -> list[dict]:
         """

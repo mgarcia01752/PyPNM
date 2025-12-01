@@ -487,9 +487,7 @@ class CmSnmpOperation:
         try:
             varbind = resp[0]
             value = varbind[1]  # should be OctetString
-            if isinstance(value, OctetString):
-                mac_bytes = bytes(value)
-            elif isinstance(value, (bytes, bytearray)):
+            if isinstance(value, (OctetString, bytes, bytearray)):
                 mac_bytes = bytes(value)
             else:
                 # Fallback: use helper and try to coerce

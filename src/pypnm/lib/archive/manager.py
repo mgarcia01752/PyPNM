@@ -354,10 +354,7 @@ class ArchiveManager:
                 all_names = list(members) if members is not None else zf.namelist()
 
                 unsafe_present = any(ArchiveManager._is_unsafe_name(n) for n in all_names)
-                if unsafe_present:
-                    base_dir = dest.parent / f"{dest.name}_safe"
-                else:
-                    base_dir = dest
+                base_dir = dest.parent / f"{dest.name}_safe" if unsafe_present else dest
 
                 base_dir.mkdir(parents=True, exist_ok=True)
 
@@ -395,10 +392,7 @@ class ArchiveManager:
                     sel    = all_members
 
                 unsafe_present = any(ArchiveManager._is_unsafe_name(m.name) for m in sel)
-                if unsafe_present:
-                    base_dir = dest.parent / f"{dest.name}_safe"
-                else:
-                    base_dir = dest
+                base_dir = dest.parent / f"{dest.name}_safe" if unsafe_present else dest
 
                 base_dir.mkdir(parents=True, exist_ok=True)
 

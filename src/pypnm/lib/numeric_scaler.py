@@ -243,10 +243,7 @@ class NumericScaler:
                 elif scaled_peak > target_range[1]:
                     exp = min(exp + 10, 40)
 
-        if sys == "binary":
-            factor = 2.0 ** exp
-        else:
-            factor = 10.0 ** exp
+        factor = 2.0 ** exp if sys == "binary" else 10.0 ** exp
 
         scaled = arr / factor
         meta = {

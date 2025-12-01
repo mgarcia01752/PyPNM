@@ -506,10 +506,7 @@ class PnmFileService:
         elif model.file_type == PnmFileType.OFDM_FEC_SUMMARY:
             return Analysis.basic_analysis_ds_ofdm_fec_summary_from_model(cast(CmDsOfdmFecSummaryModel, parser.to_model())), model.file_type
 
-        elif model.file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS:
-            return Analysis.basic_analysis_us_ofdma_pre_equalization_from_model(cast(CmUsOfdmaPreEqModel, parser.to_model())), model.file_type
-
-        elif model.file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE:
+        elif model.file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS or model.file_type == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE:
             return Analysis.basic_analysis_us_ofdma_pre_equalization_from_model(cast(CmUsOfdmaPreEqModel, parser.to_model())), model.file_type
 
         raise HTTPException(
@@ -545,12 +542,7 @@ class PnmFileService:
             analysis_rpt = ConstellationDisplayReport(analysis, plot_config)
             rpt: Path = cast(Path, analysis_rpt.build_report())
 
-        elif pnm_ftype == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS:
-            plot_config = ConstDisplayAnalysisRptMatplotConfig(theme = theme)
-            analysis_rpt = CmUsOfdmaPreEqReport(analysis)
-            rpt: Path = cast(Path, analysis_rpt.build_report())
-
-        elif pnm_ftype == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE:
+        elif pnm_ftype == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS or pnm_ftype == PnmFileType.UPSTREAM_PRE_EQUALIZER_COEFFICIENTS_LAST_UPDATE:
             plot_config = ConstDisplayAnalysisRptMatplotConfig(theme = theme)
             analysis_rpt = CmUsOfdmaPreEqReport(analysis)
             rpt: Path = cast(Path, analysis_rpt.build_report())

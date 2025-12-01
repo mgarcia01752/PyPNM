@@ -103,7 +103,7 @@ class AbstractService:
 
         active_services: dict[OperationId, AbstractCaptureService] = {}
 
-        for operation_id in self._service_store.keys():
+        for operation_id in self._service_store:
             self.logger.info(f"Active service: operation_id={operation_id}")
             if self._service_store[operation_id].status()["state"] == OperationState.RUNNING:
                 self.logger.info(f"Service {operation_id} is running")

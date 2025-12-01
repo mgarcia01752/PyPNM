@@ -10,6 +10,7 @@ import shutil
 import subprocess
 
 import paramiko
+import contextlib
 
 
 class SecureTransferMode(enum.Enum):
@@ -112,15 +113,11 @@ class SSHConnector:
     def disconnect(self) -> None:
         """Close any active SFTP and SSH sessions."""
         if self.sftp_client:
-            try:
+            with contextlib.suppress(Exception):
                 self.sftp_client.close()
-            except Exception:
-                pass
         if self.ssh_client:
-            try:
+            with contextlib.suppress(Exception):
                 self.ssh_client.close()
-            except Exception:
-                pass
         self.logger.debug("Disconnected from remote host")
 
     def send_file(self, local_path: str, remote_path: str) -> bool:

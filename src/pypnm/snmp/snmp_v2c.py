@@ -661,10 +661,7 @@ class Snmp_v2c:
         if errorStatus:
             # errorStatus objects from pysnmp typically expose prettyPrint()
             pretty = getattr(errorStatus, "prettyPrint", None)
-            if callable(pretty):
-                status_text = pretty()
-            else:
-                status_text = str(errorStatus)
+            status_text = pretty() if callable(pretty) else str(errorStatus)
             raise RuntimeError(
                 f"SNMP error {status_text} at index {errorIndex}"
             )

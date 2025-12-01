@@ -94,10 +94,7 @@ class LinearRegression1D:
         ss_tot = float(np.sum((y_clean - y_mean) ** 2))
         eps = float(np.finfo(dtype).eps)
 
-        if ss_tot <= eps:
-            r2 = 1.0 if ss_res <= eps else 0.0
-        else:
-            r2 = 1.0 - ss_res / ss_tot
+        r2 = (1.0 if ss_res <= eps else 0.0) if ss_tot <= eps else 1.0 - ss_res / ss_tot
 
         rmse = float(np.sqrt(ss_res / x_clean.size))
 
