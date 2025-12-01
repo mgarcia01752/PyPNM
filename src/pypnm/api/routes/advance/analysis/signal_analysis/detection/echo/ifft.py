@@ -8,7 +8,7 @@ from typing import Final, Literal
 
 import numpy as np
 from numpy.typing import NDArray
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, ValidationInfo
 
 from pypnm.lib.constants import FEET_PER_METER, SPEED_OF_LIGHT, CableTypes
 from pypnm.lib.types import ChannelId, ComplexArray, FloatSeries
@@ -108,7 +108,7 @@ class IfftEchoTimeResponseModel(BaseModel):
 
     @field_validator("time_axis_s", "time_response")
     @classmethod
-    def _match_len(cls, v, info):
+    def _match_len(cls, v: FloatSeries | ComplexArray, info: ValidationInfo) -> FloatSeries | ComplexArray:
         n_fft = info.data.get("n_fft")
         if n_fft is not None and len(v) != n_fft:
             raise ValueError(f"Length mismatch: expected {n_fft}, got {len(v)}")
@@ -144,7 +144,7 @@ class IfftEchoDetectorModel(BaseModel):
 
     @field_validator("H_avg")
     @classmethod
-    def _coerce_avg(cls, v: ComplexArray, info) -> ComplexArray:
+    def _coerce_avg(cls, v: ComplexArray, info: ValidationInfo) -> ComplexArray:
         out: ComplexArray = []
         for item in v:
             if not cls._is_pair(item):
@@ -159,9 +159,9 @@ class IfftEchoDetectorModel(BaseModel):
 
     @field_validator("H_snap")
     @classmethod
-    def _coerce_snap(cls, v: list[ComplexArray], info) -> list[ComplexArray]:
+    def _coerce_snap(cls, v: list[ComplexArray], info: ValidationInfo) -> list[ComplexArray]:
         if not v or not v[0]:
-            raise ValueError("H_snap must be non-empty M×N.")
+            raise ValueError("H_snap must be non-empty MxN.")
         n = len(v[0])
         out: list[ComplexArray] = []
         for row in v:
@@ -623,4 +623,3 @@ class IfftEchoDetector:
             H_avg           =   H_avg_pairs,
             reflection      =   reflection,
             time_response   =   tr_block,)
-

@@ -383,7 +383,7 @@ class EchoDetector:
                  report.channel_id, report.direct_path.bin_index, len(report.echoes))
         return report
 
-    def first_echo(self, **kwargs) -> EchoPath:
+    def first_echo(self, **kwargs: float | int | bool | str | None) -> EchoPath:
         """
         Return the earliest echo from `multi_echo(..., max_peaks=1)`; raises if none.
 

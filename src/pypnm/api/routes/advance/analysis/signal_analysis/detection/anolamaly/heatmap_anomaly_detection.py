@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Maurice Garcia
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Generator
 
 import numpy as np
 
@@ -74,7 +74,7 @@ class HeatmapAnomalyDetector:
         rows, cols = self.data.shape
         boxes: list[tuple[int, int, int, int]] = []
 
-        def neighbors(r: int, c: int):
+        def neighbors(r: int, c: int) -> Generator[tuple[int, int], Any, None]:
             for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                 nr, nc = r + dr, c + dc
                 if 0 <= nr < rows and 0 <= nc < cols:

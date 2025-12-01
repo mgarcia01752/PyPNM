@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
-import logging
 from abc import ABC, abstractmethod
+import logging
 from pathlib import Path
 
 from pydantic import BaseModel
@@ -22,11 +22,10 @@ from pypnm.docsis.data_type.sysDescr import SystemDescriptor, SystemDescriptorMo
 from pypnm.lib.archive.manager import ArchiveManager
 from pypnm.lib.csv.manager import CSVManager
 from pypnm.lib.db.json_transaction import JsonTransactionDb
-from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.mac_address import MacAddress, cast
 from pypnm.lib.matplot.manager import MatplotManager
-from pypnm.lib.types import ChannelId, PathArray, PathLike, TimeStamp
+from pypnm.lib.types import ChannelId, PathArray, PathLike, JSONScalar, TimeStamp
 from pypnm.lib.utils import Generate, TimeUnit
-
 
 class MultiAnalysisRpt(ABC):
     """
@@ -40,10 +39,10 @@ class MultiAnalysisRpt(ABC):
         self._trans_collect:TransactionCollection = capt_data_agg.collect()
         tcm:TransactionCollectionModel = self._trans_collect.getTransactionCollectionModel()[0]
 
-        self._png_dir: PathLike       = SystemConfigSettings.png_dir
-        self._csv_dir: PathLike       = SystemConfigSettings.csv_dir
-        self._json_dir: PathLike      = SystemConfigSettings.json_dir
-        self._archive_dir: PathLike   = SystemConfigSettings.archive_dir
+        self._png_dir: PathLike       = cast(PathLike, SystemConfigSettings.png_dir)
+        self._csv_dir: PathLike       = cast(PathLike, SystemConfigSettings.csv_dir)
+        self._json_dir: PathLike      = cast(PathLike, SystemConfigSettings.json_dir)
+        self._archive_dir: PathLike   = cast(PathLike, SystemConfigSettings.archive_dir)
 
         self._group_time:TimeStamp    = Generate.time_stamp()
         self._base_filename: PathLike = ""
@@ -278,23 +277,38 @@ class MultiAnalysisRpt(ABC):
         pass
 
     @abstractmethod
-    def create_csv(self, **kwargs) -> list[CSVManager]:
+    def create_csv(self, **kwargs: JSONScalar) -> list[CSVManager]:
         """
         Build one or more `CSVManager` instances ready to `write()`.
 
-        Implement in subclasses:
-            - Serialize registered models into CSV rows.
-            - Return the list of configured `CSVManager` instances.
+        Parameters
+        ----------
+        **kwargs : JSONScalar
+            Optional configuration flags or scalar parameters (ints, floats,
+            strings, booleans, or None) used by concrete implementations.
+
+        Returns
+        -------
+        list[CSVManager]
+            List of configured `CSVManager` instances ready to write.
         """
         return []
 
     @abstractmethod
-    def create_matplot(self, **kwargs) -> list[MatplotManager]:
+    def create_matplot(self, **kwargs: JSONScalar) -> list[MatplotManager]:
         """
         Build one or more `MatplotManager` instances to render PNG figures.
 
-        Implement in subclasses:
-            - Configure figures from registered models.
-            - Return the list of configured `MatplotManager` instances.
+        Parameters
+        ----------
+        **kwargs : JSONScalar
+            Optional configuration flags or scalar parameters (ints, floats,
+            strings, booleans, or None) used by concrete implementations.
+
+        Returns
+        -------
+        list[MatplotManager]
+            List of configured `MatplotManager` instances used to generate plots.
         """
         return []
+
