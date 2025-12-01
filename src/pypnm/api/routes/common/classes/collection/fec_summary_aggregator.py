@@ -306,22 +306,24 @@ class FecSummaryAggregator(MultiPnmCollection):
                 new_summary = CodewordSummaryTotalsModel(total_codewords=total, corrected=corrected, uncorrectable=uncorrectable)
                 new_profile_totals = ProfileSummaryTotalsModel(profile_id=profile_id, summary=new_summary)
                 existing = profiles_map.get(profile_id)
-                if existing is not None:
-                    if (
+                if (
+                    existing is not None
+                    and (
                         existing.summary.total_codewords != new_summary.total_codewords
                         or existing.summary.corrected != new_summary.corrected
                         or existing.summary.uncorrectable != new_summary.uncorrectable
-                    ):
-                        self.logger.debug(
-                            "FEC overwrite: ch=%s ts=%s profile=%s old={total:%s corr:%s uncor:%s} -> new={total:%s corr:%s uncor:%s}",
-                            channel_id,
-                            ts,
-                            profile_id,
-                            existing.summary.total_codewords,
-                            existing.summary.corrected,
-                            existing.summary.uncorrectable,
-                            new_summary.total_codewords,
-                            new_summary.corrected,
-                            new_summary.uncorrectable,
-                        )
+                    )
+                ):
+                    self.logger.debug(
+                        "FEC overwrite: ch=%s ts=%s profile=%s old={total:%s corr:%s uncor:%s} -> new={total:%s corr:%s uncor:%s}",
+                        channel_id,
+                        ts,
+                        profile_id,
+                        existing.summary.total_codewords,
+                        existing.summary.corrected,
+                        existing.summary.uncorrectable,
+                        new_summary.total_codewords,
+                        new_summary.corrected,
+                        new_summary.uncorrectable,
+                    )
                 profiles_map[profile_id] = new_profile_totals

@@ -1723,10 +1723,9 @@ class CmSnmpOperation:
         for idx in Snmp_v2c.extract_last_oid_index(results):
             obj = DocsFddCmFddBandEdgeCapabilities(idx, self._snmp)
 
-            if create_and_start:
-                if not await obj.start():
-                    self.logger.warning(f"SNMP population failed for DocsFddCmFddBandEdgeCapabilities (index={idx})")
-                    continue
+            if create_and_start and not await obj.start():
+                self.logger.warning(f"SNMP population failed for DocsFddCmFddBandEdgeCapabilities (index={idx})")
+                continue
 
             entries.append(obj)
 

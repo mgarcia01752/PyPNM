@@ -101,13 +101,12 @@ class Snmp_v3:
         """
         Basic parameter checks so misconfigurations fail fast even in stub mode.
         """
-        if self._sec_level in (SecurityLevel.AUTH_NO_PRIV, SecurityLevel.AUTH_PRIV):
-            if self._auth_proto == AuthProtocol.NONE or not self._auth_pass:
-                raise ValueError("SNMPv3 auth* requires auth_protocol and auth_password.")
+        if (self._sec_level in (SecurityLevel.AUTH_NO_PRIV, SecurityLevel.AUTH_PRIV)
+                and (self._auth_proto == AuthProtocol.NONE or not self._auth_pass)):
+            raise ValueError("SNMPv3 auth* requires auth_protocol and auth_password.")
 
-        if self._sec_level is SecurityLevel.AUTH_PRIV:
-            if self._priv_proto == PrivProtocol.NONE or not self._priv_pass:
-                raise ValueError("SNMPv3 authPriv requires priv_protocol and priv_password.")
+        if self._sec_level is SecurityLevel.AUTH_PRIV and (self._priv_proto == PrivProtocol.NONE or not self._priv_pass):
+            raise ValueError("SNMPv3 authPriv requires priv_protocol and priv_password.")
 
         if not isinstance(self._host, str) or not self._host:
             raise ValueError("Invalid host provided to Snmp_v3.")

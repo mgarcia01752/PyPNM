@@ -59,12 +59,10 @@ class SNMPv3(BaseModel):
         Ensure that authentication and privacy fields are present based on securityLevel.
         """
         lvl = self.securityLevel
-        if lvl in ("authNoPriv", "authPriv"):
-            if not self.authProtocol or not self.authPassword:
-                raise ValueError("authProtocol & authPassword are required for auth levels")
-        if lvl == "authPriv":
-            if not self.privProtocol or not self.privPassword:
-                raise ValueError("privProtocol & privPassword are required for privacy level")
+        if lvl in ("authNoPriv", "authPriv") and (not self.authProtocol or not self.authPassword):
+            raise ValueError("authProtocol & authPassword are required for auth levels")
+        if lvl == "authPriv" and (not self.privProtocol or not self.privPassword):
+            raise ValueError("privProtocol & privPassword are required for privacy level")
         return self
 
 
