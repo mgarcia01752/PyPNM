@@ -143,6 +143,7 @@ exclude        = [
   "src/pypnm/lib/csv/manager.py",
   "src/pypnm/api/routes/common/extended/common_messaging_service.py",
   "src/pypnm/api/routes/common/extended/common_measure_service.py",
+  "src/pypnm/examples/",
 ]
 
 
