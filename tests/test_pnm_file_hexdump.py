@@ -25,8 +25,16 @@ def test_hexdump_success(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Non
     transaction_id: TransactionId = TransactionId("8f17fcdd4c0138ef")
     filename = "test_pnm_file.bin"
 
+    def _fake_pnm_dir(cls: type[SystemConfigSettings]) -> str:
+        return str(tmp_path)
+
     # Point the PNM directory at a temporary location for the test
-    monkeypatch.setattr(SystemConfigSettings, "pnm_dir", str(tmp_path))
+    monkeypatch.setattr(
+        SystemConfigSettings,
+        "pnm_dir",
+        classmethod(_fake_pnm_dir),
+        raising=False,
+    )
 
     # Create a small synthetic PNM-like binary payload
     file_path = tmp_path / filename
@@ -71,8 +79,16 @@ def test_hexdump_missing_transaction_raises(tmp_path: Path, monkeypatch: pytest.
     """
     transaction_id: TransactionId = TransactionId("deadbeefdeadbeef")
 
+    def _fake_pnm_dir(cls: type[SystemConfigSettings]) -> str:
+        return str(tmp_path)
+
     # Point PNM directory somewhere harmless (no files needed for this branch)
-    monkeypatch.setattr(SystemConfigSettings, "pnm_dir", str(tmp_path))
+    monkeypatch.setattr(
+        SystemConfigSettings,
+        "pnm_dir",
+        classmethod(_fake_pnm_dir),
+        raising=False,
+    )
 
     def fake_get_record(
         self: PnmFileTransaction, txn_id: TransactionId

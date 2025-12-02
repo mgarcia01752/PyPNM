@@ -6,6 +6,8 @@ from __future__ import annotations
 import ipaddress
 import logging
 
+from pypnm.lib.types import InetAddressStr
+
 
 class InetGenerate:
     """
@@ -86,7 +88,7 @@ class InetGenerate:
             return False
 
     @staticmethod
-    def get_inet_version(inet: str) -> str:
+    def get_inet_version(inet: InetAddressStr) -> str:
         """
         Get the IP version of the provided IP address.
 

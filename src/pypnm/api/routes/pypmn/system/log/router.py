@@ -41,14 +41,14 @@ class PyPnmSystemLog:
         [API Guide -  PyPNM System Log](https://github.com/mgarcia01752/PyPNM/blob/main/documentation/api/fast-api/system/log.md)
         """
         try:
-            log_path = os.path.join(SystemConfigSettings.log_dir, SystemConfigSettings.log_filename)
+            log_path = os.path.join(SystemConfigSettings.log_dir(), SystemConfigSettings.log_filename())
 
             if not os.path.isfile(log_path):
                 raise FileNotFoundError(f"Log file not found at: {log_path}")
 
             return FileResponse(
                 path=log_path,
-                filename=SystemConfigSettings.log_filename,
+                filename=SystemConfigSettings.log_filename(),
                 media_type="text/plain" )
 
         except Exception as e:

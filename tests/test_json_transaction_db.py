@@ -100,8 +100,24 @@ def _make_db(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> JsonTransaction
 
     db_path: Path = tmp_path / "transactions.json"
 
-    monkeypatch.setattr(SystemConfigSettings, "json_db", str(db_path), raising=False)
-    monkeypatch.setattr(SystemConfigSettings, "json_dir", str(json_dir), raising=False)
+    def _fake_json_db(cls: type[SystemConfigSettings]) -> str:
+        return str(db_path)
+
+    def _fake_json_dir(cls: type[SystemConfigSettings]) -> str:
+        return str(json_dir)
+
+    monkeypatch.setattr(
+        SystemConfigSettings,
+        "json_db",
+        classmethod(_fake_json_db),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        SystemConfigSettings,
+        "json_dir",
+        classmethod(_fake_json_dir),
+        raising=False,
+    )
 
     db = JsonTransactionDb()
     return db

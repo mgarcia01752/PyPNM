@@ -409,7 +409,7 @@ class Analysis:
         """
         msg_rsp_dict:dict[Any, Any] = msg_response.payload_to_dict()
         mac = msg_rsp_dict.get('mac_address')
-        fname = f'{SystemConfigSettings().message_response_dir}/{mac}_{Generate.time_stamp()}.msg'
+        fname = f'{SystemConfigSettings().message_response_dir()}/{mac}_{Generate.time_stamp()}.msg'
         self.logger.debug(f'Saving Message Response: {fname}')
 
         fp = FileProcessor(fname)

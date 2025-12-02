@@ -2,327 +2,491 @@
 # Copyright (c) 2025 Maurice Garcia
 from __future__ import annotations
 
-from collections.abc import Callable
+import logging
 from pathlib import Path
+from typing import cast
 
 from pypnm.config.config_manager import ConfigManager
+from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.types import InetAddressStr, IPv4Str, IPv6Str, MacAddressStr
 
 
-class classproperty:
-    """Descriptor for class-level properties that reload config on each access."""
-    def __init__(self, f: Callable[[type], object]) -> None:
-        self.f = f
-
-    def __get__(self, instance: object | None, owner: type | None) -> object:
-        # Return the computed class-level property value (typed as 'object' instead of 'Any')
-        return self.f(owner)
-
 class SystemConfigSettings:
     """Provides dynamically reloaded system configuration via class properties."""
-    _cfg = ConfigManager()
+    _cfg        = ConfigManager()
+    _logger     = logging.getLogger("SystemConfigSettings")
 
-    # FastAPI defaults
-    @classproperty
+    _DEFAULT_IP_ADDRESS: InetAddressStr = cast(InetAddressStr, "192.168.0.100")
+    _DEFAULT_SNMP_RETRIES: int              = 5
+    _DEFAULT_SNMP_TIMEOUT: int              = 2
+    _DEFAULT_FILE_RETRIEVAL_RETRIES: int    = 5
+    _DEFAULT_HTTP_PORT: int                 = 80
+    _DEFAULT_HTTPS_PORT: int                = 443
+    _DEFAULT_TFTP_PORT: int                 = 69
+    _DEFAULT_FTP_PORT: int                  = 21
+    _DEFAULT_SCP_PORT: int                  = 22
+    _DEFAULT_SFTP_PORT: int                 = 22
+    _DEFAULT_LOG_LEVEL: str                 = "INFO"
+    _DEFAULT_LOG_DIR: str                   = "logs"
+    _DEFAULT_LOG_FILENAME: str              = "pypnm.log"
+    _DEFAULT_SNMP_READ_COMMUNITY: str       = "public"
+    _DEFAULT_SNMP_WRITE_COMMUNITY: str      = "private"
+    _DEFAULT_PNM_DIR: str                   = ".data/pnm"
+    _DEFAULT_CSV_DIR: str                   = ".data/csv"
+    _DEFAULT_JSON_DIR: str                  = ".data/json"
+    _DEFAULT_XLSX_DIR: str                  = ".data/xlsx"
+    _DEFAULT_PNG_DIR: str                   = ".data/png"
+    _DEFAULT_ARCHIVE_DIR: str               = ".data/archive"
+    _DEFAULT_MSG_RSP_DIR: str               = ".data/msg_rsp"
+
+    @classmethod
+    def _config_path(cls, *path: str) -> str:
+        """Return dotted path for logging."""
+        return ".".join(path)
+
+    @classmethod
+    def _get_str(cls, default: str, *path: str) -> str:
+        value = cls._cfg.get(*path)
+        if value is None:
+            cls._logger.error(
+                "Missing configuration value for '%s'; using default '%s'",
+                cls._config_path(*path),
+                default,
+            )
+            return default
+        if not isinstance(value, str):
+            coerced = str(value)
+            cls._logger.error(
+                "Non-string configuration value for '%s': %r; using coerced '%s'",
+                cls._config_path(*path),
+                value,
+                coerced,
+            )
+            return coerced
+        if value == "":
+            cls._logger.error(
+                "Empty configuration value for '%s'; using default '%s'",
+                cls._config_path(*path),
+                default,
+            )
+            return default
+        return value
+
+    @classmethod
+    def _get_int(cls, default: int, *path: str) -> int:
+        value = cls._cfg.get(*path)
+        if value is None:
+            cls._logger.error(
+                "Missing configuration value for '%s'; using default %d",
+                cls._config_path(*path),
+                default,
+            )
+            return default
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            cls._logger.error(
+                "Invalid integer configuration value for '%s': %r; using default %d",
+                cls._config_path(*path),
+                value,
+                default,
+            )
+            return default
+
+    @classmethod
+    def _get_bool(cls, default: bool, *path: str) -> bool:
+        value = cls._cfg.get(*path)
+        if isinstance(value, bool):
+            return value
+        if value is None:
+            cls._logger.error(
+                "Missing configuration value for '%s'; using default %s",
+                cls._config_path(*path),
+                default,
+            )
+            return default
+
+        text = str(value).strip().lower()
+        if text in ("1", "true", "yes", "on"):
+            return True
+        if text in ("0", "false", "no", "off"):
+            return False
+
+        cls._logger.error(
+            "Invalid boolean configuration value for '%s': %r; using default %s",
+            cls._config_path(*path),
+            value,
+            default,
+        )
+        return default
+
+    @classmethod
     def default_mac_address(cls) -> MacAddressStr:
-        return cls._cfg.get("FastApiRequestDefault", "mac_address")
+        mac = cls._cfg.get("FastApiRequestDefault", "mac_address")
+        if not mac:
+            cls._logger.error(
+                "Missing configuration value for '%s'; using MacAddress.null()",
+                cls._config_path("FastApiRequestDefault", "mac_address"),
+            )
+            return cast(MacAddressStr, MacAddress.null())
+        return cast(MacAddressStr, mac)
 
-    @classproperty
+    @classmethod
     def default_ip_address(cls) -> InetAddressStr:
-        return cls._cfg.get("FastApiRequestDefault", "ip_address")
+        return cast(
+            InetAddressStr,
+            cls._get_str(cls._DEFAULT_IP_ADDRESS, "FastApiRequestDefault", "ip_address"),
+        )
 
     # SNMP v2 settings
-    @classproperty
+    @classmethod
     def snmp_enable(cls) -> bool:
-        return cls._cfg.get("SNMP", "version", "2c", "enable")
+        return cls._get_bool(True, "SNMP", "version", "2c", "enable")
 
-    @classproperty
+    @classmethod
     def snmp_retries(cls) -> int:
-        return int(cls._cfg.get("SNMP", "version", "2c", "retries"))
+        return cls._get_int(cls._DEFAULT_SNMP_RETRIES, "SNMP", "version", "2c", "retries")
 
-    @classproperty
+    @classmethod
     def snmp_read_community(cls) -> str:
-        return cls._cfg.get("SNMP", "version", "2c", "read_community")
+        return cls._get_str(cls._DEFAULT_SNMP_READ_COMMUNITY, "SNMP", "version", "2c", "read_community")
 
-    @classproperty
+    @classmethod
     def snmp_write_community(cls) -> str:
-        return cls._cfg.get("SNMP", "version", "2c", "write_community")
+        return cls._get_str(cls._DEFAULT_SNMP_WRITE_COMMUNITY, "SNMP", "version", "2c", "write_community")
 
     # SNMP v3 settings
 
-    @classproperty
+    @classmethod
     def snmp_v3_enable(cls) -> bool:
-        return cls._cfg.get("SNMP", "version", "3", "enable")
+        return cls._get_bool(False, "SNMP", "version", "3", "enable")
 
-    @classproperty
+    @classmethod
     def snmp_v3_username(cls) -> str:
-        return cls._cfg.get("SNMP", "version", "3", "username")
+        return cls._get_str("", "SNMP", "version", "3", "username")
 
-    @classproperty
+    @classmethod
     def snmp_v3_auth_protocol(cls) -> str:
-        return cls._cfg.get("SNMP", "version", "3", "auth_protocol")
+        return cls._get_str("", "SNMP", "version", "3", "auth_protocol")
 
-    @classproperty
+    @classmethod
     def snmp_v3_auth_password(cls) -> str:
-        return cls._cfg.get("SNMP", "version", "3", "auth_password")
+        return cls._get_str("", "SNMP", "version", "3", "auth_password")
 
-    @classproperty
+    @classmethod
     def snmp_v3_priv_protocol(cls) -> str:
-        return cls._cfg.get("SNMP", "version", "3", "priv_protocol")
+        return cls._get_str("", "SNMP", "version", "3", "priv_protocol")
 
-    @classproperty
+    @classmethod
     def snmp_v3_priv_password(cls) -> str:
-        return cls._cfg.get("SNMP", "version", "3", "priv_password")
+        return cls._get_str("", "SNMP", "version", "3", "priv_password")
 
     # SNMP general settings
-    @classproperty
+    @classmethod
     def snmp_timeout(cls) -> int:
-        return int(cls._cfg.get("SNMP", "timeout"))
-
+        return cls._get_int(cls._DEFAULT_SNMP_TIMEOUT, "SNMP", "timeout")
 
     # Bulk data transfer settings
-    @classproperty
+    @classmethod
     def bulk_transfer_method(cls) -> str:
-        return cls._cfg.get("PnmBulkDataTransfer", "method")
+        return cls._get_str("", "PnmBulkDataTransfer", "method")
 
-    @classproperty
+    @classmethod
     def bulk_tftp_ip_v4(cls) -> IPv4Str:
-        return cls._cfg.get("PnmBulkDataTransfer", "tftp", "ip_v4")
+        return cast(
+            IPv4Str,
+            cls._get_str("", "PnmBulkDataTransfer", "tftp", "ip_v4"),
+        )
 
-    @classproperty
+    @classmethod
     def bulk_tftp_ip_v6(cls) -> IPv6Str:
-        return cls._cfg.get("PnmBulkDataTransfer", "tftp", "ip_v6")
+        return cast(
+            IPv6Str,
+            cls._get_str("", "PnmBulkDataTransfer", "tftp", "ip_v6"),
+        )
 
-    @classproperty
+    @classmethod
     def bulk_tftp_remote_dir(cls) -> str:
-        return cls._cfg.get("PnmBulkDataTransfer", "tftp", "remote_dir")
+        return cls._get_str("", "PnmBulkDataTransfer", "tftp", "remote_dir")
 
-    @classproperty
+    @classmethod
     def bulk_http_base_url(cls) -> str:
-        return cls._cfg.get("PnmBulkDataTransfer", "http", "base_url")
+        return cls._get_str("", "PnmBulkDataTransfer", "http", "base_url")
 
-    @classproperty
+    @classmethod
     def bulk_http_port(cls) -> int:
-        return int(cls._cfg.get("PnmBulkDataTransfer", "http", "port"))
+        return cls._get_int(cls._DEFAULT_HTTP_PORT, "PnmBulkDataTransfer", "http", "port")
 
-    @classproperty
+    @classmethod
     def bulk_https_base_url(cls) -> str:
-        return cls._cfg.get("PnmBulkDataTransfer", "https", "base_url")
+        return cls._get_str("", "PnmBulkDataTransfer", "https", "base_url")
 
-    @classproperty
+    @classmethod
     def bulk_https_port(cls) -> int:
-        return int(cls._cfg.get("PnmBulkDataTransfer", "https", "port"))
+        return cls._get_int(cls._DEFAULT_HTTPS_PORT, "PnmBulkDataTransfer", "https", "port")
 
     # PNM file retrieval/storage settings
-    @classproperty
+    @classmethod
     def save_dir(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "pnm_dir")
+        return cls._get_str(cls._DEFAULT_PNM_DIR, "PnmFileRetrieval", "pnm_dir")
 
-    @classproperty
+    @classmethod
     def pnm_dir(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "pnm_dir")
+        return cls._get_str(cls._DEFAULT_PNM_DIR, "PnmFileRetrieval", "pnm_dir")
 
-    @classproperty
+    @classmethod
     def csv_dir(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "csv_dir")
+        return cls._get_str(cls._DEFAULT_CSV_DIR, "PnmFileRetrieval", "csv_dir")
 
-    @classproperty
+    @classmethod
     def json_dir(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "json_dir")
+        return cls._get_str(cls._DEFAULT_JSON_DIR, "PnmFileRetrieval", "json_dir")
 
-    @classproperty
+    @classmethod
     def xlsx_dir(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "xlsx_dir")
+        return cls._get_str(cls._DEFAULT_XLSX_DIR, "PnmFileRetrieval", "xlsx_dir")
 
-    @classproperty
+    @classmethod
     def png_dir(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "png_dir")
+        return cls._get_str(cls._DEFAULT_PNG_DIR, "PnmFileRetrieval", "png_dir")
 
-    @classproperty
+    @classmethod
     def archive_dir(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "archive_dir")
+        return cls._get_str(cls._DEFAULT_ARCHIVE_DIR, "PnmFileRetrieval", "archive_dir")
 
-    @classproperty
+    @classmethod
     def message_response_dir(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "msg_rsp_dir")
+        return cls._get_str(cls._DEFAULT_MSG_RSP_DIR, "PnmFileRetrieval", "msg_rsp_dir")
 
-    @classproperty
+    @classmethod
     def transaction_db(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "transaction_db")
+        return cls._get_str("", "PnmFileRetrieval", "transaction_db")
 
-    @classproperty
+    @classmethod
     def capture_group_db(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "capture_group_db")
+        return cls._get_str("", "PnmFileRetrieval", "capture_group_db")
 
-    @classproperty
+    @classmethod
     def session_group_db(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "session_group_db")
+        return cls._get_str("", "PnmFileRetrieval", "session_group_db")
 
-    @classproperty
+    @classmethod
     def operation_db(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "operation_db")
+        return cls._get_str("", "PnmFileRetrieval", "operation_db")
 
-    @classproperty
+    @classmethod
     def json_db(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "json_transaction_db")
+        return cls._get_str("", "PnmFileRetrieval", "json_transaction_db")
 
-    @classproperty
+    @classmethod
     def file_retrieval_retries(cls) -> int:
-        return int(cls._cfg.get("PnmFileRetrieval", "retries"))
+        return cls._get_int(cls._DEFAULT_FILE_RETRIEVAL_RETRIES, "PnmFileRetrieval", "retries")
 
-    @classproperty
+    @classmethod
     def retrieval_method(cls) -> str:
-        return cls._cfg.get("PnmFileRetrieval", "retrival_method", "method")
+        return cls._get_str("", "PnmFileRetrieval", "retrival_method", "method")
 
     # Local method
-    @classproperty
+    @classmethod
     def local_src_dir(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "local", "src_dir")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "local", "src_dir",
+        )
 
     # TFTP method
-    @classproperty
-    def tftp_host(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "host") or ""
+    @classmethod
+    def tftp_host(cls) -> InetAddressStr:
+        return InetAddressStr(cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "host",
+        ))
 
-    @classproperty
+    @classmethod
     def tftp_port(cls) -> int:
-        return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "port"))
+        return cls._get_int(
+            cls._DEFAULT_TFTP_PORT,
+            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "port",
+        )
 
-    @classproperty
+    @classmethod
     def tftp_timeout(cls) -> int:
-        return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "timeout"))
+        return cls._get_int(
+            cls._DEFAULT_SNMP_TIMEOUT,
+            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "timeout",
+        )
 
-    @classproperty
+    @classmethod
     def tftp_remote_dir(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "remote_dir")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "remote_dir",
+        )
 
     # FTP method
-    @classproperty
+    @classmethod
     def ftp_host(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "host")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "host",
+        )
 
-    @classproperty
+    @classmethod
     def ftp_port(cls) -> int:
-        return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "port"))
+        return cls._get_int(
+            cls._DEFAULT_FTP_PORT,
+            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "port",
+        )
 
-    @classproperty
+    @classmethod
     def ftp_use_tls(cls) -> bool:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "tls")
+        return cls._get_bool(
+            False,
+            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "tls",
+        )
 
-    @classproperty
+    @classmethod
     def ftp_timeout(cls) -> int:
-        return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "timeout"))
+        return cls._get_int(
+            cls._DEFAULT_SNMP_TIMEOUT,
+            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "timeout",
+        )
 
-    @classproperty
+    @classmethod
     def ftp_user(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "user")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "user",
+        )
 
-    @classproperty
+    @classmethod
     def ftp_password(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "password")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "password",
+        )
 
-    @classproperty
+    @classmethod
     def ftp_remote_dir(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "remote_dir")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "remote_dir",
+        )
 
     # SCP method
-    @classproperty
+    @classmethod
     def scp_host(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "scp", "host")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "scp", "host",
+        )
 
-    @classproperty
+    @classmethod
     def scp_port(cls) -> int:
-        return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "scp", "port"))
+        return cls._get_int(
+            cls._DEFAULT_SCP_PORT,
+            "PnmFileRetrieval", "retrival_method", "methods", "scp", "port",
+        )
 
-    @classproperty
+    @classmethod
     def scp_user(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "scp", "user")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "scp", "user",
+        )
 
-    @classproperty
+    @classmethod
     def scp_password(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "scp", "password")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "scp", "password",
+        )
 
-    @classproperty
+    @classmethod
     def scp_remote_dir(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "scp", "remote_dir")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "scp", "remote_dir",
+        )
 
     # SFTP method
-    @classproperty
+    @classmethod
     def sftp_host(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "host")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "host",
+        )
 
-    @classproperty
+    @classmethod
     def sftp_port(cls) -> int:
-        return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "port"))
+        return cls._get_int(
+            cls._DEFAULT_SFTP_PORT,
+            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "port",
+        )
 
-    @classproperty
+    @classmethod
     def sftp_user(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "user")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "user",
+        )
 
-    @classproperty
+    @classmethod
     def sftp_password(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "password")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "password",
+        )
 
-    @classproperty
+    @classmethod
     def sftp_remote_dir(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "remote_dir")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "remote_dir",
+        )
 
     # HTTP method
-    @classproperty
+    @classmethod
     def http_base_url(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "http", "base_url")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "http", "base_url",
+        )
 
-    @classproperty
+    @classmethod
     def http_port(cls) -> int:
-        return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "http", "port"))
+        return cls._get_int(
+            cls._DEFAULT_HTTP_PORT,
+            "PnmFileRetrieval", "retrival_method", "methods", "http", "port",
+        )
 
     # HTTPS method
-    @classproperty
+    @classmethod
     def https_base_url(cls) -> str:
-        return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "https", "base_url")
+        return cls._get_str(
+            "",
+            "PnmFileRetrieval", "retrival_method", "methods", "https", "base_url",
+        )
 
-    @classproperty
+    @classmethod
     def https_port(cls) -> int:
-        return int(cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "https", "port"))
+        return cls._get_int(
+            cls._DEFAULT_HTTPS_PORT,
+            "PnmFileRetrieval", "retrival_method", "methods", "https", "port",
+        )
 
     # Logging
     @classmethod
     def log_level(cls) -> str:
-        return cls._cfg.get("logging", "log_level") or "INFO"
+        return cls._get_str(cls._DEFAULT_LOG_LEVEL, "logging", "log_level")
 
     @classmethod
     def log_dir(cls) -> str:
-        return cls._cfg.get("logging", "log_dir") or ""
+        return cls._get_str(cls._DEFAULT_LOG_DIR, "logging", "log_dir")
 
     @classmethod
     def log_filename(cls) -> str:
-        return cls._cfg.get("logging", "log_filename") or ""
+        return cls._get_str(cls._DEFAULT_LOG_FILENAME, "logging", "log_filename")
 
     @classmethod
     def initialize_directories(cls) -> None:
@@ -330,13 +494,13 @@ class SystemConfigSettings:
         Create necessary directories if they do not exist.
         """
         directories = [
-            cls.pnm_dir,
-            cls.csv_dir,
-            cls.json_dir,
-            cls.xlsx_dir,
-            cls.png_dir,
-            cls.archive_dir,
-            cls.message_response_dir,
+            cls.pnm_dir(),
+            cls.csv_dir(),
+            cls.json_dir(),
+            cls.xlsx_dir(),
+            cls.png_dir(),
+            cls.archive_dir(),
+            cls.message_response_dir(),
             cls.log_dir(),
         ]
         for directory in directories:

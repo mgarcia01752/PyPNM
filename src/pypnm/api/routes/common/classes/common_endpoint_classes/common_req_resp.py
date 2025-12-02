@@ -19,10 +19,10 @@ from pypnm.lib.mac_address import MacAddress, MacAddressFormat
 from pypnm.lib.matplot.manager import ThemeType
 from pypnm.lib.types import InetAddressStr, IPv4Str, IPv6Str, MacAddressStr
 
-default_mac: MacAddressStr = SystemConfigSettings.default_mac_address
-default_ip: InetAddressStr = SystemConfigSettings.default_ip_address
-default_tftp_ipv4: IPv4Str = SystemConfigSettings.bulk_tftp_ip_v4
-default_tftp_ipv6: IPv6Str = SystemConfigSettings.bulk_tftp_ip_v6
+default_mac: MacAddressStr = SystemConfigSettings.default_mac_address()
+default_ip: InetAddressStr = SystemConfigSettings.default_ip_address()
+default_tftp_ipv4: IPv4Str = SystemConfigSettings.bulk_tftp_ip_v4()
+default_tftp_ipv6: IPv6Str = SystemConfigSettings.bulk_tftp_ip_v6()
 
 class CommonOutput(BaseModel):
     type: OutputType = Field(default=OutputType.JSON, description="Desired output type for analysis results")

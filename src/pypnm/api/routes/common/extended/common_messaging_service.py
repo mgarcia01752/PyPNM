@@ -117,7 +117,7 @@ class MessageResponse:
 
         LogFile.write(f'{prefix}payload_{Generate.time_stamp(TimeUnit.MILLISECONDS)}.msgrsp',
                       self.payload_to_dict(),
-                      log_dir = SystemConfigSettings.message_response_dir)
+                      log_dir = SystemConfigSettings.message_response_dir())
 
 
 class CommonMessagingService:

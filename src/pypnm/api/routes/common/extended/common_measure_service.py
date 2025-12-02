@@ -235,7 +235,7 @@ class CommonMeasureService(CommonMessagingService):
                 tx_id = await PnmFileTransaction().insert(self.cm,
                     DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA, filename)
 
-                pnm_dir = SystemConfigSettings.pnm_dir
+                pnm_dir = SystemConfigSettings.pnm_dir()
                 fpath = f"{pnm_dir}/{filename}"
                 self.logger.debug(f'SpectrumAmplitudeData: - FNAME: {filename} - Length:{len(amp_data)} - TransactionID: {tx_id}')
 
@@ -449,7 +449,7 @@ class CommonMeasureService(CommonMessagingService):
         Returns:
             bool: True if the file was successfully retrieved and moved; False otherwise.
         """
-        method = SystemConfigSettings.retrieval_method
+        method = SystemConfigSettings.retrieval_method()
         self.logger.info(f"{self.log_prefix} - Retrieval method: {method}")
 
         try:
@@ -848,7 +848,7 @@ class CommonMeasureService(CommonMessagingService):
             bool: True if the file was successfully copied; False otherwise.
         """
 
-        src_dir = SystemConfigSettings.local_src_dir
+        src_dir = SystemConfigSettings.local_src_dir()
 
         self.logger.info(
             f'{self.log_prefix} - Local Copy - SRC: {src_dir} - SAVE: {self.pnm_dir} - FN: {pnm_file_name}'
@@ -891,22 +891,22 @@ class CommonMeasureService(CommonMessagingService):
         """
         sys_config = SystemConfigSettings()
 
-        self.logger.debug(f"{self.log_prefix} - SCP: Connecting to: {sys_config.scp_host}")
+        self.logger.debug(f"{self.log_prefix} - SCP: Connecting to: {sys_config.scp_host()}")
 
-        scp = SSHConnector(hostname         =str(sys_config.scp_host),
-                            username        =str(sys_config.scp_user),
-                            port            =int(str(sys_config.scp_port)), 
+        scp = SSHConnector(hostname         =str(sys_config.scp_host()),
+                            username        =str(sys_config.scp_user()),
+                            port            =int(str(sys_config.scp_port())), 
                             transfer_mode   =SecureTransferMode.SCP)
 
         try:
             if not scp.connect(password =   str(sys_config.scp_password)):
-                self.logger.error(f'{self.log_prefix} - SCP Connect Failure: Host: {sys_config.scp_host}')
+                self.logger.error(f'{self.log_prefix} - SCP Connect Failure: Host: {sys_config.scp_host()}')
                 return False
 
-            remote_file_path = f'{sys_config.scp_remote_dir}/{pnm_file_name}'
+            remote_file_path = f'{sys_config.scp_remote_dir()}/{pnm_file_name}'
             if not scp.receive_file(remote_path =   remote_file_path,
-                                    local_path  =   str(sys_config.pnm_dir)):
-                self.logger.error(f'{self.log_prefix} - SCP Receive File Error (SRC:{remote_file_path} DST: {sys_config.pnm_dir})')
+                                    local_path  =   str(sys_config.pnm_dir())):
+                self.logger.error(f'{self.log_prefix} - SCP Receive File Error (SRC:{remote_file_path} DST: {sys_config.pnm_dir()})')
                 return False
 
             self.logger.info(f'{self.log_prefix} - Successfully fetched file: {pnm_file_name}')
@@ -976,8 +976,8 @@ class CommonMeasureService(CommonMessagingService):
         """
         try:
             connector = TFTPConnector(
-                host    =   str(SystemConfigSettings.tftp_host),
-                port    =   int(str(SystemConfigSettings.tftp_port)))
+                host    =   Inet(SystemConfigSettings.tftp_host()),
+                port    =   int(str(SystemConfigSettings.tftp_port())))
 
         except Exception as e:
             self.logger.error(f"{self.log_prefix} - Exception during TFTP connecting: {e}")
@@ -987,16 +987,16 @@ class CommonMeasureService(CommonMessagingService):
 
             self.logger.info(
                 f"{self.log_prefix} - Starting TFTP download from "
-                f"{SystemConfigSettings.tftp_host}:{SystemConfigSettings.tftp_port}"
+                f"{SystemConfigSettings.tftp_host()}:{SystemConfigSettings.tftp_port()}"
             )
 
             # Build remote filename (some tftp servers require just the basename)
             remote_name = (
-                f"{SystemConfigSettings.tftp_remote_dir.rstrip('/')}/{pnm_file_name}"
-                if SystemConfigSettings.tftp_remote_dir else
+                f"{SystemConfigSettings.tftp_remote_dir().rstrip('/')}/{pnm_file_name}"
+                if SystemConfigSettings.tftp_remote_dir() else
                 pnm_file_name
             )
-            local_path = os.path.join(SystemConfigSettings.pnm_dir, pnm_file_name)
+            local_path = os.path.join(SystemConfigSettings.pnm_dir(), pnm_file_name)
 
             success = connector.download_file(remote_name, local_path)
 
@@ -1036,12 +1036,12 @@ class CommonMeasureService(CommonMessagingService):
 
         try:
             connector = FTPConnector(
-                host        =   str(sys_config.ftp_host),
-                port        =   int(str(sys_config.ftp_port)),
-                username    =   str(sys_config.ftp_user),
-                password    =   str(sys_config.ftp_password),
-                use_tls     =   bool(sys_config.ftp_use_tls),
-                timeout     =   int(str(sys_config.ftp_timeout))
+                host        =   str(sys_config.ftp_host()),
+                port        =   int(str(sys_config.ftp_port())),
+                username    =   str(sys_config.ftp_user()),
+                password    =   str(sys_config.ftp_password()),
+                use_tls     =   bool(sys_config.ftp_use_tls()),
+                timeout     =   int(str(sys_config.ftp_timeout()))
             )
 
             self.logger.debug(

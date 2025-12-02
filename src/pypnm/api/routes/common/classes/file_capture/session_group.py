@@ -65,7 +65,7 @@ class SessionGroup:
             self.db_path = Path(db_path)
 
         else:
-            cfg_db_path = SystemConfigSettings.session_group_db
+            cfg_db_path = SystemConfigSettings.session_group_db()
             self.db_path = Path(cfg_db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
 

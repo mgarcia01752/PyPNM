@@ -48,7 +48,7 @@ class PnmFileManager:
 
     def _add_routes(self) -> None:
         default_mac_address = (
-            MacAddress(SystemConfigSettings.default_mac_address)
+            MacAddress(SystemConfigSettings.default_mac_address())
             .to_mac_format(fmt=MacAddressFormat.COLON).lower())
 
         @self.router.get(

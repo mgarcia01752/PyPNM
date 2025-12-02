@@ -49,7 +49,7 @@ class OperationManager:
         if db_path:
             self.db_path = db_path
         else:
-            db_str = SystemConfigSettings.operation_db
+            db_str = SystemConfigSettings.operation_db()
             self.db_path = Path(db_str)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -137,7 +137,7 @@ class OperationManager:
         """
 
         if not db_path:
-            db_str = SystemConfigSettings.operation_db
+            db_str = SystemConfigSettings.operation_db()
             db_path = Path(db_str)
         try:
             with db_path.open("r", encoding="utf-8") as f:
@@ -161,7 +161,7 @@ class OperationManager:
             List of operation_id strings.
         """
         if not db_path:
-            db_str = SystemConfigSettings.operation_db
+            db_str = SystemConfigSettings.operation_db()
             db_path = Path(db_str)
         try:
             with db_path.open("r", encoding="utf-8") as f:

@@ -67,7 +67,7 @@ class PnmFileTransaction:
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.transaction_db_path = Path(SystemConfigSettings.transaction_db)
+        self.transaction_db_path = Path(SystemConfigSettings.transaction_db())
         self.transaction_db_path.parent.mkdir(parents=True, exist_ok=True)
         if not self.transaction_db_path.exists():
             self.transaction_db_path.write_text(json.dumps({}))

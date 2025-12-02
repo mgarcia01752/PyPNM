@@ -261,7 +261,7 @@ class MultiRxMerRouter(AbstractService):
             svc:MultiRxMerService = cast(MultiRxMerService, self.getService(operation_id))
             samples = svc.results(operation_id)
 
-            pnm_dir = str(SystemConfigSettings.pnm_dir)
+            pnm_dir = str(SystemConfigSettings.pnm_dir())
             mac = svc.cm.get_mac_address.mac_address
 
             buf = io.BytesIO()

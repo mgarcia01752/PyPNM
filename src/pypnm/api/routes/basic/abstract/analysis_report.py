@@ -389,10 +389,10 @@ class AnalysisReport(ABC):
             raise ValueError("No analysis data available")
 
         # Directories / session metadata
-        self._png_dir: PathLike       = SystemConfigSettings.png_dir
-        self._csv_dir: PathLike       = SystemConfigSettings.csv_dir
-        self._json_dir: PathLike      = SystemConfigSettings.json_dir
-        self._archive_dir: PathLike   = SystemConfigSettings.archive_dir
+        self._png_dir: PathLike       = SystemConfigSettings.png_dir()
+        self._csv_dir: PathLike       = SystemConfigSettings.csv_dir()
+        self._json_dir: PathLike      = SystemConfigSettings.json_dir()
+        self._archive_dir: PathLike   = SystemConfigSettings.archive_dir()
 
         self._group_time: TimeStamp         = TimeStamp(Generate.time_stamp())
         self._base_filename: FileNameStr    = FileNameStr("")

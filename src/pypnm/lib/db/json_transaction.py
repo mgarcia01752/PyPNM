@@ -57,8 +57,8 @@ class JsonTransactionDb:
         DB file path and JSON payload directory are taken as-is from these
         settings; no additional base-directory inference is performed.
         """
-        self._json_db   = Path(SystemConfigSettings.json_db)
-        self._json_dir  = Path(SystemConfigSettings.json_dir)
+        self._json_db   = Path(SystemConfigSettings.json_db())
+        self._json_dir  = Path(SystemConfigSettings.json_dir())
         self.logger     = logging.getLogger(f"{self.__class__.__name__}")
         self.logger.info(
             f"Initialized JSON Transaction DB Manager with json_db={self._json_db}, json_dir={self._json_dir}"

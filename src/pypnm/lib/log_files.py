@@ -19,7 +19,7 @@ class LogFile:
     def write(cls,
               fname: PathLike,
               data: BaseModel | dict[Any, Any] | str | bytes,
-              log_dir:PathLike = SystemConfigSettings.log_dir ) -> None:
+              log_dir:PathLike = SystemConfigSettings.log_dir()) -> None:
         """
         Write log data.
 

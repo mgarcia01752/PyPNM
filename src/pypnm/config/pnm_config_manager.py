@@ -13,23 +13,22 @@ class PnmConfigManager:
     Provides access to TFTP server addresses, SNMP community strings, and file paths.
     """
 
-    _tftp_v4 = SystemConfigSettings.bulk_tftp_ip_v4
-    _tftp_v6 = SystemConfigSettings.bulk_tftp_ip_v6
-    _write_community = SystemConfigSettings.snmp_write_community
-    _tftp_path = SystemConfigSettings.tftp_remote_dir
-    _pnm_dir = SystemConfigSettings.pnm_dir
-
+    _tftp_v4 = SystemConfigSettings.bulk_tftp_ip_v4()
+    _tftp_v6 = SystemConfigSettings.bulk_tftp_ip_v6()
+    _write_community = SystemConfigSettings.snmp_write_community()
+    _tftp_path = SystemConfigSettings.tftp_remote_dir()
+    _pnm_dir = SystemConfigSettings.pnm_dir()
     @classmethod
     def reload(cls) -> None:
         """
         Reloads all configuration values from the source configuration.
         Call this if the underlying configuration file changes and you want updated values.
         """
-        cls._tftp_v4 = SystemConfigSettings.bulk_tftp_ip_v4
-        cls._tftp_v6 = SystemConfigSettings.bulk_tftp_ip_v6
-        cls._write_community = SystemConfigSettings.snmp_write_community
-        cls._tftp_path = SystemConfigSettings.tftp_remote_dir
-        cls._pnm_dir = SystemConfigSettings.pnm_dir
+        cls._tftp_v4 = SystemConfigSettings.bulk_tftp_ip_v4()
+        cls._tftp_v6 = SystemConfigSettings.bulk_tftp_ip_v6()
+        cls._write_community = SystemConfigSettings.snmp_write_community()
+        cls._tftp_path = SystemConfigSettings.tftp_remote_dir()
+        cls._pnm_dir = SystemConfigSettings.pnm_dir()
     @staticmethod
     def get_save_dir() -> str:
         '''

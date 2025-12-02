@@ -61,10 +61,10 @@ class Snmp_v2c:
     SNMP_PORT = 161
 
     def __init__(self, host: Inet,
-                 community: str = SystemConfigSettings.snmp_write_community,
+                 community: str = SystemConfigSettings.snmp_write_community(),
                  port: int      = SNMP_PORT,
-                 timeout: int   = SystemConfigSettings.snmp_timeout,
-                 retries: int   = SystemConfigSettings.snmp_retries) -> None:
+                 timeout: int   = SystemConfigSettings.snmp_timeout(),
+                 retries: int   = SystemConfigSettings.snmp_retries()) -> None:
         """
         Initializes the SNMPv2c client.
 

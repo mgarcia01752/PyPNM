@@ -65,7 +65,7 @@ class OfdmSpecAnalyzerAnalysisReport:
             Source of per-channel :class:`Analysis` objects to process.
         """
         self._multi_analysis = multi_analysis
-        self._archive_path:PathLike = SystemConfigSettings.archive_dir
+        self._archive_path:PathLike = SystemConfigSettings.archive_dir()
         self._analysis_files:list[PathLike] = []
         self._archive_file:PathLike
 

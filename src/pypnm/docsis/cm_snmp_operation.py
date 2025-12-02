@@ -197,7 +197,7 @@ class CmSnmpOperation:
         3) Else -> error
         """
 
-        if SystemConfigSettings.snmp_v3_enable:
+        if SystemConfigSettings.snmp_v3_enable():
             '''
             self.logger.debug("SNMPv3 enabled in configuration; validating parameters...")
             try:
@@ -231,7 +231,7 @@ class CmSnmpOperation:
                 "SNMPv3 is enabled in configuration, but the SNMPv3 client is not implemented yet. "
                 "Disable SNMPv3 to use SNMPv2c.")
 
-        if SystemConfigSettings.snmp_enable:
+        if SystemConfigSettings.snmp_enable():
             self.logger.debug("Using SNMPv2c")
             return Snmp_v2c(host=self._inet, community=self._community, port=self._port)
 

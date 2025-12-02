@@ -40,10 +40,10 @@ class MultiAnalysisRpt(ABC):
         self._trans_collect:TransactionCollection = capt_data_agg.collect()
         tcm:TransactionCollectionModel = self._trans_collect.getTransactionCollectionModel()[0]
 
-        self._png_dir: PathLike       = cast(PathLike, SystemConfigSettings.png_dir)
-        self._csv_dir: PathLike       = cast(PathLike, SystemConfigSettings.csv_dir)
-        self._json_dir: PathLike      = cast(PathLike, SystemConfigSettings.json_dir)
-        self._archive_dir: PathLike   = cast(PathLike, SystemConfigSettings.archive_dir)
+        self._png_dir: PathLike       = cast(PathLike, SystemConfigSettings.png_dir())
+        self._csv_dir: PathLike       = cast(PathLike, SystemConfigSettings.csv_dir())
+        self._json_dir: PathLike      = cast(PathLike, SystemConfigSettings.json_dir())
+        self._archive_dir: PathLike   = cast(PathLike, SystemConfigSettings.archive_dir())
 
         self._group_time:TimeStamp    = Generate.time_stamp()
         self._base_filename: PathLike = ""

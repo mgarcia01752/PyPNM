@@ -57,8 +57,8 @@ class OperationCaptureGroupResolver:
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.operation_db_path = Path(SystemConfigSettings.operation_db)
-        self.capture_group_db_path = Path(SystemConfigSettings.capture_group_db)
+        self.operation_db_path = Path(SystemConfigSettings.operation_db())
+        self.capture_group_db_path = Path(SystemConfigSettings.capture_group_db())
 
         self.operation_db_path.parent.mkdir(parents=True, exist_ok=True)
         self.capture_group_db_path.parent.mkdir(parents=True, exist_ok=True)

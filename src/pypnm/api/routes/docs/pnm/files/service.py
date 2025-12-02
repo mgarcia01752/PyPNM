@@ -87,7 +87,7 @@ class PnmFileService:
     """
 
     def __init__(self) -> None:
-        self.pnm_dir: PathLike = SystemConfigSettings.pnm_dir
+        self.pnm_dir: PathLike = SystemConfigSettings.pnm_dir()
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def search_files(self, req: FileQueryRequest) -> FileQueryResponse:
@@ -184,7 +184,7 @@ class PnmFileService:
         if not files_to_archive:
             raise HTTPException(status_code=404, detail="No files on disk for Operation ID.")
 
-        archive_dir = Path(SystemConfigSettings.archive_dir)
+        archive_dir = Path(SystemConfigSettings.archive_dir())
         archive_dir.mkdir(parents=True, exist_ok=True)
 
         archive_name = f"pnm_operation_{operation_id}_{Generate.time_stamp()}.zip"
@@ -240,7 +240,7 @@ class PnmFileService:
         if not files_to_archive:
             raise HTTPException(status_code=404, detail="No files on disk for MAC address.")
 
-        archive_dir = Path(SystemConfigSettings.archive_dir)
+        archive_dir = Path(SystemConfigSettings.archive_dir())
         archive_dir.mkdir(parents=True, exist_ok=True)
 
         safe_mac = str(MacAddress(mac_address).to_mac_format())
@@ -334,15 +334,15 @@ class PnmFileService:
             raise HTTPException(status_code=400, detail=f"Invalid file extension, file: {safe_name}")
 
         if file_type == FileType.CSV:
-            base_dir = SystemConfigSettings.csv_dir
+            base_dir = SystemConfigSettings.csv_dir()
             media_type = MediaType.TEXT_CSV
 
         elif file_type == FileType.JSON:
-            base_dir = SystemConfigSettings.json_dir
+            base_dir = SystemConfigSettings.json_dir()
             media_type = MediaType.APPLICATION_JSON
 
         elif file_type == FileType.ARCHIVE:
-            base_dir = SystemConfigSettings.archive_dir
+            base_dir = SystemConfigSettings.archive_dir()
             media_type = MediaType.APPLICATION_ZIP
 
         else:
