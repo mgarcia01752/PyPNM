@@ -72,7 +72,7 @@ class PnmFileTransaction:
         if not self.transaction_db_path.exists():
             self.transaction_db_path.write_text(json.dumps({}))
 
-    async def insert(self, cable_modem: CableModem, pnm_test_type: DocsPnmCmCtlTest, filename: str) -> str:
+    async def insert(self, cable_modem: CableModem, pnm_test_type: DocsPnmCmCtlTest, filename: str) -> TransactionId:
         """
         Record A Transaction Initiated From An Actual Cable Modem Test.
 

@@ -216,15 +216,15 @@ class CommonMeasureService(CommonMessagingService):
 
             if __status[0] != ServiceStatusCode.SUCCESS:
                self.logger.error(f"{self.log_prefix} - Unable to set Spectrum Analyzer Settings")
-               return ServiceStatusCode.SPEC_ANALYZER_SET_CONFIG_ERROR
+               return self.build_send_msg(ServiceStatusCode.SPEC_ANALYZER_SET_CONFIG_ERROR)
 
             # This is a blocking method, it will return SUCCESS or wait till timeout to return an ERROR
             status = await self._check_spectrum_amplitude_data_status()
 
             if status == ServiceStatusCode.SUCCESS:
-
+                self.logger.info(f"{self.log_prefix} - Spectrum Amplitude Data is READY, collecting amplitude data, may take a while...")
                 amp_data: bytes = await self.cm.getSpectrumAmplitudeData()
-
+                self.logger.info(f"{self.log_prefix} - Spectrum Amplitude Data collection COMPLETE, total bytes: {len(amp_data)}.")
                 #################################################################################################
                 # Build binary filename and save file - START
                 # TODO: Refactor filename generation to utility function, need to figure where best place first
