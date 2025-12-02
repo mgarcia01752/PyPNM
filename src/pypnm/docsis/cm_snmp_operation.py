@@ -302,7 +302,7 @@ class CmSnmpOperation:
     def getWriteCommunity(self) -> str:
         return self._community
 
-    async def getIfTypeIndex(self, doc_if_type: DocsisIfType) -> list[int]:
+    async def getIfTypeIndex(self, doc_if_type: DocsisIfType) -> list[InterfaceIndex]:
         """
         Retrieve interface indexes that match the specified DOCSIS IANA ifType.
 
@@ -550,10 +550,11 @@ class CmSnmpOperation:
 
         try:
             results = await self._snmp.walk(oid)
-            idx_plc_freqs = Snmp_v2c.snmp_get_result_last_idx_value(results)
+            idx_plc_freqs = cast(list[tuple[InterfaceIndex, FrequencyHz]], Snmp_v2c.snmp_get_result_last_idx_value(results))
 
             self.logger.debug(f"Retrieved PLC Frequencies: {idx_plc_freqs}")
             return idx_plc_freqs
+
         except Exception as e:
             self.logger.error(f"Failed to retrieve PLC frequencies from OID {oid}: {e}")
             return []

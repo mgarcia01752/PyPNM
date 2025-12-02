@@ -114,6 +114,7 @@ SubcarrierIdx = NewType("SubcarrierIdx", int)
 # SNMP identifiers
 OidStr          = NewType("OidStr", str)              # symbolic or dotted-decimal
 OidNumTuple     = NewType("OidNumTuple", tuple[int, ...])
+SnmpIndex       = NewType("SnmpIndex", tuple[int, ...])
 InterfaceIndex  = NewType("InterfaceIndex", int)
 EntryIndex      = NewType("EntryIndex", int)
 

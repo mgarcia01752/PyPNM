@@ -55,6 +55,7 @@ class ServiceStatusCode(IntEnum):
     TRANSACTION_RECORD_GET_FAILED           = 200
     UNSUPPORTED_TEST_TYPE                   = 201
     CAPTURE_GROUP_NOT_FOUND                 = 202
+    PNM_FILE_TRANSACTION_ID_NOT_FOUND       = 203
 
     INVALID_OUTPUT_TYPE                     = 220
 

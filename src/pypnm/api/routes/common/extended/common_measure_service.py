@@ -62,7 +62,7 @@ from pypnm.lib.ftp.ftp_connector import FTPConnector
 from pypnm.lib.inet import Inet
 from pypnm.lib.ssh.ssh_connector import SecureTransferMode, SSHConnector
 from pypnm.lib.tftp.tftp_connector import TFTPConnector
-from pypnm.lib.types import ChannelId, InterfaceIndex
+from pypnm.lib.types import ChannelId, InterfaceIndex, TransactionId
 from pypnm.lib.utils import Generate
 from pypnm.pnm.data_type.DocsIf3CmSpectrumAnalysisCtrlCmd import (
     DocsIf3CmSpectrumAnalysisCtrlCmd,
@@ -427,104 +427,6 @@ class CommonMeasureService(CommonMessagingService):
 
         return entries
 
-    @deprecated("Use getPnmMeasurementStatistics()")
-    async def get_pnm_measurement_statistics(self, pnm_test_type: DocsPnmCmCtlTest = None,
-                                             return_type: MeasureServiceReturnTypes = MeasureServiceReturnTypes.DICT) -> list[BaseModel] | dict[str, list[dict]]:
-        """
-        Retrieve PNM measurement statistics for the specified test type.
-
-        Args:
-            pnm_test_type (DocsPnmCmCtlTest, optional): The PNM test type to fetch statistics for.
-                Defaults to the instance's `pnm_test_type`.
-            return_type (MeasureServiceReturnTypes, optional): Return format type.
-                Defaults to DICT.
-
-        Returns:
-            Union[List[BaseModel], Dict[str, List[Dict]]]: List of BaseModels or
-            dictionary of serialized entries keyed by test type.
-        """
-        if not pnm_test_type:
-            pnm_test_type = self.pnm_test_type
-
-        self.logger.info(f"{self.log_prefix} - Requested MeasurementStatistic for {pnm_test_type.name}")
-
-        def build_response(tag: str, payload: str | list[dict]) -> dict[str, dict | list[dict]]:
-            if isinstance(payload, str):
-                return {tag: {"message": payload}}
-            return {tag: payload}
-
-        if pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER:
-            self.logger.warning(f"{self.log_prefix} - Stub handler: SPECTRUM_ANALYZER")
-            return build_response("SPECTRUM_ANALYZER", "Not implemented yet")
-
-        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_SYMBOL_CAPTURE:
-            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_SYMBOL_CAPTURE")
-            return build_response("DS_OFDM_SYMBOL_CAPTURE", "Not implemented yet")
-
-        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CHAN_EST_COEF:
-            self.logger.info(f"{self.log_prefix} - Running OFDM Channel Estimation Coefficient collection")
-
-            entries: list[DocsPnmCmOfdmChanEstCoefEntry] = await self.cm.getDocsPnmCmOfdmChanEstCoefEntry()
-
-            if return_type == MeasureServiceReturnTypes.DICT:
-                return build_response("DS_OFDM_CHAN_EST_COEF", [e.model_dump() for e in entries])
-            return entries
-
-        elif pnm_test_type == DocsPnmCmCtlTest.DS_CONSTELLATION_DISP:
-            self.logger.info(f"{self.log_prefix} - Running OFDM Constellation Display collection")
-
-            entries: list[DocsPnmCmDsConstDispMeasEntry] = await self.cm.getDocsPnmCmDsConstDispMeasEntry()
-
-            if return_type == MeasureServiceReturnTypes.DICT:
-                return build_response("DS_CONSTELLATION_DISP", [e.model_dump() for e in entries])
-            return entries
-
-        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_RXMER_PER_SUBCAR:
-            self.logger.info(f"{self.log_prefix} - Running RXMER entry collection")
-
-            entries: list[DocsPnmCmDsOfdmRxMerEntry] = await self.cm.getDocsPnmCmDsOfdmRxMerEntry()
-
-            if return_type == MeasureServiceReturnTypes.DICT:
-                return build_response("DS_OFDM_RXMER_PER_SUBCAR", [e.model_dump() for e in entries])
-            return entries
-
-        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_CODEWORD_ERROR_RATE:
-            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_CODEWORD_ERROR_RATE")
-            return build_response("DS_OFDM_CODEWORD_ERROR_RATE", "Not implemented yet")
-
-        elif pnm_test_type == DocsPnmCmCtlTest.DS_HISTOGRAM:
-            self.logger.info(f"{self.log_prefix} - Running DS_HISTOGRAM")
-            entries: list[DocsPnmCmDsHistEntry] = await self.cm.getDocsPnmCmDsHistEntry()
-
-            if return_type == MeasureServiceReturnTypes.DICT:
-                return build_response("DS_HISTOGRAM", [e.model_dump() for e in entries])
-            return entries
-
-        elif pnm_test_type == DocsPnmCmCtlTest.US_PRE_EQUALIZER_COEF:
-            self.logger.info(f"{self.log_prefix} - Running Upstream Pre-Equalization entry collection")
-
-            entries: list[DocsPnmCmUsPreEqEntry] = await self.cm.getDocsPnmCmUsPreEqEntry()
-
-            if return_type == MeasureServiceReturnTypes.DICT:
-                return build_response("US_PRE_EQUALIZER_COEF", [e.model_dump() for e in entries])
-            return entries
-
-        elif pnm_test_type == DocsPnmCmCtlTest.DS_OFDM_MODULATION_PROFILE:
-            self.logger.warning(f"{self.log_prefix} - Stub handler: DS_OFDM_MODULATION_PROFILE")
-            return build_response("DS_OFDM_MODULATION_PROFILE", "Not implemented yet")
-
-        elif pnm_test_type == DocsPnmCmCtlTest.LATENCY_REPORT:
-            self.logger.warning(f"{self.log_prefix} - Stub handler: LATENCY_REPORT")
-            return build_response("LATENCY_REPORT", "Not implemented yet")
-
-        elif pnm_test_type == DocsPnmCmCtlTest.SPECTRUM_ANALYZER_SNMP_AMP_DATA:
-            self.logger.warning(f"{self.log_prefix} - Stub handler: SPECTRUM_ANALYZER_SNMP_AMP_DATA")
-            return build_response("SPECTRUM_ANALYZER_SNMP_AMP_DATA", "Not implemented yet")
-
-        else:
-            self.logger.warning(f"{self.log_prefix} - Unknown PNM test type: {pnm_test_type}")
-            return build_response("UNKNOWN", f"Unhandled test type: {pnm_test_type}")
-
     ###################
     # Private Methods #
     ###################
@@ -682,29 +584,29 @@ class CommonMeasureService(CommonMessagingService):
             #######################################################################
             # This sets the Measurement Table/Row for the specific PNM Measurement
             #######################################################################
-            status_pnmfiles:ServiceStatusCode = await self._setDocsPnmCmMeasureTest(self.pnm_test_type, interface_index, channel_id)
-            if status_pnmfiles[0] != ServiceStatusCode.SUCCESS:
-                return status_pnmfiles[0]
+            ctl_status:tuple[ServiceStatusCode, list[str]] = await self._setDocsPnmCmMeasureTest(self.pnm_test_type, interface_index, channel_id)
+            if ctl_status[0] != ServiceStatusCode.SUCCESS:
+                return ctl_status[0]
 
-            pnm_filenames = status_pnmfiles[1]
+            pnm_filenames = ctl_status[1]
             self.logger.info(f'{self.log_prefix} - PNM File(s) -> {pnm_filenames}')
 
             count=1
             while True:
-                status_pnmfiles = await self.cm.getDocsPnmCmCtlStatus()
-                self.logger.info(f"{self.log_prefix} - PNM status: {str(status_pnmfiles).upper()} - count: {count}")
-                if status_pnmfiles == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
+                ctl_status:DocsPnmCmCtlStatus = await self.cm.getDocsPnmCmCtlStatus()
+                self.logger.info(f"{self.log_prefix} - PNM status: {str(ctl_status).upper()} - count: {count}")
+                if ctl_status == DocsPnmCmCtlStatus.TEST_IN_PROGRESS:
                     count += 1
                     await asyncio.sleep(1)
                     continue
 
-                if status_pnmfiles == DocsPnmCmCtlStatus.READY:
+                if ctl_status == DocsPnmCmCtlStatus.READY:
                     break
 
-                if status_pnmfiles == DocsPnmCmCtlStatus.TEMP_REJECT:
+                if ctl_status == DocsPnmCmCtlStatus.TEMP_REJECT:
                     break
 
-                if status_pnmfiles == DocsPnmCmCtlStatus.SNMP_ERROR:
+                if ctl_status == DocsPnmCmCtlStatus.SNMP_ERROR:
                     break
 
             self.logger.debug(f"{self.log_prefix} - Checking Measurement Status for {self.pnm_test_type} @ IDX: {interface_index}")
@@ -741,6 +643,10 @@ class CommonMeasureService(CommonMessagingService):
 
                 # Find Transaction ID via filename
                 trans_id = self._get_transaction_id_by_filename(pnm_fname)
+                if not trans_id:
+                    self.logger.error(f"{self.log_prefix} - Unable to find Transaction ID for PNM filename: {pnm_fname}")
+                    return ServiceStatusCode.PNM_FILE_TRANSACTION_ID_NOT_FOUND
+                
                 self.logger.debug(f'{self.log_prefix} - TransID: {trans_id} -> Filename: {pnm_fname}')
                 self.build_transaction_msg(trans_id, pnm_fname)
 
@@ -820,7 +726,8 @@ class CommonMeasureService(CommonMessagingService):
             pre_eq_filename         = await self._pnm_file_generator(self.pnm_test_type, str(channel_id))
             last_pre_eq_filename    = await self._pnm_file_generator(self.pnm_test_type, f'last_pre-eq_{str(channel_id)}')
 
-            self.logger.info(f'{self.log_prefix} - Setting {self.pnm_test_type} for ChannelID: {channel_id} @ IDX: {interface_index} -> FN(): {pre_eq_filename}, FN(last): {last_pre_eq_filename}')
+            self.logger.info(f'{self.log_prefix} - Setting {self.pnm_test_type} for ChannelID: {channel_id} "'
+                             f'@ IDX: {interface_index} -> FN(): {pre_eq_filename}, FN(last): {last_pre_eq_filename}')
 
             self.logger.info(f'{self.log_prefix} - Performing US_PRE_EQUALIZER_COEF measurement on IDX: ({interface_index})')
             if not await self.cm.setDocsPnmCmUsPreEq(ofdma_idx              =   interface_index,
@@ -866,8 +773,8 @@ class CommonMeasureService(CommonMessagingService):
                 if not await self.cm.setDocsPnmCmDsConstDisp(
                     ofdm_idx                =   interface_index,
                     const_disp_name         =   pnm_filename,
-                    modulation_order_offset =   self.extra_options.get('modulation_order_offset'),
-                    number_sample_symbol    =   self.extra_options.get('number_sample_symbol')
+                    modulation_order_offset =   self.extra_options.get('modulation_order_offset', 0),
+                    number_sample_symbol    =   self.extra_options.get('number_sample_symbol', 0)
                 ):
                     self.logger.error(f"{self.log_prefix} - Failed to set PNM filename: {pnm_filename}")
                     return ServiceStatusCode.FILE_SET_FAIL, []
@@ -986,19 +893,19 @@ class CommonMeasureService(CommonMessagingService):
 
         self.logger.debug(f"{self.log_prefix} - SCP: Connecting to: {sys_config.scp_host}")
 
-        scp = SSHConnector(hostname=sys_config.scp_host,
-                            username=sys_config.scp_user,
-                            port=sys_config.scp_port,
-                            transfer_mode=SecureTransferMode.SCP)
+        scp = SSHConnector(hostname         =str(sys_config.scp_host),
+                            username        =str(sys_config.scp_user),
+                            port            =int(str(sys_config.scp_port)), 
+                            transfer_mode   =SecureTransferMode.SCP)
 
         try:
-            if not scp.connect(password=sys_config.scp_password):
+            if not scp.connect(password =   str(sys_config.scp_password)):
                 self.logger.error(f'{self.log_prefix} - SCP Connect Failure: Host: {sys_config.scp_host}')
                 return False
 
             remote_file_path = f'{sys_config.scp_remote_dir}/{pnm_file_name}'
-            if not scp.receive_file(remote_path=remote_file_path,
-                                    local_path=sys_config.pnm_dir):
+            if not scp.receive_file(remote_path =   remote_file_path,
+                                    local_path  =   str(sys_config.pnm_dir)):
                 self.logger.error(f'{self.log_prefix} - SCP Receive File Error (SRC:{remote_file_path} DST: {sys_config.pnm_dir})')
                 return False
 
@@ -1026,10 +933,11 @@ class CommonMeasureService(CommonMessagingService):
 
         self.logger.debug(f"{self.log_prefix} - SFTP: Connecting to: {sys_config.sftp_host}")
 
-        sftp = SSHConnector(hostname=sys_config.sftp_host,
-                                username=sys_config.sftp_user,
-                                port=sys_config.sftp_port,
-                                transfer_mode=SecureTransferMode.SFTP)
+        sftp = SSHConnector(
+            hostname=str(sys_config.sftp_host),
+            username=str(sys_config.sftp_user),
+            port=int(str(sys_config.sftp_port)),
+            transfer_mode=SecureTransferMode.SFTP)
 
         try:
             if not sftp.connect(password=sys_config.sftp_password):
@@ -1068,8 +976,8 @@ class CommonMeasureService(CommonMessagingService):
         """
         try:
             connector = TFTPConnector(
-                host=SystemConfigSettings.tftp_host,
-                port=int(SystemConfigSettings.tftp_port))
+                host    =   str(SystemConfigSettings.tftp_host),
+                port    =   int(str(SystemConfigSettings.tftp_port)))
 
         except Exception as e:
             self.logger.error(f"{self.log_prefix} - Exception during TFTP connecting: {e}")
@@ -1128,12 +1036,12 @@ class CommonMeasureService(CommonMessagingService):
 
         try:
             connector = FTPConnector(
-                host=sys_config.ftp_host,
-                port=sys_config.ftp_port,
-                username=sys_config.ftp_user,
-                password=sys_config.ftp_password,
-                use_tls=sys_config.ftp_use_tls,
-                timeout=sys_config.ftp_timeout
+                host        =   str(sys_config.ftp_host),
+                port        =   int(str(sys_config.ftp_port)),
+                username    =   str(sys_config.ftp_user),
+                password    =   str(sys_config.ftp_password),
+                use_tls     =   bool(sys_config.ftp_use_tls),
+                timeout     =   int(str(sys_config.ftp_timeout))
             )
 
             self.logger.debug(
@@ -1208,14 +1116,14 @@ class CommonMeasureService(CommonMessagingService):
 
         return file_name
 
-    def _get_transaction_id_by_filename(self, file_name: str) -> str | None:
+    def _get_transaction_id_by_filename(self, file_name: str) -> TransactionId | None:
         """
         Return the transaction ID associated with the given file name.
         Assumes file names are unique. Returns None if not found.
         """
         for transaction_id, name in self._transactionId_pnmFile.items():
             if name == file_name:
-                return transaction_id
+                return TransactionId(transaction_id)
         return None
 
     async def _generic_spectrum_analyzer_operation(self, filename:str="") -> tuple[ServiceStatusCode, list[str]]:

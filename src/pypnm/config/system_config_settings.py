@@ -184,7 +184,7 @@ class SystemConfigSettings:
     @classproperty
     def tftp_host(cls) -> str:
         return cls._cfg.get(
-            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "host")
+            "PnmFileRetrieval", "retrival_method", "methods", "tftp", "host") or ""
 
     @classproperty
     def tftp_port(cls) -> int:

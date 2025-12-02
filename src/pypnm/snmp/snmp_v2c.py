@@ -25,6 +25,7 @@ from pypnm.config.pnm_config_manager import SystemConfigSettings
 from pypnm.lib.constants import T
 from pypnm.lib.inet import Inet
 from pypnm.lib.inet_utils import InetGenerate
+from pypnm.lib.types import InetAddressStr, InterfaceIndex, SnmpIndex
 from pypnm.snmp.compiled_oids import COMPILED_OIDS
 from pypnm.snmp.modules import InetAddressType
 
@@ -333,7 +334,7 @@ class Snmp_v2c:
         return last_oid_indexes
 
     @staticmethod
-    def extract_oid_indices(snmp_responses: list[ObjectType],num_indices: int = 1) -> list[list[int]]:
+    def extract_oid_indices(snmp_responses: list[ObjectType],num_indices: int = 1) -> list[list[SnmpIndex]]:
         """
         Extract the last `num_indices` components from the OID index of each SNMP response.
 
@@ -344,7 +345,7 @@ class Snmp_v2c:
         Returns:
         - List of lists, each containing the extracted index components.
         """
-        extracted_indices = []
+        extracted_indices:list[list[SnmpIndex]] = []
 
         for response in snmp_responses:
             oid = response[0]
@@ -402,7 +403,7 @@ class Snmp_v2c:
         return result
 
     @staticmethod
-    def snmp_get_result_last_idx_value(snmp_responses: list[ObjectType]) -> list[tuple[int, str]]:
+    def snmp_get_result_last_idx_value(snmp_responses: list[ObjectType]) -> list[tuple[InterfaceIndex, str]]:
         """
         Extract the last index and value from each SNMP response.
 
@@ -410,12 +411,12 @@ class Snmp_v2c:
             snmp_responses (List[ObjectType]): List of SNMP ObjectType responses.
 
         Returns:
-            List[Tuple[int, str]]: List of (last index, value) pairs.
+            List[Tuple[InterfaceIndex, str]]: List of (last InterfaceIndex, value) pairs.
         """
         result = []
         for obj in snmp_responses:
             oid = obj[0]
-            last_idx = int(str(oid).split('.')[-1])
+            last_idx = InterfaceIndex(int(str(oid).split('.')[-1]))
             value = str(obj[1])
             result.append((last_idx, value))
         return result
@@ -488,7 +489,7 @@ class Snmp_v2c:
         return  [str(value[1]) for value in snmp_set_response]
 
     @staticmethod
-    def get_oid_index(oid: str) -> int | None:
+    def get_oid_index(oid: str) -> SnmpIndex | None:
         """
         Extract the index (last sub-identifier) from an OID string.
 
@@ -503,7 +504,7 @@ class Snmp_v2c:
 
         try:
             parts = oid.strip().split('.')
-            index = int(parts[-1])
+            index = SnmpIndex(int(parts[-1]))
             logging.debug(f"Extracted OID index: OID='{oid}', Parts={parts}, Index={index}")
             return index
         except (ValueError, IndexError) as e:
@@ -511,7 +512,7 @@ class Snmp_v2c:
             return None
 
     @staticmethod
-    def get_inet_address_type(inet_address: str) -> InetAddressType:
+    def get_inet_address_type(inet_address: InetAddressStr) -> InetAddressType:
         """
         Determine the InetAddressType of an IP address (IPv4 or IPv6).
 
