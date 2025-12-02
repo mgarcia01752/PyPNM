@@ -3,11 +3,11 @@
 
 from __future__ import annotations
 
+import logging
 import subprocess
 import pytest
 
 from pypnm.lib.ping import Ping
-
 
 class DummyCompleted:
     def __init__(self, returncode: int) -> None:
@@ -15,14 +15,17 @@ class DummyCompleted:
 
 
 def _mock_run_factory(expected_cmd_out: list[str], rc: int = 0):
-    """Return a mock subprocess.run that asserts the cmd and returns rc."""
-    captured = {}
+    captured: dict[str, object] = {}
 
-    def _mock_run(cmd, stdout=None, stderr=None):
-        # record and assert basic structure
+    def _mock_run(cmd, *args, **kwargs):
         captured["cmd"] = cmd
-        assert stdout is subprocess.DEVNULL
-        assert stderr is subprocess.DEVNULL
+        captured["kwargs"] = kwargs
+
+        if "stdout" in kwargs:
+            assert kwargs["stdout"] is subprocess.DEVNULL
+        if "stderr" in kwargs:
+            assert kwargs["stderr"] is subprocess.DEVNULL
+
         return DummyCompleted(rc)
 
     _mock_run.captured = captured  # type: ignore[attr-defined]
@@ -31,25 +34,22 @@ def _mock_run_factory(expected_cmd_out: list[str], rc: int = 0):
 
 
 def test_linux_mac_builds_correct_command_and_success(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Pretend we're on Linux/Darwin
     monkeypatch.setattr("platform.system", lambda: "Linux")
 
-    # Expect: ping -c 3 -W 2 host.example
     expected_cmd = ["ping", "-c", "3", "-W", "2", "host.example"]
     mock_run = _mock_run_factory(expected_cmd, rc=0)
     monkeypatch.setattr("subprocess.run", mock_run)
 
     ok = Ping.is_reachable("host.example", timeout=2, count=3)
     assert ok is True
-
-    # Verify the command built
     assert mock_run.captured["cmd"] == expected_cmd
 
 
 def test_linux_mac_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("platform.system", lambda: "Darwin")
+
     expected_cmd = ["ping", "-c", "1", "-W", "1", "8.8.8.8"]
-    mock_run = _mock_run_factory(expected_cmd, rc=1)  # nonzero => failure
+    mock_run = _mock_run_factory(expected_cmd, rc=1)
     monkeypatch.setattr("subprocess.run", mock_run)
 
     ok = Ping.is_reachable("8.8.8.8")
@@ -58,10 +58,8 @@ def test_linux_mac_failure(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_windows_builds_correct_command_and_success(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Pretend we're on Windows
     monkeypatch.setattr("platform.system", lambda: "Windows")
 
-    # Expect: ping -n 4 -w 3000 10.0.0.1  (timeout in ms)
     expected_cmd = ["ping", "-n", "4", "-w", "3000", "10.0.0.1"]
     mock_run = _mock_run_factory(expected_cmd, rc=0)
     monkeypatch.setattr("subprocess.run", mock_run)
@@ -71,7 +69,10 @@ def test_windows_builds_correct_command_and_success(monkeypatch: pytest.MonkeyPa
     assert mock_run.captured["cmd"] == expected_cmd
 
 
-def test_subprocess_exception_returns_false(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_subprocess_exception_returns_false(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     monkeypatch.setattr("platform.system", lambda: "Linux")
 
     def boom(*args, **kwargs):
@@ -79,5 +80,9 @@ def test_subprocess_exception_returns_false(monkeypatch: pytest.MonkeyPatch) -> 
 
     monkeypatch.setattr("subprocess.run", boom)
 
-    ok = Ping.is_reachable("nowhere.invalid", timeout=1, count=1)
+    with caplog.at_level(logging.ERROR):
+        ok = Ping.is_reachable("nowhere.invalid", timeout=1, count=1)
+
     assert ok is False
+    # Optional: assert we actually logged the error
+    assert "[Ping Error] no ping here" in caplog.text
