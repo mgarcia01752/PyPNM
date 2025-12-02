@@ -12,7 +12,7 @@ from typing import Final
 
 
 VERSION_FILE_PATH: Final[Path]           = Path("src/pypnm/version.py")
-BUMP_SCRIPT_PATH: Final[Path]            = Path("tools") / "bump_version.py"
+BUMP_SCRIPT_PATH: Final[Path]            = Path("tools/support") / "bump_version.py"
 PYPROJECT_FILE_PATH: Final[Path]         = Path("pyproject.toml")
 
 VERSION_PART_SEPARATOR: Final[str]       = "."
