@@ -6,6 +6,6 @@ Use this page to jump into the main sections.
 |---------|---------|
 | [API](api/index.md)                       | Reference for FastAPI endpoints and the Python helper library.    |
 | [Examples](examples/index.md)             | Runnable examples that call the API.                              |
-| [Tools](tools/pypnm-mib-compiler.md)      | Utilities for development and operations.                         |
+| [Tools](tools/index.md)                   | Utilities for development and operations.                         |
 | [Tests](tests/index.md)                   | Test entry points and contributor guidance.                       |
 | [Release](release/release-strategy.md)    | Versioning and release process documentation.                     |

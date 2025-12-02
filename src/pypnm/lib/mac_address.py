@@ -175,3 +175,43 @@ class MacAddress:
         except (ValueError, TypeError):
             return False
 
+    @classmethod
+    def from_bytes(cls, mac_bytes: bytes | bytearray) -> MacAddress:
+        """
+        Construct A MacAddress From A 6-Byte Sequence.
+
+        The input is expected to be in standard network-byte order and exactly
+        6 bytes long. Any other length is treated as an error.
+
+        Args
+        ----
+        mac_bytes : bytes | bytearray
+            Raw 6-byte MAC address.
+
+        Returns
+        -------
+        MacAddress
+            Normalized MacAddress instance built from the given bytes.
+
+        Raises
+        ------
+        ValueError
+            If mac_bytes is not exactly 6 bytes long.
+        """
+        if len(mac_bytes) != 6:
+            raise ValueError(f"MAC address must be exactly 6 bytes, got {len(mac_bytes)} bytes.")
+        return cls(bytes(mac_bytes))
+
+    def to_bytes(self) -> bytes:
+        """
+        Return The MAC Address As A 6-Byte Sequence.
+
+        The bytes are emitted in standard network-byte order, using the
+        normalized 12-character hexadecimal representation stored internally.
+
+        Returns
+        -------
+        bytes
+            6-byte MAC address suitable for writing into binary PNM payloads.
+        """
+        return bytes(int(self._mac[i:i+2], 16) for i in range(0, 12, 2))
