@@ -6,4 +6,3 @@
 | [PNM File MacAddress Updater](pnm-file-macaddress-updater.md) | A utility to update MAC addresses in PNM files.               |
 | [Clean](pypnm-clean.md)                                       | Clean utility                                                 |
 | [Release](../release/release-strategy.md)                     | A tool to manage and automate software versioning.            |
-

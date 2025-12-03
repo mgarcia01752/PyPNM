@@ -1,19 +1,34 @@
 {
     "FastApiRequestDefault": {
-        "mac_address": "a0b1.c2d3.e4f5",
-        "ip_address": "192.168.100.1"
+        "mac_address": "aa:bb:cc:dd:ee:ff",
+        "ip_address": "192.168.0.1"
     },   
     "SNMP": {
-        "version": "2",
-        "retries": "5",
-        "read_community": "public",
-        "write_community": "private"
+        "timeout": 2,
+        "version": {
+            "2c" : {
+                "enable" :true,
+                "retries": 3,
+                "read_community": "public",
+                "write_community": "private"                
+            }, 
+            "3" : {
+                "enable" : false,
+                "retries": 3,
+                "username": "user",
+                "securityLevel": "authPriv",
+                "authProtocol": "SHA",
+                "authPassword": "pass",
+                "privProtocol": "AES",
+                "privPassword": "privpass"
+            }
+        }
     },
     "PnmBulkDataTransfer": {
         "method": "tftp",
         "tftp": {
-            "ip_v4": "192.168.200.1",
-            "ip_v6": "::ffff:c0a8:c801",
+            "ip_v4": "192.168.0.10",
+            "ip_v6": "::1",
             "remote_dir": ""
         },
         "http": {
@@ -26,54 +41,82 @@
         }         
     },
     "PnmFileRetrieval": {
-        "method": "scp",
-        "save_dir":"example/data/pnm",
-        "transaction_db":"example/data/db/transactions.json",
-        "capture_group_db": "example/data/db/capture_group.json",
-        "operation_db": "example/data/db/operation_capture.json",
+        "pnm_dir":      ".data/pnm",
+        "csv_dir":      ".data/csv",
+        "json_dir":     ".data/json",
+        "xlsx_dir":     ".data/xlsx",
+        "png_dir":      ".data/png",
+        "archive_dir":  ".data/archive",
+        "msg_rsp_dir":  ".data/msg_rsp",
+        "transaction_db":       ".data/db/transactions.json",
+        "capture_group_db":     ".data/db/capture_group.json",
+        "session_group_db":     ".data/db/session_group.json",
+        "operation_db":         ".data/db/operation_capture.json",
+        "json_transaction_db" : ".data/db/json_transactions.json",
         "retries": 5,
-        "local": {
-            "src_dir": "/srv/tftp"
-        },
-        "scp": {
-            "host": "localhost",
-            "port": "22",
-            "user": "test",
-            "password": "tftp",
-            "remote_dir": "/srv/tftp"
-        },        
-        "tftp": {
-            "host": "localhost",
-            "port":69,
-            "remote_dir": ""
-        },
-        "ftp": {
-            "host": "ftp.example.com",
-            "port":21,
-            "user": "user",
-            "password": "pass",
-            "remote_dir": "/files"
-        },
-        "sftp": {
-            "host": "sftp.example.com",
-            "port": 22,
-            "user": "user",
-            "password": "pass",
-            "remote_dir": "/files"
-        },
-        "http": {
-            "base_url": "http://files.example.com/",
-            "port":80
-        },
-        "https": {
-            "base_url": "https://files.example.com/",
-            "port":443
+        "retrival_method": {
+            "method": "local",
+            "methods":{
+                "local": {
+                    "src_dir": "/srv/tftp"
+                },
+                "tftp": {
+                    "host": "localhost",
+                    "port":69,
+                    "timeout": 5,
+                    "remote_dir": ""
+                },
+                "ftp": {
+                    "host": "localhost",
+                    "port":21,
+                    "tls": false,
+                    "timeout": 5,
+                    "user": "test",
+                    "password": "tftp",
+                    "remote_dir": "/srv/tftp"
+                },
+                "scp": {
+                    "host": "localhost",
+                    "port": 22,
+                    "user": "test",
+                    "password": "tftp",
+                    "remote_dir": "/srv/tftp"
+                },
+                "sftp": {
+                    "host": "localhost",
+                    "port": 22,
+                    "user": "test",
+                    "password": "tftp",
+                    "remote_dir": "/srv/tftp"
+                },
+                "http": {
+                    "base_url": "http://STUB/",
+                    "port":80
+                },
+                "https": {
+                    "base_url": "https://STUB/",
+                    "port":443
+                }
+            }
         }        
     },
     "logging": {
         "log_level":"INFO",
         "log_dir":"logs",
-        "log_filename":"pnm_log_%Y%m%d_%H%M%S.log"
+        "log_filename":"pypnm.log"
+    },
+    "TestMode": {
+        "global" : {
+            "mode": {
+                "enable": true
+            }
+        },
+        "class_name" : {
+            "DsScQamChannelSpectrumAnalyzer": {
+                "mode": {
+                    "enable": true
+                }
+            }   
+        }
     }
-    
 }
