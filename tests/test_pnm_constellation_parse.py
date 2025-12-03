@@ -11,7 +11,7 @@ import pytest
 
 from pypnm.pnm.parser.CmDsConstDispMeas import CmDsConstDispMeas
 
-DATA_DIR = Path(__file__).parent / "_data"
+DATA_DIR = Path(__file__).parent / "files"
 CONST_PATH = DATA_DIR / "const_display.bin"
 NON_CONST_PATH = DATA_DIR / "fec_summary.bin"  # negative test sample
 

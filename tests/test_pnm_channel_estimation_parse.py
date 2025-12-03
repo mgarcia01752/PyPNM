@@ -14,7 +14,7 @@ from typing_extensions import assert_type
 from pypnm.pnm.parser.CmDsOfdmChanEstimateCoef import CmDsOfdmChanEstimateCoef
 from pypnm.lib.types import ComplexArray, ComplexSeries
 
-DATA_DIR = Path(__file__).parent / "_data"
+DATA_DIR = Path(__file__).parent / "files"
 CE_PATH = DATA_DIR / "channel_estimation.bin"
 NON_CE_PATH = DATA_DIR / "rxmer.bin"  # negative test: valid PNM but wrong type
 

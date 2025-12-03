@@ -17,7 +17,7 @@ from pypnm.pnm.parser.CmDsOfdmRxMer import CmDsOfdmRxMer
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.pnm.parser.pnm_parameter import GetPnmParserAndParameters
 
-DATA_DIR = Path(__file__).parent / "_data"
+DATA_DIR = Path(__file__).parent / "files"
 
 # fname, supported, expected parser class (or None when unsupported)
 CASES = [

@@ -12,7 +12,7 @@ from pypnm.pnm.parser.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
 from pypnm.pnm.parser.model.parser_rtn_models import CmDsOfdmModulationProfileModel
 
 
-DATA_DIR = Path(__file__).parent / "_data"
+DATA_DIR = Path(__file__).parent / "files"
 MODPROF_PATH = DATA_DIR / "modulation_profile.bin"
 NON_MODPROF_PATH = DATA_DIR / "rxmer.bin"  # negative test sample
 

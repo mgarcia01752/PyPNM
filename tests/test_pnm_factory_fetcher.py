@@ -17,7 +17,7 @@ from pypnm.pnm.parser.CmDsOfdmFecSummary import CmDsOfdmFecSummary
 from pypnm.pnm.parser.CmDsOfdmModulationProfile import CmDsOfdmModulationProfile
 from pypnm.pnm.parser.CmSpectrumAnalysis import CmSpectrumAnalysis
 
-DATA_DIR = Path(__file__).parent / "_data"
+DATA_DIR = Path(__file__).parent / "files"
 
 @pytest.mark.pnm
 @pytest.mark.parametrize(

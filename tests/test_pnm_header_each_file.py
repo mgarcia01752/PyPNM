@@ -12,7 +12,7 @@ from pypnm.pnm.parser.pnm_header import PnmHeader
 from pypnm.pnm.parser.pnm_file_type import PnmFileType
 from pypnm.lib.constants import DEFAULT_CAPTURE_TIME
 
-DATA_DIR = Path(__file__).parent / "_data"
+DATA_DIR = Path(__file__).parent / "files"
 
 ALL_FILES = [
     "channel_estimation.bin",

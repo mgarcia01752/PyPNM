@@ -10,7 +10,7 @@ import pytest
 
 from pypnm.pnm.parser.CmDsOfdmRxMer import CmDsOfdmRxMer
 
-DATA_DIR = Path(__file__).parent / "_data"
+DATA_DIR = Path(__file__).parent / "files"
 RXMER_PATH = DATA_DIR / "rxmer.bin"
 NON_RXMER_PATH = DATA_DIR / "fec_summary.bin"  # negative test sample
 

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 import sys
-from typing import TypedDict
+from typing import Any, Dict, TypedDict
 
 try:
     import requests
@@ -25,6 +25,9 @@ DEFAULT_BASE_URL: str                  = "http://127.0.0.1:8000"
 DEFAULT_SAMPLE_TIME_ELAPSED_SEC: int   = 5
 DEFAULT_HTTP_TIMEOUT_SEC: float        = 120.0
 
+DEFAULT_TFTP_IPV4: str                 = "192.168.0.10"
+DEFAULT_TFTP_IPV6: str                 = "::1"
+
 
 class SnmpV2CPayload(TypedDict):
     community: str
@@ -34,18 +37,38 @@ class SnmpPayload(TypedDict):
     snmpV2C: SnmpV2CPayload
 
 
-class CableModemPayload(TypedDict):
+class PnmTftpPayload(TypedDict):
+    ipv4: str
+    ipv6: str
+
+
+class PnmParametersPayload(TypedDict, total=False):
+    tftp: PnmTftpPayload
+
+
+class CableModemPayload(TypedDict, total=False):
     mac_address: str
     ip_address: str
     snmp: SnmpPayload
+    pnm_parameters: PnmParametersPayload
 
 
 class CableModemRequestPayload(TypedDict):
     cable_modem: CableModemPayload
 
 
-class CaptureParametersPayload(TypedDict):
+class CaptureParametersPayload(TypedDict, total=False):
     sample_time_elapsed: int
+    inactivity_timeout: int
+    first_segment_center_freq: int
+    last_segment_center_freq: int
+    segment_freq_span: int
+    num_bins_per_segment: int
+    noise_bw: int
+    window_function: int
+    num_averages: int
+    spectrum_retrieval_type: int
+    number_of_averages: int
 
 
 class CableModemCaptureRequestPayload(TypedDict):
@@ -167,6 +190,73 @@ def send_cable_modem_capture_request(
 
     try:
         response = requests.post(url, json=payload, timeout=DEFAULT_HTTP_TIMEOUT_SEC)
+        response.raise_for_status()
+    except requests.RequestException as exc:
+        print()
+        print("Request failed:")
+        print(str(exc))
+        return EXIT_REQUEST_ERROR
+
+    print()
+    print("Response:")
+    try:
+        print(json.dumps(response.json(), indent=2))
+    except ValueError:
+        print(response.text)
+
+    return EXIT_SUCCESS
+
+
+def send_cable_modem_pnm_and_analysis_request(
+    endpoint_path: str,
+    base_url: str,
+    mac: str,
+    ip: str,
+    community: str,
+    tftp_ipv4: str,
+    tftp_ipv6: str,
+    analysis: Dict[str, Any],
+    capture_parameters: Dict[str, Any] | None = None,
+) -> int:
+    """
+    Send A POST Request With cable_modem, pnm_parameters, analysis, And Optional capture_parameters.
+
+    This helper is intended for PNM endpoints that require:
+      * cable_modem configuration
+      * pnm_parameters.tftp (IPv4 / IPv6)
+      * analysis configuration (type, output, plot, etc.)
+      * optional capture_parameters
+
+    The endpoint_path argument supplies the REST path, such as
+    "/docs/pnm/ds/histogram/getCapture". The base_url argument defines the
+    server root, for example "http://127.0.0.1:8000".
+    """
+    url: str = _join_url(base_url, endpoint_path)
+
+    base_payload: CableModemRequestPayload = build_cable_modem_payload(mac, ip, community)
+
+    body: Dict[str, Any] = {
+        "cable_modem": {
+            **base_payload["cable_modem"],
+            "pnm_parameters": {
+                "tftp": {
+                    "ipv4": tftp_ipv4,
+                    "ipv6": tftp_ipv6,
+                },
+            },
+        },
+        "analysis": analysis,
+    }
+
+    if capture_parameters is not None:
+        body["capture_parameters"] = capture_parameters
+
+    print()
+    print(f"Sending POST to {url} with payload:")
+    print(json.dumps(body, indent=2))
+
+    try:
+        response = requests.post(url, json=body, timeout=DEFAULT_HTTP_TIMEOUT_SEC)
         response.raise_for_status()
     except requests.RequestException as exc:
         print()

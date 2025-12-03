@@ -52,7 +52,6 @@ nav:
       - Python: api/python/index.md
   - Examples:
       - Index: examples/index.md
-      - Endpoint fetcher: examples/endpoint-fetcher.md
   - Tools:
       - MIB compiler: tools/pypnm-mib-compiler.md
       - Clean: tools/pypnm-clean.md

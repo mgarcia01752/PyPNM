@@ -12,7 +12,7 @@ import pytest
 
 from pypnm.pnm.parser.CmDsHist import CmDsHist
 
-DATA_DIR = Path(__file__).parent / "_data"
+DATA_DIR = Path(__file__).parent / "files"
 HIST_PATH = DATA_DIR / "histogram.bin"
 NON_HIST_PATH = DATA_DIR / "rxmer.bin"  # valid PNM but wrong type -> negative test
 

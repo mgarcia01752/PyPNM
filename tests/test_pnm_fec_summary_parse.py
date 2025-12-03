@@ -11,7 +11,7 @@ import pytest
 from pypnm.pnm.parser.CmDsOfdmFecSummary import CmDsOfdmFecSummary
 from pypnm.pnm.parser.model.parser_rtn_models import CmDsOfdmFecSummaryModel
 
-DATA_DIR = Path(__file__).parent / "_data"
+DATA_DIR = Path(__file__).parent / "files"
 FEC_PATH = DATA_DIR / "fec_summary.bin"
 
 

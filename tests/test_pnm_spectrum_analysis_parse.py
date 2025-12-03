@@ -9,7 +9,7 @@ import pytest
 
 from pypnm.pnm.parser.CmSpectrumAnalysis import CmSpectrumAnalysis
 
-DATA_DIR = Path(__file__).parent / "_data"
+DATA_DIR = Path(__file__).parent / "files"
 SPEC_PATH = DATA_DIR / "spectrum_analyzer.bin"
 
 
