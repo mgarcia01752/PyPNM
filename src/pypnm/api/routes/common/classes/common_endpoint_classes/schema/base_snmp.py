@@ -23,7 +23,7 @@ class SNMPv2c(BaseModel):
     Attributes:
         community (str): Write community string. Must not be blank.
     """
-    community: str = Field(default=SCSC.snmp_write_community, description=f"Write community string (default: {SCSC.snmp_write_community})")
+    community: str = Field(default=SCSC.snmp_write_community(), description=f"Write community string (default: {SCSC.snmp_write_community()})")
 
     @field_validator("community")
     def community_not_blank(cls, v: str) -> str:
@@ -74,5 +74,5 @@ class SNMPConfig(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     snmp_v2c: SNMPv2c   = Field(default_factory=SNMPv2c, description="SNMP v2c settings")
 
-    if SCSC.snmp_v3_enable:
+    if SCSC.snmp_v3_enable():
         snmp_v3: SNMPv3     = Field(default_factory=SNMPv3, description="SNMP v3 settings")

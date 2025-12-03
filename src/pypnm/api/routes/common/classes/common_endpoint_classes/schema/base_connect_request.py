@@ -19,8 +19,8 @@ class CableModemOnlyConfig(BaseModel):
     """
     Encapsulates core cable modem fields without extra PNM metadata.
     """
-    mac_address: MacAddressStr = Field(default=SCSC.default_mac_address,description="MAC address of the cable modem")
-    ip_address: InetAddressStr = Field(default=SCSC.default_ip_address, description="IP address of the cable modem")
+    mac_address: MacAddressStr = Field(default=SCSC.default_mac_address(),description="MAC address of the cable modem")
+    ip_address: InetAddressStr = Field(default=SCSC.default_ip_address(), description="IP address of the cable modem")
     snmp: SNMPConfig = Field(...,description="SNMP configuration block")
 
     @field_validator("mac_address", mode="before")
