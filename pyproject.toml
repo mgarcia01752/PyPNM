@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name            = "pypnm"
-version         = "0.3.7.0"
+version         = "0.3.8.0"
 description     = "DOCSIS 3.1/4.0 Proactive Network Maintenance Toolkit"
 readme          = "README.md"
 requires-python = ">=3.10"
