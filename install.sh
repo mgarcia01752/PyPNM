@@ -216,7 +216,7 @@ case "$PM" in
     ;;
 esac
 
-PYTHON_VERSION="$(python3 -c "import sys; print(f'{sys.version_info.major}.${sys.version_info.minor}')" 2>/dev/null || echo "3")"
+PYTHON_VERSION="$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null || echo "3")"
 PYTHON_CMD="python${PYTHON_VERSION}"
 if ! command -v "$PYTHON_CMD" >/dev/null 2>&1; then
   if command -v python3 >/dev/null 2>&1; then
