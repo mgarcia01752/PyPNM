@@ -1,8 +1,8 @@
 <p align="center">
   <a href="docs/index.md">
     <picture>
-      <source srcset="docs/images/logo/pypnm-dark-mode.png" media="(prefers-color-scheme: dark)" />
-      <img src="docs/images/logo/pypnm-light-mode.png" alt="PyPNM Logo" width="200" />
+      <source srcset="docs/images/logo/pypnm-dark-mode-hp.png" media="(prefers-color-scheme: dark)" />
+      <img src="docs/images/logo/pypnm-light-mode-hp.png" alt="PyPNM Logo" width="200" />
     </picture>
   </a>
 </p>
