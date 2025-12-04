@@ -1,8 +1,8 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
 
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
-from importlib.metadata import version as _version
+from .version import __version__
 
-__version__ = _version("pypnm")
+__all__ = ["__version__"]
