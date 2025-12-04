@@ -58,6 +58,30 @@ The included script installs system packages, creates a virtualenv, and installs
 ./install.sh
 ```
 
+Show installer options:
+
+```bash
+./install.sh --help
+```
+
+Demo-mode install (uses demo/settings/system.json and backs up the default configuration to backup/src/pypnm/settings/system.json):
+
+```bash
+./install.sh --demo-mode
+```
+
+Revert to production settings (restore src/pypnm/settings/system.json from backup/src/pypnm/settings/system.json):
+
+```bash
+./install.sh --production
+```
+
+You can also provide a custom virtual environment directory:
+
+```bash
+./install.sh --demo-mode .env-demo
+```
+
 ### 3) Activate the venv (if not already active)
 
 ```bash
@@ -67,7 +91,7 @@ source .env/bin/activate
 
 ### 4) Configure (quick setup)
 
-You’ll need:
+You will need:
 
 - Cable Modem (CM) MAC address and IP address
 - SNMPv2c write community string
@@ -117,7 +141,7 @@ mkdocs serve
 - ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 - Install Postman: [https://www.postman.com/downloads/](https://www.postman.com/downloads/)
 
-*Tip:* Postman is often better for large or deeply nested JSON payloads.
+Tip: Postman is often better for large or deeply nested JSON payloads.
 
 ## API Documentation Quick links
 

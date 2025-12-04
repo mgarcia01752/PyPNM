@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 # Example CLI client for:
 # POST /docs/if31/us/ofdma/channel/stats
 

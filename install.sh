@@ -3,11 +3,80 @@ set -euo pipefail
 
 # ────────────────────────────────────────────────────────────────────────────────
 # install.sh — Unified OS prerequisite installer and PyPNM bootstrapper
-# Usage: ./install.sh [venv_dir]
+# Usage: ./install.sh [--demo-mode | --production] [venv_dir]
 # ────────────────────────────────────────────────────────────────────────────────
 
-VENV_DIR="${1:-.env}"
+VENV_DIR=".env"
+DEMO_MODE="0"
+PRODUCTION_MODE="0"
 PROJECT_ROOT="$(pwd)"
+
+usage() {
+  cat <<EOF
+PyPNM Installer And Bootstrap Script
+
+Usage:
+  ./install.sh [--demo-mode | --production] [venv_dir]
+  ./install.sh --help
+
+Options:
+  --demo-mode     Enable demo mode by backing up the default
+                  src/pypnm/settings/system.json into backup/src/pypnm/settings/system.json
+                  and replacing it with demo/settings/system.json. The demo system.json
+                  should point all relevant directories to the demo/ tree.
+
+  --production    Revert to production settings by restoring the backed-up
+                  backup/src/pypnm/settings/system.json back to
+                  src/pypnm/settings/system.json. This assumes a prior backup exists
+                  (created by running with --demo-mode or a normal install).
+
+  venv_dir        Optional virtual environment directory name. Defaults to ".env".
+
+  --help, -h      Show this help message and exit.
+
+Examples:
+  ./install.sh
+      Create a venv in ".env" and install PyPNM with dev/docs extras.
+
+  ./install.sh .pyenv
+      Create a venv in ".pyenv" instead of ".env".
+
+  ./install.sh --demo-mode
+      Install and then switch system.json to the demo configuration
+      (backing up the current system.json first).
+
+  ./install.sh --demo-mode .env-demo
+      Create a venv in ".env-demo" and enable demo-mode system.json.
+
+  ./install.sh --production
+      Install and then restore system.json from the backup tree, returning
+      the configuration to production mode.
+EOF
+}
+
+for arg in "$@"; do
+  case "$arg" in
+    --demo-mode)
+      DEMO_MODE="1"
+      ;;
+    --production)
+      PRODUCTION_MODE="1"
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    *)
+      VENV_DIR="$arg"
+      ;;
+  esac
+done
+
+if [[ "$DEMO_MODE" == "1" && "$PRODUCTION_MODE" == "1" ]]; then
+  echo "❌ Cannot use --demo-mode and --production together."
+  usage
+  exit 1
+fi
 
 backup_system_settings() {
   echo "🗂  Creating backup of system settings…"
@@ -26,6 +95,48 @@ backup_system_settings() {
   mkdir -p "$(dirname "$dst_path")"
   cp "$src_path" "$dst_path"
   echo "✅ Backup created at '$dst_path'."
+}
+
+restore_system_settings() {
+  echo "🗂  Restoring system settings from backup…"
+  local backup_root
+  backup_root="${PROJECT_ROOT}/backup"
+  local backup_path
+  backup_path="${backup_root}/src/pypnm/settings/system.json"
+  local target
+  target="${PROJECT_ROOT}/src/pypnm/settings/system.json"
+
+  if [[ ! -f "$backup_path" ]]; then
+    echo "⚠️  Backup system settings not found at '$backup_path'; cannot restore."
+    return
+  fi
+
+  mkdir -p "$(dirname "$target")"
+  cp "$backup_path" "$target"
+  echo "✅ System settings restored from backup to '$target'."
+}
+
+enable_demo_mode() {
+  echo "🎛  Enabling demo mode configuration…"
+  local demo_src
+  demo_src="${PROJECT_ROOT}/demo/settings/system.json"
+  local target
+  target="${PROJECT_ROOT}/src/pypnm/settings/system.json"
+
+  if [[ ! -f "$demo_src" ]]; then
+    echo "⚠️  Demo settings file not found at '$demo_src'; skipping demo mode."
+    return
+  fi
+
+  if [[ -f "$target" ]]; then
+    echo "ℹ️  Overwriting existing system settings at '$target' with demo template."
+  else
+    echo "ℹ️  Creating system settings at '$target' from demo template."
+  fi
+
+  mkdir -p "$(dirname "$target")"
+  cp "$demo_src" "$target"
+  echo "✅ Demo mode system settings applied (directories now point to demo/)."
 }
 
 echo "🔍 Detecting package manager..."
@@ -105,7 +216,7 @@ case "$PM" in
     ;;
 esac
 
-PYTHON_VERSION="$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>/dev/null || echo "3")"
+PYTHON_VERSION="$(python3 -c "import sys; print(f'{sys.version_info.major}.${sys.version_info.minor}')" 2>/dev/null || echo "3")"
 PYTHON_CMD="python${PYTHON_VERSION}"
 if ! command -v "$PYTHON_CMD" >/dev/null 2>&1; then
   if command -v python3 >/dev/null 2>&1; then
@@ -152,7 +263,20 @@ echo "🧪 Running unit tests…"
 cd "$PROJECT_ROOT"
 pytest -v
 
-backup_system_settings
+if [[ "$PRODUCTION_MODE" == "1" ]]; then
+  restore_system_settings
+elif [[ "$DEMO_MODE" == "1" ]]; then
+  backup_system_settings
+  enable_demo_mode
+else
+  backup_system_settings
+fi
 
 echo "✅ Bootstrap complete."
+if [[ "$DEMO_MODE" == "1" ]]; then
+  echo "👉 Demo mode is enabled: system settings now reference the demo/ directories."
+fi
+if [[ "$PRODUCTION_MODE" == "1" ]]; then
+  echo "👉 Production mode is restored: system settings have been reverted from backup."
+fi
 echo "👉 Next: source '$VENV_DIR/bin/activate' and run: mkdocs serve"
