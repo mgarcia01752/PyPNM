@@ -1,9 +1,9 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 from __future__ import annotations
 
 import pathlib
-
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
 import sys
 
 from fastapi import FastAPI
@@ -24,21 +24,25 @@ if project_root.name == "src" and str(project_root) not in sys.path:
 StartUp.initialize()
 
 fast_api_description = """
-**Proactive Network Maintenance (PNM) API for DOCSIS devices**
+**Proactive Network Maintenance (PNM) FastAPI For DOCSIS 3.x/4.0**
 
-Python-based RESTful API for accessing, analyzing, and visualizing DOCSIS 3.1/4.0 PNM telemetry.
+PyPNM exposes DOCSIS PNM workflows as a FastAPI service so you can script,
+automate, and visualize modem telemetry instead of working with ad-hoc
+SNMP walks and raw binary files.
 
-**PyPNM provides structured endpoints for:**
+**Core capabilities include:**
 - Downstream and upstream OFDM/OFDMA diagnostics
-- OFDM RxMER and Channel Estimation Analysis
-- Modulation profile decoding and traffic stats
-- FEC summary and profile-specific correction metrics
-- Spectrum capture, constellation display, and pre-equalization
-- TFTP/SNMP-based file retrieval and modem polling
+- Single-capture and multi-capture RxMER / Channel-Estimation analysis
+- Multipath Echo-Detection, OFDM Impulse-Response, and OFDM Profile Performance
+- Modulation-Profile decoding and FEC-Summary statistics
+- Spectrum capture, OFDM Constellation-Display, and OFDMA Pre-Equalization helpers
+- File management for PNM captures (transactions, uploads, demo data)
+- DOCSIS Event-Log reporting and SCQAM Status and Statistics
 
-Designed for integration into dashboards, automation pipelines, and engineering tools to assist with plant health monitoring, anomaly detection, and DOCSIS signal quality evaluation.
+Use it from dashboards, CI pipelines, or engineering tools to inspect plant
+health, track impairments over time, and validate DOCSIS device behavior.
 
-🔗 [**GitHub - PyPNM**](https://github.com/mgarcia01752/PyPNM)
+[**PyPNM Homepage**](https://github.com/mgarcia01752/PyPNM)
 """
 
 app = FastAPI(
@@ -47,13 +51,16 @@ app = FastAPI(
     description=fast_api_description,
     openapi_url="/openapi.json",
     docs_url="/docs",
-    redoc_url="/redoc",)
+    redoc_url="/redoc",
+)
 
 app.add_middleware(GZipMiddleware, minimum_size=100_000)
-app.add_middleware(CORSMiddleware,
+app.add_middleware(
+    CORSMiddleware,
     allow_origins=["*"],  # In production, replace with specific origins
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],)
+    allow_headers=["*"],
+)
 
 RouterRegistrar().register(app)
