@@ -7,10 +7,12 @@
   </a>
 </p>
 
-# PyPNM — Proactive Network Maintenance Toolkit
+# PyPNM - Proactive Network Maintenance Toolkit
 
+[![PyPNM Version](https://img.shields.io/github/v/tag/mgarcia01752/PyPNM?label=PyPNM&sort=semver)](https://github.com/mgarcia01752/PyPNM/tags)
 [![Daily Build](https://github.com/mgarcia01752/PyPNM/actions/workflows/daily-build.yml/badge.svg?branch=main)](https://github.com/mgarcia01752/PyPNM/actions/workflows/daily-build.yml)
-[![Latest Tag](https://img.shields.io/github/v/tag/mgarcia01752/PyPNM?sort=semver&filter=v*&label=latest)](https://github.com/mgarcia01752/PyPNM/tags)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
 
 PyPNM is a DOCSIS 3.x/4.0 Proactive Network Maintenance toolkit for engineers who want repeatable, scriptable visibility into modem health. It can run purely as a Python library or as a FastAPI web service for real-time dashboards and offline analysis workflows.
 
