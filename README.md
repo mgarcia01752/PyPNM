@@ -7,7 +7,7 @@
   </a>
 </p>
 
-# PyPNM — Proactive Network Maintenance Toolkit for DOCSIS 3.x/4.0
+# PyPNM — Proactive Network Maintenance Toolkit
 
 [![Daily Build](https://github.com/mgarcia01752/PyPNM/actions/workflows/daily-build.yml/badge.svg?branch=main)](https://github.com/mgarcia01752/PyPNM/actions/workflows/daily-build.yml)
 [![Latest Tag](https://img.shields.io/github/v/tag/mgarcia01752/PyPNM?sort=semver&filter=v*&label=latest)](https://github.com/mgarcia01752/PyPNM/tags)
