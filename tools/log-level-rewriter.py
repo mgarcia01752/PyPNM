@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 """
 Bulk Logging Level Rewriter For PyPNM.
 
