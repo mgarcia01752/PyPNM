@@ -7,11 +7,10 @@
   </a>
 </p>
 
-# PyPNM (pre-alpha) — DOCSIS 3.x/4.0 Proactive Network Maintenance Toolkit
+# PyPNM — DOCSIS 3.x/4.0 Proactive Network Maintenance Toolkit
 
 [![Daily Build](https://github.com/mgarcia01752/PyPNM/actions/workflows/daily-build.yml/badge.svg?branch=main)](https://github.com/mgarcia01752/PyPNM/actions/workflows/daily-build.yml)
 [![Latest Tag](https://img.shields.io/github/v/tag/mgarcia01752/PyPNM?sort=semver&filter=v*&label=latest)](https://github.com/mgarcia01752/PyPNM/tags)
-
 
 PyPNM is a modular toolkit for collecting, parsing, and analyzing DOCSIS 3.x/4.0 Proactive Network Maintenance (PNM) telemetry. Use it as a Python library or via a FastAPI web service for real-time and offline workflows.
 
@@ -20,7 +19,7 @@ PyPNM is a modular toolkit for collecting, parsing, and analyzing DOCSIS 3.x/4.0
 - **Structured SNMP integration**: poll DOCSIS modems for RxMER, modulation profiles, spectrum, and pre-EQ.
 - **Binary capture decoding**: retrieve modem-generated files via TFTP or SNMP and parse them to structured data.
 - **FastAPI REST service**: JSON endpoints for dashboards, automation, and pipelines.
-- **OFDM & upstream utilities**: channel estimation, FEC analysis, tap-delay visualization, and helpers.
+- **OFDM & OFDMA utilities**: channel estimation, FEC analysis, tap-delay visualization, and helpers.
 - **Analysis helpers**: Shannon capacity, margin deltas, signal statistics.
 - **Extensible framework**: plug in new capture types and algorithms.
 - **CLI tools**: scriptable utilities for batch tasks.
@@ -64,13 +63,13 @@ Show installer options:
 ./install.sh --help
 ```
 
-Demo-mode install (uses demo/settings/system.json and backs up the default configuration to backup/src/pypnm/settings/system.json):
+Demo-mode install (pre-configured with sample data):
 
 ```bash
 ./install.sh --demo-mode
 ```
 
-Revert to production settings (restore src/pypnm/settings/system.json from backup/src/pypnm/settings/system.json):
+Revert to production settings:
 
 ```bash
 ./install.sh --production
@@ -141,7 +140,7 @@ mkdocs serve
 - ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 - Install Postman: [https://www.postman.com/downloads/](https://www.postman.com/downloads/)
 
-Tip: Postman is often better for large or deeply nested JSON payloads.
+Tip: Postman is recommended for testing API and creating visualizations.
 
 ## API Documentation Quick links
 
