@@ -33,6 +33,7 @@ output/*
 pypnm-version-control/*
 logs/*
 backup/*
+issues/*
 
 #mkdocs
 site/*
