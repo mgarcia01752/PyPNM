@@ -137,7 +137,7 @@ By default, `--force-new-mac` updates **all** transaction entries to the demo MA
 specify an original MAC:
 
 ```bash
-./tools/pnm-demo-sanitizer.py   --old-mac 00:50:f1:12:03:60   \
+./tools/pnm-demo-sanitizer.py   --old-mac 00:00:ca:12:03:60   \
                                 --new-mac aa:bb:cc:dd:ee:ff   \
                                 --demo-root demo
 ```
@@ -235,7 +235,7 @@ updating MAC addresses, and cleaning sensitive information.
 ./tools/pnm-demo-sanitizer.py \
   --copy-data                 \
   --force-new-mac             \
-  --new-mac de:ad:00:00:be:ef \
+  --new-mac aa:bb:cc:dd:ee:ff \
   --demo-root demo          \
   --verbose
 
