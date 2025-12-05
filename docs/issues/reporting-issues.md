@@ -23,6 +23,7 @@ Please gather the following details (copy and paste into your issue body):
 
 1. **PyPNM Version**
    - Output of:
+
      ```bash
      python -m pip show pypnm-docsis
      ```
