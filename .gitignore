@@ -37,3 +37,6 @@ issues/*
 
 #mkdocs
 site/*
+
+#security-checks
+gitleaks-report.json
