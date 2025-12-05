@@ -81,19 +81,24 @@ From the PyPNM project root:
 #### Example A – Single Transaction
 
 ```bash
-./tools/support_bundle_builder.py   --transaction-id ea18519a572e2487                                       --clean-output                                                          --verbose
+./tools/support_bundle_builder.py   --transaction-id ea18519a572e2487 \
+                                    --verbose
 ```
 
 #### Example B – Multi-Capture Operation
 
 ```bash
-./tools/support_bundle_builder.py   --operation-id ed2fcba02bba42f6                                         --clean-output                                                          --verbose
+./tools/support_bundle_builder.py   --operation-id ed2fcba02bba42f6 \
+                                    --clean-output                  \
+                                    --verbose
 ```
 
 #### Example C – All Captures For A MAC Address
 
 ```bash
-./tools/support_bundle_builder.py   --mac-address aa:bb:cc:dd:ee:ff                                         --clean-output                                                          --verbose
+./tools/support_bundle_builder.py   --mac-address aa:bb:cc:dd:ee:ff \
+                                    --clean-output                  \
+                                    --verbose
 ```
 
 By default, the script:
@@ -124,7 +129,9 @@ If you need to keep real MAC and sysDescr values (for lab-only data), you can
 use the flags:
 
 ```bash
-./tools/support_bundle_builder.py   --transaction-id ea18519a572e2487                                       --keep-original-mac                                                     --keep-original-sysdescr
+./tools/support_bundle_builder.py   --transaction-id ea18519a572e2487 \
+                                    --keep-original-mac               \
+                                    --keep-original-sysdescr
 ```
 
 Only use these options if you are comfortable sharing identifying information.
