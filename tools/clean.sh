@@ -13,18 +13,21 @@ usage() {
 Usage: $(basename "$0") [OPTIONS] [ROOT_DIR]
 
 Options:
-  --all         Clean logs, Python cache, build artifacts, PNM data, output
-  --logs        Truncate logs/pypnm.log (preserve file and permissions)
-  --python      Clean only Python caches (__pycache__, *.pyc, .pytest_cache, etc.)
-  --build       Clean build/, dist/, *.egg-info
-  --pnm         Clean .data/pnm/ and .data/db/
-  --archive     Clean .data/archive/
-  --excel       Clean .data/xlsx/ and .data/csv/
-  --json        Clean .data/json/
-  --plot-data   Clean .data/png/, .data/csv/ and .data/archive/
-  --msg-rsp     Clean .data/msg_rsp (Message Response)
-  --output      Clean output/
-  -h, --help    Show this help and exit
+  --all           Clean logs, Python cache, build artifacts, PNM data, output,
+                  issues support bundles, and related artifacts
+  --logs          Truncate logs/pypnm.log (preserve file and permissions)
+  --python        Clean only Python caches (__pycache__, *.pyc, .pytest_cache, etc.)
+  --build         Clean build/, dist/, *.egg-info
+  --pnm           Clean .data/pnm/ and .data/db/
+  --archive       Clean .data/archive/
+  --excel         Clean .data/xlsx/ and .data/csv/
+  --json          Clean .data/json/
+  --plot-data     Clean .data/png/, .data/csv/ and .data/archive/
+  --msg-rsp       Clean .data/msg_rsp (Message Response)
+  --output        Clean output/
+  --issues        Clean issues/ support bundles (preserve directory)
+  --remove-issues Remove the issues/ directory entirely
+  -h, --help      Show this help and exit
 
 ROOT_DIR defaults to the current directory if not provided.
 EOF
@@ -42,7 +45,7 @@ declare -a ACTIONS=()
 # -----------------------------------------------------------------------------
 while (( $# )); do
   case "$1" in
-    --all|--logs|--python|--build|--pnm|--output|--plot-data|--msg-rsp|--archive|--excel|--json)
+    --all|--logs|--python|--build|--pnm|--output|--plot-data|--msg-rsp|--archive|--excel|--json|--issues|--remove-issues)
       ACTIONS+=("$1")
       shift
       ;;
@@ -169,6 +172,16 @@ clean_msg_rsp() {
   safe_rm "$ROOT_DIR/.data/msg_rsp/"*
 }
 
+clean_issues() {
+  echo "🧹 Cleaning issues support bundles (preserve directory)..."
+  safe_rm "$ROOT_DIR/issues/"*
+}
+
+remove_issues_dir() {
+  echo "🗑️  Removing issues directory..."
+  safe_rm "$ROOT_DIR/issues"
+}
+
 # -----------------------------------------------------------------------------
 # Dispatch actions
 # -----------------------------------------------------------------------------
@@ -188,6 +201,7 @@ for action in "${ACTIONS[@]}"; do
       clean_png
       clean_plot_data
       clean_msg_rsp
+      clean_issues
       ;;
 
     --archive)
@@ -228,6 +242,14 @@ for action in "${ACTIONS[@]}"; do
 
     --output)
       clean_output
+      ;;
+
+    --issues)
+      clean_issues
+      ;;
+
+    --remove-issues)
+      remove_issues_dir
       ;;
   esac
 done
