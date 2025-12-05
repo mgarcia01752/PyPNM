@@ -11,6 +11,7 @@
 
 [![PyPNM Version](https://img.shields.io/github/v/tag/mgarcia01752/PyPNM?label=PyPNM&sort=semver)](https://github.com/mgarcia01752/PyPNM/tags)
 [![Daily Build](https://github.com/mgarcia01752/PyPNM/actions/workflows/daily-build.yml/badge.svg?branch=main)](https://github.com/mgarcia01752/PyPNM/actions/workflows/daily-build.yml)
+![CodeQL](https://github.com/mgarcia01752/PyPNM/actions/workflows/codeql.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
 
