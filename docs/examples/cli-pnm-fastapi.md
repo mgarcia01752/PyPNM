@@ -48,7 +48,11 @@ Downstream Histogram PNM Capture.
 ### Example CLI Usage
 
 ```bash
-python src/pypnm/examples/fast_api/api-docs-pnm-ds-histogram-getCapture.py   --mac aa:bb:cc:dd:ee:ff   --inet 192.168.0.100   --tftp-ipv4 192.168.0.10   --tftp-ipv6 ::1   --sample-duration 10
+python src/pypnm/examples/fast_api/api-docs-pnm-ds-histogram-getCapture.py  --mac aa:bb:cc:dd:ee:ff   \
+                                                                            --inet 192.168.0.100    \
+                                                                            --tftp-ipv4 192.168.0.10  \
+                                                                            --tftp-ipv6 ::1           \
+                                                                            --sample-duration 10
 ```
 
 Endpoint-specific options:
@@ -65,7 +69,11 @@ Downstream OFDM FEC Summary PNM Capture.
 ### Example CLI Usage
 
 ```bash
-python src/pypnm/examples/fast_api/api-docs-pnm-ds-ofdm-fecSummary-getCapture.py   --mac aa:bb:cc:dd:ee:ff   --inet 192.168.0.100   --tftp-ipv4 192.168.0.10   --tftp-ipv6 ::1   --fec-summary-type 10min
+python src/pypnm/examples/fast_api/api-docs-pnm-ds-ofdm-fecSummary-getCapture.py  --mac aa:bb:cc:dd:ee:ff \
+                                                                                  --inet 192.168.0.100 \
+                                                                                  --tftp-ipv4 192.168.0.10 \
+                                                                                  --tftp-ipv6 ::1 \
+                                                                                  --fec-summary-type 10min
 ```
 
 Endpoint-specific options:
@@ -83,7 +91,10 @@ Downstream OFDM RxMER PNM Capture.
 ### Example CLI Usage
 
 ```bash
-python src/pypnm/examples/fast_api/api-docs-pnm-ds-ofdm-rxMer-getCapture.py   --mac aa:bb:cc:dd:ee:ff   --inet 192.168.0.100   --tftp-ipv4 192.168.0.10   --tftp-ipv6 ::1
+python src/pypnm/examples/fast_api/api-docs-pnm-ds-ofdm-rxMer-getCapture.py --mac aa:bb:cc:dd:ee:ff \
+                                                                            --inet 192.168.0.100 \
+                                                                            --tftp-ipv4 192.168.0.10 \
+                                                                            --tftp-ipv6 ::1
 ```
 
 This script uses the default analysis settings (`type = basic`, `output.type = json`, dark UI theme) as defined in the
@@ -98,7 +109,12 @@ Downstream OFDM Constellation Display PNM Capture.
 ### Example CLI Usage
 
 ```bash
-python src/pypnm/examples/fast_api/api-docs-pnm-ds-ofdm-constellationDisplay-getCapture.py   --mac aa:bb:cc:dd:ee:ff   --inet 192.168.0.100   --tftp-ipv4 192.168.0.10   --tftp-ipv6 ::1   --modulation-order-offset 0   --num-sample-symbols 8192
+python src/pypnm/examples/fast_api/api-docs-pnm-ds-ofdm-constellationDisplay-getCapture.py --mac aa:bb:cc:dd:ee:ff \
+                                                                                           --inet 192.168.0.100 \
+                                                                                           --tftp-ipv4 192.168.0.10 \
+                                                                                           --tftp-ipv6 ::1 \
+                                                                                           --modulation-order-offset 0 \
+                                                                                           --num-sample-symbols 8192
 ```
 
 Endpoint-specific options:
@@ -119,7 +135,10 @@ Downstream OFDM Modulation Profile PNM Capture.
 ### Example CLI Usage
 
 ```bash
-python src/pypnm/examples/fast_api/api-docs-pnm-ds-ofdm-modulationProfile-getCapture.py   --mac aa:bb:cc:dd:ee:ff   --inet 192.168.0.100   --tftp-ipv4 192.168.0.10   --tftp-ipv6 ::1
+python src/pypnm/examples/fast_api/api-docs-pnm-ds-ofdm-modulationProfile-getCapture.py --mac aa:bb:cc:dd:ee:ff \
+                                                                                        --inet 192.168.0.100 \
+                                                                                        --tftp-ipv4 192.168.0.10 \
+                                                                                        --tftp-ipv6 ::1
 ```
 
 This script triggers a downstream OFDM modulation profile capture using the same basic analysis configuration described
@@ -134,7 +153,10 @@ Downstream OFDM Channel Estimation Coefficients PNM Capture.
 ### Example CLI Usage
 
 ```bash
-python src/pypnm/examples/fast_api/api-docs-pnm-ds-ofdm-channelEstCoeff-getCapture.py   --mac aa:bb:cc:dd:ee:ff   --inet 192.168.0.100   --tftp-ipv4 192.168.0.10   --tftp-ipv6 ::1
+python src/pypnm/examples/fast_api/api-docs-pnm-ds-ofdm-channelEstCoeff-getCapture.py --mac aa:bb:cc:dd:ee:ff \
+ \                                                                                         --inet 192.168.0.100 \
+                                                                                          --tftp-ipv4 192.168.0.10 \
+                                                                                          --tftp-ipv6 ::1
 ```
 
 The JSON response schema is identical to the REST documentation for this endpoint (full OFDM channel estimation model).
@@ -150,7 +172,12 @@ Downstream Spectrum Analyzer PNM Capture (Segment Sweep).
 Segment sweep using defaults for the capture window:
 
 ```bash
-python src/pypnm/examples/fast_api/api-docs-pnm-ds-spectrumAnalyzer-getCapture.py   --mac aa:bb:cc:dd:ee:ff   --inet 192.168.0.100   --tftp-ipv4 192.168.0.10   --tftp-ipv6 ::1   --retrieval-type file   --http-timeout 180
+python src/pypnm/examples/fast_api/api-docs-pnm-ds-spectrumAnalyzer-getCapture.py   --mac aa:bb:cc:dd:ee:ff \
+                                                                                    --inet 192.168.0.100 \
+                                                                                    --tftp-ipv4 192.168.0.10 \
+                                                                                    --tftp-ipv6 ::1 \
+                                                                                    --retrieval-type file \
+                                                                                    --http-timeout 180
 ```
 
 Endpoint-specific options:
@@ -175,7 +202,13 @@ Downstream Spectrum Analyzer PNM Capture (OFDM Aligned).
 OFDM-aligned spectrum across the active OFDM channel:
 
 ```bash
-python src/pypnm/examples/fast_api/api-docs-pnm-ds-spectrumAnalyzer-getCapture-ofdm.py   --mac aa:bb:cc:dd:ee:ff   --inet 192.168.0.100   --tftp-ipv4 192.168.0.10   --tftp-ipv6 ::1   --retrieval-type file   --num-averages 1   --http-timeout 180
+python src/pypnm/examples/fast_api/api-docs-pnm-ds-spectrumAnalyzer-getCapture-ofdm.py   --mac aa:bb:cc:dd:ee:ff \
+                                                                                        --inet 192.168.0.100 \
+                                                                                        --tftp-ipv4 192.168.0.10 \
+                                                                                        --tftp-ipv6 ::1 \
+                                                                                        --retrieval-type file \
+                                                                                        --num-averages 1 \
+                                                                                        --http-timeout 180
 ```
 
 Endpoint-specific options:

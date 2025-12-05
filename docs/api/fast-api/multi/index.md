@@ -1,18 +1,18 @@
-## Multi-Capture API Index
+# Multi-Capture API Index
 
 Explore The PyPNM Multi-Capture Workflows For DOCSIS Cable Modems. This Index Provides Direct Access To Key API Guides And Advanced Analysis Tools For Repeated Measurements And Diagnostics.
 
 > **Background**
 > See the [Capture Operation Guide](capture-operation.md) for an overview of the capture infrastructure and lifecycle.
 
-### Multi-Capture Workflows
+## Multi-Capture Workflows
 
 | **Workflow**                                                 | **Description**                                                                 |
 | ------------------------------------------------------------ | ------------------------------------------------------------------------------- |
 | **[Multi-RxMER Capture](multi-capture-rxmer.md)**            | Periodic downstream OFDM RxMER sampling and analysis across multiple carriers.  |
 | **[Multi-DS Channel Estimation](multi-capture-chan-est.md)** | Periodic downstream OFDM channel-estimation coefficient captures and reporting. |
 
-### Advanced Analysis Modules
+## Advanced Analysis Modules
 
 | **Module**                                                             | **Description**                                                                       |
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
