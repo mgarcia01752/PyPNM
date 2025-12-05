@@ -1,4 +1,4 @@
-# PyPNM documentation
+# PyPNM Documentation
 
 Use this page to jump into the main sections.
 

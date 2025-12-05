@@ -72,14 +72,16 @@ cd PyPNM
 
 The installer sets up system prerequisites (where possible), creates a virtual environment, and installs PyPNM in editable mode:
 
-```bash
-./install.sh
-```
-
 Show installer options:
 
 ```bash
 ./install.sh --help
+```
+
+Standard Install in .env:
+
+```bash
+./install.sh
 ```
 
 Demo-mode install (pre-configured with sample data and demo paths):
@@ -109,7 +111,7 @@ python3 -m venv .env
 source .env/bin/activate
 ```
 
-### 4) Configure (Quick Setup)
+### 4) Configure (Quick Setup, if not in demo-mode)
 
 You will need:
 
@@ -145,7 +147,7 @@ pypnm --host 0.0.0.0 --port 443 --ssl --cert ./certs/cert.pem --key ./certs/key.
 Development hot-reload:
 
 ```bash
-pypnm --reload &
+pypnm --reload
 ```
 
 ### 6) (Optional) Serve The Documentation
@@ -153,7 +155,7 @@ pypnm --reload &
 HTTP (default: `http://127.0.0.1:8001`):
 
 ```bash
-mkdocs serve &
+mkdocs serve
 ```
 
 ### 7) Explore The API
