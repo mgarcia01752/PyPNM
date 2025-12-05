@@ -9,3 +9,4 @@ Use this page to jump into the main sections.
 | [Tools](tools/index.md)                   | Utilities for development and operations.                         |
 | [Tests](tests/index.md)                   | Test entry points and contributor guidance.                       |
 | [Release](release/release-strategy.md)    | Versioning and release process documentation.                     |
+| [Issues](issues/index.md)                 | Reporting bugs and creating support bundles.                      |
