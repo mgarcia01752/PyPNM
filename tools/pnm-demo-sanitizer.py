@@ -270,6 +270,20 @@ class DemoSanitizer:
 
     @staticmethod
     def copy_data_tree(project_root: Path, demo_root: Path) -> List[Path]:
+        """
+        Copy Core PNM Demo Data Into The Demo Dataset Root.
+
+        This helper mirrors the `.data/pnm` and `.data/db` directories into
+        `demo_root/.demo`, skipping the top-level `json_transactions.json`
+        file so that a curated or sanitized transaction database can be used
+        instead.
+
+        Only these directories are copied:
+        - .data/pnm  →  demo/.demo/pnm
+        - .data/db   →  demo/.demo/db (excluding json_transactions.json)
+
+        Returns the list of top-level paths that were copied or merged.
+        """
         copied: List[Path] = []
 
         src_root = project_root / ".data"
@@ -281,14 +295,24 @@ class DemoSanitizer:
         dst_root.mkdir(parents=True, exist_ok=True)
 
         for entry in src_root.iterdir():
-            src_path = entry
-            dst_path = dst_root / entry.name
+            if not entry.is_dir():
+                continue
 
-            if src_path.is_dir():
+            if entry.name == "pnm":
+                src_path = entry
+                dst_path = dst_root / entry.name
                 shutil.copytree(src_path, dst_path, dirs_exist_ok=True)
                 copied.append(dst_path)
-            elif src_path.is_file():
-                shutil.copy2(src_path, dst_path)
+
+            elif entry.name == "db":
+                src_path = entry
+                dst_path = dst_root / entry.name
+                shutil.copytree(
+                    src_path,
+                    dst_path,
+                    dirs_exist_ok=True,
+                    ignore=shutil.ignore_patterns("json_transactions.json"),
+                )
                 copied.append(dst_path)
 
         return copied
