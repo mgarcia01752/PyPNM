@@ -70,7 +70,7 @@ Standard envelope with payload under `data`.
 
 ```json
 {
-  "mac_address": "606c63e43684",
+  "mac_address": "aabbccddeeff",
   "status": 0,
   "message": null,
   "data": {
@@ -85,7 +85,7 @@ Standard envelope with payload under `data`.
             "MODEL": "LCPET-3"
           }
         },
-        "mac_address": "60:6c:63:e4:36:84",
+        "mac_address": "aa:bb:cc:dd:ee:ff",
         "channel_id": 193,
         "subcarrier_spacing": 50000,
         "first_active_subcarrier_index": 148,
@@ -125,7 +125,7 @@ Standard envelope with payload under `data`.
           "capture_time": 1761238473
         },
         "channel_id": 193,
-        "mac_address": "60:6c:63:e4:36:84",
+        "mac_address": "aa:bb:cc:dd:ee:ff",
         "subcarrier_zero_frequency": 251600000,
         "first_active_subcarrier_index": 148,
         "subcarrier_spacing": 50000,
@@ -155,7 +155,7 @@ Standard envelope with payload under `data`.
         "channel_id": 3,
         "entry": {
           "docsPnmCmDsOfdmRxMerFileEnable": true,
-          "docsPnmCmDsOfdmRxMerFileName": "ds_ofdm_rxmer_per_subcar_606c63e43684_193_1761514136.bin",
+          "docsPnmCmDsOfdmRxMerFileName": "ds_ofdm_rxmer_per_subcar_aabbccddeeff_193_1761514136.bin",
           "docsPnmCmDsOfdmRxMerMeasStatus": "sample_ready",
           "docsPnmCmDsOfdmRxMerPercentile": 0.02,
           "docsPnmCmDsOfdmRxMerMean": 33.21,

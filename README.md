@@ -137,7 +137,7 @@ pypnm --help
 HTTP (default: `http://127.0.0.1:8000`):
 
 ```bash
-pypnm &
+pypnm
 ```
 
 HTTPS example:
