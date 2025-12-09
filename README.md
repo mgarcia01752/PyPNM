@@ -27,6 +27,7 @@ PyPNM is a DOCSIS 3.x/4.0 Proactive Network Maintenance toolkit for engineers wh
   - [Operating Systems](#operating-systems)
   - [Shell Dependencies](#shell-dependencies)
 - [Getting Started](#getting-started)
+  - [Install From PyPI (Library Only)](#install-from-pypi-library-only)
   - [1) Clone](#1-clone)
   - [2) Install](#2-install)
   - [3) Activate The Virtual Environment](#3-activate-the-virtual-environment)
@@ -87,6 +88,16 @@ sudo apt install -y git
 Python and remaining dependencies are handled by the installer.
 
 ## Getting Started
+
+### Install From PyPI (Library Only)
+
+If you only need PyPNM as a Python library (for example, to embed DOCSIS PNM capture and analysis into your own tools or notebooks), you can install the published package directly from PyPI into an existing virtual environment:
+
+```bash
+pip install pypnm-docsis
+```
+
+For full FastAPI service usage and development, use the repository-based flow below.
 
 ### 1) Clone
 
