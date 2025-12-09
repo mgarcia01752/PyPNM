@@ -36,7 +36,7 @@ def main() -> int:
         "--mac",
         "-m",
         required=True,
-        help="MAC address of cable modem (e.g. 00:50:F1:12:03:60)",
+        help="MAC address of cable modem (e.g. aa:bb:cc:dd:ee:ff)",
     )
     parser.add_argument(
         "--inet",

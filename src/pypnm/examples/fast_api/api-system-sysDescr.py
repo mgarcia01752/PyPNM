@@ -29,7 +29,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--mac",
         required=True,
-        help="Cable modem MAC address (for example: 00:50:F1:12:03:60).",
+        help="Cable modem MAC address (for example: aa:bb:cc:dd:ee:ff).",
     )
     parser.add_argument(
         "--inet",

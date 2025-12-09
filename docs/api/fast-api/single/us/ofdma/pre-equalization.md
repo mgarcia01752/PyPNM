@@ -89,7 +89,7 @@ This endpoint returns the standard envelope described in [Common → Response](.
         },
         "upstream_channel_id": 42,
         "cm_mac_address": "aa:bb:cc:dd:ee:ff",
-        "cmts_mac_address": "00:90:f0:01:00:00",
+        "cmts_mac_address": "aa:bb:cc:dd:ee:ff",
         "subcarrier_zero_frequency": 104800000,
         "first_active_subcarrier_index": 74,
         "subcarrier_spacing": 50000,

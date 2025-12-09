@@ -103,8 +103,8 @@ tools/pnm-mac-updater.py   --show-info   --all-files .data/pnm
 Typical output:
 
 ```text
-.data/pnm/ds_ofdm_rxmer_per_subcar_0050f1120360_193_1764694042.bin: RECEIVE_MODULATION_ERROR_RATIO(PNN4) mac_address=00:50:f1:12:03:60
-.data/pnm/spectrum_analyzer_0050f1120360_0_1764630868.bin: SPECTRUM_ANALYSIS(PNN9) mac_address=00:50:f1:12:03:60
+.data/pnm/ds_ofdm_rxmer_per_subcar_0050f1120360_193_1764694042.bin: RECEIVE_MODULATION_ERROR_RATIO(PNN4) mac_address=aa:bb:cc:dd:ee:ff
+.data/pnm/spectrum_analyzer_0050f1120360_0_1764630868.bin: SPECTRUM_ANALYSIS(PNN9) mac_address=aa:bb:cc:dd:ee:ff
 ```
 
 SNMP amplitude-data files (for example, `spectrum_analyzer_snmp_amp_data_*.bin`) will be logged and skipped.
@@ -142,8 +142,8 @@ tools/pnm-mac-updater.py   --mac-address aa:bb:cc:dd:ee:ff   --all-files .data/p
 Example output:
 
 ```text
-[DRY-RUN] .data/pnm/ds_ofdm_rxmer_per_subcar_0050f1120360_193_1764694042.bin: RECEIVE_MODULATION_ERROR_RATIO(PNN4) 00:50:f1:12:03:60 -> aa:bb:cc:dd:ee:ff at offset 11
-[DRY-RUN] .data/pnm/spectrum_analyzer_0050f1120360_0_1764630868.bin: SPECTRUM_ANALYSIS(PNN9) 00:50:f1:12:03:60 -> aa:bb:cc:dd:ee:ff at offset 11
+[DRY-RUN] .data/pnm/ds_ofdm_rxmer_per_subcar_0050f1120360_193_1764694042.bin: RECEIVE_MODULATION_ERROR_RATIO(PNN4) aa:bb:cc:dd:ee:ff -> aa:bb:cc:dd:ee:ff at offset 11
+[DRY-RUN] .data/pnm/spectrum_analyzer_0050f1120360_0_1764630868.bin: SPECTRUM_ANALYSIS(PNN9) aa:bb:cc:dd:ee:ff -> aa:bb:cc:dd:ee:ff at offset 11
 [DRY-RUN] Files that would be updated: 16
 ```
 

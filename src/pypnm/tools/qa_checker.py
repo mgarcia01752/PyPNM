@@ -40,7 +40,7 @@ def _run_command(label: str, cmd: Sequence[str]) -> int:
         return 127
 
 
-def _build_commands(include_pyright: bool) -> List[Command]:
+def _build_commands(include_pyright: bool, pytest_args: Sequence[str]) -> List[Command]:
     """
     Build The Ordered List Of QA Commands To Run.
 
@@ -48,6 +48,9 @@ def _build_commands(include_pyright: bool) -> List[Command]:
     ----------
     include_pyright : bool
         If True, include a `pyright` static type-check step after Ruff.
+    pytest_args : Sequence[str]
+        Additional arguments to pass through to pytest (for example, via
+        the CLI separator ``--``).
 
     Returns
     -------
@@ -56,14 +59,15 @@ def _build_commands(include_pyright: bool) -> List[Command]:
     """
     commands: List[Command] = [
         ("secrets", ["./tools/scan-secrets.sh"]),
+        ("macs", ["./tools/scan-mac-addresses.py", "--fail-on-found"]),
         ("ruff", ["ruff", "check", "src"]),
-        ("pytest", ["pytest"]),
+        ("pytest", ["pytest", *pytest_args]),
         ("pycycle", ["pycycle", "--here"]),
     ]
 
     if include_pyright:
         # Insert Pyright after Ruff but before pytest for faster feedback.
-        commands.insert(2, ("pyright", ["pyright"]))
+        commands.insert(3, ("pyright", ["pyright"]))
 
     return commands
 
@@ -79,9 +83,10 @@ def main() -> None:
 
     1) secrets             – secret scanning via ./tools/scan-secrets.sh
                              (gitleaks + .gitleaks.toml if available).
-    2) ruff check src      – syntax, style, and common bug patterns.
-    3) pytest              – unit tests (pytest options from pyproject.toml).
-    4) pycycle --here      – import cycle detection over the current project.
+    2) macs                – repository scan for non-approved MAC addresses.
+    3) ruff check src      – syntax, style, and common bug patterns.
+    4) pytest              – unit tests (pytest options from pyproject.toml).
+    5) pycycle --here      – import cycle detection over the current project.
 
     Optional Pyright
     ----------------
@@ -94,15 +99,36 @@ def main() -> None:
     - pyright              – static type analysis using [tool.pyright] settings,
                              executed after Ruff but before pytest.
 
+    Passing Extra Pytest Arguments
+    ------------------------------
+    To pass additional arguments directly to pytest, use ``--`` as a separator.
+    Any arguments after ``--`` are forwarded only to pytest. For example:
+
+        pypnm-software-qa-checker --with-pyright -- -k \"fast\" --maxfail=1
+
+    In this example, pytest will be invoked as:
+
+        pytest -k \"fast\" --maxfail=1
+
     The process exit code is non-zero if any check fails.
     """
-    # Detect and strip our own CLI flag so it is not propagated to subcommands.
-    args = sys.argv[1:]
-    include_pyright = "--with-pyright" in args
-    filtered_args = [a for a in args if a != "--with-pyright"]
-    sys.argv = [sys.argv[0], *filtered_args]
+    raw_args = sys.argv[1:]
 
-    commands = _build_commands(include_pyright=include_pyright)
+    pytest_args: List[str] = []
+    qa_args: List[str] = raw_args
+
+    if "--" in raw_args:
+        sep_index = raw_args.index("--")
+        qa_args = raw_args[:sep_index]
+        pytest_args = raw_args[sep_index + 1 :]
+
+    include_pyright = "--with-pyright" in qa_args
+    filtered_qa_args = [a for a in qa_args if a != "--with-pyright"]
+
+    # Preserve a minimal sys.argv for any downstream libraries that inspect it.
+    sys.argv = [sys.argv[0], *filtered_qa_args]
+
+    commands = _build_commands(include_pyright=include_pyright, pytest_args=pytest_args)
 
     overall_rc = 0
     for label, cmd in commands:

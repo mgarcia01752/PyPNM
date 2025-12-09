@@ -32,7 +32,7 @@ This endpoint returns the standard envelope described in [Common → Response](.
         "docsDevEvCounts": 1,
         "docsDevEvLevel": 6,
         "docsDevEvId": 67061601,
-        "docsDevEvText": "US profile assignment change.  US Chan ID: 42; Previous Profile: 12; New Profile: 11.;CM-MAC=aa:bb:cc:dd:ee:ff;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;"
+        "docsDevEvText": "US profile assignment change.  US Chan ID: 42; Previous Profile: 12; New Profile: 11.;CM-MAC=aa:bb:cc:dd:ee:ff;CMTS-MAC=aa:bb:cc:dd:ee:ff;CM-QOS=1.1;CM-VER=4.0;"
       },
       {
         "docsDevEvFirstTime": "2025-10-19T18:40:09",
@@ -40,7 +40,7 @@ This endpoint returns the standard envelope described in [Common → Response](.
         "docsDevEvCounts": 3,
         "docsDevEvLevel": 6,
         "docsDevEvId": 74010100,
-        "docsDevEvText": "CM-STATUS message sent.  Event Type Code: 5; Chan ID: 13; DSID: N/A; MAC Addr: N/A; OFDM/OFDMA Profile ID: N/A.;CM-MAC=aa:bb:cc:dd:ee:ff;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;"
+        "docsDevEvText": "CM-STATUS message sent.  Event Type Code: 5; Chan ID: 13; DSID: N/A; MAC Addr: N/A; OFDM/OFDMA Profile ID: N/A.;CM-MAC=aa:bb:cc:dd:ee:ff;CMTS-MAC=aa:bb:cc:dd:ee:ff;CM-QOS=1.1;CM-VER=4.0;"
       },
       {
         "docsDevEvFirstTime": "2025-10-19T18:41:24",
@@ -48,7 +48,7 @@ This endpoint returns the standard envelope described in [Common → Response](.
         "docsDevEvCounts": 35,
         "docsDevEvLevel": 6,
         "docsDevEvId": 74010100,
-        "docsDevEvText": "CM-STATUS message sent.  Event Type Code: 5; Chan ID: 13; DSID: N/A; MAC Addr: N/A; OFDM/OFDMA Profile ID: N/A.;CM-MAC=aa:bb:cc:dd:ee:ff;CMTS-MAC=00:90:f0:01:00:00;CM-QOS=1.1;CM-VER=4.0;"
+        "docsDevEvText": "CM-STATUS message sent.  Event Type Code: 5; Chan ID: 13; DSID: N/A; MAC Addr: N/A; OFDM/OFDMA Profile ID: N/A.;CM-MAC=aa:bb:cc:dd:ee:ff;CMTS-MAC=aa:bb:cc:dd:ee:ff;CM-QOS=1.1;CM-VER=4.0;"
       },
       { "...": "additional log entries elided" }
     ]

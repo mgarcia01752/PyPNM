@@ -381,7 +381,7 @@ def parse_args(argv: List[str]) -> argparse.Namespace:
     )
     parser.add_argument(
         "--old-mac",
-        help="Original MAC address to be sanitized (for targeted mode, example: 00:50:f1:12:03:60).",
+        help="Original MAC address to be sanitized (for targeted mode, example: aa:bb:cc:dd:ee:ff).",
     )
     parser.add_argument(
         "--new-mac",
