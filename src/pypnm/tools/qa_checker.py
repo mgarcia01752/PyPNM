@@ -55,6 +55,7 @@ def _build_commands(include_pyright: bool) -> List[Command]:
         Ordered list of (label, cmd) tuples to execute.
     """
     commands: List[Command] = [
+        ("secrets", ["./tools/scan-secrets.sh"]),
         ("ruff", ["ruff", "check", "src"]),
         ("pytest", ["pytest"]),
         ("pycycle", ["pycycle", "--here"]),
@@ -62,7 +63,7 @@ def _build_commands(include_pyright: bool) -> List[Command]:
 
     if include_pyright:
         # Insert Pyright after Ruff but before pytest for faster feedback.
-        commands.insert(1, ("pyright", ["pyright"]))
+        commands.insert(2, ("pyright", ["pyright"]))
 
     return commands
 
@@ -76,9 +77,11 @@ def main() -> None:
     By default, this helper aggregates the core quality checks configured for
     the project:
 
-    1) ruff check src      – syntax, style, and common bug patterns.
-    2) pytest              – unit tests (pytest options from pyproject.toml).
-    3) pycycle --here      – import cycle detection over the current project.
+    1) secrets             – secret scanning via ./tools/scan-secrets.sh
+                             (gitleaks + .gitleaks.toml if available).
+    2) ruff check src      – syntax, style, and common bug patterns.
+    3) pytest              – unit tests (pytest options from pyproject.toml).
+    4) pycycle --here      – import cycle detection over the current project.
 
     Optional Pyright
     ----------------
@@ -88,7 +91,8 @@ def main() -> None:
 
     This will run an additional step:
 
-    - pyright              – static type analysis using [tool.pyright] settings.
+    - pyright              – static type analysis using [tool.pyright] settings,
+                             executed after Ruff but before pytest.
 
     The process exit code is non-zero if any check fails.
     """
