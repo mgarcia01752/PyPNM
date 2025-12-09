@@ -30,6 +30,15 @@ logs/*
 backup/*
 issues/*
 
+# PyPNM Dev tools
+log-level-rewriter.py
+add-required-python-headers.py
+test-pypi-build.sh
+pypi-build.sh
+testpypi_release.py
+pypi_release.py
+
+
 # PyPNM Backups
 system.bak*
 
