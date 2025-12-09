@@ -1,0 +1,44 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.env/
+.venv/
+test-env/
+venv/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.code-workspace
+
+# Logs
+*.log
+
+# PyPNM 
+.data/
+data/
+output/*
+pypnm-version-control/*
+logs/*
+backup/*
+issues/*
+
+# PyPNM Backups
+system.bak*
+
+#mkdocs
+site/*
+
+# Test, security-checks and coverage artifacts
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+gitleaks-report.json

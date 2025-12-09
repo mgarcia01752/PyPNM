@@ -1,0 +1,79 @@
+# PyPNM Cleanup Script
+
+The PyPNM Cleanup Script is a shell utility located in the `tools/` directory. It provides a structured way to clean up logs, Python cache files, build artifacts, generated output, and internal `.data` folders related to PNM processing.
+
+> Use this tool to reset analysis directories and keep the repository free of stale or generated files.
+
+## Features
+
+* Clean specific categories of build and runtime artifacts or perform a full cleanup.
+* Support for scoped operations (for example, Python caches only, or PNM data only).
+* Can be run from any root directory (defaults to the current directory).
+* Uses simple, repeatable patterns so it can be safely integrated into CI or local workflows.
+
+## Directories and Options
+
+The table below summarizes which directories are affected by each option. All paths are resolved relative to the chosen `ROOT_DIR`.
+
+| Option        | Description                                      | Directories removed (if present)                                       |
+|---------------|--------------------------------------------------|------------------------------------------------------------------------|
+| `--logs`      | Clean application logs.                          | `logs/`                                                                |
+| `--python`    | Clean Python cache artifacts.                    | `**/__pycache__/`, `**/*.pyc`, `.pytest_cache/`                        |
+| `--build`     | Clean build and packaging outputs.               | `build/`, `dist/`, `*.egg-info`                                       |
+| `--pnm`       | Clean PNM working data and databases.            | `.data/pnm/`, `.data/db/`                                             |
+| `--plot-data` | Clean plotting data and archive artifacts.       | `.data/png/`, `.data/csv/`, `.data/archive/`                          |
+| `--msg-rsp`   | Clean message-response artifacts.                | `.data/msg_rsp/`                                                      |
+| `--output`    | Clean high-level output files.                   | `output/`                                                             |
+| `--all`       | Run all cleanup operations (includes Excel data) | All of the above, plus `.data/xlsx/` and any other script-managed data |
+
+## Usage
+
+```bash
+./tools/clean.sh [OPTIONS] [ROOT_DIR]
+```
+
+* `OPTIONS`: One or more of
+
+  * `--all`
+  * `--logs`
+  * `--python`
+  * `--build`
+  * `--pnm`
+  * `--plot-data`
+  * `--msg-rsp`
+  * `--output`
+
+* `ROOT_DIR`: Optional path that serves as the root of the cleanup operation.  
+  If omitted, the script uses the current working directory.
+
+### Examples
+
+Clean everything under the current directory:
+
+```bash
+./tools/clean.sh --all
+```
+
+Clean only Python caches and build artifacts:
+
+```bash
+./tools/clean.sh --python --build
+```
+
+Clean PNM data and plot-related data from a specific project root:
+
+```bash
+./tools/clean.sh --pnm --plot-data ~/Projects/PyPNM
+```
+
+Clean message-response artifacts only:
+
+```bash
+./tools/clean.sh --msg-rsp
+```
+
+## Notes
+
+* The script uses `set -euo pipefail` to fail fast on errors or undefined variables.
+* Deletion is performed via a small helper that checks for path existence before removal.
+* All directories are interpreted relative to `ROOT_DIR`, which allows you to point the script at different clones or sandboxes.
