@@ -61,7 +61,7 @@ class JsonTransactionDb:
         self._json_db   = Path(SystemConfigSettings.json_db())
         self._json_dir  = Path(SystemConfigSettings.json_dir())
         self.logger     = logging.getLogger(f"{self.__class__.__name__}")
-        self.logger.info(
+        self.logger.debug(
             f"Initialized JSON Transaction DB Manager with json_db={self._json_db}, json_dir={self._json_dir}"
         )
 

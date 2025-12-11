@@ -77,13 +77,13 @@ class MeasureServiceReturnTypes(Enum):
     BASE_MODEL = auto()
     DICT = auto()
 
-MeasurementEntry: TypeAlias =   DocsPnmCmOfdmChanEstCoefEntry | \
-                                DocsPnmCmDsConstDispMeasEntry | \
-                                DocsPnmCmDsOfdmRxMerEntry | \
-                                DocsPnmCmUsPreEqEntry | \
-                                DocsPnmCmDsHistEntry | \
-                                DocsPnmCmDsOfdmFecEntry | \
-                                DocsPnmCmDsOfdmModProfEntry | \
+MeasurementEntry: TypeAlias =   DocsPnmCmOfdmChanEstCoefEntry   | \
+                                DocsPnmCmDsConstDispMeasEntry   | \
+                                DocsPnmCmDsOfdmRxMerEntry       | \
+                                DocsPnmCmUsPreEqEntry           | \
+                                DocsPnmCmDsHistEntry            | \
+                                DocsPnmCmDsOfdmFecEntry         | \
+                                DocsPnmCmDsOfdmModProfEntry     | \
                                 DocsIf3CmSpectrumAnalysisEntry
 
 class CommonMeasureService(CommonMessagingService):

@@ -55,7 +55,7 @@ class MultiRxMerService(AbstractCaptureService):
         self.cm = cm
         self.tftp_servers = tftp_servers
         self.tftp_path = tftp_path
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     async def _capture_message_response(self) -> MessageResponse:
         """
@@ -116,7 +116,7 @@ class MultiRxMer_Ofdm_Performance_1_Service(AbstractCaptureService):
             interval: Time (seconds) between successive captures.
         """
         super().__init__(duration, interval)
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.cm = cm
         self.tftp_servers = tftp_servers
         self.tftp_path = tftp_path
