@@ -154,14 +154,6 @@ The installer also runs a silent alias helper (when available) that adds conveni
 
 ### 3) Activate The Virtual Environment
 
-If the installer created `.env` for you, activate it with:
-
-```bash
-source .env/bin/activate
-```
-
-If you skipped the installer and want to create a virtual environment manually:
-
 ```bash
 python3 -m venv .env
 source .env/bin/activate
@@ -187,6 +179,12 @@ PyPNM provides an interactive menu wrapper around the individual configuration h
 
 ```bash
 config-menu
+```
+
+or
+
+```bash
+python ./tools/system_config/menu.py
 ```
 
 The menu allows you to edit:

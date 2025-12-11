@@ -131,7 +131,7 @@ class CommonMeasureService(CommonMessagingService):
         self.extra_options                          = extra_options
         self.config_mgr:ConfigManager               = ConfigManager()
         self.log_prefix:str                         = f"MAC: {self.cm.get_mac_address} - INET: {self.cm.get_inet_address}"
-        self.pnm_dir                               = PnmConfigManager.get_save_dir()
+        self.pnm_dir                                = PnmConfigManager.get_save_dir()
         self.pnm_local_dir                          = SystemConfigSettings.pnm_dir
         self._capture_parameter:SpecAnCapturePara   = SpecAnCapturePara()
 
@@ -253,7 +253,6 @@ class CommonMeasureService(CommonMessagingService):
                 self.build_transaction_msg(tx_id, filename)
 
             return self.build_send_msg(status)
-
 
         #########################################################################
         # Ensure CM Inet and TFTP server address use the same IP version

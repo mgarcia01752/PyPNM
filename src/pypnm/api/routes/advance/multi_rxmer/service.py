@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import logging
 import math
+from typing import cast
 
 from pypnm.api.routes.advance.common.capture_service import AbstractCaptureService
 from pypnm.api.routes.common.extended.common_messaging_service import MessageResponse
@@ -154,7 +155,8 @@ class MultiRxMer_Ofdm_Performance_1_Service(AbstractCaptureService):
         """
         operation_id = self.getOperationID()
         self.logger.debug(f'OperationID: {operation_id}')
-        time_remaining = self.getOperation(operation_id)['time_remaining']
+        operation = self.getOperation(operation_id)
+        time_remaining = cast(int, operation['time_remaining'])
 
         # First, perform the primary RxMER capture
         try:
@@ -170,7 +172,7 @@ class MultiRxMer_Ofdm_Performance_1_Service(AbstractCaptureService):
 
             self.logger.info(f'Collecting a Modulation Profile @ {time_remaining}s')
             try:
-                msg_rsp = await CmDsOfdmModProfileService(self.cm).set_and_go()
+                msg_rsp = await CmDsOfdmModProfileService(self.cm, self.tftp_servers, self.tftp_path).set_and_go()
 
             except Exception as exc:
                 self.logger.error(f"Exception during ModProfile capture: {exc}", exc_info=True)
@@ -193,7 +195,9 @@ class MultiRxMer_Ofdm_Performance_1_Service(AbstractCaptureService):
                 self.logger.info(f'Collecting a FEC Summary @ TimeRemaining={time_remaining}s (threshold={thresh})')
 
                 try:
-                    msg_rsp = await CmDsOfdmFecSummaryService(self.cm, FecSummaryType.TEN_MIN).set_and_go()
+                    msg_rsp = await CmDsOfdmFecSummaryService(self.cm, FecSummaryType.TEN_MIN,
+                                                              tftp_servers = self.tftp_servers,
+                                                              tftp_path = self.tftp_path).set_and_go()
 
                 except Exception as exc:
                     self.logger.error(f"Exception during FEC summary: {exc}", exc_info=True)
