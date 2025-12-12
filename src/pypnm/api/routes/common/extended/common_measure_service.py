@@ -59,7 +59,7 @@ from pypnm.lib.ftp.ftp_connector import FTPConnector
 from pypnm.lib.host_endpoint import HostEndpoint
 from pypnm.lib.inet import Inet
 from pypnm.lib.ping import Ping
-from pypnm.lib.ssh.ssh_connector import SecureTransferMode, SSHConnector
+from pypnm.lib.ssh.ssh_connector import SSHConnector
 from pypnm.lib.tftp.tftp_connector import TFTPConnector
 from pypnm.lib.types import ChannelId, FileNameStr, InterfaceIndex, TransactionId, HostNameStr
 from pypnm.lib.utils import Generate
@@ -442,7 +442,7 @@ class CommonMeasureService(CommonMessagingService):
 
         This method delegates the file retrieval operation to a protocol-specific handler method
         depending on the configuration defined under `PnmFileRetrieval.method`. 
-        Supported methods include: "local", "tftp", "scp", "sftp"
+        Supported methods include: "local", "tftp", "sftp"
         # TODO: Need to implement, not sure if we need to: "ftp", "http", and "https".
 
         Configuration keys used:
@@ -465,8 +465,6 @@ class CommonMeasureService(CommonMessagingService):
                 return self._handle_tftp_fetch(pnm_file_name)
             elif method == "ftp":
                 return self._handle_ftp_fetch(pnm_file_name)
-            elif method == "scp":
-                return self._handle_scp_fetch(pnm_file_name)
             elif method == "sftp":
                 return self._handle_sftp_fetch(pnm_file_name)
             elif method == "http":
@@ -891,54 +889,6 @@ class CommonMeasureService(CommonMessagingService):
 
             return ServiceStatusCode.LOCAL_FETCH_FAILURE
 
-    def _handle_scp_fetch(self, pnm_file_name: FileNameStr) -> ServiceStatusCode:
-        """
-        Fetch a file from remote SCP server.
-
-        Args:
-            pnm_file_name: Name of the file to fetch from remote server
-
-        Returns:
-            bool: True if file transfer successful, False otherwise
-        """
-        sys_config = SystemConfigSettings()
-
-        self.logger.debug(f"{self.log_prefix} - SCP: Connecting to: {sys_config.scp_host()}")
-
-        if self._ping_pnm_file_server(HostNameStr(sys_config.scp_host())) != ServiceStatusCode.SUCCESS:
-            self.logger.error(f"{self.log_prefix} - Ping failed for SCP host: {sys_config.scp_host()}")
-            return ServiceStatusCode.SCP_HOST_UNREACHABLE
-
-        scp = SSHConnector(
-            hostname        =   sys_config.scp_host(),
-            username        =   sys_config.scp_user(),
-            port            =   sys_config.scp_port(),
-            transfer_mode   =   SecureTransferMode.SCP)
-
-        password         = sys_config.scp_password() or None
-        private_key_path = sys_config.scp_private_key_path() or None
-
-        try:
-            if not scp.connect(password         =   password,
-                               private_key_path =   private_key_path):
-                self.logger.error(f'{self.log_prefix} - SCP Connect Failure: Host: {sys_config.scp_host()}')
-                return ServiceStatusCode.SCP_PNM_FILE_FETCH_ERROR
-
-            remote_file_path = f'{sys_config.scp_remote_dir()}/{pnm_file_name}'
-            if not scp.receive_file(remote_path =   remote_file_path,
-                                    local_path  =   sys_config.pnm_dir()):
-                self.logger.error(f'{self.log_prefix} - SCP Receive File Error (SRC:{remote_file_path} DST: {sys_config.pnm_dir()})')
-                return ServiceStatusCode.SCP_PNM_FILE_FETCH_ERROR
-
-            self.logger.info(f'{self.log_prefix} - Successfully fetched file: {pnm_file_name}')
-            return ServiceStatusCode.SUCCESS
-
-        except Exception as e:
-            self.logger.error(f'{self.log_prefix} - SCP Fetch Exception: {e}')
-            return ServiceStatusCode.SCP_PNM_FILE_FETCH_ERROR
-        finally:
-            scp.disconnect()
-
     def _handle_sftp_fetch(self, pnm_file_name: FileNameStr) -> ServiceStatusCode:
         """
         Fetch a file from remote SFTP server.
@@ -960,14 +910,13 @@ class CommonMeasureService(CommonMessagingService):
         sftp = SSHConnector(
             hostname        =   sys_config.sftp_host(),
             username        =   sys_config.sftp_user(),
-            port            =   sys_config.sftp_port(),
-            transfer_mode   =   SecureTransferMode.SFTP)
+            port            =   sys_config.sftp_port())
 
-        password         = sys_config.sftp_password() or None
-        private_key_path = sys_config.sftp_private_key_path() or None
+        password_enc     = sys_config.sftp_password()
+        private_key_path = sys_config.sftp_private_key_path()
 
         try:
-            if not sftp.connect(password         =   password,
+            if not sftp.connect(password_enc     =   password_enc,
                                 private_key_path =   private_key_path):
                 self.logger.error(f'{self.log_prefix} - SFTP Connect Failure: Host: {sys_config.sftp_host()}')
                 return ServiceStatusCode.SFTP_PNM_FILE_FETCH_ERROR
@@ -1313,4 +1262,3 @@ class CommonMeasureService(CommonMessagingService):
 
         self.logger.debug(f"{self.log_prefix} - Ping failed for host: {host}")
         return ServiceStatusCode.PING_FAILED
-

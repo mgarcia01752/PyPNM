@@ -4,38 +4,21 @@
 from __future__ import annotations
 
 import contextlib
-import enum
 import logging
 import os
 
 import paramiko
 
-from pypnm.lib.secret_crypto_manager import SecretCryptoError, SecretCryptoManager
-
-
-class SecureTransferMode(enum.Enum):
-    """
-    Supported Secure File Transfer Modes.
-
-    Attributes
-    ----------
-    SCP:
-        Secure copy protocol via SSH.
-    SFTP:
-        SSH file transfer protocol.
-    """
-
-    SCP  = 0
-    SFTP = 1
+from pypnm.lib.secret.crypto_manager import SecretCryptoError, SecretCryptoManager
 
 
 class SSHConnector:
     """
     SSH Connector For Secure File Transfer And Remote Commands.
 
-    This connector supports both SFTP (Paramiko) and SCP (Python SCP client
-    over Paramiko transport). Passwords may be provided as encrypted tokens
-    (ENC[v1]:...) and are decrypted only inside connect().
+    This connector provides SFTP (Paramiko) file transfers and remote command
+    execution over SSH. Passwords may be provided as encrypted tokens
+    (ENC[...]) and are decrypted only inside connect().
 
     Security Notes
     --------------
@@ -55,7 +38,6 @@ class SSHConnector:
         hostname: str,
         username: str,
         port: int = DEFAULT_SSH_PORT,
-        transfer_mode: SecureTransferMode = SecureTransferMode.SFTP,
     ) -> None:
         """
         Initialize Connection Parameters.
@@ -68,17 +50,14 @@ class SSHConnector:
             SSH login username.
         port:
             SSH port (default: 22).
-        transfer_mode:
-            Transfer mode (SCP or SFTP).
         """
         self.logger = logging.getLogger(f"{self.__class__.__name__}")
 
-        self.hostname      = hostname
-        self.username      = username
-        self.port          = int(port)
-        self.transfer_mode = transfer_mode
+        self.hostname = hostname
+        self.username = username
+        self.port     = int(port)
 
-        self.ssh_client: paramiko.SSHClient | None  = None
+        self.ssh_client: paramiko.SSHClient | None   = None
         self.sftp_client: paramiko.SFTPClient | None = None
 
         self.private_key_path: str = ""
@@ -91,12 +70,12 @@ class SSHConnector:
         auto_add_policy: bool = True,
     ) -> bool:
         """
-        Establish An SSH Session And Initialize Transfer Clients.
+        Establish An SSH Session And Initialize SFTP.
 
         Parameters
         ----------
         password_enc:
-            Encrypted password token (ENC[v1]:...) or plaintext password for
+            Encrypted password token (ENC[...]) or plaintext password for
             backward compatibility. The plaintext password is not stored.
         private_key_path:
             Private key path for key-based authentication. Empty disables key auth.
@@ -135,10 +114,8 @@ class SSHConnector:
                 "timeout":  float(self.DEFAULT_CONNECT_TIMEOUT_SEC),
             }
 
-            key_filename = ""
             if self.private_key_path != "":
-                key_filename = os.path.expanduser(self.private_key_path)
-                connect_kwargs["key_filename"] = key_filename
+                connect_kwargs["key_filename"] = os.path.expanduser(self.private_key_path)
 
             if password_clear != "":
                 connect_kwargs["password"] = password_clear
@@ -154,7 +131,7 @@ class SSHConnector:
 
             self.sftp_client = paramiko.SFTPClient.from_transport(transport)
 
-            self.logger.debug("Connected to %s:%d via %s", self.hostname, self.port, self.transfer_mode.name)
+            self.logger.debug("Connected to %s:%d via SFTP", self.hostname, self.port)
             return True
 
         except Exception as exc:
@@ -183,7 +160,7 @@ class SSHConnector:
 
     def send_file(self, local_path: str, remote_path: str) -> bool:
         """
-        Transfer A Local File To The Remote Host.
+        Transfer A Local File To The Remote Host Using SFTP.
 
         Parameters
         ----------
@@ -197,7 +174,7 @@ class SSHConnector:
         bool
             True on success, False on failure.
         """
-        if self.ssh_client is None:
+        if self.sftp_client is None:
             raise ConnectionError("Not connected - call connect() first")
 
         if not os.path.isfile(local_path):
@@ -208,14 +185,17 @@ class SSHConnector:
         if remote_dir != "":
             self._ensure_remote_dir(remote_dir)
 
-        if self.transfer_mode is SecureTransferMode.SFTP:
-            return self._sftp_put(local_path=local_path, remote_path=remote_path)
-
-        return self._scp_put(local_path=local_path, remote_path=remote_path)
+        try:
+            self.sftp_client.put(local_path, remote_path)
+            self.logger.debug("SFTP: %s -> %s", local_path, remote_path)
+            return True
+        except Exception as exc:
+            self.logger.error("SFTP send failed: %s", exc)
+            return False
 
     def receive_file(self, remote_path: str, local_path: str) -> bool:
         """
-        Fetch A Remote File To The Local Filesystem.
+        Fetch A Remote File To The Local Filesystem Using SFTP.
 
         Parameters
         ----------
@@ -229,7 +209,7 @@ class SSHConnector:
         bool
             True on success, False on failure.
         """
-        if self.ssh_client is None:
+        if self.sftp_client is None:
             raise ConnectionError("Not connected - call connect() first")
 
         local_file = local_path
@@ -240,10 +220,13 @@ class SSHConnector:
         if local_dir != "":
             os.makedirs(local_dir, exist_ok=True)
 
-        if self.transfer_mode is SecureTransferMode.SFTP:
-            return self._sftp_get(remote_path=remote_path, local_path=local_file)
-
-        return self._scp_get(remote_path=remote_path, local_path=local_file)
+        try:
+            self.sftp_client.get(remote_path, local_file)
+            self.logger.debug("SFTP: %s -> %s", remote_path, local_file)
+            return True
+        except Exception as exc:
+            self.logger.error("SFTP receive failed: %s", exc)
+            return False
 
     def execute_command(self, command: str) -> tuple[str, str, int]:
         """
@@ -357,7 +340,7 @@ class SSHConnector:
         if not os.path.isfile(public_key_path):
             raise FileNotFoundError(f"Public key not found: {public_key_path}")
 
-        with open(public_key_path, "r", encoding="utf-8") as handle:
+        with open(public_key_path, encoding="utf-8") as handle:
             key = handle.read().strip()
 
         cmd = (
@@ -403,62 +386,3 @@ class SSHConnector:
                 self.sftp_client.stat(path)
             except OSError:
                 self.sftp_client.mkdir(path)
-
-    def _sftp_put(self, local_path: str, remote_path: str) -> bool:
-        if self.sftp_client is None:
-            raise ConnectionError("Not connected - call connect() first")
-
-        try:
-            self.sftp_client.put(local_path, remote_path)
-            self.logger.debug("SFTP: %s -> %s", local_path, remote_path)
-            return True
-        except Exception as exc:
-            self.logger.error("SFTP send failed: %s", exc)
-            return False
-
-    def _sftp_get(self, remote_path: str, local_path: str) -> bool:
-        if self.sftp_client is None:
-            raise ConnectionError("Not connected - call connect() first")
-
-        try:
-            self.sftp_client.get(remote_path, local_path)
-            self.logger.debug("SFTP: %s -> %s", remote_path, local_path)
-            return True
-        except Exception as exc:
-            self.logger.error("SFTP receive failed: %s", exc)
-            return False
-
-    def _scp_put(self, local_path: str, remote_path: str) -> bool:
-        try:
-            scp = self._scp_client()
-            scp.put(local_path, remote_path=remote_path)
-            self.logger.debug("SCP: %s -> %s", local_path, remote_path)
-            return True
-        except Exception as exc:
-            self.logger.error("SCP send failed: %s", exc)
-            return False
-
-    def _scp_get(self, remote_path: str, local_path: str) -> bool:
-        try:
-            scp = self._scp_client()
-            scp.get(remote_path, local_path=local_path)
-            self.logger.debug("SCP: %s -> %s", remote_path, local_path)
-            return True
-        except Exception as exc:
-            self.logger.error("SCP receive failed: %s", exc)
-            return False
-
-    def _scp_client(self):
-        if self.ssh_client is None:
-            raise ConnectionError("Not connected - call connect() first")
-
-        transport = self.ssh_client.get_transport()
-        if transport is None or not transport.is_active():
-            raise ConnectionError("SSH transport is not active; cannot create SCP client.")
-
-        try:
-            from scp import SCPClient  # type: ignore[import-not-found]
-        except Exception as exc:
-            raise RuntimeError("Missing dependency for SCP. Install with: pip install scp") from exc
-
-        return SCPClient(transport)
