@@ -156,22 +156,22 @@ Local Storage Layout And Remote Retrieval Methods.
         "tls": false,
         "timeout": 5,
         "user": "user",
-        "password": "ftp",
+        "password_enc": "",
         "remote_dir": "/srv/tftp"
       },
       "scp": {
         "host": "localhost",
         "port": 22,
         "user": "user",
-        "password": "scp",
+        "password_enc": "",
         "private_key_path": "",
         "remote_dir": "/srv/tftp"
       },
       "sftp": {
         "host": "localhost",
-        "port": 22",
+        "port": 22,
         "user": "user",
-        "password": "sftp",
+        "password_enc": "",
         "private_key_path": "",
         "remote_dir": "/srv/tftp"
       },

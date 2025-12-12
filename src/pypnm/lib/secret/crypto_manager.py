@@ -377,3 +377,47 @@ class SecretCryptoManager:
             raise SecretCryptoError("Decrypted password is empty; token or key may be invalid.")
 
         return clear_str
+
+    @staticmethod
+    def encrypt_system_config_secrets(config: dict[str, Any]) -> dict[str, Any]:
+        """
+        Encrypt System Config Secrets In-Place Semantics (Returns Updated Copy).
+
+        Contract
+        --------
+        - Never persist a 'password' key.
+        - If a password exists (from 'password' or 'password_enc'), store it as
+          encrypted token in 'password_enc' (ENC[...]).
+        - If password is empty, keep 'password_enc' as "" and still remove 'password'.
+        - SCP is not handled here (removed as an option); this function only enforces
+          secret storage semantics for configured methods.
+        """
+        pnm = config.get("PnmFileRetrieval", {})
+        retrieval = pnm.get("retrival_method", {})
+        methods = retrieval.get("methods", {})
+
+        if not isinstance(methods, dict):
+            return config
+
+        for _name, method_cfg in methods.items():
+            if not isinstance(method_cfg, dict):
+                continue
+
+            password_enc = str(method_cfg.get("password_enc", "") or "").strip()
+            password     = str(method_cfg.get("password", "") or "").strip()
+
+            token_source = password_enc if password_enc != "" else password
+
+            if token_source == "":
+                method_cfg.pop("password", None)
+                method_cfg["password_enc"] = ""
+                continue
+
+            if token_source.startswith("ENC["):
+                method_cfg["password_enc"] = token_source
+            else:
+                method_cfg["password_enc"] = SecretCryptoManager.encrypt_password(token_source)
+
+            method_cfg.pop("password", None)
+
+        return config

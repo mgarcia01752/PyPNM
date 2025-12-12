@@ -1,388 +1,436 @@
+#!/usr/bin/env python3
+
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
 
-import contextlib
+import getpass
+import json
 import logging
 import os
+import sys
+import time
+from typing import Any
 
-import paramiko
-
+from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.secret.crypto_manager import SecretCryptoError, SecretCryptoManager
+from pypnm.lib.ssh.ssh_connector import SSHConnector
 
 
-class SSHConnector:
+class PnmFileRetrievalConfigurator:
     """
-    SSH Connector For Secure File Transfer And Remote Commands.
+    Interactive Helper To Configure PNM File Retrieval Settings.
 
-    This connector provides SFTP (Paramiko) file transfers and remote command
-    execution over SSH. Passwords may be provided as encrypted tokens
-    (ENC[...]) and are decrypted only inside connect().
+    This tool updates the ``PnmFileRetrieval`` section in ``system.json`` and
+    lets the user choose which retrieval method is active:
 
-    Security Notes
-    --------------
-    - Encrypted password tokens may be stored in configuration.
-    - Decryption happens only at connect time.
-    - Plaintext password is not stored on the instance.
+        - local  → Copy from local src_dir
+        - tftp   → Download from a TFTP server
+        - scp    → Download from an SCP server
+        - sftp   → Download from an SFTP server
+
+    For SCP/SFTP, the script can configure host, port, username, and
+    authentication (password token and/or private key), then perform a simple
+    SSH connectivity test.
+
+    Password Handling
+    -----------------
+    - Passwords are stored encrypted in config under ``password_enc`` (ENC[v1]:...).
+    - Legacy ``password`` (plaintext or ENC token) is migrated to ``password_enc``.
+    - Decryption is deferred to the SSH connector at connection time.
     """
 
-    DEFAULT_SSH_PORT: int                = 22
-    DEFAULT_CONNECT_TIMEOUT_SEC: int     = 10
-    DEFAULT_RSA_KEY_BITS: int            = 2048
+    DEFAULT_LOCAL_SRC_DIR: str        = "/srv/tftp"
+    DEFAULT_TFTP_HOST: str            = "localhost"
+    DEFAULT_TFTP_PORT: int            = 69
+    DEFAULT_TFTP_TIMEOUT_SEC: int     = 5
+    DEFAULT_SSH_HOST: str             = "localhost"
+    DEFAULT_SSH_PORT: int             = 22
+    DEFAULT_SSH_KEY_PATH: str         = "~/.ssh/id_rsa_pypnm"
+    DEFAULT_SSH_REMOTE_DIR: str       = "/srv/tftp"
 
-    ENCRYPTED_TOKEN_PREFIX: str          = "ENC["
+    ENCRYPTED_TOKEN_PREFIX: str       = "ENC["
 
-    def __init__(
-        self,
-        hostname: str,
-        username: str,
-        port: int = DEFAULT_SSH_PORT,
-    ) -> None:
+    def __init__(self) -> None:
         """
-        Initialize Connection Parameters.
-
-        Parameters
-        ----------
-        hostname:
-            Hostname or IP address of the remote machine.
-        username:
-            SSH login username.
-        port:
-            SSH port (default: 22).
+        Initialize The Configurator And Resolve The System Configuration Path.
         """
-        self.logger = logging.getLogger(f"{self.__class__.__name__}")
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.setLevel(logging.INFO)
 
-        self.hostname = hostname
-        self.username = username
-        self.port     = int(port)
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setLevel(logging.INFO)
 
-        self.ssh_client: paramiko.SSHClient | None   = None
-        self.sftp_client: paramiko.SFTPClient | None = None
+        formatter = logging.Formatter("%(levelname)s %(name)s: %(message)s")
+        handler.setFormatter(formatter)
 
-        self.private_key_path: str = ""
-        self.password_enc: str     = ""
+        if not self.logger.handlers:
+            self.logger.addHandler(handler)
 
-    def connect(
-        self,
-        password_enc: str = "",
-        private_key_path: str = "",
-        auto_add_policy: bool = True,
-    ) -> bool:
+        SystemConfigSettings.reload()
+        self.config_path = SystemConfigSettings.get_config_path()
+
+        self.logger.info("Using configuration file: %s", self.config_path)
+
+        self.config: dict[str, Any] = {}
+
+        self._load_config()
+        self._backup_config()
+
+    def run(self) -> None:
         """
-        Establish An SSH Session And Initialize SFTP.
-
-        Parameters
-        ----------
-        password_enc:
-            Encrypted password token (ENC[...]) or plaintext password for
-            backward compatibility. The plaintext password is not stored.
-        private_key_path:
-            Private key path for key-based authentication. Empty disables key auth.
-        auto_add_policy:
-            If True, unknown host keys are accepted.
-
-        Returns
-        -------
-        bool
-            True on success, False on failure.
+        Run The Interactive PNM File Retrieval Configuration Workflow.
         """
-        self.password_enc     = password_enc.strip()
-        self.private_key_path = private_key_path.strip()
-
-        password_clear = ""
-        if self.password_enc != "":
-            if self.password_enc.startswith(self.ENCRYPTED_TOKEN_PREFIX):
-                try:
-                    password_clear = SecretCryptoManager.decrypt_password(self.password_enc)
-                except SecretCryptoError as exc:
-                    self.logger.error("Failed to decrypt password token: %s", exc)
-                    return False
-            else:
-                password_clear = self.password_enc
-
-        try:
-            client = paramiko.SSHClient()
-            client.load_system_host_keys()
-            policy = paramiko.AutoAddPolicy() if auto_add_policy else paramiko.RejectPolicy()
-            client.set_missing_host_key_policy(policy)
-
-            connect_kwargs: dict[str, object] = {
-                "hostname": self.hostname,
-                "port":     self.port,
-                "username": self.username,
-                "timeout":  float(self.DEFAULT_CONNECT_TIMEOUT_SEC),
-            }
-
-            if self.private_key_path != "":
-                connect_kwargs["key_filename"] = os.path.expanduser(self.private_key_path)
-
-            if password_clear != "":
-                connect_kwargs["password"] = password_clear
-
-            client.connect(**connect_kwargs)  # type: ignore[arg-type]
-            self.ssh_client = client
-
-            transport = client.get_transport()
-            if transport is None or not transport.is_active():
-                self.logger.error("SSH transport is not active after connect().")
-                self.disconnect()
-                return False
-
-            self.sftp_client = paramiko.SFTPClient.from_transport(transport)
-
-            self.logger.debug("Connected to %s:%d via SFTP", self.hostname, self.port)
-            return True
-
-        except Exception as exc:
-            self.logger.error("Connection failed: %s", exc)
-            self.disconnect()
-            return False
-
-        finally:
-            password_clear = ""
-
-    def disconnect(self) -> None:
-        """
-        Close Any Active SFTP And SSH Sessions.
-        """
-        if self.sftp_client is not None:
-            with contextlib.suppress(Exception):
-                self.sftp_client.close()
-            self.sftp_client = None
-
-        if self.ssh_client is not None:
-            with contextlib.suppress(Exception):
-                self.ssh_client.close()
-            self.ssh_client = None
-
-        self.logger.debug("Disconnected from remote host")
-
-    def send_file(self, local_path: str, remote_path: str) -> bool:
-        """
-        Transfer A Local File To The Remote Host Using SFTP.
-
-        Parameters
-        ----------
-        local_path:
-            Local path to the file to send.
-        remote_path:
-            Remote destination path.
-
-        Returns
-        -------
-        bool
-            True on success, False on failure.
-        """
-        if self.sftp_client is None:
-            raise ConnectionError("Not connected - call connect() first")
-
-        if not os.path.isfile(local_path):
-            self.logger.error("Local file not found: %s", local_path)
-            return False
-
-        remote_dir = os.path.dirname(remote_path)
-        if remote_dir != "":
-            self._ensure_remote_dir(remote_dir)
-
-        try:
-            self.sftp_client.put(local_path, remote_path)
-            self.logger.debug("SFTP: %s -> %s", local_path, remote_path)
-            return True
-        except Exception as exc:
-            self.logger.error("SFTP send failed: %s", exc)
-            return False
-
-    def receive_file(self, remote_path: str, local_path: str) -> bool:
-        """
-        Fetch A Remote File To The Local Filesystem Using SFTP.
-
-        Parameters
-        ----------
-        remote_path:
-            Remote path of the file to retrieve.
-        local_path:
-            Local destination path (directory or full file path).
-
-        Returns
-        -------
-        bool
-            True on success, False on failure.
-        """
-        if self.sftp_client is None:
-            raise ConnectionError("Not connected - call connect() first")
-
-        local_file = local_path
-        if os.path.isdir(local_path):
-            local_file = os.path.join(local_path, os.path.basename(remote_path))
-
-        local_dir = os.path.dirname(local_file)
-        if local_dir != "":
-            os.makedirs(local_dir, exist_ok=True)
-
-        try:
-            self.sftp_client.get(remote_path, local_file)
-            self.logger.debug("SFTP: %s -> %s", remote_path, local_file)
-            return True
-        except Exception as exc:
-            self.logger.error("SFTP receive failed: %s", exc)
-            return False
-
-    def execute_command(self, command: str) -> tuple[str, str, int]:
-        """
-        Run A Remote Shell Command Via SSH.
-
-        Parameters
-        ----------
-        command:
-            Shell command to execute.
-
-        Returns
-        -------
-        tuple[str, str, int]
-            (stdout, stderr, exit_code)
-        """
-        if self.ssh_client is None:
-            raise ConnectionError("Not connected - call connect() first")
-
-        try:
-            _stdin, stdout, stderr = self.ssh_client.exec_command(command)
-            code                  = stdout.channel.recv_exit_status()
-            out                   = stdout.read().decode(errors="replace")
-            err                   = stderr.read().decode(errors="replace")
-            return out, err, int(code)
-        except Exception as exc:
-            self.logger.error("Command failed: %s", exc)
-            return "", str(exc), -1
-
-    def list_remote_directory(self, remote_path: str = ".") -> list[str]:
-        """
-        List A Remote Directory Via SFTP.
-
-        Parameters
-        ----------
-        remote_path:
-            Remote directory path.
-
-        Returns
-        -------
-        list[str]
-            Directory entry names. Empty list on failure.
-        """
-        if self.sftp_client is None:
-            raise ConnectionError("Not connected - call connect() first")
-
-        try:
-            return list(self.sftp_client.listdir(remote_path))
-        except Exception as exc:
-            self.logger.error("Listing failed: %s", exc)
-            return []
-
-    @staticmethod
-    def generate_ssh_key_pair(key_path: str = "~/.ssh/id_rsa", key_size: int = DEFAULT_RSA_KEY_BITS) -> bool:
-        """
-        Generate An RSA Key Pair Locally.
-
-        Parameters
-        ----------
-        key_path:
-            Private key output path.
-        key_size:
-            RSA key size in bits.
-
-        Returns
-        -------
-        bool
-            True on success, False on failure.
-        """
-        logger = logging.getLogger("SSHConnector")
-
-        try:
-            path = os.path.expanduser(key_path)
-
-            key_dir = os.path.dirname(path)
-            if key_dir != "":
-                os.makedirs(key_dir, exist_ok=True)
-
-            key = paramiko.RSAKey.generate(bits=int(key_size))
-            key.write_private_key_file(path)
-
-            pub_path = f"{path}.pub"
-            user     = os.getenv("USER", "user")
-            host     = os.uname().nodename
-
-            with open(pub_path, "w", encoding="utf-8") as handle:
-                handle.write(f"ssh-rsa {key.get_base64()} {user}@{host}\n")
-
-            return True
-
-        except Exception as exc:
-            logger.error("Key gen failed: %s", exc)
-            return False
-
-    def install_public_key(self, public_key_path: str) -> bool:
-        """
-        Install A Public Key Into Remote ~/.ssh/authorized_keys.
-
-        Parameters
-        ----------
-        public_key_path:
-            Local public key file path.
-
-        Returns
-        -------
-        bool
-            True on success, False on failure.
-        """
-        if self.ssh_client is None:
-            raise ConnectionError("Not connected - call connect() first")
-
-        if not os.path.isfile(public_key_path):
-            raise FileNotFoundError(f"Public key not found: {public_key_path}")
-
-        with open(public_key_path, encoding="utf-8") as handle:
-            key = handle.read().strip()
-
-        cmd = (
-            "mkdir -p ~/.ssh && chmod 700 ~/.ssh && "
-            f'grep -qxF "{key}" ~/.ssh/authorized_keys || '
-            f'echo "{key}" >> ~/.ssh/authorized_keys && '
-            "chmod 600 ~/.ssh/authorized_keys"
-        )
-
-        _out, err, code = self.execute_command(cmd)
-        if code == 0:
-            self.logger.debug("Public key installed or already present")
-            return True
-
-        self.logger.error("Key install failed: %s", err)
-        return False
-
-    def _ensure_remote_dir(self, remote_dir: str) -> None:
-        """
-        Recursively Create Remote Directories Via SFTP.
-
-        Parameters
-        ----------
-        remote_dir:
-            Remote directory path.
-        """
-        if self.sftp_client is None:
-            raise ConnectionError("Not connected - call connect() first")
-
-        cleaned = remote_dir.strip()
-        if cleaned == "" or cleaned == "/":
+        method_key = self._prompt_method_choice()
+        if not method_key:
+            self.logger.info("No retrieval method selected; exiting without changes.")
             return
 
-        parts = cleaned.strip("/").split("/")
-        path  = ""
+        self.logger.info("Selected retrieval method: %s", method_key)
 
-        for part in parts:
-            if part == "":
-                continue
+        retrieval           = self._ensure_pnm_retrieval_section()
+        retrieval["method"] = method_key
 
-            path += f"/{part}"
+        methods    = retrieval.setdefault("methods", {})
+        method_cfg = methods.setdefault(method_key, {})
+
+        if method_key == "local":
+            self._configure_local(method_cfg)
+        elif method_key == "tftp":
+            self._configure_tftp(method_cfg)
+        elif method_key == "scp":
+            self._configure_ssh_method(method_cfg, "scp")
+        elif method_key == "sftp":
+            self._configure_ssh_method(method_cfg, "sftp")
+
+        self._save_config()
+        self.logger.info("PNM file retrieval configuration complete.")
+
+        if method_key in ("scp", "sftp"):
+            self._maybe_show_public_key(method_cfg, method_key)
+
+    def _load_config(self) -> None:
+        if not os.path.exists(self.config_path):
+            raise FileNotFoundError(f"Config file not found: {self.config_path}")
+
+        with open(self.config_path, encoding="utf-8") as handle:
+            self.config = json.load(handle)
+
+    def _save_config(self) -> None:
+        with open(self.config_path, "w", encoding="utf-8") as handle:
+            json.dump(self.config, handle, indent=4)
+            handle.write("\n")
+
+    def _backup_config(self) -> None:
+        ts          = int(time.time())
+        base, ext   = os.path.splitext(self.config_path)
+        backup_path = f"{base}.bak.{ts}{ext}"
+
+        try:
+            with open(self.config_path, "rb") as src, open(backup_path, "wb") as dst:
+                dst.write(src.read())
+            self.logger.info("Created backup: %s", backup_path)
+        except OSError as exc:
+            self.logger.error("Failed to create backup %s: %s", backup_path, exc)
+
+    def _ensure_pnm_retrieval_section(self) -> dict[str, Any]:
+        pnm       = self.config.setdefault("PnmFileRetrieval", {})
+        retrieval = pnm.setdefault("retrival_method", {})
+
+        retrieval.setdefault("method", "local")
+        retrieval.setdefault("methods", {})
+
+        return retrieval
+
+    def _prompt_method_choice(self) -> str:
+        print()
+        print("Select PNM File Retrieval Method:")
+        print("  1) local  - Copy from local src_dir")
+        print("  2) tftp   - Download from TFTP server")
+        print("  3) scp    - Download from SCP server")
+        print("  4) sftp   - Download from SFTP server")
+        print("  q) Quit   - Exit without changes")
+        print()
+
+        choices: dict[str, str] = {
+            "1": "local",
+            "2": "tftp",
+            "3": "scp",
+            "4": "sftp",
+        }
+
+        while True:
+            choice = input("Enter choice [1-4 or q to quit]: ").strip().lower()
+            if choice in choices:
+                return choices[choice]
+            if choice == "" or choice == "q":
+                return ""
+            print("Invalid selection. Please enter 1-4 or 'q' to quit.")
+
+    def _prompt_yes_no(self, message: str, default: bool = False) -> bool:
+        default_str = "Y/n" if default else "y/N"
+
+        while True:
+            answer = input(f"{message} [{default_str}]: ").strip()
+            if not answer:
+                return default
+            if answer.lower() == "y":
+                return True
+            if answer.lower() == "n":
+                return False
+            print("Please answer 'y' or 'n'.")
+
+    def _configure_local(self, cfg: dict[str, Any]) -> None:
+        default_src = str(cfg.get("src_dir", self.DEFAULT_LOCAL_SRC_DIR))
+        src         = input(f"Enter local src_dir [{default_src}]: ").strip()
+
+        if not src:
+            src = default_src
+
+        cfg["src_dir"] = src
+        self.logger.info("Configured local.src_dir = %s", src)
+
+    def _configure_tftp(self, cfg: dict[str, Any]) -> None:
+        default_host       = str(cfg.get("host", self.DEFAULT_TFTP_HOST))
+        default_port       = int(cfg.get("port", self.DEFAULT_TFTP_PORT))
+        default_timeout    = int(cfg.get("timeout", self.DEFAULT_TFTP_TIMEOUT_SEC))
+        default_remote_dir = str(cfg.get("remote_dir", ""))
+
+        host = input(f"Enter TFTP host [{default_host}]: ").strip()
+        if not host:
+            host = default_host
+
+        port_str = input(f"Enter TFTP port for {host} [{default_port}]: ").strip()
+        if port_str:
             try:
-                self.sftp_client.stat(path)
-            except OSError:
-                self.sftp_client.mkdir(path)
+                port = int(port_str)
+            except ValueError:
+                port = default_port
+        else:
+            port = default_port
+
+        timeout_str = input(f"Enter TFTP timeout seconds [{default_timeout}]: ").strip()
+        if timeout_str:
+            try:
+                timeout = int(timeout_str)
+            except ValueError:
+                timeout = default_timeout
+        else:
+            timeout = default_timeout
+
+        remote_dir = input(f"Enter TFTP remote_dir [{default_remote_dir}]: ").strip()
+        if not remote_dir:
+            remote_dir = default_remote_dir
+
+        cfg["host"]       = host
+        cfg["port"]       = port
+        cfg["timeout"]    = timeout
+        cfg["remote_dir"] = remote_dir
+
+        self.logger.info("Configured TFTP host=%s port=%d remote_dir=%s", host, port, remote_dir)
+
+    def _resolve_existing_password_token(self, cfg: dict[str, Any]) -> str:
+        token = str(cfg.get("password_enc", "") or "")
+        if token.strip() != "":
+            return token.strip()
+
+        legacy = str(cfg.get("password", "") or "").strip()
+        if legacy == "":
+            return ""
+
+        if legacy.startswith(self.ENCRYPTED_TOKEN_PREFIX):
+            return legacy
+
+        try:
+            return SecretCryptoManager.encrypt_password(legacy)
+        except SecretCryptoError as exc:
+            self.logger.error("Failed to migrate legacy plaintext password to password_enc: %s", exc)
+            raise SystemExit(1) from exc
+
+    def _configure_ssh_method(
+        self,
+        cfg: dict[str, Any],
+        method_name: str,
+    ) -> None:
+        default_host       = str(cfg.get("host", self.DEFAULT_SSH_HOST))
+        default_port       = int(cfg.get("port", self.DEFAULT_SSH_PORT))
+        default_user       = str(cfg.get("user", getpass.getuser() or "user"))
+        default_remote_dir = str(cfg.get("remote_dir", self.DEFAULT_SSH_REMOTE_DIR))
+
+        print()
+        print(f"Configure {method_name.upper()} PNM File Retrieval:")
+
+        host = input(f"Enter SSH host [{default_host}]: ").strip()
+        if not host:
+            host = default_host
+
+        port_str = input(f"Enter SSH port for {host} [{default_port}]: ").strip()
+        if port_str:
+            try:
+                port = int(port_str)
+            except ValueError:
+                port = default_port
+        else:
+            port = default_port
+
+        user = input(f"Enter SSH username [{default_user}]: ").strip()
+        if not user:
+            user = default_user
+
+        remote_dir = input(f"Enter remote_dir [{default_remote_dir}]: ").strip()
+        if not remote_dir:
+            remote_dir = default_remote_dir
+
+        print()
+        print("Authentication Options:")
+        print("  You may configure password, private key, or both.")
+        print("  At least one of them must be provided.")
+        print("  Passwords are stored encrypted as ENC[v1]:... in password_enc.")
+        print()
+
+        use_password = self._prompt_yes_no("Configure password authentication?", default=False)
+        use_key      = self._prompt_yes_no("Configure private key authentication?", default=False)
+
+        existing_password_token = self._resolve_existing_password_token(cfg)
+        existing_key_path       = str(cfg.get("private_key_path", "") or "")
+
+        password_token = existing_password_token
+        key_path       = existing_key_path
+
+        if use_password:
+            pw = getpass.getpass("Enter SSH password (leave blank to clear, or paste ENC[...] token): ").strip()
+            if pw == "":
+                password_token = ""
+            elif pw.startswith(self.ENCRYPTED_TOKEN_PREFIX):
+                password_token = pw
+            else:
+                try:
+                    password_token = SecretCryptoManager.encrypt_password(pw)
+                except SecretCryptoError as exc:
+                    self.logger.error("Failed to encrypt password: %s", exc)
+                    raise SystemExit(1) from exc
+
+        if use_key:
+            default_key = existing_key_path or self.DEFAULT_SSH_KEY_PATH
+            key_input   = input(f"Enter private key path [{default_key}]: ").strip()
+            if not key_input:
+                key_path = default_key
+            else:
+                key_path = key_input
+
+        if password_token == "" and key_path == "":
+            self.logger.error(
+                "Neither password_enc nor private_key_path configured for %s; "
+                "at least one authentication method is required.",
+                method_name,
+            )
+            raise SystemExit(1)
+
+        cfg["host"]             = host
+        cfg["port"]             = port
+        cfg["user"]             = user
+        cfg["password_enc"]     = password_token
+        cfg["private_key_path"] = key_path
+        cfg["remote_dir"]       = remote_dir
+
+        if "password" in cfg:
+            cfg.pop("password", None)
+
+        self._test_ssh_connection(
+            method_name=method_name,
+            host=host,
+            port=port,
+            user=user,
+            password_token=password_token,
+            private_key_path=key_path,
+        )
+
+    def _test_ssh_connection(
+        self,
+        method_name: str,
+        host: str,
+        port: int,
+        user: str,
+        password_token: str,
+        private_key_path: str,
+    ) -> None:
+        self.logger.info(
+            "Testing %s connection to %s@%s:%d ...",
+            method_name.upper(),
+            user,
+            host,
+            port,
+        )
+
+        connector = SSHConnector(
+            hostname=host,
+            username=user,
+            port=port,
+        )
+
+        try:
+            ok = connector.connect(
+                password_enc=password_token,
+                private_key_path=private_key_path,
+            )
+            if not ok:
+                self.logger.error("%s connection test failed.", method_name.upper())
+                raise SystemExit(1)
+
+            self.logger.info("SSH connection test succeeded.")
+
+        finally:
+            connector.disconnect()
+
+    def _maybe_show_public_key(self, cfg: dict[str, Any], method_name: str) -> None:
+        key_path = str(cfg.get("private_key_path", "") or "")
+        if not key_path:
+            self.logger.info("No private_key_path configured for %s; skipping public key display.", method_name)
+            return
+
+        expanded = os.path.expanduser(key_path)
+        pub_path = f"{expanded}.pub"
+
+        if not os.path.exists(pub_path):
+            self.logger.info(
+                "Private key path is configured for %s, but no public key file found at: %s",
+                method_name,
+                pub_path,
+            )
+            self.logger.info(
+                "If you have not generated a key pair yet, run your SSH key setup helper "
+                "and then re-run this script to review the public key."
+            )
+            return
+
+        try:
+            with open(pub_path, "r", encoding="utf-8") as handle:
+                pub_key = handle.read().strip()
+        except OSError as exc:
+            self.logger.error("Failed to read public key file %s: %s", pub_path, exc)
+            return
+
+        if not pub_key:
+            self.logger.error("Public key file %s is empty.", pub_path)
+            return
+
+        print()
+        print("======================================================================")
+        print(f" {method_name.upper()} Public Key (Add To Your PNM File Server)")
+        print("======================================================================")
+        print(pub_key)
+        print()
+        print("Add this key to the remote user's ~/.ssh/authorized_keys on the host(s)")
+        print(f"you configured for {method_name} file retrieval.")
+        print("======================================================================")
+        print()
+
+
+def main() -> None:
+    configurator = PnmFileRetrievalConfigurator()
+    configurator.run()
+
+
+if __name__ == "__main__":
+    main()

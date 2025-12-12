@@ -14,7 +14,7 @@ import time
 from typing import Any
 
 from pypnm.config.system_config_settings import SystemConfigSettings
-from pypnm.lib.secret_crypto_manager import SecretCryptoError, SecretCryptoManager
+from pypnm.lib.secret.crypto_manager import SecretCryptoError, SecretCryptoManager
 from pypnm.lib.ssh.ssh_connector import SSHConnector, SecureTransferMode
 
 
@@ -275,7 +275,7 @@ class PnmFileRetrievalConfigurator:
         use_password = self._prompt_yes_no("Configure password authentication?", default=False)
         use_key      = self._prompt_yes_no("Configure private key authentication?", default=False)
 
-        existing_password_token = str(cfg.get("password", "") or "")
+        existing_password_token = str(cfg.get("password_enc", "") or cfg.get("password", "") or "")
         existing_key_path       = str(cfg.get("private_key_path", "") or "")
 
         password_token = existing_password_token
@@ -313,7 +313,14 @@ class PnmFileRetrievalConfigurator:
         cfg["host"]             = host
         cfg["port"]             = port
         cfg["user"]             = user
-        cfg["password"]         = password_token
+
+        if password_token != "":
+            cfg["password_enc"] = password_token
+        else:
+            cfg.pop("password_enc", None)
+
+        cfg.pop("password", None)
+
         cfg["private_key_path"] = key_path
         cfg["remote_dir"]       = remote_dir
 

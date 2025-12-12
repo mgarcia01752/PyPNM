@@ -63,7 +63,7 @@ The helper script is tightly coupled to the following sections of `settings/syst
         "host": "localhost",
         "port": 22,
         "user": "dev01",
-        "password": "dev01",
+        "password_enc": "",
         "private_key_path": "/home/dev01/.ssh/id_rsa_pypnm",
         "remote_dir": "/srv/tftp"
       },
@@ -71,7 +71,7 @@ The helper script is tightly coupled to the following sections of `settings/syst
         "host": "localhost",
         "port": 22,
         "user": "dev01",
-        "password": "dev01",
+        "password_enc": "",
         "private_key_path": "/home/dev01/.ssh/id_rsa_pypnm",
         "remote_dir": "/srv/tftp"
       }

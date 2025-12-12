@@ -72,14 +72,14 @@
                     "tls": false,
                     "timeout": 5,
                     "user": "test",
-                    "password": "tftp",
+                    "password_enc": "",
                     "remote_dir": "/srv/tftp"
                 },
                 "sftp": {
                     "host": "localhost",
                     "port": 22,
                     "user": "test",
-                    "password": "tftp",
+                    "password_enc": "",
                     "remote_dir": "/srv/tftp"
                 },
                 "http": {

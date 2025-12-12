@@ -77,7 +77,7 @@ Typical Production use-case:
         "host": "tftp.example.com",
         "port": 22,
         "user": "pnm",
-        "password": "secret-or-empty",
+        "password_enc": "",
         "private_key_path": "",
         "remote_dir": "/srv/tftp"
       }
@@ -97,7 +97,7 @@ or:
         "host": "tftp.example.com",
         "port": 22,
         "user": "pnm",
-        "password": "secret-or-empty",
+        "password_enc": "",
         "private_key_path": "",
         "remote_dir": "/srv/tftp"
       }

@@ -67,7 +67,7 @@ A typical configuration looks like:
           "host": "tftp.example.net",
           "port": 22,
           "user": "pypnm",
-          "password": "",
+          "password_enc": "",
           "private_key_path": "/home/pypnm/.ssh/id_rsa_pypnm",
           "remote_dir": "/srv/tftp"
         },
@@ -75,7 +75,7 @@ A typical configuration looks like:
           "host": "tftp.example.net",
           "port": 22,
           "user": "pypnm",
-          "password": "",
+          "password_enc": "",
           "private_key_path": "/home/pypnm/.ssh/id_rsa_pypnm",
           "remote_dir": "/srv/tftp"
         }
@@ -160,7 +160,7 @@ This is a typical localhost workflow where PyPNM and the TFTP/SSH server run on 
            "host": "localhost",
            "port": 22,
            "user": "dev01",
-           "password": "dev01",
+           "password_enc": "",
            "private_key_path": "",
            "remote_dir": "/srv/tftp"
          },
@@ -168,7 +168,7 @@ This is a typical localhost workflow where PyPNM and the TFTP/SSH server run on 
            "host": "localhost",
            "port": 22,
            "user": "dev01",
-           "password": "dev01",
+           "password_enc": "",
            "private_key_path": "",
            "remote_dir": "/srv/tftp"
          }
