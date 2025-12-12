@@ -15,3 +15,6 @@ exclude tools/log-level-rewriter.py
 exclude tools/add-required-python-headers.py
 exclude tools/testpypi_release.py
 exclude tools/pypi_release.py
+
+# Exclude local data
+exclude .data/*
