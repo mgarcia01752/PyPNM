@@ -7,22 +7,29 @@ build-backend = "setuptools.build_meta"
 [project]
 name            = "pypnm-docsis"
 version         = "0.9.10.0"
-description     = "Proactive Network Maintenance Toolkit for DOCSIS 3.x/4.0"
+description     = "DOCSIS 3.x/4.0 Proactive Network Maintenance Toolkit"
 readme          = "README.md"
 requires-python = ">=3.10"
-license         = { file = "LICENSE" }
-authors = [{ name = "Maurice Garcia", email = "mgarcia01752@outlook.com" }]
+license         = "MIT"
+
+authors = [
+  { name = "Maurice Garcia", email = "mgarcia01752@outlook.com" }
+]
+
 classifiers = [
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
   "Framework :: FastAPI",
   "Topic :: System :: Networking",
   "Typing :: Typed",
 ]
+
+license-files = ["LICENSE", "LICENSE.md"]
 
 dependencies = [
   "fastapi==0.115.12",
