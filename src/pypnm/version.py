@@ -6,5 +6,5 @@ from __future__ import annotations
 __all__ = ["__version__"]
 
 # MAJOR.MINOR.MAINTENANCE.BUILD
-__version__: str = "0.9.9.0"
+__version__: str = "0.9.10.0"
 
