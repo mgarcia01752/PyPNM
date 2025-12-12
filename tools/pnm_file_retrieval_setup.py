@@ -15,7 +15,7 @@ from typing import Any
 
 from pypnm.config.system_config_settings import SystemConfigSettings
 from pypnm.lib.secret.crypto_manager import SecretCryptoError, SecretCryptoManager
-from pypnm.lib.ssh.ssh_connector import SSHConnector, SecureTransferMode
+from pypnm.lib.ssh.ssh_connector import SSHConnector
 
 
 class PnmFileRetrievalConfigurator:
@@ -27,17 +27,16 @@ class PnmFileRetrievalConfigurator:
 
         - local  → Copy from local src_dir
         - tftp   → Download from a TFTP server
-        - scp    → Download from an SCP server
         - sftp   → Download from an SFTP server
 
-    For SCP/SFTP, the script can configure host, port, username, and
-    authentication (password token and/or private key), then perform a simple
-    SSH connectivity test.
+    For SFTP, the script can configure host, port, username, and authentication
+    (password token and/or private key), then perform a simple SSH connectivity
+    test.
 
     Password Handling
     -----------------
-    - Passwords are stored encrypted in the config (ENC[v1]:...).
-    - The encrypted token is kept throughout the workflow.
+    - Passwords are stored encrypted in config under ``password_enc`` (ENC[v1]:...).
+    - Legacy ``password`` (plaintext or ENC token) is migrated to ``password_enc``.
     - Decryption is deferred to the SSH connector at connection time.
     """
 
@@ -99,22 +98,20 @@ class PnmFileRetrievalConfigurator:
             self._configure_local(method_cfg)
         elif method_key == "tftp":
             self._configure_tftp(method_cfg)
-        elif method_key == "scp":
-            self._configure_ssh_method(method_cfg, "scp", SecureTransferMode.SCP)
         elif method_key == "sftp":
-            self._configure_ssh_method(method_cfg, "sftp", SecureTransferMode.SFTP)
+            self._configure_ssh_method(method_cfg, "sftp")
 
         self._save_config()
         self.logger.info("PNM file retrieval configuration complete.")
 
-        if method_key in ("scp", "sftp"):
+        if method_key == "sftp":
             self._maybe_show_public_key(method_cfg, method_key)
 
     def _load_config(self) -> None:
         if not os.path.exists(self.config_path):
             raise FileNotFoundError(f"Config file not found: {self.config_path}")
 
-        with open(self.config_path, "r", encoding="utf-8") as handle:
+        with open(self.config_path, encoding="utf-8") as handle:
             self.config = json.load(handle)
 
     def _save_config(self) -> None:
@@ -148,25 +145,23 @@ class PnmFileRetrievalConfigurator:
         print("Select PNM File Retrieval Method:")
         print("  1) local  - Copy from local src_dir")
         print("  2) tftp   - Download from TFTP server")
-        print("  3) scp    - Download from SCP server")
-        print("  4) sftp   - Download from SFTP server")
+        print("  3) sftp   - Download from SFTP server")
         print("  q) Quit   - Exit without changes")
         print()
 
         choices: dict[str, str] = {
             "1": "local",
             "2": "tftp",
-            "3": "scp",
-            "4": "sftp",
+            "3": "sftp",
         }
 
         while True:
-            choice = input("Enter choice [1-4 or q to quit]: ").strip().lower()
+            choice = input("Enter choice [1-3 or q to quit]: ").strip().lower()
             if choice in choices:
                 return choices[choice]
             if choice == "" or choice == "q":
                 return ""
-            print("Invalid selection. Please enter 1-4 or 'q' to quit.")
+            print("Invalid selection. Please enter 1-3 or 'q' to quit.")
 
     def _prompt_yes_no(self, message: str, default: bool = False) -> bool:
         default_str = "Y/n" if default else "y/N"
@@ -230,11 +225,35 @@ class PnmFileRetrievalConfigurator:
 
         self.logger.info("Configured TFTP host=%s port=%d remote_dir=%s", host, port, remote_dir)
 
+    def _resolve_existing_password_token(self, cfg: dict[str, Any]) -> str:
+        token = str(cfg.get("password_enc", "") or "").strip()
+        if token != "":
+            if token.startswith(self.ENCRYPTED_TOKEN_PREFIX):
+                return token
+
+            try:
+                return SecretCryptoManager.encrypt_password(token)
+            except SecretCryptoError as exc:
+                self.logger.error("Failed to migrate plaintext password_enc to encrypted password_enc: %s", exc)
+                raise SystemExit(1) from exc
+
+        legacy = str(cfg.get("password", "") or "").strip()
+        if legacy == "":
+            return ""
+
+        if legacy.startswith(self.ENCRYPTED_TOKEN_PREFIX):
+            return legacy
+
+        try:
+            return SecretCryptoManager.encrypt_password(legacy)
+        except SecretCryptoError as exc:
+            self.logger.error("Failed to migrate legacy plaintext password to password_enc: %s", exc)
+            raise SystemExit(1) from exc
+
     def _configure_ssh_method(
         self,
         cfg: dict[str, Any],
         method_name: str,
-        transfer_mode: SecureTransferMode,
     ) -> None:
         default_host       = str(cfg.get("host", self.DEFAULT_SSH_HOST))
         default_port       = int(cfg.get("port", self.DEFAULT_SSH_PORT))
@@ -269,13 +288,13 @@ class PnmFileRetrievalConfigurator:
         print("Authentication Options:")
         print("  You may configure password, private key, or both.")
         print("  At least one of them must be provided.")
-        print("  Passwords are stored encrypted as ENC[v1]:... in system.json.")
+        print("  Passwords are stored encrypted as ENC[v1]:... in password_enc.")
         print()
 
         use_password = self._prompt_yes_no("Configure password authentication?", default=False)
         use_key      = self._prompt_yes_no("Configure private key authentication?", default=False)
 
-        existing_password_token = str(cfg.get("password_enc", "") or cfg.get("password", "") or "")
+        existing_password_token = self._resolve_existing_password_token(cfg)
         existing_key_path       = str(cfg.get("private_key_path", "") or "")
 
         password_token = existing_password_token
@@ -304,7 +323,7 @@ class PnmFileRetrievalConfigurator:
 
         if password_token == "" and key_path == "":
             self.logger.error(
-                "Neither password nor private_key_path configured for %s; "
+                "Neither password_enc nor private_key_path configured for %s; "
                 "at least one authentication method is required.",
                 method_name,
             )
@@ -313,16 +332,11 @@ class PnmFileRetrievalConfigurator:
         cfg["host"]             = host
         cfg["port"]             = port
         cfg["user"]             = user
-
-        if password_token != "":
-            cfg["password_enc"] = password_token
-        else:
-            cfg.pop("password_enc", None)
-
-        cfg.pop("password", None)
-
+        cfg["password_enc"]     = password_token
         cfg["private_key_path"] = key_path
         cfg["remote_dir"]       = remote_dir
+
+        cfg.pop("password", None)
 
         self._test_ssh_connection(
             method_name=method_name,
@@ -331,7 +345,6 @@ class PnmFileRetrievalConfigurator:
             user=user,
             password_token=password_token,
             private_key_path=key_path,
-            transfer_mode=transfer_mode,
         )
 
     def _test_ssh_connection(
@@ -342,7 +355,6 @@ class PnmFileRetrievalConfigurator:
         user: str,
         password_token: str,
         private_key_path: str,
-        transfer_mode: SecureTransferMode,
     ) -> None:
         self.logger.info(
             "Testing %s connection to %s@%s:%d ...",
@@ -356,7 +368,6 @@ class PnmFileRetrievalConfigurator:
             hostname=host,
             username=user,
             port=port,
-            transfer_mode=transfer_mode,
         )
 
         try:

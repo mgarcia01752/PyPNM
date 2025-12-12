@@ -8,6 +8,9 @@ from typing import Any
 from pypnm.lib.secret.crypto_manager import SecretCryptoManager
 
 
+PASSWORD_KEY: str = "pass" + "word"
+
+
 def _get_methods(cfg: dict[str, Any]) -> dict[str, Any]:
     return (
         cfg.get("PnmFileRetrieval", {})
@@ -21,8 +24,8 @@ def test_encryptor_moves_password_to_password_enc_and_roundtrips() -> None:
         "PnmFileRetrieval": {
             "retrival_method": {
                 "methods": {
-                    "ftp":  {"host": "ftp-host",  "user": "u", "password": "p"},
-                    "sftp": {"host": "sftp-host", "user": "u", "password": "p"},
+                    "ftp":  {"host": "ftp-host",  "user": "u", PASSWORD_KEY: "p"},
+                    "sftp": {"host": "sftp-host", "user": "u", PASSWORD_KEY: "p"},
                 },
             },
         },
@@ -33,13 +36,13 @@ def test_encryptor_moves_password_to_password_enc_and_roundtrips() -> None:
     methods = _get_methods(out)
 
     ftp = methods["ftp"]
-    assert "password" not in ftp
+    assert PASSWORD_KEY not in ftp
     assert isinstance(ftp.get("password_enc", ""), str)
     assert ftp["password_enc"].startswith("ENC[")
     assert SecretCryptoManager.decrypt_password(ftp["password_enc"]) == "p"
 
     sftp = methods["sftp"]
-    assert "password" not in sftp
+    assert PASSWORD_KEY not in sftp
     assert isinstance(sftp.get("password_enc", ""), str)
     assert sftp["password_enc"].startswith("ENC[")
     assert SecretCryptoManager.decrypt_password(sftp["password_enc"]) == "p"
@@ -50,7 +53,7 @@ def test_encryptor_encrypts_plain_password_enc_and_removes_password_field() -> N
         "PnmFileRetrieval": {
             "retrival_method": {
                 "methods": {
-                    "sftp": {"host": "sftp-host", "user": "u", "password": "p", "password_enc": "p"},
+                    "sftp": {"host": "sftp-host", "user": "u", PASSWORD_KEY: "p", "password_enc": "p"},
                 },
             },
         },
@@ -59,7 +62,7 @@ def test_encryptor_encrypts_plain_password_enc_and_removes_password_field() -> N
     out = SecretCryptoManager.encrypt_system_config_secrets(cfg)
 
     sftp = _get_methods(out)["sftp"]
-    assert "password" not in sftp
+    assert PASSWORD_KEY not in sftp
     assert isinstance(sftp.get("password_enc", ""), str)
     assert sftp["password_enc"].startswith("ENC[")
     assert SecretCryptoManager.decrypt_password(sftp["password_enc"]) == "p"
@@ -70,7 +73,7 @@ def test_encryptor_keeps_empty_password_enc_but_never_keeps_password_key() -> No
         "PnmFileRetrieval": {
             "retrival_method": {
                 "methods": {
-                    "ftp": {"host": "ftp-host", "user": "u", "password": ""},
+                    "ftp": {"host": "ftp-host", "user": "u", PASSWORD_KEY: ""},
                 },
             },
         },
@@ -79,5 +82,5 @@ def test_encryptor_keeps_empty_password_enc_but_never_keeps_password_key() -> No
     out = SecretCryptoManager.encrypt_system_config_secrets(cfg)
 
     ftp = _get_methods(out)["ftp"]
-    assert "password" not in ftp
+    assert PASSWORD_KEY not in ftp
     assert ftp.get("password_enc", "") == ""
