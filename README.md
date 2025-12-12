@@ -1,8 +1,12 @@
 <p align="center">
   <a href="docs/index.md">
     <picture>
-      <source srcset="docs/images/logo/pypnm-dark-mode-hp.png" media="(prefers-color-scheme: dark)" />
-      <img src="docs/images/logo/pypnm-light-mode-hp.png" alt="PyPNM Logo" width="200" />
+      <source srcset="docs/images/logo/pypnm-dark-mode-hp.png"
+              media="(prefers-color-scheme: dark)" />
+      <img src="docs/images/logo/pypnm-light-mode-hp.png"
+           alt="PyPNM Logo"
+           width="200"
+           style="border-radius: 16px;" />
     </picture>
   </a>
 </p>
@@ -14,6 +18,7 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pypnm-docsis.svg)](https://pypi.org/project/pypnm-docsis/)
 [![Daily Build](https://github.com/mgarcia01752/PyPNM/actions/workflows/daily-build.yml/badge.svg?branch=main)](https://github.com/mgarcia01752/PyPNM/actions/workflows/daily-build.yml)
 ![CodeQL](https://github.com/mgarcia01752/PyPNM/actions/workflows/codeql.yml/badge.svg)
+[![PyPI Install Check](https://github.com/mgarcia01752/PyPNM/actions/workflows/pypi-install-check.yml/badge.svg?branch=main)](https://github.com/mgarcia01752/PyPNM/actions/workflows/pypi-install-check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%7C%2024.04%20LTS-E95420?logo=ubuntu&logoColor=white)](https://github.com/mgarcia01752/PyPNM)
 
