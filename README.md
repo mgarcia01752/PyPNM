@@ -217,7 +217,7 @@ The helper:
 
 In **demo mode**, paths are redirected to demo directories so you can exercise the analysis stack using pre-captured PNM files without talking to a live modem.
 
-### 5) Run The FastAPI Service
+### 5) [Run The FastAPI Service Launcher](docs/system/pypnm-cli.md)
 
 Show help:
 

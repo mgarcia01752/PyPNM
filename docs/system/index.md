@@ -4,6 +4,7 @@ This section contains documentation about the overall system architecture, compo
 
 | Section | Description |
 |---------|-------------|
-| [Generate SSL Certificates](generate-ssl-certificates.md)   | Instructions for creating SSL certificates for secure communication.        |
-| [PyPNM Data Base Structure](data-base-structure.md)         | Overview of the database schema and data storage strategies used in PyPNM.  |
-| [PyPNM File Retrieval Methods](pnm-file-retrieval/index.md) | Guide to configuring PyPNM file retrieval methods from PyPNM TFTP server.   |
+| [PyPNM CLI](pypnm-cli.md)                                     | Documentation for the PyPNM command-line interface and FastAPI service launcher.  |
+| [PyPNM Data Base Structure](data-base-structure.md)           | Overview of the database schema and data storage strategies used in PyPNM.        |
+| [PyPNM File Retrieval Methods](pnm-file-retrieval/index.md)   | Guide to configuring PyPNM file retrieval methods from PyPNM TFTP server.         |
+| [Generate SSL Certificates](generate-ssl-certificates.md)     | Instructions for creating SSL certificates for secure communication.              |
