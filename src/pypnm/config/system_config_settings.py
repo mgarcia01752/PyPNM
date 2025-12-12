@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Maurice Garcia
+
 from __future__ import annotations
 
 import logging
@@ -8,6 +9,7 @@ from typing import cast
 
 from pypnm.config.config_manager import ConfigManager
 from pypnm.lib.mac_address import MacAddress
+from pypnm.lib.secret.crypto_manager import SecretCryptoError, SecretCryptoManager
 from pypnm.lib.types import InetAddressStr, IPv4Str, IPv6Str, MacAddressStr
 
 
@@ -16,7 +18,7 @@ class SystemConfigSettings:
     _cfg        = ConfigManager()
     _logger     = logging.getLogger("SystemConfigSettings")
 
-    _DEFAULT_IP_ADDRESS: InetAddressStr = cast(InetAddressStr, "192.168.0.100")
+    _DEFAULT_IP_ADDRESS: InetAddressStr      = cast(InetAddressStr, "192.168.0.100")
     _DEFAULT_SNMP_RETRIES: int              = 5
     _DEFAULT_SNMP_TIMEOUT: int              = 2
     _DEFAULT_FILE_RETRIEVAL_RETRIES: int    = 5
@@ -39,10 +41,59 @@ class SystemConfigSettings:
     _DEFAULT_ARCHIVE_DIR: str               = ".data/archive"
     _DEFAULT_MSG_RSP_DIR: str               = ".data/msg_rsp"
 
+    _ENCRYPTED_TOKEN_PREFIX: str            = "ENC["
+
     @classmethod
     def _config_path(cls, *path: str) -> str:
         """Return dotted path for logging."""
         return ".".join(path)
+
+    @classmethod
+    def _peek_str(cls, *path: str) -> str:
+        value = cls._cfg.get(*path)
+        if value is None:
+            return ""
+        if isinstance(value, str):
+            return value
+        return str(value)
+
+    @classmethod
+    def _maybe_decrypt(cls, value: str, *path: str) -> str:
+        text = value.strip()
+        if text == "":
+            return ""
+        if not text.startswith(cls._ENCRYPTED_TOKEN_PREFIX):
+            return text
+        try:
+            return SecretCryptoManager.decrypt_password(text)
+        except SecretCryptoError as exc:
+            cls._logger.error(
+                "Failed to decrypt configuration value for '%s': %s",
+                cls._config_path(*path),
+                exc,
+            )
+            return ""
+
+    @classmethod
+    def _get_password_value(cls, require: bool, *method_path: str) -> str:
+        password_enc = cls._peek_str(*method_path, "password_enc")
+        if password_enc.strip() != "":
+            decrypted = cls._maybe_decrypt(password_enc, *method_path, "password_enc")
+            if decrypted != "":
+                return decrypted
+            if require:
+                return ""
+
+        password = cls._peek_str(*method_path, "password")
+        if password.strip() == "":
+            if require:
+                cls._logger.error(
+                    "Missing configuration value for '%s'; expected password or password_enc",
+                    cls._config_path(*method_path, "password"),
+                )
+            return ""
+
+        return cls._maybe_decrypt(password, *method_path, "password")
 
     @classmethod
     def _get_str(cls, default: str, *path: str) -> str:
@@ -167,23 +218,41 @@ class SystemConfigSettings:
 
     @classmethod
     def snmp_v3_username(cls) -> str:
+        if not cls.snmp_v3_enable():
+            return ""
         return cls._get_str("", "SNMP", "version", "3", "username")
 
     @classmethod
+    def snmp_v3_security_level(cls) -> str:
+        if not cls.snmp_v3_enable():
+            return ""
+        return cls._get_str("", "SNMP", "version", "3", "securityLevel")
+
+    @classmethod
     def snmp_v3_auth_protocol(cls) -> str:
-        return cls._get_str("", "SNMP", "version", "3", "auth_protocol")
+        if not cls.snmp_v3_enable():
+            return ""
+        return cls._get_str("", "SNMP", "version", "3", "authProtocol")
 
     @classmethod
     def snmp_v3_auth_password(cls) -> str:
-        return cls._get_str("", "SNMP", "version", "3", "auth_password")
+        if not cls.snmp_v3_enable():
+            return ""
+        value = cls._get_str("", "SNMP", "version", "3", "authPassword")
+        return cls._maybe_decrypt(value, "SNMP", "version", "3", "authPassword")
 
     @classmethod
     def snmp_v3_priv_protocol(cls) -> str:
-        return cls._get_str("", "SNMP", "version", "3", "priv_protocol")
+        if not cls.snmp_v3_enable():
+            return ""
+        return cls._get_str("", "SNMP", "version", "3", "privProtocol")
 
     @classmethod
     def snmp_v3_priv_password(cls) -> str:
-        return cls._get_str("", "SNMP", "version", "3", "priv_password")
+        if not cls.snmp_v3_enable():
+            return ""
+        value = cls._get_str("", "SNMP", "version", "3", "privPassword")
+        return cls._maybe_decrypt(value, "SNMP", "version", "3", "privPassword")
 
     # SNMP general settings
     @classmethod
@@ -365,9 +434,9 @@ class SystemConfigSettings:
 
     @classmethod
     def ftp_password(cls) -> str:
-        return cls._get_str(
-            "",
-            "PnmFileRetrieval", "retrival_method", "methods", "ftp", "password",
+        return cls._get_password_value(
+            True,
+            "PnmFileRetrieval", "retrival_method", "methods", "ftp",
         )
 
     @classmethod
@@ -401,9 +470,13 @@ class SystemConfigSettings:
 
     @classmethod
     def scp_password(cls) -> str:
-        return cls._get_str(
-            "",
-            "PnmFileRetrieval", "retrival_method", "methods", "scp", "password",
+        private_key_path = cls._peek_str(
+            "PnmFileRetrieval", "retrival_method", "methods", "scp", "private_key_path",
+        ).strip()
+        require = private_key_path == ""
+        return cls._get_password_value(
+            require,
+            "PnmFileRetrieval", "retrival_method", "methods", "scp",
         )
 
     @classmethod
@@ -444,9 +517,13 @@ class SystemConfigSettings:
 
     @classmethod
     def sftp_password(cls) -> str:
-        return cls._get_str(
-            "",
-            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "password",
+        private_key_path = cls._peek_str(
+            "PnmFileRetrieval", "retrival_method", "methods", "sftp", "private_key_path",
+        ).strip()
+        require = private_key_path == ""
+        return cls._get_password_value(
+            require,
+            "PnmFileRetrieval", "retrival_method", "methods", "sftp",
         )
 
     @classmethod

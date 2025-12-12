@@ -75,14 +75,6 @@
                     "password": "ftp",
                     "remote_dir": "/srv/tftp"
                 },
-                "scp": {
-                    "host": "localhost",
-                    "port": 22,
-                    "user": "user",
-                    "password": "scp",
-                    "private_key_path": "",
-                    "remote_dir": "/srv/tftp"
-                },
                 "sftp": {
                     "host": "localhost",
                     "port": 22,

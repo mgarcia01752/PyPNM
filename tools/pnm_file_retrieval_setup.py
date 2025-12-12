@@ -14,6 +14,7 @@ import time
 from typing import Any
 
 from pypnm.config.system_config_settings import SystemConfigSettings
+from pypnm.lib.secret_crypto_manager import SecretCryptoError, SecretCryptoManager
 from pypnm.lib.ssh.ssh_connector import SSHConnector, SecureTransferMode
 
 
@@ -29,14 +30,27 @@ class PnmFileRetrievalConfigurator:
         - scp    → Download from an SCP server
         - sftp   → Download from an SFTP server
 
-    For SCP/SFTP, the script can also configure host, port, username, and
-    authentication (password, private key, or both), then perform a simple
+    For SCP/SFTP, the script can configure host, port, username, and
+    authentication (password token and/or private key), then perform a simple
     SSH connectivity test.
 
-    At the end, if a non-empty ``private_key_path`` is configured for the
-    selected method and a corresponding ``.pub`` file exists, the script will
-    print the public key and brief instructions on where to install it.
+    Password Handling
+    -----------------
+    - Passwords are stored encrypted in the config (ENC[v1]:...).
+    - The encrypted token is kept throughout the workflow.
+    - Decryption is deferred to the SSH connector at connection time.
     """
+
+    DEFAULT_LOCAL_SRC_DIR: str        = "/srv/tftp"
+    DEFAULT_TFTP_HOST: str            = "localhost"
+    DEFAULT_TFTP_PORT: int            = 69
+    DEFAULT_TFTP_TIMEOUT_SEC: int     = 5
+    DEFAULT_SSH_HOST: str             = "localhost"
+    DEFAULT_SSH_PORT: int             = 22
+    DEFAULT_SSH_KEY_PATH: str         = "~/.ssh/id_rsa_pypnm"
+    DEFAULT_SSH_REMOTE_DIR: str       = "/srv/tftp"
+
+    ENCRYPTED_TOKEN_PREFIX: str       = "ENC["
 
     def __init__(self) -> None:
         """
@@ -44,33 +58,29 @@ class PnmFileRetrievalConfigurator:
         """
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.setLevel(logging.INFO)
+
         handler = logging.StreamHandler(sys.stdout)
         handler.setLevel(logging.INFO)
+
         formatter = logging.Formatter("%(levelname)s %(name)s: %(message)s")
         handler.setFormatter(formatter)
+
         if not self.logger.handlers:
             self.logger.addHandler(handler)
 
         SystemConfigSettings.reload()
         self.config_path = SystemConfigSettings.get_config_path()
+
         self.logger.info("Using configuration file: %s", self.config_path)
 
         self.config: dict[str, Any] = {}
+
         self._load_config()
         self._backup_config()
 
     def run(self) -> None:
         """
         Run The Interactive PNM File Retrieval Configuration Workflow.
-
-        Steps:
-            - Load and backup the current system.json.
-            - Prompt for the active retrieval method (local/tftp/scp/sftp).
-            - For the chosen method, prompt for method-specific settings.
-            - For SCP/SFTP, optionally test SSH connectivity.
-            - Persist the updated configuration back to system.json.
-            - If a private key path is configured, display its public key
-              and authorized_keys guidance.
         """
         method_key = self._prompt_method_choice()
         if not method_key:
@@ -78,10 +88,11 @@ class PnmFileRetrievalConfigurator:
             return
 
         self.logger.info("Selected retrieval method: %s", method_key)
-        retrieval = self._ensure_pnm_retrieval_section()
+
+        retrieval           = self._ensure_pnm_retrieval_section()
         retrieval["method"] = method_key
 
-        methods = retrieval.setdefault("methods", {})
+        methods    = retrieval.setdefault("methods", {})
         method_cfg = methods.setdefault(method_key, {})
 
         if method_key == "local":
@@ -102,18 +113,20 @@ class PnmFileRetrievalConfigurator:
     def _load_config(self) -> None:
         if not os.path.exists(self.config_path):
             raise FileNotFoundError(f"Config file not found: {self.config_path}")
-        with open(self.config_path, "r", encoding="utf-8") as f:
-            self.config = json.load(f)
+
+        with open(self.config_path, "r", encoding="utf-8") as handle:
+            self.config = json.load(handle)
 
     def _save_config(self) -> None:
-        with open(self.config_path, "w", encoding="utf-8") as f:
-            json.dump(self.config, f, indent=4)
-            f.write("\n")
+        with open(self.config_path, "w", encoding="utf-8") as handle:
+            json.dump(self.config, handle, indent=4)
+            handle.write("\n")
 
     def _backup_config(self) -> None:
-        ts = int(time.time())
-        base, ext = os.path.splitext(self.config_path)
+        ts          = int(time.time())
+        base, ext   = os.path.splitext(self.config_path)
         backup_path = f"{base}.bak.{ts}{ext}"
+
         try:
             with open(self.config_path, "rb") as src, open(backup_path, "wb") as dst:
                 dst.write(src.read())
@@ -122,10 +135,12 @@ class PnmFileRetrievalConfigurator:
             self.logger.error("Failed to create backup %s: %s", backup_path, exc)
 
     def _ensure_pnm_retrieval_section(self) -> dict[str, Any]:
-        pnm = self.config.setdefault("PnmFileRetrieval", {})
+        pnm       = self.config.setdefault("PnmFileRetrieval", {})
         retrieval = pnm.setdefault("retrival_method", {})
+
         retrieval.setdefault("method", "local")
         retrieval.setdefault("methods", {})
+
         return retrieval
 
     def _prompt_method_choice(self) -> str:
@@ -138,7 +153,7 @@ class PnmFileRetrievalConfigurator:
         print("  q) Quit   - Exit without changes")
         print()
 
-        choices = {
+        choices: dict[str, str] = {
             "1": "local",
             "2": "tftp",
             "3": "scp",
@@ -155,6 +170,7 @@ class PnmFileRetrievalConfigurator:
 
     def _prompt_yes_no(self, message: str, default: bool = False) -> bool:
         default_str = "Y/n" if default else "y/N"
+
         while True:
             answer = input(f"{message} [{default_str}]: ").strip()
             if not answer:
@@ -166,18 +182,20 @@ class PnmFileRetrievalConfigurator:
             print("Please answer 'y' or 'n'.")
 
     def _configure_local(self, cfg: dict[str, Any]) -> None:
-        default_src = cfg.get("src_dir", "/srv/tftp")
-        src = input(f"Enter local src_dir [{default_src}]: ").strip()
+        default_src = str(cfg.get("src_dir", self.DEFAULT_LOCAL_SRC_DIR))
+        src         = input(f"Enter local src_dir [{default_src}]: ").strip()
+
         if not src:
             src = default_src
+
         cfg["src_dir"] = src
         self.logger.info("Configured local.src_dir = %s", src)
 
     def _configure_tftp(self, cfg: dict[str, Any]) -> None:
-        default_host = cfg.get("host", "localhost")
-        default_port = int(cfg.get("port", 69))
-        default_timeout = int(cfg.get("timeout", 5))
-        default_remote_dir = cfg.get("remote_dir", "")
+        default_host       = str(cfg.get("host", self.DEFAULT_TFTP_HOST))
+        default_port       = int(cfg.get("port", self.DEFAULT_TFTP_PORT))
+        default_timeout    = int(cfg.get("timeout", self.DEFAULT_TFTP_TIMEOUT_SEC))
+        default_remote_dir = str(cfg.get("remote_dir", ""))
 
         host = input(f"Enter TFTP host [{default_host}]: ").strip()
         if not host:
@@ -205,9 +223,9 @@ class PnmFileRetrievalConfigurator:
         if not remote_dir:
             remote_dir = default_remote_dir
 
-        cfg["host"] = host
-        cfg["port"] = port
-        cfg["timeout"] = timeout
+        cfg["host"]       = host
+        cfg["port"]       = port
+        cfg["timeout"]    = timeout
         cfg["remote_dir"] = remote_dir
 
         self.logger.info("Configured TFTP host=%s port=%d remote_dir=%s", host, port, remote_dir)
@@ -218,10 +236,10 @@ class PnmFileRetrievalConfigurator:
         method_name: str,
         transfer_mode: SecureTransferMode,
     ) -> None:
-        default_host = cfg.get("host", "localhost")
-        default_port = int(cfg.get("port", 22))
-        default_user = cfg.get("user", getpass.getuser() or "user")
-        default_remote_dir = cfg.get("remote_dir", "/srv/tftp")
+        default_host       = str(cfg.get("host", self.DEFAULT_SSH_HOST))
+        default_port       = int(cfg.get("port", self.DEFAULT_SSH_PORT))
+        default_user       = str(cfg.get("user", getpass.getuser() or "user"))
+        default_remote_dir = str(cfg.get("remote_dir", self.DEFAULT_SSH_REMOTE_DIR))
 
         print()
         print(f"Configure {method_name.upper()} PNM File Retrieval:")
@@ -243,34 +261,48 @@ class PnmFileRetrievalConfigurator:
         if not user:
             user = default_user
 
+        remote_dir = input(f"Enter remote_dir [{default_remote_dir}]: ").strip()
+        if not remote_dir:
+            remote_dir = default_remote_dir
+
         print()
         print("Authentication Options:")
         print("  You may configure password, private key, or both.")
         print("  At least one of them must be provided.")
+        print("  Passwords are stored encrypted as ENC[v1]:... in system.json.")
         print()
 
         use_password = self._prompt_yes_no("Configure password authentication?", default=False)
-        use_key = self._prompt_yes_no("Configure private key authentication?", default=False)
+        use_key      = self._prompt_yes_no("Configure private key authentication?", default=False)
 
-        existing_password = cfg.get("password", "")
-        existing_key_path = cfg.get("private_key_path", "")
+        existing_password_token = str(cfg.get("password", "") or "")
+        existing_key_path       = str(cfg.get("private_key_path", "") or "")
 
-        password = existing_password
-        key_path = existing_key_path
+        password_token = existing_password_token
+        key_path       = existing_key_path
 
         if use_password:
-            pw = getpass.getpass("Enter SSH password (leave blank to clear): ")
-            password = pw
+            pw = getpass.getpass("Enter SSH password (leave blank to clear, or paste ENC[...] token): ").strip()
+            if pw == "":
+                password_token = ""
+            elif pw.startswith(self.ENCRYPTED_TOKEN_PREFIX):
+                password_token = pw
+            else:
+                try:
+                    password_token = SecretCryptoManager.encrypt_password(pw)
+                except SecretCryptoError as exc:
+                    self.logger.error("Failed to encrypt password: %s", exc)
+                    raise SystemExit(1) from exc
 
         if use_key:
-            default_key = existing_key_path or "~/.ssh/id_rsa_pypnm"
-            key_input = input(f"Enter private key path [{default_key}]: ").strip()
+            default_key = existing_key_path or self.DEFAULT_SSH_KEY_PATH
+            key_input   = input(f"Enter private key path [{default_key}]: ").strip()
             if not key_input:
                 key_path = default_key
             else:
                 key_path = key_input
 
-        if not password and not key_path:
+        if password_token == "" and key_path == "":
             self.logger.error(
                 "Neither password nor private_key_path configured for %s; "
                 "at least one authentication method is required.",
@@ -278,15 +310,22 @@ class PnmFileRetrievalConfigurator:
             )
             raise SystemExit(1)
 
-        cfg["host"] = host
-        cfg["port"] = port
-        cfg["user"] = user
-        cfg["password"] = password
+        cfg["host"]             = host
+        cfg["port"]             = port
+        cfg["user"]             = user
+        cfg["password"]         = password_token
         cfg["private_key_path"] = key_path
-        cfg["remote_dir"] = default_remote_dir
+        cfg["remote_dir"]       = remote_dir
 
-        if password or key_path:
-            self._test_ssh_connection(method_name, host, port, user, password, key_path, transfer_mode)
+        self._test_ssh_connection(
+            method_name=method_name,
+            host=host,
+            port=port,
+            user=user,
+            password_token=password_token,
+            private_key_path=key_path,
+            transfer_mode=transfer_mode,
+        )
 
     def _test_ssh_connection(
         self,
@@ -294,7 +333,7 @@ class PnmFileRetrievalConfigurator:
         host: str,
         port: int,
         user: str,
-        password: str,
+        password_token: str,
         private_key_path: str,
         transfer_mode: SecureTransferMode,
     ) -> None:
@@ -313,19 +352,22 @@ class PnmFileRetrievalConfigurator:
             transfer_mode=transfer_mode,
         )
 
-        pw = password or None
-        key = private_key_path or None
-
         try:
-            if not connector.connect(password=pw, private_key_path=key):
+            ok = connector.connect(
+                password_enc=password_token,
+                private_key_path=private_key_path,
+            )
+            if not ok:
                 self.logger.error("%s connection test failed.", method_name.upper())
                 raise SystemExit(1)
+
             self.logger.info("SSH connection test succeeded.")
+
         finally:
             connector.disconnect()
 
     def _maybe_show_public_key(self, cfg: dict[str, Any], method_name: str) -> None:
-        key_path = cfg.get("private_key_path", "")
+        key_path = str(cfg.get("private_key_path", "") or "")
         if not key_path:
             self.logger.info("No private_key_path configured for %s; skipping public key display.", method_name)
             return
@@ -346,8 +388,8 @@ class PnmFileRetrievalConfigurator:
             return
 
         try:
-            with open(pub_path, "r", encoding="utf-8") as f:
-                pub_key = f.read().strip()
+            with open(pub_path, "r", encoding="utf-8") as handle:
+                pub_key = handle.read().strip()
         except OSError as exc:
             self.logger.error("Failed to read public key file %s: %s", pub_path, exc)
             return
@@ -369,9 +411,6 @@ class PnmFileRetrievalConfigurator:
 
 
 def main() -> None:
-    """
-    Entry Point For The PNM File Retrieval Setup Helper.
-    """
     configurator = PnmFileRetrievalConfigurator()
     configurator.run()
 

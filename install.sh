@@ -279,14 +279,27 @@ pip install --upgrade pip setuptools wheel
 echo "📥 Installing PyPNM extras: dev + docs…"
 pip install -e "$PROJECT_ROOT"[dev,docs]
 
-echo "📦 Installing required tooling: pytest, mkdocs, mkdocs-material…"
-pip install "pytest>=7" "mkdocs>=1.6" "mkdocs-material>=9.5"
+echo "📦 Installing required tooling: pytest, mkdocs, mkdocs-material, cryptography…"
+pip install "pytest>=7" "mkdocs>=1.6" "mkdocs-material>=9.5" "cryptography>=41"
 
 echo "🔎 Verifying MkDocs install…"
 mkdocs --version
 
 echo "🔧 Configuring PYTHONPATH…"
 "$PROJECT_ROOT/scripts/install_py_path.sh" "$PROJECT_ROOT" || true
+
+echo "🔐 Ensuring PyPNM secret key exists (~/.ssh/pypnm_secrets.key)…"
+if [[ -n "${CI:-}" || -n "${GITHUB_ACTIONS:-}" ]]; then
+  echo "ℹ️  Skipping secret key creation (CI environment)."
+  echo "    Create it locally with:"
+  echo "      ./scripts/init_secrets_key.sh"
+else
+  if [[ -x "${PROJECT_ROOT}/scripts/init_secrets_key.sh" ]]; then
+    "${PROJECT_ROOT}/scripts/init_secrets_key.sh" --quiet || true
+  else
+    echo "ℹ️  scripts/init_secrets_key.sh is missing or not executable; skipping."
+  fi
+fi
 
 echo "🧪 Running unit tests…"
 cd "$PROJECT_ROOT"

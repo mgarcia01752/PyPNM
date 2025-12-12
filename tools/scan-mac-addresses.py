@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
+
 # Scan the repository for non-approved MAC addresses.
 
 from __future__ import annotations
