@@ -36,7 +36,7 @@ PyPNM is a DOCSIS 3.x/4.0 Proactive Network Maintenance toolkit for engineers wh
   - [2) Install](#2-install)
   - [3) Activate The Virtual Environment](#3-activate-the-virtual-environment)
   - [4) Configure System Settings](#4-configure-system-settings)
-  - [5) Run The FastAPI Service](#5-run-the-fastapi-service)
+  - [5) Run The FastAPI Service Launcher](#5-run-the-fastapi-service-launcher)
   - [6) (Optional) Serve The Documentation](#6-optional-serve-the-documentation)
   - [7) Explore The API](#7-explore-the-api)
 - [API Documentation Quick Links](#api-documentation-quick-links)
@@ -168,16 +168,16 @@ source .env-demo/bin/activate
 
 You will need:
 
-* Cable Modem (CM) MAC address and IP address
-* SNMPv2c write community string
-* TFTP server IP/hostname reachable by both the CM and PyPNM
+- Cable Modem (CM) MAC address and IP address
+- SNMPv2c write community string  
+- TFTP server IP/hostname reachable by both the CM and PyPNM
 
 If `--pnm-file-retrieval-setup` was used during installation, the PNM file retrieval method selection is handled automatically.
 
 System configuration is stored in `system.json`:
 
-* `src/pypnm/settings/system.json`
-* `https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/settings/system.json`
+- `src/pypnm/settings/system.json`
+- `https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/settings/system.json`
 
 For detailed field descriptions, see `docs/system/system-config.md`.
 
@@ -186,6 +186,7 @@ For detailed field descriptions, see `docs/system/system-config.md`.
 PyPNM provides an interactive menu wrapper around the individual configuration helpers:
 
 ```bash
+source ~/.bashrc
 config-menu
 ```
 
@@ -197,12 +198,12 @@ python ./tools/system_config/menu.py
 
 The menu allows you to edit:
 
-* `FastApiRequestDefault`
-* `SNMP`
-* `PnmBulkDataTransfer`
-* `PnmFileRetrieval`
-* `logging`
-* `TestMode`
+- `FastApiRequestDefault`
+- `SNMP`
+- `PnmBulkDataTransfer`
+- `PnmFileRetrieval`
+- `logging`
+- `TestMode`
 
 Refer to the config menu documentation for details: `docs/system/menu.md`.
 
@@ -218,11 +219,11 @@ Run it any time after installation:
 
 The helper:
 
-* Backs up `src/pypnm/settings/system.json` before making changes
-* Lets you choose a retrieval method (`local`, `tftp`, `sftp`)
-* For `sftp`, prompts for host/port/user and optional password and/or private key path
-* Tests SSH connectivity when credentials are provided
-* Updates the `PnmFileRetrieval.retrival_method` block in `system.json` so future captures can automatically fetch PNM files through the selected path
+- Backs up `src/pypnm/settings/system.json` before making changes
+- Lets you choose a retrieval method (`local`, `tftp`, `sftp`)  
+- For `sftp`, prompts for host/port/user and optional password and/or private key path  
+- Tests SSH connectivity when credentials are provided  
+- Updates the `PnmFileRetrieval.retrival_method` block in `system.json` so future captures can automatically fetch PNM files through the selected path
 
 In demo mode, paths are redirected to demo directories so you can exercise the analysis stack using pre-captured PNM files without talking to a live modem.
 
