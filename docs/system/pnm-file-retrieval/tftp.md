@@ -33,8 +33,7 @@ INFO PnmFileRetrievalConfigurator: Created backup: PyPNM/src/pypnm/settings/syst
 Select PNM File Retrieval Method:
   1) local  - Copy from local src_dir
   2) tftp   - Download from TFTP server
-  3) scp    - Download from SCP server
-  4) sftp   - Download from SFTP server
+  3) sftp   - Download from SFTP server
   q) Quit   - Exit without changes
 
 Enter choice [1-4 or q to quit]: 2
