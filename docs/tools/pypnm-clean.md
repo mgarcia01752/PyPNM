@@ -17,14 +17,20 @@ The table below summarizes which directories are affected by each option. All pa
 
 | Option        | Description                                      | Directories removed (if present)                                       |
 |---------------|--------------------------------------------------|------------------------------------------------------------------------|
-| `--logs`      | Clean application logs.                          | `logs/`                                                                |
+| `--logs`      | Clean application logs (truncate file, keep inode). | `logs/pypnm.log`                                                       |
 | `--python`    | Clean Python cache artifacts.                    | `**/__pycache__/`, `**/*.pyc`, `.pytest_cache/`                        |
 | `--build`     | Clean build and packaging outputs.               | `build/`, `dist/`, `*.egg-info`                                       |
 | `--pnm`       | Clean PNM working data and databases.            | `.data/pnm/`, `.data/db/`                                             |
+| `--archive`   | Clean archive artifacts only.                    | `.data/archive/`                                                      |
+| `--excel`     | Clean Excel/CSV exports.                         | `.data/xlsx/`, `.data/csv/`                                           |
+| `--json`      | Clean JSON exports.                              | `.data/json/`                                                         |
 | `--plot-data` | Clean plotting data and archive artifacts.       | `.data/png/`, `.data/csv/`, `.data/archive/`                          |
 | `--msg-rsp`   | Clean message-response artifacts.                | `.data/msg_rsp/`                                                      |
 | `--output`    | Clean high-level output files.                   | `output/`                                                             |
-| `--all`       | Run all cleanup operations (includes Excel data) | All of the above, plus `.data/xlsx/` and any other script-managed data |
+| `--issues`    | Clean support bundles (preserves `issues/` directory). | `issues/` contents                                                    |
+| `--remove-issues` | Remove the entire `issues/` directory.        | `issues/`                                                             |
+| `--settings-backup` | Remove `system.bak.*.json` backups.        | `src/pypnm/settings/system.bak.*.json`                                |
+| `--all`       | Run every cleanup operation listed above.        | All of the above                                                      |
 
 ## Usage
 
@@ -32,16 +38,7 @@ The table below summarizes which directories are affected by each option. All pa
 ./tools/clean.sh [OPTIONS] [ROOT_DIR]
 ```
 
-* `OPTIONS`: One or more of
-
-  * `--all`
-  * `--logs`
-  * `--python`
-  * `--build`
-  * `--pnm`
-  * `--plot-data`
-  * `--msg-rsp`
-  * `--output`
+* `OPTIONS`: One or more of the flags listed in the table above. Combine them to target multiple areas (for example, `--python --build`).
 
 * `ROOT_DIR`: Optional path that serves as the root of the cleanup operation.  
   If omitted, the script uses the current working directory.
