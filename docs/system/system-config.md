@@ -2,10 +2,9 @@
 
 Canonical Structure And Field Semantics For `system.json`.
 
-* **Config File**: `src/pypnm/settings/system.json` (see repository)
-  * `https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/settings/system.json`
-* **ConfigManager Class**: `https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/config/config_manager.py`
-* **PnmConfigManager Class**: `https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/config/pnm_config_manager.py`
+* **Config file**: [`src/pypnm/settings/system.json`](https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/settings/system.json)
+* **ConfigManager class**: [`src/pypnm/config/config_manager.py`](https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/config/config_manager.py)
+* **PnmConfigManager class**: [`src/pypnm/config/pnm_config_manager.py`](https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/config/pnm_config_manager.py)
 
 ## Table Of Contents
 

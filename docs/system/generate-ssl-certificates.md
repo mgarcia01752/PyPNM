@@ -47,7 +47,7 @@ You can adjust names to match your environment; the examples below assume this l
 
 ## Option 1 – Self-Signed Certificate (Local Development)
 
-For local testing (for example, `https://localhost:8443`), you can use a self-signed certificate.
+For local testing (for example, the [local HTTPS endpoint](https://localhost:8443)), you can use a self-signed certificate.
 
 From the repo root:
 
@@ -83,7 +83,7 @@ mkcert -key-file tls/dev/pypnm-dev.key \
        "localhost" "pypnm.local"
 ```
 
-You can then access PyPNM via `https://pypnm.local:8443` after mapping the hostname in `/etc/hosts`:
+You can then access PyPNM via the [pypnm.local endpoint](https://pypnm.local:8443) after mapping the hostname in `/etc/hosts`:
 
 ```text
 127.0.0.1   pypnm.local
@@ -237,4 +237,3 @@ services:
 - Restrict file permissions on key files (for example, `chmod 600` for private keys).
 - For production, prefer a reverse proxy plus Let\'s Encrypt (or another public CA) over long-lived self-signed certificates.
 - If you need mutual TLS (client certificates), extend your proxy configuration to validate client certificates and pass identity to PyPNM via headers.
-

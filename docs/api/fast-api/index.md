@@ -1,10 +1,10 @@
 # FastAPI overview
 
-PyPNM exposes a FastAPI service that you can run locally (`http://127.0.0.1:8000` by default) or deploy to your own infrastructure. Use this section whenever you call the service over HTTP.
+PyPNM exposes a FastAPI service that you can run locally ([localhost API](http://127.0.0.1:8000) by default) or deploy to your own infrastructure. Use this section whenever you call the service over HTTP.
 
 > **Before you start**
 >
-> - Default base URL: `http://<host>:8000` unless overridden via CLI flags (see [pypnm CLI](../../system/pypnm-cli.md)).
+> - Default base URL: [FastAPI host](http://<host>:8000) unless overridden via CLI flags (see [pypnm CLI](../../system/pypnm-cli.md)).
 > - Authentication: none by default; secure deployments should front the API with network ACLs or a proxy.
 > - Response envelope: every endpoint returns the standard [response schema](common/response.md). Familiarize yourself with it before consuming the API.
 > - Errors and retries: see [FastAPI status codes](status/fast-api-status-codes.md) for retry guidance and validation failures.

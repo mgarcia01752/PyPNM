@@ -24,7 +24,7 @@ request to the corresponding FastAPI endpoint using the same JSON payloads descr
 the CLI usage is shown here (no response payloads).
 
 All examples assume you are running from the PyPNM project root, with the FastAPI server listening on
-`http://127.0.0.1:8000` and SNMP community `"private"`.
+the [localhost API](http://127.0.0.1:8000) and SNMP community `"private"`.
 
 ## Common CLI Options
 
@@ -35,7 +35,7 @@ The following options are shared by most scripts:
 - `--community` / `-c` – SNMP v2c community string (default: `private`)
 - `--tftp-ipv4` / `-t4` – TFTP server IPv4 address (for examples, use `192.168.0.10`)
 - `--tftp-ipv6` / `-t6` – TFTP server IPv6 address (default: `::1`)
-- `--base-url` – FastAPI base URL (default: `http://127.0.0.1:8000`)
+- `--base-url` – FastAPI base URL (default: [localhost API](http://127.0.0.1:8000))
 
 Endpoint-specific options are listed in each section below.
 

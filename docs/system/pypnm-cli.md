@@ -266,12 +266,12 @@ pypnm
 
 The service will listen on:
 
-- HTTP: `http://127.0.0.1:8000`
+- HTTP: [localhost API](http://127.0.0.1:8000)
 
 You can then open:
 
-- Swagger UI: `http://127.0.0.1:8000/docs`
-- ReDoc: `http://127.0.0.1:8000/redoc`
+- Swagger UI: [localhost Swagger](http://127.0.0.1:8000/docs)
+- ReDoc: [localhost ReDoc](http://127.0.0.1:8000/redoc)
 
 ### Development With Auto-Reload
 

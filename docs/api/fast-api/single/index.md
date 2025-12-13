@@ -1,6 +1,6 @@
 # Single capture operations
 
-Endpoints that perform one-shot capture or query against a single device. All routes live under the FastAPI service (default `http://127.0.0.1:8000`). Use the [request](../common/request.md) and [response](../common/response.md) conventions when constructing payloads.
+Endpoints that perform one-shot capture or query against a single device. All routes live under the FastAPI service (default [localhost API](http://127.0.0.1:8000)). Use the [request](../common/request.md) and [response](../common/response.md) conventions when constructing payloads.
 
 ## Choose a telemetry path
 
