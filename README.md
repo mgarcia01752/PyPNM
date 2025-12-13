@@ -26,8 +26,8 @@ PyPNM is a DOCSIS 3.x/4.0 Proactive Network Maintenance toolkit for engineers wh
 
 ## Choose your path
 
-- **Use PyPNM as a library** – install `pypnm-docsis` into an existing virtual environment and import the helpers inside notebooks or other tooling.
-- **Run the full platform** – clone the repo, run `./install.sh`, and use the FastAPI + tooling stack for captures, dashboards, and automation.
+- **Use PyPNM as a library** - install `pypnm-docsis` into an existing virtual environment and import the helpers inside notebooks or other tooling.
+- **Run the full platform** - clone the repo, run `./install.sh`, and use the FastAPI + tooling stack for captures, dashboards, and automation.
 
 ## Table of contents
 
@@ -220,9 +220,9 @@ Postman is recommended for larger or nested JSON payloads and for collecting rep
 
 ## Documentation
 
-- [Docs hub](./docs/index.md) – task-based entry point (install, configure, operate, contribute).
-- [FastAPI reference](./docs/api/fast-api/index.md) – Endpoint details and request/response schemas.
-- [Python API reference](./docs/api/python/index.md) – Importable helpers and data models.
+- [Docs hub](./docs/index.md) - task-based entry point (install, configure, operate, contribute).
+- [FastAPI reference](./docs/api/fast-api/index.md) - Endpoint details and request/response schemas.
+- [Python API reference](./docs/api/python/index.md) - Importable helpers and data models.
 
 ## SNMP notes
 

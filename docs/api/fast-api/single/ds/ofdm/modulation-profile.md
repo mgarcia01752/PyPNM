@@ -1,4 +1,4 @@
-# PNM Operations – Downstream OFDM Modulation Profile
+# PNM Operations - Downstream OFDM Modulation Profile
 
 Per-Subcarrier Modulation Mapping And Shannon Context For DOCSIS 3.1+ OFDM Downstream Channels.
 
@@ -27,7 +27,7 @@ Refer to [Common → Request](../../../common/request.md).
 | `analysis.output.type`   | string | "json", "archive"   | "json"  | Output format: **`json`** returns inline `data`; **`archive`** returns a ZIP (CSV exports and PNG plots). |
 | `analysis.plot.ui.theme` | string | "light", "dark"     | "dark"  | Theme hint for plots (colors, grid, ticks). Does not affect raw metrics/CSV.                              |
 
-### Example Request – `/getCapture`
+### Example Request - `/getCapture`
 
 ```json
 {
@@ -50,7 +50,7 @@ Refer to [Common → Request](../../../common/request.md).
 
 Standard envelope with payload under `data`.
 
-### Abbreviated Example – `/getCapture`
+### Abbreviated Example - `/getCapture`
 
 ```json
 {
@@ -235,10 +235,10 @@ Snapshot of CM modulation-profile capture state via SNMP at capture time.
 
 The same `/getCapture` endpoint returns both:
 
-* `data.primative[]` – normalized raw profile structures (subcarrier ranges, schemes, counts).  
-* `data.analysis[]` – frequency-aligned per-carrier view with layout and Shannon-min MER context.
+* `data.primative[]` - normalized raw profile structures (subcarrier ranges, schemes, counts).  
+* `data.analysis[]` - frequency-aligned per-carrier view with layout and Shannon-min MER context.
 
-### Example Request – With Analysis Controls
+### Example Request - With Analysis Controls
 
 ```json
 {
@@ -255,7 +255,7 @@ The same `/getCapture` endpoint returns both:
 }
 ```
 
-### Abbreviated Example – Analysis-Focused View
+### Abbreviated Example - Analysis-Focused View
 
 ```json
 {

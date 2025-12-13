@@ -1,4 +1,4 @@
-# PNM Operations – Downstream OFDM Constellation Display
+# PNM Operations - Downstream OFDM Constellation Display
 
 Visual Inspection Of Downstream OFDM I/Q Symbols For Rapid RF Diagnostics.
 

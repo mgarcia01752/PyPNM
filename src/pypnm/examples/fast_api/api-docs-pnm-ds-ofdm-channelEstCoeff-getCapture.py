@@ -19,7 +19,7 @@ ENDPOINT_PATH: str = "/docs/pnm/ds/ofdm/channelEstCoeff/getCapture"
 
 def main() -> int:
     """
-    PyPNM FastAPI – Downstream OFDM Channel Estimate Coefficients – getCapture.
+    PyPNM FastAPI - Downstream OFDM Channel Estimate Coefficients - getCapture.
 
     This example issues a POST to the PyPNM FastAPI endpoint
     `/docs/pnm/ds/ofdm/channelEstCoeff/getCapture` using a `cable_modem`
@@ -27,7 +27,7 @@ def main() -> int:
     passed on the command line and used for PNM file retrieval.
     """
     parser = argparse.ArgumentParser(
-        description="PyPNM FastAPI – Downstream OFDM Channel Estimate Coefficients – getCapture"
+        description="PyPNM FastAPI - Downstream OFDM Channel Estimate Coefficients - getCapture"
     )
     parser.add_argument(
         "--base-url",

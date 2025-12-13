@@ -21,8 +21,8 @@ from typing import Iterable, List, Set, Tuple
 # so "AA-BB-CC-DD-EE-FF" and "aa:bb:cc:dd:ee:ff" are considered equivalent.
 #
 # Example entries you might add over time:
-#   "aa:bb:cc:dd:ee:ff"  – generic example MAC (preferred default).
-#   "00:11:22:33:44:55"  – alternate generic example, if ever needed in docs.
+#   "aa:bb:cc:dd:ee:ff"  - generic example MAC (preferred default).
+#   "00:11:22:33:44:55"  - alternate generic example, if ever needed in docs.
 #
 APPROVED_MACS: Set[str] = {
     "aa:bb:cc:dd:ee:ff",

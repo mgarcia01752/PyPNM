@@ -15,10 +15,10 @@ pip install -e '.[dev]'
 
 This ensures the following tools are available (as defined in `pyproject.toml`):
 
-- `ruff` – linting and unused-code detection
-- `pytest` – unit and integration tests
-- `pycycle` – import cycle detection
-- `pyright` – optional static type checking (when enabled via CLI flag)
+- `ruff` - linting and unused-code detection
+- `pytest` - unit and integration tests
+- `pycycle` - import cycle detection
+- `pyright` - optional static type checking (when enabled via CLI flag)
 
 ## 2. Command Overview
 
@@ -118,8 +118,8 @@ The QA checker is simply a convenience wrapper that standardizes a good default 
 
 The script is designed to be CI-friendly:
 
-- Exit code `0` – all selected checks passed
-- Non-zero exit code – the first failing step’s exit code
+- Exit code `0` - all selected checks passed
+- Non-zero exit code - the first failing step’s exit code
 
 A simple GitHub Actions step could look like:
 

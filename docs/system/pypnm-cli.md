@@ -1,4 +1,4 @@
-# PyPNM CLI – FastAPI Service Launcher
+# PyPNM CLI - FastAPI Service Launcher
 
 The `pypnm` command is the primary entrypoint for launching the PyPNM FastAPI service. It is installed as a console script when you install the `pypnm-docsis` package.
 

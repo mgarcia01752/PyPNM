@@ -1,4 +1,4 @@
-# PyPNM – Reporting An Issue
+# PyPNM - Reporting An Issue
 
 Standard Operating Procedure For Submitting PyPNM Bugs And Support Requests.
 
@@ -7,8 +7,8 @@ Standard Operating Procedure For Submitting PyPNM Bugs And Support Requests.
 - [Purpose](#purpose)
 - [Before You Open An Issue](#before-you-open-an-issue)
 - [Building A Sanitized Support Bundle](#building-a-sanitized-support-bundle)
-  - [Step 1 – Identify The Affected Capture](#step-1--identify-the-affected-capture)
-  - [Step 2 – Run The Support Bundle Script](#step-2--run-the-support-bundle-script)
+  - [Step 1 - Identify The Affected Capture](#step-1--identify-the-affected-capture)
+  - [Step 2 - Run The Support Bundle Script](#step-2--run-the-support-bundle-script)
 - [Collecting Logs](#collecting-logs)
 - [Opening The GitHub Issue](#opening-the-github-issue)
 
@@ -61,7 +61,7 @@ tools/support_bundle_builder.py
 The bundle contains only the PNM files and JSON metadata required to reproduce
 the problem, with MAC addresses and system descriptions sanitized by default.
 
-### Step 1 – Identify The Affected Capture
+### Step 1 - Identify The Affected Capture
 
 You can select data to bundle by:
 
@@ -71,7 +71,7 @@ You can select data to bundle by:
 
 If possible, prefer the most specific selector (TransactionId).
 
-### Step 2 – Run The Support Bundle Script
+### Step 2 - Run The Support Bundle Script
 
 Refer to the dedicated guide for full details:
 
@@ -79,14 +79,14 @@ Refer to the dedicated guide for full details:
 
 From the PyPNM project root:
 
-#### Example A – Single Transaction
+#### Example A - Single Transaction
 
 ```bash
 ./tools/support_bundle_builder.py   --transaction-id ea18519a572e2487 \
                                     --verbose
 ```
 
-#### Example B – Multi-Capture Operation
+#### Example B - Multi-Capture Operation
 
 ```bash
 ./tools/support_bundle_builder.py   --operation-id ed2fcba02bba42f6 \
@@ -94,7 +94,7 @@ From the PyPNM project root:
                                     --verbose
 ```
 
-#### Example C – All Captures For A MAC Address
+#### Example C - All Captures For A MAC Address
 
 ```bash
 ./tools/support_bundle_builder.py   --mac-address aa:bb:cc:dd:ee:ff \
@@ -154,7 +154,7 @@ only the relevant session.
 When you have the information and files ready:
 
 01. Go to the PyPNM GitHub repository **Issues** page.
-02. Click **New Issue** and choose the most appropriate template (for example: **Bug – PNM Capture**).
+02. Click **New Issue** and choose the most appropriate template (for example: **Bug - PNM Capture**).
 03. In the issue body, include the following:
 
     - PyPNM version

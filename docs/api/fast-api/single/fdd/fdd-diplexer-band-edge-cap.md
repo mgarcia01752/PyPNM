@@ -78,4 +78,4 @@ This endpoint returns the standard envelope described in [Common → Response](.
 
 * Frequencies are reported in **MHz** and reflect capability (not necessarily the currently configured split).
 * A value of `0` indicates the device does **not** advertise extended spectrum for that band edge.
-* Use this data to validate modem–CMTS spectrum compatibility when planning FDD profiles and extended splits.
+* Use this data to validate modem-CMTS spectrum compatibility when planning FDD profiles and extended splits.

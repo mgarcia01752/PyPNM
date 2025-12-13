@@ -1,4 +1,4 @@
-# PyPNM FastAPI – PNM Capture cURL Examples
+# PyPNM FastAPI - PNM Capture cURL Examples
 
 This guide shows how to invoke PyPNM **PNM capture** endpoints using `curl`. Each example
 sends a `POST` request with a JSON body that mirrors the common FastAPI request models.

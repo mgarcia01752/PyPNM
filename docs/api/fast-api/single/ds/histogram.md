@@ -1,4 +1,4 @@
-# PNM Operations – Downstream OFDM Histogram
+# PNM Operations - Downstream OFDM Histogram
 
 Nonlinearity Insight From Time‑Domain Sample Distributions (Amplifier Compression, Laser Clipping).
 

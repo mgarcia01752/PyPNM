@@ -16,7 +16,7 @@ A concise, implementation-ready reference for orchestrating downstream OFDM chan
 * [Plot Examples](#plot-examples)
   * [Min-Avg-Max Magnitude Plot](#min-avg-max-magnitude-plot)
   * [Group Delay Plot](#group-delay-plot)
-  * [Echo Detection – IFFT Impulse Response](#echo-detection--ifft-impulse-response)
+  * [Echo Detection - IFFT Impulse Response](#echo-detection--ifft-impulse-response)
 * [Response Field Reference](#response-field-reference)
   * [Start / Status / Stop](#start--status--stop)
   * [Download ZIP](#download-zip)
@@ -146,7 +146,7 @@ ds_ofdm_chan_estimate_coef_aabbccddeeff_160_1751762645.bin
 ### 5) Analysis
 
 **Request** `POST /advance/multiChannelEstimation/analysis`  
-**Body** (`MultiChanEstAnalysisRequest` – preferred string enums):
+**Body** (`MultiChanEstAnalysisRequest` - preferred string enums):
 
 ```json
 {
@@ -222,7 +222,7 @@ ds_ofdm_chan_estimate_coef_aabbccddeeff_160_1751762645.bin
 | 197     | [Group Delay](./images/multi-chan-est/197_chan_est_group_delay.png) | Per-subcarrier group delay vs frequency. | Spikes can indicate echoes or filter issues. |
 
 
-### Echo Detection – IFFT Impulse Response
+### Echo Detection - IFFT Impulse Response
 
 | Channel | Plot | Description                                      | Note                                      |
 | ------- | ---- | ------------------------------------------------ | ----------------------------------------- |

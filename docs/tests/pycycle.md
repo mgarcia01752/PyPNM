@@ -1,11 +1,11 @@
-# PyCycle Import-Cycle Checker – User Guide
+# PyCycle Import-Cycle Checker - User Guide
 
 Static Detection Of Circular Imports Across The PyPNM Codebase.
 
 ## 1. What PyCycle Does
 
 PyCycle walks your Python source tree, builds an import graph, and reports **strongly connected components**
-(SCCs) – i.e., circular import cycles. This is exactly the class of problems that tend to show up as:
+(SCCs) - i.e., circular import cycles. This is exactly the class of problems that tend to show up as:
 
 - `ImportError: cannot import name ... from partially initialized module ...`
 - brittle, order-dependent imports
@@ -119,8 +119,8 @@ patterns you may see in PyPNM include:
 
 PyCycle is CI-friendly:
 
-- Exit code `0` – no import cycles detected.
-- Non-zero exit code – at least one cycle was found, or there was an error.
+- Exit code `0` - no import cycles detected.
+- Non-zero exit code - at least one cycle was found, or there was an error.
 
 The `pypnm-software-qa-checker` script treats a non-zero exit as a failure and surfaces that in its overall
 exit code.
@@ -181,7 +181,7 @@ that work well in PyPNM:
 
 5. **Keep SNMP/IO layers below analysis and routing layers**  
    In PyPNM’s design, it helps to keep the data acquisition (SNMP, TFTP, parsing) in leaf modules and have
-   the higher layers (analysis, routers, CLI tools) import them – not the other way around.
+   the higher layers (analysis, routers, CLI tools) import them - not the other way around.
 
 ## 8. CI Integration
 

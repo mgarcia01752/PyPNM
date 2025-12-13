@@ -107,7 +107,7 @@ This endpoint returns the standard envelope described in [Common → Response](.
 | 9               | CM Operating on Battery Backup (loss of A/C power for > 5 seconds)                                       |
 | 10              | CM Returned to A/C Power (came back from battery to A/C)                                                 |
 | 11              | MAC Removal Event (one or more MAC addresses removed, e.g., in port transition)                          |
-| 12–15           | Reserved for future use                                                                                  |
+| 12-15           | Reserved for future use                                                                                  |
 | 16              | DS OFDM Profile Failure (FEC errors exceeded limit on a downstream OFDM profile)                         |
 | 17              | Primary Downstream Change (lost primary downstream, switched to backup)                                  |
 | 18              | DPD Mismatch (Some mismatch in DPD change count vs NCP odd/even bit)                                     |
@@ -119,7 +119,7 @@ This endpoint returns the standard envelope described in [Common → Response](.
 | 25              | OFDMA Profile Failure (modem unable to support a received profile)                                       |
 | 26              | MAP Storage Overflow (maps in CM overflow buffer)                                                        |
 | 27              | MAP Storage Almost Full                                                                                  |
-| 28–255          | Reserved / for vendor extensions                                                                         |
+| 28-255          | Reserved / for vendor extensions                                                                         |
 
 ## Notes
 

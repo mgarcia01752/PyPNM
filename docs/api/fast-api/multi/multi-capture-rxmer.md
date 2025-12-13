@@ -163,7 +163,7 @@ aabbccddeeff_lpet3_1763007737_160_rxmer_heat_map.png
 ### 5) Analysis
 
 **Request** `POST /advance/multiRxMer/analysis`  
-**Body** (`MultiRxMerAnalysisRequest` – preferred string enums):
+**Body** (`MultiRxMerAnalysisRequest` - preferred string enums):
 
 ```json
 {

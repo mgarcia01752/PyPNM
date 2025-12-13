@@ -1,4 +1,4 @@
-# Multi-Capture RxMER – Min / Average / Max Math
+# Multi-Capture RxMER - Min / Average / Max Math
 
 Foundations For Temporal Aggregation Of Per-Subcarrier RxMER Measurements.
 

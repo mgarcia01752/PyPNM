@@ -1,4 +1,4 @@
-# PyPNM Python API – PNM Parser Usage Examples
+# PyPNM Python API - PNM Parser Usage Examples
 
 This guide shows how to use the PyPNM binary parsers directly from Python and via the
 example CLI scripts under:
@@ -102,7 +102,7 @@ input path to the test fixture.
 ## Downstream OFDM Parsers
 
 <a id="ds-ofdm-rxmer"></a>
-### 3.1 Downstream OFDM RxMER – pnm-ds-rxmer.py
+### 3.1 Downstream OFDM RxMER - pnm-ds-rxmer.py
 
 Script:
 
@@ -152,7 +152,7 @@ You can feed `rxmer_model` into downstream analysis functions (for example, RxME
 or profile-aligned plots).
 
 <a id="ds-ofdm-chan-est"></a>
-### 3.2 Downstream OFDM Channel Estimation – pnm-ds-chan-est-coeff.py
+### 3.2 Downstream OFDM Channel Estimation - pnm-ds-chan-est-coeff.py
 
 Script:
 
@@ -199,7 +199,7 @@ Channel estimation taps can be used as input to echo detection, group delay anal
 other RF impairment tools.
 
 <a id="ds-ofdm-fec-summary"></a>
-### 3.3 Downstream OFDM FEC Summary – pnm-ds-fec-summary.py
+### 3.3 Downstream OFDM FEC Summary - pnm-ds-fec-summary.py
 
 Script:
 
@@ -241,7 +241,7 @@ print(f"Uncorrectable codewords: {fec_model.uncorrectable_codewords}")
 ```
 
 <a id="ds-ofdm-modulation-profile"></a>
-### 3.4 Downstream OFDM Modulation Profile – pnm-ds-modulation-profile.py
+### 3.4 Downstream OFDM Modulation Profile - pnm-ds-modulation-profile.py
 
 Script:
 
@@ -288,7 +288,7 @@ modulation is allocated across the OFDM channel.
 ## Spectrum Analysis Parsers
 
 <a id="ds-spectrum-analysis"></a>
-### 4.1 PNM Spectrum Analyzer – pnm-ds-spectrum-analysis.py
+### 4.1 PNM Spectrum Analyzer - pnm-ds-spectrum-analysis.py
 
 Script:
 
@@ -332,7 +332,7 @@ You can feed `spec_model.amplitude_bin_segments_float` into plotting utilities t
 per-segment spectra or stitch them into a full-band sweep.
 
 <a id="ds-spectrum-analysis-snmp"></a>
-### 4.2 SNMP Spectrum Analyzer (AmplitudeData) – pnm-ds-spectrum-analysis-snmp.py
+### 4.2 SNMP Spectrum Analyzer (AmplitudeData) - pnm-ds-spectrum-analysis-snmp.py
 
 Script:
 
@@ -382,7 +382,7 @@ The SNMP version is especially useful when the CM only exposes sweep data via th
 ## Upstream OFDMA Pre-Equalization Parsers
 
 <a id="us-ofdma-preeq"></a>
-### 5.1 Upstream OFDMA Pre-Equalization – pnm-us-ofdma-preeq.py
+### 5.1 Upstream OFDMA Pre-Equalization - pnm-us-ofdma-preeq.py
 
 Script:
 
@@ -426,7 +426,7 @@ Upstream pre-equalization coefficients are the foundation for group delay, echo 
 and upstream impairment analysis.
 
 <a id="us-ofdma-preeq-last-update"></a>
-### 5.2 Upstream OFDMA Pre-Equalization Last Update – pnm-us-ofdma-preeq-last-update.py
+### 5.2 Upstream OFDMA Pre-Equalization Last Update - pnm-us-ofdma-preeq-last-update.py
 
 Script:
 

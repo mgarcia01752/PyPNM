@@ -14,9 +14,9 @@ This page illustrates common network topologies for PNM file retrieval and how t
 
 Each topology shows how three components interact:
 
-- **Cable Modem (CM)** – Generates PNM files (for example, RxMER, FEC summary, constellation).  
-- **TFTP Server** – Receives the PNM files from the CM.  
-- **PyPNM Host** – Retrieves the files from the server into the local `.data/pnm` tree and performs decoding and analysis.
+- **Cable Modem (CM)** - Generates PNM files (for example, RxMER, FEC summary, constellation).  
+- **TFTP Server** - Receives the PNM files from the CM.  
+- **PyPNM Host** - Retrieves the files from the server into the local `.data/pnm` tree and performs decoding and analysis.
 
 The selected topology is controlled by the `PnmFileRetrieval.retrival_method.method` value in `src/pypnm/settings/system.json` (for example: `local`, `tftp`, `scp`, `sftp`).  
 

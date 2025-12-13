@@ -60,9 +60,9 @@ def _build_commands(include_pyright: bool, pytest_args: Sequence[str]) -> List[C
     commands: List[Command] = [
         ("secrets", ["./tools/scan-secrets.sh"]),
         ("macs", ["./tools/scan-mac-addresses.py", "--fail-on-found"]),
+        ("headers", ["./tools/add-required-python-headers.py"]),
         ("ruff", ["ruff", "check", "src"]),
         ("pytest", ["pytest", *pytest_args]),
-        ("pycycle", ["pycycle", "--here"]),
     ]
 
     if include_pyright:
@@ -81,12 +81,12 @@ def main() -> None:
     By default, this helper aggregates the core quality checks configured for
     the project:
 
-    1) secrets             – secret scanning via ./tools/scan-secrets.sh
+    1) secrets             - secret scanning via ./tools/scan-secrets.sh
                              (gitleaks + .gitleaks.toml if available).
-    2) macs                – repository scan for non-approved MAC addresses.
-    3) ruff check src      – syntax, style, and common bug patterns.
-    4) pytest              – unit tests (pytest options from pyproject.toml).
-    5) pycycle --here      – import cycle detection over the current project.
+    2) macs                - repository scan for non-approved MAC addresses.
+    3) headers             - ensure SPDX/license headers (./tools/add-required-python-headers.py).
+    4) ruff check src      - syntax, style, and common bug patterns.
+    5) pytest              - unit tests (pytest options from pyproject.toml).
 
     Optional Pyright
     ----------------
@@ -96,7 +96,7 @@ def main() -> None:
 
     This will run an additional step:
 
-    - pyright              – static type analysis using [tool.pyright] settings,
+    - pyright              - static type analysis using [tool.pyright] settings,
                              executed after Ruff but before pytest.
 
     Passing Extra Pytest Arguments

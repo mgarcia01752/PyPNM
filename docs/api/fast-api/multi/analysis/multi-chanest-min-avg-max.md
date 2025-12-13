@@ -1,6 +1,6 @@
-# Min–Avg–Max Complex Statistics Guide
+# Min-Avg-Max Complex Statistics Guide
 
-This document describes a purely mathematical view of the Min–Avg–Max statistics computed from
+This document describes a purely mathematical view of the Min-Avg-Max statistics computed from
 per-subcarrier complex channel-estimation coefficients across multiple snapshots.
 
 We assume a downstream OFDM channel with:
@@ -59,7 +59,7 @@ The sequences
 \{r_{\max}[k]\}_{k=0}^{K-1}
 \]
 
-form the Min–Avg–Max real-part profiles across the OFDM band.
+form the Min-Avg-Max real-part profiles across the OFDM band.
 
 ## 3. Per-Subcarrier Imaginary-Part Statistics
 
@@ -81,7 +81,7 @@ The sequences
 \{i_{\max}[k]\}_{k=0}^{K-1}
 \]
 
-are the Min–Avg–Max imaginary-part profiles.
+are the Min-Avg-Max imaginary-part profiles.
 
 These statistics characterize how the in-phase and quadrature components of the channel vary across
 snapshots for each subcarrier.
@@ -147,7 +147,7 @@ consistent with other phase-sensitive analyses (for example, group delay or echo
 
 ## 5. Summary of Per-Subcarrier Outputs
 
-For each subcarrier \(k\), the Min–Avg–Max complex statistics provide:
+For each subcarrier \(k\), the Min-Avg-Max complex statistics provide:
 
 - Real part: \(r_{\min}[k],\ r_{\text{avg}}[k],\ r_{\max}[k]\).
 - Imaginary part: \(i_{\min}[k],\ i_{\text{avg}}[k],\ i_{\max}[k]\).

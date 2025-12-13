@@ -1,4 +1,4 @@
-# PNM Operations – Downstream OFDM Channel Estimation Coefficients
+# PNM Operations - Downstream OFDM Channel Estimation Coefficients
 
 Deep visibility into the downstream physical layer of DOCSIS 3.1+ OFDM channels via **per-subcarrier complex channel-estimation coefficients** and derived characteristics (magnitude, group delay, echoes). This page follows the same structure and conventions as the RxMER doc.
 
@@ -211,7 +211,7 @@ describe the structure and interpretation.
 | echoes[].amplitude                  | number        | Echo peak magnitude (normalized units).                                                         |
 | echoes[].distance_m                 | number        | One-way distance estimate in meters.                                                            |
 | echoes[].distance_ft                | number        | One-way distance estimate in feet.                                                              |
-| threshold_frac                      | number        | Detection threshold as a fraction of the direct-path amplitude (0–1).                           |
+| threshold_frac                      | number        | Detection threshold as a fraction of the direct-path amplitude (0-1).                           |
 | guard_bins                          | int           | Number of bins ignored around each detected peak to avoid double-counting.                      |
 | min_separation_s                    | number        | Minimum separation between peaks in seconds.                                                     |
 | max_delay_s                         | number/null   | Optional maximum delay search window in seconds.                                                |

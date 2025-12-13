@@ -31,7 +31,7 @@ def _parse_args() -> argparse.Namespace:
     Parse Command Line Arguments For Downstream Spectrum Analyzer Segment Sweep Example.
     """
     parser = argparse.ArgumentParser(
-        description="PNM – Downstream Spectrum Analyzer Segment Sweep (FastAPI Example)"
+        description="PNM - Downstream Spectrum Analyzer Segment Sweep (FastAPI Example)"
     )
 
     parser.add_argument(

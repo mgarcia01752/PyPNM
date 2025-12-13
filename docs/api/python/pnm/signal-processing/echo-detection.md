@@ -52,7 +52,7 @@ Delay & distance:
 
 ## Tuning Knobs
 
-* `threshold_frac` (0–1): sensitivity; larger ⇒ fewer echoes.
+* `threshold_frac` (0-1): sensitivity; larger ⇒ fewer echoes.
 * `guard_bins` (≥0): avoids main-lobe skirt around the direct path.
 * `max_delay_s` (optional): caps search window (controls false positives far out).
 * `min_separation_s` (multi): enforces spacing between returned echoes.

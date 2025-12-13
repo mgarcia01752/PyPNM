@@ -1,4 +1,4 @@
-# PNM Tools – PNM MAC Address Rewriter
+# PNM Tools - PNM MAC Address Rewriter
 
 Rewrite Embedded MAC Addresses In PNM Capture Files For Testing And Sharing.
 

@@ -1,4 +1,4 @@
-# PyPNM – Support Bundle Builder
+# PyPNM - Support Bundle Builder
 
 Create Sanitized Support Bundles For PNM File And Capture Issues.
 

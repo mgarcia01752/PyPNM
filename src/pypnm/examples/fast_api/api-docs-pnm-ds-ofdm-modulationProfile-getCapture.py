@@ -34,7 +34,7 @@ def _join_url(base_url: str, endpoint_path: str) -> str:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="PyPNM FastAPI – Downstream OFDM Modulation Profile getCapture",
+        description="PyPNM FastAPI - Downstream OFDM Modulation Profile getCapture",
     )
     parser.add_argument(
         "--mac",

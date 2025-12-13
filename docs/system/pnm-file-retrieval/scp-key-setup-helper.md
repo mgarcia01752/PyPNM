@@ -1,4 +1,4 @@
-# PyPNM System – SCP/SFTP Key Setup Helper
+# PyPNM System - SCP/SFTP Key Setup Helper
 
 Helper Utility To Configure SSH Key-Based SCP/SFTP File Retrieval For PyPNM.
 

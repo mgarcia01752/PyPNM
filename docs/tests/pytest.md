@@ -1,4 +1,4 @@
-# PyPNM – pytest Usage Guide
+# PyPNM - pytest Usage Guide
 
 Consistent, fast, and repeatable testing for the PyPNM codebase using `pytest`.
 

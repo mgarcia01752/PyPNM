@@ -1,4 +1,4 @@
-# PNM Operations – Downstream OFDM FEC Summary
+# PNM Operations - Downstream OFDM FEC Summary
 
 Forward Error Correction Trends For Proactive Monitoring Of OFDM Downstream Health.
 

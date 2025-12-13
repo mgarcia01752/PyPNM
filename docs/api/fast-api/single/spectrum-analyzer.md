@@ -1,4 +1,4 @@
-# PNM Operations – Spectrum Analyzer
+# PNM Operations - Spectrum Analyzer
 
 Downstream Spectrum Capture And Per-Channel Analysis For DOCSIS 3.x/4.0 Cable Modems.
 
@@ -56,7 +56,7 @@ These endpoints add optional `analysis` controls and a `capture_parameters` sect
 
 When `analysis.output.type = "archive"`, the HTTP response body is the file (no `data` JSON payload).
 
-## Single Capture – `/spectrumAnalyzer/getCapture`
+## Single Capture - `/spectrumAnalyzer/getCapture`
 
 Single downstream spectrum capture using the modem's generic spectrum engine. This is the
 most flexible entry point and allows arbitrary sweep settings (within diplexer limits).
@@ -265,16 +265,16 @@ Top-level envelope:
 | entry.docsIf3CmSpectrumAnalysisCtrlCmdMeasStatus                    | string  | Measurement status (e.g., `"sample_ready"`).     |
 | entry.docsIf3CmSpectrumAnalysisCtrlCmdFileName                      | string  | Device-side filename of the captured spectrum.   |
 
-## OFDM Downstream Capture – `/spectrumAnalyzer/getCapture/ofdm`
+## OFDM Downstream Capture - `/spectrumAnalyzer/getCapture/ofdm`
 
 This endpoint iterates across all downstream OFDM channels on the modem, performing a
 spectrum capture per channel and aggregating the results into a multi-analysis structure.
 
 Each per-channel capture is processed like the single capture. Results are returned as:
 
-* `data.analyses[]` – list of per-channel analysis views (one entry per capture).
-* `data.primative` – dictionary of raw capture payloads indexed by channel position.
-* `data.measurement_stats[]` – flattened SNMP spectrum-analysis entries.
+* `data.analyses[]` - list of per-channel analysis views (one entry per capture).
+* `data.primative` - dictionary of raw capture payloads indexed by channel position.
+* `data.measurement_stats[]` - flattened SNMP spectrum-analysis entries.
 
 DOCSIS constraints:
 
@@ -443,7 +443,7 @@ DOCSIS constraints:
 
 Reuses the single-capture `measurement_stats` field definitions, repeated per OFDM channel.
 
-## SC-QAM Downstream Capture – `/spectrumAnalyzer/getCapture/scqam`
+## SC-QAM Downstream Capture - `/spectrumAnalyzer/getCapture/scqam`
 
 This endpoint iterates across all downstream SC-QAM channels, performing spectrum captures
 per channel and aggregating the results into a multi-analysis view similar to the OFDM
@@ -455,9 +455,9 @@ DOCSIS constraints:
 
 The response shape for SC-QAM captures mirrors the OFDM multi-channel layout:
 
-* `data.analyses[]` – list of per-channel analysis views.
-* `data.primative` – dictionary of raw capture payloads indexed by channel position.
-* `data.measurement_stats[]` – flattened SNMP statistics per captured channel.
+* `data.analyses[]` - list of per-channel analysis views.
+* `data.primative` - dictionary of raw capture payloads indexed by channel position.
+* `data.measurement_stats[]` - flattened SNMP statistics per captured channel.
 
 ### Example Request
 

@@ -1,4 +1,4 @@
-# System Operations – PyPNM System Log
+# System Operations - PyPNM System Log
 
 Centralized Access To The PyPNM System Log For Diagnostics And Support.
 

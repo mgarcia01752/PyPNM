@@ -12,7 +12,7 @@ from pypnm.lib.types import FrequencySeriesHz, MagnitudeSeries
 """
     Default to a 7-point moving average.
     Rationale: an odd window centers the filter (no bias), and N=7 reduces
-    random noise by ≈1/√7 (~0.38×) without over-smoothing narrow (1–2 bin)
+    random noise by ≈1/√7 (~0.38×) without over-smoothing narrow (1-2 bin)
     features typical in DOCSIS spectra. Override via `window_average_points`.
 """
 DEFAULT_POINT_AVG: int = 7

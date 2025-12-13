@@ -42,7 +42,7 @@ class PyPnmSystemWebServiceAPI:
         auto-reload enabled (for example, `uvicorn --reload`), modifying the
         file timestamp signals the process to reload application code.
 
-        [API Guide – PyPNM System Web Service Reload]
+        [API Guide - PyPNM System Web Service Reload]
         (https://github.com/mgarcia01752/PyPNM/blob/main/docs/api/fast-api/system/reload-web-service.md)
         """
         try:

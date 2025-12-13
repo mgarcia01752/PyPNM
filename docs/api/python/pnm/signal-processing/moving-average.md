@@ -168,8 +168,8 @@ Unlike the Butterworth filter, the moving average does not require an explicit
 sample rate or cutoff frequency; you simply choose the number of points \(M\)
 in the window. A few practical guidelines:
 
-- Small window (for example, 3–5 points): light smoothing, preserves detail.
-- Medium window (for example, 7–15 points): moderate smoothing, good for noisy
+- Small window (for example, 3-5 points): light smoothing, preserves detail.
+- Medium window (for example, 7-15 points): moderate smoothing, good for noisy
   traces with mild structure.
 - Large window (for example, 31+ points): strong smoothing, may blur narrow
   features but highlight long-scale trends.

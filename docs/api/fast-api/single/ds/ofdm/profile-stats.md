@@ -9,7 +9,7 @@ Maximum number of **data profiles**: 4 (active at a time). Profile IDs may be an
 | Profile ID | Function     | Notes                                                       |
 |------------|--------------|-------------------------------------------------------------|
 | 0          | Data + MAC   | Used for user data **and** DOCSIS MAC management messages.  |
-| 1–254      | Data profile | Up to **4** data profiles total (including profile 0).      |
+| 1-254      | Data profile | Up to **4** data profiles total (including profile 0).      |
 | 255        | NCP          | Always present (Next Codeword Pointer / NCP).               |
 
 ## Endpoint

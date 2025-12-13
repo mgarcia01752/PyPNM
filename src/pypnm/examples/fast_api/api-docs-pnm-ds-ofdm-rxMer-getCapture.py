@@ -25,13 +25,13 @@ from pypnm.examples.common.common_cli import (
 
 def main() -> int:
     """
-    Downstream OFDM RxMER – Trigger Capture Via FastAPI.
+    Downstream OFDM RxMER - Trigger Capture Via FastAPI.
 
     This example sends a POST request to the PyPNM FastAPI endpoint
     /docs/pnm/ds/ofdm/rxMer/getCapture using the common cable_modem
     payload plus PNM TFTP parameters and a basic analysis block.
     """
-    parser = argparse.ArgumentParser(description="PyPNM FastAPI – DS OFDM RxMER Get Capture")
+    parser = argparse.ArgumentParser(description="PyPNM FastAPI - DS OFDM RxMER Get Capture")
     parser.add_argument(
         "--mac",
         "-m",
@@ -78,7 +78,7 @@ def main() -> int:
         community=args.community_write,
     )
 
-    # Top-level JSON payload for FastAPI – use a plain dict so we can
+    # Top-level JSON payload for FastAPI - use a plain dict so we can
     # safely add extra fields (pnm_parameters, analysis, etc.)
     payload: dict[str, Any] = {
         "cable_modem": {

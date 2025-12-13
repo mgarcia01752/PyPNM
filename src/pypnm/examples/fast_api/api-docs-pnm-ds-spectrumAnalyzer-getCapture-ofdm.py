@@ -39,7 +39,7 @@ def _join_url(base_url: str, endpoint_path: str) -> str:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="PyPNM – Downstream OFDM Spectrum Analyzer (OFDM View)"
+        description="PyPNM - Downstream OFDM Spectrum Analyzer (OFDM View)"
     )
 
     parser.add_argument(

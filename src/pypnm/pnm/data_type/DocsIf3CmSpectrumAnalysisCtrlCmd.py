@@ -146,14 +146,14 @@ class DocsIf3CmSpectrumAnalysisCtrlCmd:
 
     Methods:
         set_enable(value): Validates and sets enable flag.
-        set_inactivity_timeout(value): Sets inactivity timeout (0–86400).
+        set_inactivity_timeout(value): Sets inactivity timeout (0-86400).
         set_first_segment_center_frequency(value): Sets first segment center frequency (>0).
         set_last_segment_center_frequency(value): Sets last segment center frequency (>0).
-        set_segment_frequency_span(value): Sets span in Hz (1 MHz – 900 MHz).
-        set_num_bins_per_segment(value): Sets bin count (2 – 2048).
-        set_equivalent_noise_bandwidth(value): Sets ENBW in Hz (50 – 500).
+        set_segment_frequency_span(value): Sets span in Hz (1 MHz - 900 MHz).
+        set_num_bins_per_segment(value): Sets bin count (2 - 2048).
+        set_equivalent_noise_bandwidth(value): Sets ENBW in Hz (50 - 500).
         set_window_function(value): Sets window function from `WindowFunction` enum.
-        set_number_of_averages(value): Sets number of FFT averages (1 – 1000).
+        set_number_of_averages(value): Sets number of FFT averages (1 - 1000).
         set_file_enable(value): Enables/disables file output.
         set_meas_status(value): Sets measurement status (1 = running, 2 = notRunning).
         set_file_name(value): Sets file name for output.

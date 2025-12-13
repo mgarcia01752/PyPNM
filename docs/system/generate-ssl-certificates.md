@@ -13,10 +13,10 @@ This page describes recommended patterns for generating TLS certificates for loc
 
 ## Terminology
 
-- **Certificate** (`.crt`, `.pem`) – public certificate presented to clients.
-- **Private key** (`.key`, `.pem`) – secret key that must be kept private.
-- **CA** – Certificate Authority that signs your certificate (public CAs like Let\'s Encrypt, or a local development CA).
-- **TLS termination** – where HTTPS is handled (directly in uvicorn or via a reverse proxy such as Nginx or Traefik).
+- **Certificate** (`.crt`, `.pem`) - public certificate presented to clients.
+- **Private key** (`.key`, `.pem`) - secret key that must be kept private.
+- **CA** - Certificate Authority that signs your certificate (public CAs like Let\'s Encrypt, or a local development CA).
+- **TLS termination** - where HTTPS is handled (directly in uvicorn or via a reverse proxy such as Nginx or Traefik).
 
 ## Recommended Directory Layout
 
@@ -45,7 +45,7 @@ tls/
 
 You can adjust names to match your environment; the examples below assume this layout.
 
-## Option 1 – Self-Signed Certificate (Local Development)
+## Option 1 - Self-Signed Certificate (Local Development)
 
 For local testing (for example, the [local HTTPS endpoint](https://localhost:8443)), you can use a self-signed certificate.
 
@@ -68,7 +68,7 @@ Notes:
 - Browsers will show a warning because the certificate is not signed by a trusted CA.
 - For CLI clients (curl, Python requests) you can typically skip verification during development or point them at `pypnm-dev.crt` as a trusted CA.
 
-## Option 2 – Development Certificates with mkcert
+## Option 2 - Development Certificates with mkcert
 
 If you want trusted certificates for local development (without browser warnings), consider using [mkcert](https://github.com/FiloSottile/mkcert). mkcert creates a local CA and issues certificates trusted by your machine.
 
@@ -89,7 +89,7 @@ You can then access PyPNM via the [pypnm.local endpoint](https://pypnm.local:844
 127.0.0.1   pypnm.local
 ```
 
-## Option 3 – Let\'s Encrypt (Production)
+## Option 3 - Let\'s Encrypt (Production)
 
 For production, use a public CA such as Let\'s Encrypt. The most common tooling is `certbot`.
 
@@ -227,7 +227,7 @@ services:
 
 ## Renewal and Rotation
 
-- Self-signed or mkcert dev certificates can be regenerated as needed. In practice, 6–12 month lifetimes are common for development.
+- Self-signed or mkcert dev certificates can be regenerated as needed. In practice, 6-12 month lifetimes are common for development.
 - Let\'s Encrypt certificates are short-lived (typically 90 days). Ensure `certbot` renewal is scheduled and that your reverse proxy reloads configuration after renewal.
 - After key rotation, restart or reload uvicorn or the proxy so the new certificate is in use.
 

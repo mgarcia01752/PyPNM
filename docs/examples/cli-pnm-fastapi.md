@@ -1,8 +1,8 @@
-# PNM Capture – FastAPI CLI Examples
+# PNM Capture - FastAPI CLI Examples
 
 Run PNM Capture Endpoints From The Command Line Using Helper Scripts.
 
-[PNM Capture – FastAPI CLI Examples](#pnm-capture--fastapi-cli-examples)
+[PNM Capture - FastAPI CLI Examples](#pnm-capture--fastapi-cli-examples)
 
 [Overview](#overview)
 
@@ -30,12 +30,12 @@ the [localhost API](http://127.0.0.1:8000) and SNMP community `"private"`.
 
 The following options are shared by most scripts:
 
-- `--mac` / `-m` – Cable modem MAC address (for examples, use `aa:bb:cc:dd:ee:ff`)
-- `--inet` / `-i` – Cable modem IPv4 address (for examples, use `192.168.0.100`)
-- `--community` / `-c` – SNMP v2c community string (default: `private`)
-- `--tftp-ipv4` / `-t4` – TFTP server IPv4 address (for examples, use `192.168.0.10`)
-- `--tftp-ipv6` / `-t6` – TFTP server IPv6 address (default: `::1`)
-- `--base-url` – FastAPI base URL (default: [localhost API](http://127.0.0.1:8000))
+- `--mac` / `-m` - Cable modem MAC address (for examples, use `aa:bb:cc:dd:ee:ff`)
+- `--inet` / `-i` - Cable modem IPv4 address (for examples, use `192.168.0.100`)
+- `--community` / `-c` - SNMP v2c community string (default: `private`)
+- `--tftp-ipv4` / `-t4` - TFTP server IPv4 address (for examples, use `192.168.0.10`)
+- `--tftp-ipv6` / `-t6` - TFTP server IPv6 address (default: `::1`)
+- `--base-url` - FastAPI base URL (default: [localhost API](http://127.0.0.1:8000))
 
 Endpoint-specific options are listed in each section below.
 
@@ -57,7 +57,7 @@ python src/pypnm/examples/fast_api/api-docs-pnm-ds-histogram-getCapture.py  --ma
 
 Endpoint-specific options:
 
-- `--sample-duration` – Histogram measurement duration in seconds  
+- `--sample-duration` - Histogram measurement duration in seconds  
   (maps to `capture_settings.sample_duration`).
 
 ## Endpoint: /docs/pnm/ds/ofdm/fecSummary/getCapture
@@ -78,7 +78,7 @@ python src/pypnm/examples/fast_api/api-docs-pnm-ds-ofdm-fecSummary-getCapture.py
 
 Endpoint-specific options:
 
-- `--fec-summary-type {10min,24h}` – Measurement interval:
+- `--fec-summary-type {10min,24h}` - Measurement interval:
   - `10min` → `fec_summary_type = 2` (10-minute FEC summary)
   - `24h`  → `fec_summary_type = 3` (24-hour FEC summary)
 
@@ -119,8 +119,8 @@ python src/pypnm/examples/fast_api/api-docs-pnm-ds-ofdm-constellationDisplay-get
 
 Endpoint-specific options:
 
-- `--modulation-order-offset` – Profile index offset used when choosing the modulation order for plotting.
-- `--num-sample-symbols` – Number of I/Q symbols to capture for the constellation display  
+- `--modulation-order-offset` - Profile index offset used when choosing the modulation order for plotting.
+- `--num-sample-symbols` - Number of I/Q symbols to capture for the constellation display  
   (maps to `capture_settings.number_sample_symbol`).
 
 Analysis settings follow the REST documentation for this endpoint (basic analysis, JSON output, dark theme, and
@@ -182,10 +182,10 @@ python src/pypnm/examples/fast_api/api-docs-pnm-ds-spectrumAnalyzer-getCapture.p
 
 Endpoint-specific options:
 
-- `--retrieval-type {file,snmp}` – How spectrum data is retrieved:
+- `--retrieval-type {file,snmp}` - How spectrum data is retrieved:
   - `file` → Retrieve spectrum via PNM file (TFTP).
   - `snmp` → Retrieve spectrum directly via SNMP.
-- `--http-timeout` – HTTP timeout in seconds for the FastAPI request (default: `180`).
+- `--http-timeout` - HTTP timeout in seconds for the FastAPI request (default: `180`).
 
 Capture parameter defaults in the script mirror the REST example (first and last segment center frequency, segment span,
 number of bins, noise bandwidth, window function, number of averages, and inactivity timeout). Use the script’s
@@ -213,10 +213,10 @@ python src/pypnm/examples/fast_api/api-docs-pnm-ds-spectrumAnalyzer-getCapture-o
 
 Endpoint-specific options:
 
-- `--retrieval-type {file,snmp}` – File-based PNM or direct SNMP retrieval (same semantics as the segment sweep).
-- `--num-averages` – Number of averages used when generating the OFDM-aligned spectrum  
+- `--retrieval-type {file,snmp}` - File-based PNM or direct SNMP retrieval (same semantics as the segment sweep).
+- `--num-averages` - Number of averages used when generating the OFDM-aligned spectrum  
   (maps to `capture_parameters.number_of_averages`).
-- `--http-timeout` – HTTP timeout in seconds for the FastAPI request (default: `180`).
+- `--http-timeout` - HTTP timeout in seconds for the FastAPI request (default: `180`).
 
 The script configures the analysis block with `type = basic`, JSON output, dark theme, and optional moving-average
 smoothing under `analysis.spectrum_analysis.moving_average.points`, matching the REST example for this endpoint.

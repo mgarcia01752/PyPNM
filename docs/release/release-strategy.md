@@ -98,10 +98,10 @@ Guidelines:
 
 Examples:
 
-- `0.2.1.0` – Minor feature set with maintenance updates.  
-- `0.2.2.0` – Next maintenance release.  
-- `0.3.0.0` – Next minor release.  
-- `1.0.0.0` – First major release.
+- `0.2.1.0` - Minor feature set with maintenance updates.  
+- `0.2.2.0` - Next maintenance release.  
+- `0.3.0.0` - Next minor release.  
+- `1.0.0.0` - First major release.
 
 All four segments must be numeric. Both `src/pypnm/version.py` and `pyproject.toml` must carry the same four-part string after a release.
 

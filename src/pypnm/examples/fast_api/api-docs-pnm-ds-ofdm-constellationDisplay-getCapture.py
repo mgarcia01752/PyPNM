@@ -86,7 +86,7 @@ def main() -> int:
     and TFTP server configuration. The response JSON is printed to stdout.
     """
     parser = argparse.ArgumentParser(
-        description="PyPNM – PNM Downstream OFDM Constellation Display getCapture (FastAPI example)",
+        description="PyPNM - PNM Downstream OFDM Constellation Display getCapture (FastAPI example)",
     )
     parser.add_argument(
         "--mac",

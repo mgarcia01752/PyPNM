@@ -1,4 +1,4 @@
-# PNM Operations – Upstream OFDMA Pre-Equalization
+# PNM Operations - Upstream OFDMA Pre-Equalization
 
 This API retrieves DOCSIS 3.1 upstream OFDMA pre-equalization data, which is crucial for identifying plant impairments such as group delay, micro-reflections, and impedance mismatch. It captures and decodes the in-channel frequency response of a modem's upstream OFDMA transmission.
 
@@ -151,9 +151,9 @@ In systems where CMTS equalizer update taps are available, the same plot familie
 
 Details:
 
-- **Magnitude with Regression Line** – Uses the raw magnitude series and a per-subcarrier regression fit to show overall tilt or slope across the upstream OFDMA band.
-- **Group Delay** – Plots group delay (microseconds) derived from the pre-equalization coefficients, useful for detecting echoes and dispersion.
-- **IQ Complex Scatter Plot** – Visualizes the complex coefficient distribution in the I/Q plane, highlighting asymmetries or clustering caused by plant impairments or correction requests.
+- **Magnitude with Regression Line** - Uses the raw magnitude series and a per-subcarrier regression fit to show overall tilt or slope across the upstream OFDMA band.
+- **Group Delay** - Plots group delay (microseconds) derived from the pre-equalization coefficients, useful for detecting echoes and dispersion.
+- **IQ Complex Scatter Plot** - Visualizes the complex coefficient distribution in the I/Q plane, highlighting asymmetries or clustering caused by plant impairments or correction requests.
 
 Plot theme (dark or light) and styling are controlled via the common `analysis.plot.ui` block, consistent with other PyPNM analysis endpoints.
 

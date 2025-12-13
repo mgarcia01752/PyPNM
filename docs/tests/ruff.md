@@ -33,14 +33,14 @@ ignore = [
 
 Ruff rule codes enabled for PyPNM:
 
-- **F** – Pyflakes: real errors (unused names, undefined variables, etc.).
-- **E/W** – pycodestyle: basic style / correctness (whitespace, comparisons, etc.).
-- **I** – isort: import sorting & grouping.
-- **B** – flake8-bugbear: common bug patterns and suspicious constructs.
-- **UP** – pyupgrade: auto-modernization for newer Python versions.
-- **ANN** – type-annotation rules (light enforcement for consistency).
-- **SIM** – simplify overly complex patterns where it’s safe.
-- **PERF** – basic performance anti-patterns (e.g., repeated list concatenations).
+- **F** - Pyflakes: real errors (unused names, undefined variables, etc.).
+- **E/W** - pycodestyle: basic style / correctness (whitespace, comparisons, etc.).
+- **I** - isort: import sorting & grouping.
+- **B** - flake8-bugbear: common bug patterns and suspicious constructs.
+- **UP** - pyupgrade: auto-modernization for newer Python versions.
+- **ANN** - type-annotation rules (light enforcement for consistency).
+- **SIM** - simplify overly complex patterns where it’s safe.
+- **PERF** - basic performance anti-patterns (e.g., repeated list concatenations).
 
 Anything outside these families remains disabled unless explicitly enabled later.
 

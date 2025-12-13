@@ -7,7 +7,7 @@ on:
 
 jobs:
   pypi-install-check:
-    name: PyPI Install – Python ${{ matrix.python-version }}
+    name: PyPI Install - Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
 
     strategy:

@@ -1,4 +1,4 @@
-# PNM Operations – Downstream OFDM RxMER
+# PNM Operations - Downstream OFDM RxMER
 
 Deep Visibility Into Downstream OFDM RxMER At The Subcarrier Level.
 
@@ -238,7 +238,7 @@ Summarized SNMP snapshot for each channel at capture time.
 | entry.docsPnmCmDsOfdmRxMerFileEnable     | boolean  | Whether CM capture-to-file was enabled.                  |
 | entry.docsPnmCmDsOfdmRxMerFileName       | string   | Device-side filename of the PNM RxMER sample.            |
 | entry.docsPnmCmDsOfdmRxMerMeasStatus     | string   | Measurement state (e.g., `sample_ready`).                |
-| entry.docsPnmCmDsOfdmRxMerPercentile     | number   | Percentile requested for percentile capture (0.00–1.00). |
+| entry.docsPnmCmDsOfdmRxMerPercentile     | number   | Percentile requested for percentile capture (0.00-1.00). |
 | entry.docsPnmCmDsOfdmRxMerMean           | number   | Mean RxMER (dB) reported by CM.                          |
 | entry.docsPnmCmDsOfdmRxMerStdDev         | number   | Standard deviation (dB).                                 |
 | entry.docsPnmCmDsOfdmRxMerThrVal         | number   | Threshold value dependent on vendor implementation.      |

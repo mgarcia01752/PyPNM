@@ -1,4 +1,4 @@
-# PyPNM – SCP And SFTP File Retrieval Setup
+# PyPNM - SCP And SFTP File Retrieval Setup
 
 Guided Setup For Pulling PNM Files From A Remote TFTP Server Using SSH (SCP Or SFTP).
 

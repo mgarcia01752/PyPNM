@@ -7,11 +7,11 @@ Use these guides when you need periodic or scheduled captures (for example, hour
 
 ## Workflow at a glance
 
-1. **Plan** – Decide whether you need multi-RxMER or multi-channel-estimation captures and confirm storage availability.
-2. **Start** – Call the workflow-specific endpoint (for example, [multi-RxMER capture](multi-capture-rxmer.md)) with schedule, modem list, and retention options.
-3. **Monitor** – Poll operation status and review logs via the [PyPNM system endpoints](../pypnm/index.md).
-4. **Download** – Use the workflow guide or [file manager](../file-manager/file-manager-api.md) to grab ZIP archives once captures complete.
-5. **Analyze** – Feed the captures into one of the advanced analysis modules listed below.
+1. **Plan** - Decide whether you need multi-RxMER or multi-channel-estimation captures and confirm storage availability.
+2. **Start** - Call the workflow-specific endpoint (for example, [multi-RxMER capture](multi-capture-rxmer.md)) with schedule, modem list, and retention options.
+3. **Monitor** - Poll operation status and review logs via the [PyPNM system endpoints](../pypnm/index.md).
+4. **Download** - Use the workflow guide or [file manager](../file-manager/file-manager-api.md) to grab ZIP archives once captures complete.
+5. **Analyze** - Feed the captures into one of the advanced analysis modules listed below.
 
 ## Multi-capture workflows
 

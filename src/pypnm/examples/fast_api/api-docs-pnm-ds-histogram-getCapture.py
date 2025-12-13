@@ -73,7 +73,7 @@ def build_ds_histogram_payload(
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="PyPNM – Downstream Histogram Capture Via FastAPI"
+        description="PyPNM - Downstream Histogram Capture Via FastAPI"
     )
     parser.add_argument(
         "--mac",
