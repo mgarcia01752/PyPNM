@@ -2,19 +2,20 @@
 
 Canonical Structure And Field Semantics For `system.json`.
 
-* **Config File**: [`config/system.json`](../../src/pypnm/settings/system.json)
-* **ConfigManager Class**: [`ConfigManager`](../../src/pypnm/config/config_manager.py)
-* **PNM ConfigManager Class**: [`PnmConfigManager`](../../src/pypnm/config/pnm_config_manager.py)
+* **Config File**: `src/pypnm/settings/system.json` (see repository)
+  * `https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/settings/system.json`
+* **ConfigManager Class**: `https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/config/config_manager.py`
+* **PnmConfigManager Class**: `https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/config/pnm_config_manager.py`
 
 ## Table Of Contents
 
-[1. FastApiRequestDefault](#1-fastapirequestdefault)  
-[2. SNMP](#2-snmp)  
-[3. PnmBulkDataTransfer](#3-pnmbulkdatatransfer)  
-[4. PnmFileRetrieval](#4-pnmfileretrieval)  
-[5. Logging](#5-logging)  
-[6. TestMode](#6-testmode)  
-[Loading Configuration](#loading-configuration)
+* [1. FastApiRequestDefault](#1-fastapirequestdefault)
+* [2. SNMP](#2-snmp)
+* [3. PnmBulkDataTransfer](#3-pnmbulkdatatransfer)
+* [4. PnmFileRetrieval](#4-pnmfileretrieval)
+* [5. Logging](#5-logging)
+* [6. TestMode](#6-testmode)
+* [Loading Configuration](#loading-configuration)
 
 ## 1. FastApiRequestDefault
 
@@ -23,7 +24,7 @@ Default Parameters For REST Requests To The FastAPI Service.
 ```json
 "FastApiRequestDefault": {
   "mac_address": "aa:bb:cc:dd:ee:ff",
-  "ip_address": "192.168.0.1"
+  "ip_address": "192.168.0.100"
 }
 ```
 
@@ -62,10 +63,10 @@ Global SNMP Settings, Including Version-Specific Options.
 
 **Top-Level**
 
-| Field   | Type   | Description                        |
-| ------- | ------ | ---------------------------------- |
-| timeout | number | Per-request timeout (seconds).     |
-| version | object | Container for v2c/v3 configuration |
+| Field   | Type   | Description                                  |
+| ------- | ------ | -------------------------------------------- |
+| timeout | number | Per-request timeout (seconds).               |
+| version | object | Container for v2c/v3 configuration versions. |
 
 **SNMP v2c**
 
@@ -76,7 +77,7 @@ Global SNMP Settings, Including Version-Specific Options.
 | read_community  | string  | Community for GET/WALK.         |
 | write_community | string  | Community for SET.              |
 
-**SNMP v3** *(if enabled in your environment)*
+**SNMP v3**
 
 | Field         | Type    | Description                                  |
 | ------------- | ------- | -------------------------------------------- |
@@ -91,7 +92,7 @@ Global SNMP Settings, Including Version-Specific Options.
 
 ## 3. PnmBulkDataTransfer
 
-Transport Parameters For CM-Generated Files (e.g., RxMER, FEC Summary) Sent To A Server.
+Transport Parameters For CM-Generated Files (for example, RxMER, FEC Summary) Sent To A Server.
 
 ```json
 "PnmBulkDataTransfer": {
@@ -112,16 +113,18 @@ Transport Parameters For CM-Generated Files (e.g., RxMER, FEC Summary) Sent To A
 }
 ```
 
-| Field   | Type   | Description                                                 |
-| ------- | ------ | ----------------------------------------------------------- |
+| Field   | Type   | Description                                                |
+| ------- | ------ | ---------------------------------------------------------- |
 | method  | string | Preferred bulk method: `tftp`, `http`, or `https`.         |
-| tftp.*  | object | TFTP targets for IPv4/IPv6 plus optional remote directory.  |
-| http.*  | object | HTTP base URL and port for file delivery.                   |
-| https.* | object | HTTPS base URL and port for file delivery.                  |
+| tftp.*  | object | TFTP targets for IPv4/IPv6 plus optional remote directory. |
+| http.*  | object | HTTP base URL and port for file delivery.                  |
+| https.* | object | HTTPS base URL and port for file delivery.                 |
 
-## 4. [PnmFileRetrieval](./file-transfer-methods.md)
+## 4. PnmFileRetrieval
 
 Local Storage Layout And Remote Retrieval Methods.
+
+Related Guide: [File Transfer Methods](./file-transfer-methods.md)
 
 ```json
 "PnmFileRetrieval": {
@@ -159,14 +162,6 @@ Local Storage Layout And Remote Retrieval Methods.
         "password_enc": "",
         "remote_dir": "/srv/tftp"
       },
-      "scp": {
-        "host": "localhost",
-        "port": 22,
-        "user": "user",
-        "password_enc": "",
-        "private_key_path": "",
-        "remote_dir": "/srv/tftp"
-      },
       "sftp": {
         "host": "localhost",
         "port": 22,
@@ -188,36 +183,37 @@ Local Storage Layout And Remote Retrieval Methods.
 }
 ```
 
+`password_enc` is the only supported password field for file retrieval methods. Plaintext `password` is not supported.
+
 **Directories And Databases**
 
-| Field              | Type   | Description                                  |
-| ------------------ | ------ | -------------------------------------------- |
-| pnm_dir            | string | Local storage for raw PNM binaries.          |
-| csv_dir            | string | Local storage for derived CSVs.              |
-| json_dir           | string | Local storage for derived JSON.              |
-| xlsx_dir           | string | Local storage for Excel reports.             |
-| png_dir            | string | Local storage for generated PNGs.            |
-| archive_dir        | string | Local storage for analysis ZIP archives.     |
-| msg_rsp_dir        | string | Local storage for message/response metadata. |
-| transaction_db     | string | JSON ledger of file transactions.            |
-| capture_group_db   | string | JSON map of grouped transactions.            |
-| session_group_db   | string | JSON map of session groups.                  |
-| operation_db       | string | JSON map of operation→capture group.         |
-| json_transaction_db| string | JSON map of JSON transaction metadata.       |
+| Field               | Type   | Description                                  |
+| ------------------- | ------ | -------------------------------------------- |
+| pnm_dir             | string | Local storage for raw PNM binaries.          |
+| csv_dir             | string | Local storage for derived CSVs.              |
+| json_dir            | string | Local storage for derived JSON.              |
+| xlsx_dir            | string | Local storage for Excel reports.             |
+| png_dir             | string | Local storage for generated PNGs.            |
+| archive_dir         | string | Local storage for analysis ZIP archives.     |
+| msg_rsp_dir         | string | Local storage for message/response metadata. |
+| transaction_db      | string | JSON ledger of file transactions.            |
+| capture_group_db    | string | JSON map of grouped transactions.            |
+| session_group_db    | string | JSON map of session groups.                  |
+| operation_db        | string | JSON map of operation to capture group.      |
+| json_transaction_db | string | JSON map of JSON transaction metadata.       |
 
 **Retrieval Settings**
 
-| Field                                 | Type   | Description                                                                      |
-| ------------------------------------- | ------ | -------------------------------------------------------------------------------- |
-| retrival_method.method                | string | Active retrieval method: `local`, `tftp`, `ftp`, `scp`, `sftp`, `http`, `https`. |
-| retrival_method.methods.local.src_dir | string | Source directory to watch/copy from when using `local`.                          |
-| retrival_method.methods.tftp.*        | object | TFTP host/port/timeout and remote directory.                                     |
-| retrival_method.methods.ftp.*         | object | FTP connection, credentials, and remote directory.                               |
-| retrival_method.methods.scp.*         | object | SCP connection and remote directory.                                             |
-| retrival_method.methods.sftp.*        | object | SFTP connection and remote directory.                                            |
-| retrival_method.methods.http.*        | object | HTTP base URL and port.                                                          |
-| retrival_method.methods.https.*       | object | HTTPS base URL and port.                                                         |
-| retries                               | number | Max attempts per retrieval operation.                                            |
+| Field                                  | Type   | Description                                                           |
+| -------------------------------------- | ------ | --------------------------------------------------------------------- |
+| retrival_method.method                 | string | Active retrieval method: `local`, `tftp`, `ftp`, `sftp`, `http`, `https`. |
+| retrival_method.methods.local.src_dir  | string | Source directory to watch/copy from when using `local`.               |
+| retrival_method.methods.tftp.*         | object | TFTP host/port/timeout and remote directory.                          |
+| retrival_method.methods.ftp.*          | object | FTP connection, credentials, and remote directory.                    |
+| retrival_method.methods.sftp.*         | object | SFTP connection and remote directory.                                 |
+| retrival_method.methods.http.*         | object | HTTP base URL and port.                                               |
+| retrival_method.methods.https.*        | object | HTTPS base URL and port.                                              |
+| retries                                | number | Max attempts per retrieval operation.                                 |
 
 > The key name `retrival_method` is preserved as implemented.
 
@@ -233,11 +229,11 @@ Application Logging Options.
 }
 ```
 
-| Field        | Type   | Description                          |
-| ------------ | ------ | ------------------------------------ |
-| log_level    | string | `DEBUG`, `INFO`, `WARN`, or `ERROR`. |
-| log_dir      | string | Directory for log files.             |
-| log_filename | string | Log filename.                        |
+| Field        | Type   | Description                                 |
+| ------------ | ------ | ------------------------------------------- |
+| log_level    | string | `DEBUG`, `INFO`, `WARN`, or `ERROR`.        |
+| log_dir      | string | Directory for log files.                    |
+| log_filename | string | Log filename (created under `log_dir`).     |
 
 ## 6. TestMode
 
@@ -260,10 +256,10 @@ Global And Class-Specific Test-Mode Controls.
 }
 ```
 
-| Field                             | Type    | Description                                                |
-| --------------------------------- | ------- | ---------------------------------------------------------- |
-| global.mode.enable                | boolean | Enable or disable global test mode.                        |
-| class_name.<Class>.mode.enable    | boolean | Per-class override for test mode, keyed by class name.     |
+| Field                          | Type    | Description                                            |
+| ------------------------------ | ------- | ------------------------------------------------------ |
+| global.mode.enable             | boolean | Enable or disable global test mode.                    |
+| class_name.<Class>.mode.enable | boolean | Per-class override for test mode, keyed by class name. |
 
 ## Loading Configuration
 
@@ -273,15 +269,11 @@ Typical Access Pattern Using The Manager Abstractions.
 from pypnm.config.config_manager import ConfigManager
 from pypnm.config.pnm_config_manager import PnmConfigManager
 
-# Load defaults
 cfg = ConfigManager()
 
-# Read values
 mac = cfg.get("FastApiRequestDefault", "mac_address")
 ip  = cfg.get("FastApiRequestDefault", "ip_address")
 
-# PNM-specific helpers
 pnm_cfg = PnmConfigManager()
 tftp_v4 = pnm_cfg.get("PnmBulkDataTransfer", "tftp")["ip_v4"]
 ```
-

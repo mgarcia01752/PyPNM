@@ -26,6 +26,7 @@ of the `system.json` editors into a single, easy-to-use interface.
 
 Instead of remembering individual script names, you can launch one menu and
 select which configuration section you want to edit:
+
 - Default FastAPI request parameters.
 - SNMP settings.
 - Bulk-data transfer settings.
@@ -97,6 +98,7 @@ This editor updates the default MAC address and IP address used by PyPNM
 FastAPI request models.
 
 It will:
+
 - Read the current `FastApiRequestDefault` values.
 - Prompt you for new values (press Enter to keep the existing ones).
 - Show a JSON preview of the proposed section.
@@ -108,11 +110,13 @@ It will:
 - **Config Section**: `SNMP`
 
 This editor manages global SNMP settings, including:
+
 - Top-level timeout.
 - SNMP v2c enable/retries/communities.
 - SNMP v3 enable/retries/security parameters.
 
 As with other editors, you can:
+
 - Press Enter to keep existing values.
 - Change only the fields you care about.
 - Review the final JSON subset before applying it.
@@ -126,6 +130,7 @@ This editor updates the transport parameters used when a cable modem sends PNM
 files (RxMER, FEC Summary, etc.) to a server.
 
 It allows you to modify:
+
 - The preferred bulk method (`tftp`, `http`, or `https`).
 - TFTP `ip_v4`, `ip_v6`, and `remote_dir`.
 - HTTP/HTTPS `base_url` and `port` values.
@@ -142,16 +147,17 @@ This editor **only** touches the retrieval behavior, leaving all storage
 directories and JSON database paths unchanged.
 
 It manages:
+
 - `retrival_method.method`
 - `retrival_method.methods.local.src_dir`
 
 The prompt for the method uses the pipe-separated form:
 
 ```text
-Retrieval method (local | tftp | ftp | scp | sftp | http | https)
+Retrieval method (local | tftp | sftp | http | https)
 ```
 
-This lets you switch between local-directory retrieval, TFTP, FTP/SCP/SFTP, or
+This lets you switch between local-directory retrieval, TFTP, SFTP, or
 HTTP(S)-based retrieval without accidentally altering any of the PNM storage
 layout fields.
 
@@ -178,10 +184,12 @@ This editor manages the global and per-class **TestMode** flags used by PyPNM
 for synthetic/demo operation.
 
 It supports:
+
 - A global `TestMode.global.mode.enable` toggle.
 - A single per-class override per run via `TestMode.class_name.<Class>.mode.enable`.
 
 Typical usage:
+
 1. Turn on global TestMode for development.
 2. Optionally enable or disable TestMode for a specific class.
 
@@ -199,6 +207,7 @@ exist on disk (for example the `.data/*` folders configured for PNM binaries,
 CSV, JSON, PNG, archives, and metadata).
 
 Typical behavior:
+
 - Inspect the configured PNM storage and database paths.
 - Create any missing directories, preserving existing contents.
 - Provide a summary of what was created or already present.
@@ -223,6 +232,7 @@ Path to system.json [<resolved-path>]:
 ```
 
 You can:
+
 - Press Enter to use the default path reported by `ConfigManager`, or
 - Type a custom path (for example a staging or test configuration file).
 
@@ -246,7 +256,7 @@ A suggested flow when bringing up a new environment:
    HTTP(S) server.
 
 4. **Configure File Retrieval Behavior**  
-   Use option `4` to select `local` vs `tftp`/`ftp`/`scp`/`sftp`/`http`/`https`
+   Use option `4` to select `local` vs `tftp`/`sftp`/`http`/`https`
    for how PyPNM retrieves PNM files and to point `local.src_dir` at the right
    directory when using local retrieval.
 

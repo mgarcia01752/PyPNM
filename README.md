@@ -120,11 +120,15 @@ Show installer options:
 ./install.sh --help
 ```
 
-Standard install in `.env`:
+Install and auto-launch the interactive PNM file retrieval setup helper:
+
+- Don’t know what to choose? See the [PNM File Retrieval Setup](docs/topology/index.md) before proceeding.
 
 ```bash
-./install.sh
+./install.sh --pnm-file-retrieval-setup
 ```
+
+When `--pnm-file-retrieval-setup` is used, the installer attempts to run `tools/pnm_file_retrieval_setup.py` at the end of the install in interactive, non-CI environments.
 
 Demo-mode install (pre-configured with sample data and demo paths):
 
@@ -144,17 +148,83 @@ Use a custom virtual environment directory:
 ./install.sh --demo-mode .env-demo
 ```
 
-Install and immediately launch the interactive PNM file retrieval setup helper:
+The installer also runs a silent alias helper (when available) that adds convenient shell aliases such as `config-menu` to your shell rc file. After installation, source your shell rc file once (for example, `source ~/.bashrc`) to pick up any new aliases.
 
-Don't know what to choose? [See the PNM File Retrieval Setup documentation](docs/topology/index.md)
+### 3) Activate The Virtual Environment
+
+If you used the installer defaults, activate the `.env` environment:
 
 ```bash
-./install.sh --pnm-file-retrieval-setup
+source .env/bin/activate
 ```
 
-When `--pnm-file-retrieval-setup` is used, the installer will attempt to run `tools/pnm_file_retrieval_setup.py` at the end of the install in interactive, non-CI environments.
+If you installed into a custom environment directory, activate that instead (for example, `.env-demo`):
 
-The installer also runs a silent alias helper (when available) that adds convenient shell aliases such as `config-menu` to your shell rc file. After installation, source your shell rc file (for example `source ~/.bashrc`) once to pick up any new aliases.
+```bash
+source .env-demo/bin/activate
+```
+
+### 4) Configure System Settings
+
+You will need:
+
+* Cable Modem (CM) MAC address and IP address
+* SNMPv2c write community string
+* TFTP server IP/hostname reachable by both the CM and PyPNM
+
+If `--pnm-file-retrieval-setup` was used during installation, the PNM file retrieval method selection is handled automatically.
+
+System configuration is stored in `system.json`:
+
+* `src/pypnm/settings/system.json`
+* `https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/settings/system.json`
+
+For detailed field descriptions, see `docs/system/system-config.md`.
+
+#### System Configuration Menu
+
+PyPNM provides an interactive menu wrapper around the individual configuration helpers:
+
+```bash
+config-menu
+```
+
+or
+
+```bash
+python ./tools/system_config/menu.py
+```
+
+The menu allows you to edit:
+
+* `FastApiRequestDefault`
+* `SNMP`
+* `PnmBulkDataTransfer`
+* `PnmFileRetrieval`
+* `logging`
+* `TestMode`
+
+Refer to the config menu documentation for details: `docs/system/menu.md`.
+
+#### PNM File Retrieval Setup Helper
+
+PyPNM ships with an interactive helper that configures how PNM files are retrieved into the local `.data/pnm` tree.
+
+Run it any time after installation:
+
+```bash
+./tools/pnm_file_retrieval_setup.py
+```
+
+The helper:
+
+* Backs up `src/pypnm/settings/system.json` before making changes
+* Lets you choose a retrieval method (`local`, `tftp`, `sftp`)
+* For `sftp`, prompts for host/port/user and optional password and/or private key path
+* Tests SSH connectivity when credentials are provided
+* Updates the `PnmFileRetrieval.retrival_method` block in `system.json` so future captures can automatically fetch PNM files through the selected path
+
+In demo mode, paths are redirected to demo directories so you can exercise the analysis stack using pre-captured PNM files without talking to a live modem.
 
 ### 3) Activate The Virtual Environment
 
