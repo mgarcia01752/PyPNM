@@ -1,22 +1,14 @@
-# SNMPv2c Client — General Usage Guide
+# SNMPv2c client — general usage guide
 
-Asynchronous SNMPv2c Get, Walk, And Set With Fast OID Resolution And Practical Utilities.
+Asynchronous SNMPv2c GET, WALK, and SET with fast OID resolution and practical utilities.
 
-## Table of Contents
+> **When to use**
+> - You need to script CM telemetry polling without running the FastAPI service.
+> - You want a reference implementation for typed SNMP GET/WALK/SET calls that mirrors PyPNM’s internals.
 
-1. [Initialization](#initialization)
-2. [Basic Operations](#basic-operations)
-
-   * [GET](#snmp-get)
-   * [WALK](#snmp-walk)
-   * [SET](#snmp-set)
-
-3. [MIB Compilation](#mib-compilation)
-4. [Utility Methods](#utility-methods)
-5. [Closing The Client](#closing-the-client)
-6. [Error Handling](#error-handling)
-7. [Additional Usage Patterns](#additional-usage-patterns)
-8. [General, Non-DOCSIS Examples](#general-non-docsis-examples)
+> **Prerequisites**
+> - Python 3.10+ and `pip install pypnm-docsis` (or clone/install this repo).
+> - Optional: compiled MIB map (see [MIB compiling](mib-compile.md)) so symbolic OIDs resolve instantly.
 
 ## Initialization
 
@@ -38,7 +30,7 @@ async def main():
 asyncio.run(main())
 ```
 
-## Basic Operations
+## Basic operations
 
 ### SNMP GET
 
@@ -81,7 +73,7 @@ ack = await snmp.set("sysLocation.0", "MDF-Rack-A1", OctetString)
 ack = await snmp.set("snmpSetSerialNo.0", 42, Integer32)
 ```
 
-## MIB Compilation
+## MIB compilation
 
 Use the precompiled symbol→OID map to avoid runtime MIB parsing:
 
@@ -95,7 +87,7 @@ print([Snmp_v2c.get_result_value(vb) for vb in rows])
 
 You can also pass symbolic names directly (e.g., `"sysDescr.0"`); the client resolves them internally.
 
-## Utility Methods
+## Utility methods
 
 | Method                                               | Input              | Output                | Description                                             |
 | ---------------------------------------------------- | ------------------ | --------------------- | ------------------------------------------------------- |
@@ -106,48 +98,22 @@ You can also pass symbolic names directly (e.g., `"sysDescr.0"`); the client res
 | `snmp_get_result_last_idx_force_value_type(rows, T)` | rows, `int`/`str`  | `List[(int, T)]`      | Same as above with value cast.                          |
 | `get_oid_index(oid)`                                 | `string`           | `int \| None`         | Trailing numeric index from an OID.                     |
 | `extract_last_oid_index(rows)`                       | rows               | `List[int]`           | Batch extract trailing indices.                         |
-| `extract_oid_indices(rows, n=1)`                     | rows, `int`        | `List[List[int]]`     | Last `n` indices per row (for composite indexes).       |
+| `extract_oid_indices(rows, num_indices=1)`          | rows, `int`        | `List[List[int]]`     | Last `num_indices` per row (for composite indexes).     |
 | `parse_snmp_datetime(bytes)`                         | `bytes`            | `string`              | SNMP `DateAndTime` → ISO-8601 string.                   |
 | `truth_value(v)`                                     | `int \| str`       | `bool`                | SNMP `TruthValue` (`1=true`, `2=false`).                |
 | `ticks_to_duration(ticks)`                           | `int`              | `string`              | `sysUpTime` hundredths → duration.                      |
 | `get_inet_address_type(ip)`                          | `string`           | `InetAddressType`     | `IPV4` or `IPV6`.                                       |
 
-## Closing The Client
+## Additional usage patterns
 
-Always release resources:
-
-```python
-snmp.close()
-```
-
-## Error Handling
-
-* Transport/engine or protocol errors raise `RuntimeError`.
-* Invalid inputs (e.g., `set` without a type) raise `ValueError`.
-
-Pattern:
-
-```python
-try:
-    rows = await snmp.get("sysUpTime.0")
-    ticks = int(Snmp_v2c.get_result_value(rows[0]))
-    print(Snmp_v2c.ticks_to_duration(ticks))
-except RuntimeError:
-    ...
-except ValueError:
-    ...
-```
-
-## Additional Usage Patterns
-
-### Map Interface Index → Name
+### Map interface index → name
 
 ```python
 rows = await snmp.walk("ifDescr")
 idx_to_name = dict(Snmp_v2c.snmp_get_result_last_idx_force_value_type(rows, str)) if rows else {}
 ```
 
-### Extract Multiple Index Components (Composite Indexes)
+### Extract multiple index components (composite indexes)
 
 ```python
 rows = await snmp.walk("1.3.6.1.2.1.10.7.2.1")  # example table
@@ -155,7 +121,7 @@ idx_pairs = Snmp_v2c.extract_oid_indices(rows, num_indices=2) if rows else []
 # [[33, 1], [33, 2], [34, 1], ...]
 ```
 
-### Force Integer Values From A Table
+### Force integer values from a table
 
 ```python
 rows = await snmp.walk("ifSpeed")
@@ -163,7 +129,7 @@ speed_pairs = Snmp_v2c.snmp_get_result_last_idx_force_value_type(rows, int) if r
 # [(2, 1000000000), (3, 100000000), ...]
 ```
 
-### Handle `OctetString` As Bytes (e.g., MAC-Like Values)
+### Handle `OctetString` as bytes (for example, MAC-like values)
 
 ```python
 rows = await snmp.get("ifPhysAddress.2")
@@ -171,28 +137,28 @@ raw = Snmp_v2c.snmp_get_result_bytes(rows)[0]
 mac = ":".join(f"{b:02x}" for b in raw)
 ```
 
-### Symbolic OID With Instance Suffix
+### Symbolic OID with instance suffix
 
 ```python
 name = Snmp_v2c.get_result_value((await snmp.get("sysName.0"))[0])
 descr = Snmp_v2c.get_result_value((await snmp.get("sysDescr.0"))[0])
 ```
 
-### Parse `DateAndTime` To ISO-8601
+### Parse `DateAndTime` to ISO-8601
 
 ```python
 rows = await snmp.get("hrSystemDate.0")
 ts = Snmp_v2c.parse_snmp_datetime(Snmp_v2c.snmp_get_result_bytes(rows)[0])
 ```
 
-### Convert `sysUpTime` Ticks To Human Duration
+### Convert `sysUpTime` ticks to human duration
 
 ```python
 ticks = int(Snmp_v2c.get_result_value((await snmp.get("sysUpTime.0"))[0]))
 print(Snmp_v2c.ticks_to_duration(ticks))
 ```
 
-### IPv6 Targets
+### IPv6 targets
 
 ```python
 snmp_v6 = Snmp_v2c(host=Inet("2001:db8::100"), community="public")
@@ -200,7 +166,7 @@ rows = await snmp_v6.get("sysObjectID.0")
 snmp_v6.close()
 ```
 
-### Batch GETs With `asyncio.gather`
+### Batch GETs with `asyncio.gather`
 
 ```python
 import asyncio
@@ -217,11 +183,11 @@ for res in results:
 print(dict(zip(oids, values)))
 ```
 
-## General, Non-DOCSIS Examples
+## General, non-DOCSIS examples
 
 Simple, device-agnostic snippets that you can lift into scripts or notebooks.
 
-### 1) Read System Info (Name, Description, Uptime)
+### 1) Read system info (name, description, uptime)
 
 ```python
 async def read_system_info():
@@ -236,7 +202,7 @@ async def read_system_info():
         snmp.close()
 ```
 
-### 2) Walk Interface Names
+### 2) Walk interface names
 
 ```python
 async def map_ifindex_to_name():
@@ -249,7 +215,7 @@ async def map_ifindex_to_name():
         snmp.close()
 ```
 
-### 3) Get Interface Speeds As Integers
+### 3) Get interface speeds as integers
 
 ```python
 async def interface_speeds():
@@ -289,7 +255,7 @@ async def parse_hr_system_date():
         snmp.close()
 ```
 
-### 6) Use Compiled OIDs Directly
+### 6) Use compiled OIDs directly
 
 ```python
 from pypnm.snmp.compiled_oids import COMPILED_OIDS
@@ -304,7 +270,7 @@ async def compiled_oid_lookup():
         snmp.close()
 ```
 
-### 7) Minimal Robust GET Wrapper
+### 7) Minimal robust GET wrapper
 
 ```python
 async def robust_get(oid: str):

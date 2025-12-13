@@ -128,7 +128,7 @@ Common flags (mix and match as needed):
 | Flag | Purpose |
 |------|---------|
 | `--pnm-file-retrieval-setup` | Launches `tools/pnm_file_retrieval_setup.py` after install so you can pick a topology. See the [PNM File Retrieval Overview](docs/topology/index.md).
-| `--demo-mode` | Seeds demo data/paths for offline exploration.
+| `--demo-mode` | Seeds demo data/paths for offline exploration. See the [demo mode guide](./demo/README.md).
 | `--production` | Reverts demo-mode changes and restores your previous `system.json` backup.
 | `--demo-mode .env-demo` | Installs into a named virtual environment instead of `.env`.
 

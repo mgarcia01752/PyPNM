@@ -1,34 +1,33 @@
-# Multi-Capture API Index
+# Multi-capture API index
 
-Explore The PyPNM Multi-Capture Workflows For DOCSIS Cable Modems. This Index Provides Direct Access To Key API Guides And Advanced Analysis Tools For Repeated Measurements And Diagnostics.
+Use these guides when you need periodic or scheduled captures (for example, hourly RxMER snapshots) along with downstream analysis.
 
 > **Background**
-> See the [Capture Operation Guide](capture-operation.md) for an overview of the capture infrastructure and lifecycle.
+> Read the [capture operation guide](capture-operation.md) first. It explains how capture operations, transactions, and storage hang together.
 
-## Multi-Capture Workflows
+## Workflow at a glance
 
-| **Workflow**                                                 | **Description**                                                                 |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------- |
-| **[Multi-RxMER Capture](multi-capture-rxmer.md)**            | Periodic downstream OFDM RxMER sampling and analysis across multiple carriers.  |
-| **[Multi-DS Channel Estimation](multi-capture-chan-est.md)** | Periodic downstream OFDM channel-estimation coefficient captures and reporting. |
+1. **Plan** – Decide whether you need multi-RxMER or multi-channel-estimation captures and confirm storage availability.
+2. **Start** – Call the workflow-specific endpoint (for example, [multi-RxMER capture](multi-capture-rxmer.md)) with schedule, modem list, and retention options.
+3. **Monitor** – Poll operation status and review logs via the [PyPNM system endpoints](../pypnm/index.md).
+4. **Download** – Use the workflow guide or [file manager](../file-manager/file-manager-api.md) to grab ZIP archives once captures complete.
+5. **Analyze** – Feed the captures into one of the advanced analysis modules listed below.
 
-## Advanced Analysis Modules
+## Multi-capture workflows
 
-| **Module**                                                             | **Description**                                                                       |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| [Multi-RxMER-MinAvgMax](./analysis/multi-rxmer-min-avg-max.md)         | Computes minimum, average, and maximum RxMER values across multiple captures.         |
-| [Multi-ChanEst-MinAvgMax](./analysis/multi-chanest-min-avg-max.md)     | Computes minimum, average, and maximum channel estimation across captures.|
-| [Group Delay Calculator](./analysis/group-delay-calculator.md)         | Computes group delay variations from channel estimates.                               |
-| [OFDM Performance 1:1](./analysis/multi-rxmer-ofdm-performance-part-1.md) | Evaluates per-subcarrier capacity vs profile on a 1:1 basis.                       |
-| [OFDM Echo Detection](./analysis/ofdm-echo-detection.md)               | Detects echo distortions and impulse reflections in OFDM channels.                    |
-| [Phase Slope LTE Detection](./analysis/phase-slope-lte-detection.md)   | Detects LTE-related slope patterns in phase data that indicate external interference. |
-| [Signal Statistics](./analysis/signal-statistics.md)                   | Extracts RMS, min/max, and statistical variance from signal snapshots.                |
+| Workflow | Purpose |
+|----------|---------|
+| [Multi-RxMER capture](multi-capture-rxmer.md) | Periodic downstream OFDM RxMER sampling across multiple carriers. |
+| [Multi-DS channel estimation](multi-capture-chan-est.md) | Scheduled OFDM channel estimation captures and reporting. |
 
-### Each Guide Includes
+## Advanced analysis modules
 
-1. **Workflow Overview** – High-level description of the process
-2. **Endpoint Stubs** – Example JSON requests and responses
-3. **Usage Examples** – Common payloads and scenarios
-4. **Implementation Notes** – Practical tips and caveats
-
-**Get Started:** Choose The Appropriate Guide For Your Use Case And Begin Integrating Multi-Capture Functionality With The PyPNM API.
+| Module | Purpose |
+|--------|---------|
+| [Multi-RxMER min/avg/max](analysis/multi-rxmer-min-avg-max.md) | Roll up RxMER across captures. |
+| [Multi-ChanEst min/avg/max](analysis/multi-chanest-min-avg-max.md) | Summaries for channel estimation data. |
+| [Group delay calculator](analysis/group-delay-calculator.md) | Compute group delay variations. |
+| [OFDM performance 1:1](analysis/multi-rxmer-ofdm-performance-part-1.md) | Compare per-subcarrier capacity vs profile. |
+| [OFDM echo detection](analysis/ofdm-echo-detection.md) | Detect reflections and echo artifacts. |
+| [Phase slope LTE detection](analysis/phase-slope-lte-detection.md) | Spot LTE-related interference patterns. |
+| [Signal statistics](analysis/signal-statistics.md) | Extract RMS/min/max variance from captures. |

@@ -1,47 +1,30 @@
-# PNM Operations – PNM File Manager
+# PNM file manager API
 
-REST API For Searching, Downloading, Uploading, And Analyzing PNM Capture Files.
+REST API for searching, downloading, uploading, and analyzing PNM capture files stored in PyPNM.
 
-## Table Of Contents
+> **When to use**
+> - You need to grab captures produced by the single- or multi-capture workflows.
+> - You want to upload an external capture into the PyPNM ledger so downstream tools can analyze it.
+> - You need raw access (download or hexdump) to troubleshoot a specific transaction.
 
-- [Overview](#overview)
-- [Endpoints](#endpoints)
-- [Search Files By MAC Address](#1-search-files-by-mac-address)
-- [Download File By Transaction ID](#2-download-file-by-transaction-id)
-- [Download Files By MAC Address (ZIP Archive)](#3-download-files-by-mac-address-zip-archive)
-- [Download Files By Operation ID (ZIP Archive)](#4-download-files-by-operation-id-zip-archive)
-- [Upload PNM File](#5-upload-pnm-file)
-- [Analyze PNM File](#6-analyze-pnm-file)
-- [Hexdump Of A PNM File Via Transaction ID](#7-hexdump-of-a-pnm-file-via-transaction-id)
-- [Request And Response Examples](#request-and-response-examples)
+> **Prerequisites**
+> - Captures already exist in the transaction database (produced via the capture workflows or uploaded).
+> - The FastAPI service is running with access to the `.data/` directories configured in `system.json`.
+> - You understand the [standard response schema](../common/response.md) for success/error envelopes.
 
-## Overview
+Endpoints live under the FastAPI router `/docs/pnm/files`.
 
-The PNM File Manager API exposes a small set of endpoints that allow clients to:
+Typical flow:
 
-- Discover previously captured PNM files associated with a cable modem.
-- Download individual PNM files or grouped archives.
-- Upload external PNM capture files into the PyPNM transaction database.
-- Trigger analysis on a stored PNM file.
-- Generate a hexdump view of any stored PNM file by transaction ID.
-
-Endpoints live under the FastAPI router:
-
-```text
-/docs/pnm/files
-```
-
-Typical workflow:
-
-1. Upload or capture files so they appear in the transaction database.
-2. Query the list of files by MAC address.
-3. Download single files or archive groups (MAC or operation-wide).
-4. Optionally invoke analysis on a specific transaction.
-5. Use the hexdump endpoint for low-level inspection of any stored PNM file.
+1. Capture or upload files so they appear in the transaction database.
+2. Search or list files by MAC address or operation.
+3. Download single files or grouped ZIPs.
+4. Optionally trigger analysis or hexdump inspection on specific transactions.
+5. Use results downstream (for example, with the [multi-capture analysis modules](../multi/index.md#advanced-analysis-modules)).
 
 ## Endpoints
 
-### 1) Search Files By MAC Address
+### 1) Search files by MAC address
 
 **Endpoint**
 
@@ -86,7 +69,7 @@ Return a mapping of MAC address to a list of file entries associated with that m
 }
 ```
 
-### 2) Download File By Transaction ID
+### 2) Download file by transaction ID
 
 **Endpoint**
 
@@ -119,7 +102,7 @@ If the transaction ID is not found:
 
 with HTTP 404 status.
 
-### 3) Download Files By MAC Address (ZIP Archive)
+### 3) Download files by MAC address (ZIP archive)
 
 **Endpoint**
 
@@ -160,7 +143,7 @@ or
 
 both with HTTP 404 status.
 
-### 4) Download Files By Operation ID (ZIP Archive)
+### 4) Download files by operation ID (ZIP archive)
 
 **Endpoint**
 
@@ -201,7 +184,7 @@ or
 
 with HTTP 404 status.
 
-### 5) Upload PNM File
+### 5) Upload PNM file
 
 **Endpoint**
 
@@ -245,7 +228,7 @@ If the file type is unrecognized:
 
 with HTTP 400 status.
 
-### 6) Analyze PNM File
+### 6) Analyze PNM file
 
 **Endpoint**
 
@@ -322,7 +305,7 @@ If the transaction is not found:
 
 with HTTP 404 status.
 
-### 7) Hexdump Of A PNM File Via Transaction ID
+### 7) Hexdump of a PNM file via transaction ID
 
 **Endpoint**
 
@@ -392,11 +375,11 @@ with HTTP 404 status, or:
 
 with HTTP 500 status.
 
-## Request And Response Examples
+## Request and response examples
 
 This section summarizes the core JSON shapes used by the PNM File Manager endpoints. All types are shown as they appear on the wire (FastAPI OpenAPI / SwaggerUI and tools such as Postman or curl).
 
-### FileQueryResponse (Search Files)
+### FileQueryResponse (search files)
 
 ```json
 {
@@ -420,7 +403,7 @@ This section summarizes the core JSON shapes used by the PNM File Manager endpoi
 }
 ```
 
-### UploadFileResponse (Upload PNM File)
+### UploadFileResponse (upload PNM file)
 
 ```json
 {
@@ -430,7 +413,7 @@ This section summarizes the core JSON shapes used by the PNM File Manager endpoi
 }
 ```
 
-### AnalysisJsonResponse (Analyze PNM File)
+### AnalysisJsonResponse (analyze PNM file)
 
 ```json
 {
@@ -456,3 +439,8 @@ This section summarizes the core JSON shapes used by the PNM File Manager endpoi
   }
 }
 ```
+
+## Next steps
+
+- Need to generate new captures? Start with the [single capture](../single/index.md) or [multi capture](../multi/index.md) workflows.
+- Looking for where files live on disk? Review the [system configuration reference](../../system/system-config.md#pnmfileretrieval) for storage paths.

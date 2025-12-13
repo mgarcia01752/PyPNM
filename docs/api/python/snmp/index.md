@@ -1,19 +1,15 @@
-# SNMP
+# SNMP helpers
 
-Lightweight Asynchronous Client For SNMP Operations In PyPNM.
+Async clients and utilities for SNMP GET/WALK/SET operations in Python.
 
-## Overview
-
-The SNMP module provides an async Python client for SNMP operations using [pysnmp](https://pypi.org/project/pysnmp/). It supports:
-
-* Asynchronous **GET**, **WALK**, and **SET**
-* Optional precompiled MIB/OID mapping for fast lookups
-* Utilities for parsing responses, extracting indices, and handling SNMP `DateAndTime`
+> **Prerequisites**
+> - Install PyPNM (or `pysnmp`) in an environment with asyncio available (`python>=3.10`).
+> - Populate `system.json` with SNMP host/community details if you plan to reuse configuration loaders.
 
 ## Guides
 
-| Guide                           | Description                                                            |
-| ------------------------------- | ---------------------------------------------------------------------- |
-| [MIB Compiling](mib-compile.md) | Precompile OIDs into a Python dictionary to avoid runtime MIB parsing. |
-| [SNMPv2c](snmp-v2c.md)          | Configuration, examples, and common workflows using community strings. |
-| [SNMPv3](snmp-v3.md)            | Authentication/privacy modes, credential fields, and usage patterns.   |
+| Guide | Description |
+|-------|-------------|
+| [MIB compiling](mib-compile.md) | Precompile OIDs into a Python dictionary to avoid runtime MIB parsing. |
+| [SNMPv2c](snmp-v2c.md) | Configuration, examples, and common workflows using community strings. |
+| [SNMPv3](snmp-v3.md) | Authentication/privacy modes, credential fields, and usage patterns. |

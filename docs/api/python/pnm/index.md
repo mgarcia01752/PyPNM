@@ -1,20 +1,21 @@
-# Proactive Network Maintenance (PNM)
+# Proactive network maintenance (PNM)
 
-* DOCSIS® CM-SP-CM-OSSIv3.1
-* DOCSIS® CM-SP-CM-OSSIv4.0
+Python helpers for decoding DOCSIS PNM binaries and running signal-processing workflows.
 
-## Guides
+> **Before you start**
+> - Install PyPNM with extras (`pip install -e .[dev,docs]`) so NumPy/SciPy dependencies are present.
+> - PNM decoders expect raw files captured via the FastAPI workflows or stored under `.data/pnm`. Use the [file manager API](../fast-api/file-manager/file-manager-api.md) to fetch them if needed.
 
-PNM File Formats, Decoding, and Validation
-
-| Guide | Description |
-| ----- |-------------|
-| [PNM Processing](processing/pnm-processing.md)    | End-to-end flow: decode → validate                                |
-
-Signal Processing
+## File formats and decoding
 
 | Guide | Description |
-| ----- |-------------|
-| [Butterworth Smoothing](signal-processing/butterworth.md) | Low-pass filtering for OFDM coefficients and diagnostics.         |
-| [Echo Detection](signal-processing/echo-detection.md)     | FFT/IFFT-based time-domain analysis of OFDM coefficients.         |
-| [Moving Average](signal-processing/moving-average.md)     | Simple moving average for OFDM and Spectrum Analysis diagnostics. |
+|-------|-------------|
+| [PNM processing](processing/pnm-processing.md) | Links to each parser/decoder (RxMER, channel estimation, modulation profiles, etc.). |
+
+## Signal processing helpers
+
+| Guide | Description |
+|-------|-------------|
+| [Butterworth smoothing](signal-processing/butterworth.md) | Low-pass filtering for OFDM coefficients and diagnostics. |
+| [Echo detection](signal-processing/echo-detection.md) | FFT/IFFT-based time-domain analysis of OFDM coefficients. |
+| [Moving average](signal-processing/moving-average.md) | Simple moving average for OFDM and spectrum diagnostics. |
