@@ -15,6 +15,7 @@ Use this page to grab the right guide no matter where you are in the journey—i
 - [PNM file retrieval helpers](system/pnm-file-retrieval/index.md) – local, TFTP, SCP/SFTP workflows and setup scripts.
 - [CLI/service usage](system/pypnm-cli.md) – run the FastAPI launcher and related scripts.
 - [Operational tools](tools/index.md) – log collection, capture orchestration, and automation helpers.
+- [Scripts](scripts/index.md) – one-liners in `scripts/` for installs, secrets, CI helpers.
 - [Demo mode guide](../demo/README.md) – how the sample data environment is staged and how to reset it.
 
 ## Develop and automate
