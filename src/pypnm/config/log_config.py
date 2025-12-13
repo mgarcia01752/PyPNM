@@ -1,13 +1,14 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
 
 import logging
 import sys
 from logging.handlers import RotatingFileHandler
-
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
 from pathlib import Path
+
+from pypnm.lib.types import FileNameStr, PathLike
 
 
 class LoggerConfigurator:
@@ -17,8 +18,8 @@ class LoggerConfigurator:
     """
 
     def __init__(self,
-                 log_dir: str,
-                 log_filename: str = 'pypnm.log',
+                 log_dir: PathLike,
+                 log_filename: FileNameStr,
                  level: str = 'INFO', to_console: bool = False, rotate: bool = False
     ) -> None:
         """

@@ -10,6 +10,14 @@ import os
 import paramiko
 
 from pypnm.lib.secret.crypto_manager import SecretCryptoError, SecretCryptoManager
+from pypnm.lib.types import (
+    HostNameStr,
+    PathLike,
+    RemoteDirEntries,
+    SshCommandResult,
+    SshOk,
+    UserNameStr,
+)
 
 
 class SSHConnector:
@@ -27,16 +35,16 @@ class SSHConnector:
     - Plaintext password is not stored on the instance.
     """
 
-    DEFAULT_SSH_PORT: int                = 22
     DEFAULT_CONNECT_TIMEOUT_SEC: int     = 10
     DEFAULT_RSA_KEY_BITS: int            = 2048
+    DEFAULT_SSH_PORT: int                = 22
 
     ENCRYPTED_TOKEN_PREFIX: str          = "ENC["
 
     def __init__(
         self,
-        hostname: str,
-        username: str,
+        hostname: HostNameStr,
+        username: UserNameStr,
         port: int = DEFAULT_SSH_PORT,
     ) -> None:
         """
@@ -65,7 +73,7 @@ class SSHConnector:
         password_enc: str = "",
         private_key_path: str = "",
         auto_add_policy: bool = True,
-    ) -> bool:
+    ) -> SshOk:
         """
         Establish An SSH Session And Initialize SFTP.
 
@@ -81,11 +89,25 @@ class SSHConnector:
 
         Returns
         -------
-        bool
+        SshOk
             True on success, False on failure.
         """
         password_token = password_enc.strip()
         key_path       = private_key_path.strip()
+
+        auth_modes: list[str] = []
+        if key_path != "":
+            auth_modes.append("key")
+        if password_token != "":
+            if password_token.startswith(self.ENCRYPTED_TOKEN_PREFIX):
+                auth_modes.append("password_enc")
+            else:
+                auth_modes.append("password(clear-legacy)")
+
+        self.logger.info(
+            "SSH auth configured: %s",
+            "+".join(auth_modes) if auth_modes else "none",
+        )
 
         password_clear = ""
         if password_token != "":
@@ -98,7 +120,9 @@ class SSHConnector:
             else:
                 password_clear = password_token
 
-        try:
+        def _attempt(label: str, use_key: bool, use_password: bool) -> SshOk:
+            self.logger.info("SSH auth attempt: %s", label)
+
             client = paramiko.SSHClient()
             client.load_system_host_keys()
             policy = paramiko.AutoAddPolicy() if auto_add_policy else paramiko.RejectPolicy()
@@ -111,29 +135,58 @@ class SSHConnector:
                 "timeout":  float(self.DEFAULT_CONNECT_TIMEOUT_SEC),
             }
 
-            if key_path != "":
+            if use_key:
                 connect_kwargs["key_filename"] = os.path.expanduser(key_path)
 
-            if password_clear != "":
+            if use_password and password_clear != "":
                 connect_kwargs["password"] = password_clear
 
-            client.connect(**connect_kwargs)  # type: ignore[arg-type]
-            self.ssh_client = client
+            try:
+                client.connect(**connect_kwargs)  # type: ignore[arg-type]
 
-            transport = client.get_transport()
-            if transport is None or not transport.is_active():
-                self.logger.error("SSH transport is not active after connect().")
-                self.disconnect()
+                transport = client.get_transport()
+                if transport is None or not transport.is_active():
+                    self.logger.error("SSH transport is not active after connect().")
+                    with contextlib.suppress(Exception):
+                        client.close()
+                    return False
+
+                self.ssh_client  = client
+                self.sftp_client = paramiko.SFTPClient.from_transport(transport)
+
+                self.logger.info("SSH auth succeeded: %s", label)
+                self.logger.debug("Connected to %s:%d via SFTP", self.hostname, self.port)
+                return True
+
+            except Exception as exc:
+                self.logger.info("SSH auth failed: %s (%s)", label, exc)
+                with contextlib.suppress(Exception):
+                    client.close()
                 return False
 
-            self.sftp_client = paramiko.SFTPClient.from_transport(transport)
+        try:
+            if key_path != "" and password_clear != "":
+                if _attempt(label="key", use_key=True, use_password=False):
+                    return True
 
-            self.logger.debug("Connected to %s:%d via SFTP", self.hostname, self.port)
-            return True
+                self.disconnect()
+                return _attempt(
+                    label="password_enc" if password_token.startswith(self.ENCRYPTED_TOKEN_PREFIX) else "password(clear-legacy)",
+                    use_key=False,
+                    use_password=True,
+                )
 
-        except Exception as exc:
-            self.logger.error("Connection failed: %s", exc)
-            self.disconnect()
+            if key_path != "":
+                return _attempt(label="key", use_key=True, use_password=False)
+
+            if password_clear != "":
+                return _attempt(
+                    label="password_enc" if password_token.startswith(self.ENCRYPTED_TOKEN_PREFIX) else "password(clear-legacy)",
+                    use_key=False,
+                    use_password=True,
+                )
+
+            self.logger.error("No SSH authentication configured (missing key and password_enc).")
             return False
 
         finally:
@@ -155,7 +208,7 @@ class SSHConnector:
 
         self.logger.debug("Disconnected from remote host")
 
-    def send_file(self, local_path: str, remote_path: str) -> bool:
+    def send_file(self, local_path: PathLike, remote_path: PathLike) -> SshOk:
         """
         Transfer A Local File To The Remote Host Using SFTP.
 
@@ -168,7 +221,7 @@ class SSHConnector:
 
         Returns
         -------
-        bool
+        SshOk
             True on success, False on failure.
         """
         if self.sftp_client is None:
@@ -190,7 +243,7 @@ class SSHConnector:
             self.logger.error("SFTP send failed: %s", exc)
             return False
 
-    def receive_file(self, remote_path: str, local_path: str) -> bool:
+    def receive_file(self, remote_path: PathLike, local_path: PathLike) -> SshOk:
         """
         Fetch A Remote File To The Local Filesystem Using SFTP.
 
@@ -203,7 +256,7 @@ class SSHConnector:
 
         Returns
         -------
-        bool
+        SshOk
             True on success, False on failure.
         """
         if self.sftp_client is None:
@@ -225,7 +278,7 @@ class SSHConnector:
             self.logger.error("SFTP receive failed: %s", exc)
             return False
 
-    def execute_command(self, command: str) -> tuple[str, str, int]:
+    def execute_command(self, command: str) -> SshCommandResult:
         """
         Run A Remote Shell Command Via SSH.
 
@@ -236,7 +289,7 @@ class SSHConnector:
 
         Returns
         -------
-        tuple[str, str, int]
+        SshCommandResult
             (stdout, stderr, exit_code)
         """
         if self.ssh_client is None:
@@ -244,15 +297,15 @@ class SSHConnector:
 
         try:
             _stdin, stdout, stderr = self.ssh_client.exec_command(command)
-            code                  = stdout.channel.recv_exit_status()
-            out                   = stdout.read().decode(errors="replace")
-            err                   = stderr.read().decode(errors="replace")
+            code    = stdout.channel.recv_exit_status()
+            out     = stdout.read().decode(errors="replace")
+            err     = stderr.read().decode(errors="replace")
             return out, err, int(code)
         except Exception as exc:
             self.logger.error("Command failed: %s", exc)
             return "", str(exc), -1
 
-    def list_remote_directory(self, remote_path: str = ".") -> list[str]:
+    def list_remote_directory(self, remote_path: PathLike = ".") -> RemoteDirEntries:
         """
         List A Remote Directory Via SFTP.
 
@@ -263,7 +316,7 @@ class SSHConnector:
 
         Returns
         -------
-        list[str]
+        RemoteDirEntries
             Directory entry names. Empty list on failure.
         """
         if self.sftp_client is None:
@@ -276,7 +329,7 @@ class SSHConnector:
             return []
 
     @staticmethod
-    def generate_ssh_key_pair(key_path: str = "~/.ssh/id_rsa", key_size: int = DEFAULT_RSA_KEY_BITS) -> bool:
+    def generate_ssh_key_pair(key_path: PathLike = "~/.ssh/id_rsa", key_size: int = DEFAULT_RSA_KEY_BITS) -> SshOk:
         """
         Generate An RSA Key Pair Locally.
 
@@ -289,7 +342,7 @@ class SSHConnector:
 
         Returns
         -------
-        bool
+        SshOk
             True on success, False on failure.
         """
         logger = logging.getLogger("SSHConnector")
@@ -317,7 +370,7 @@ class SSHConnector:
             logger.error("Key gen failed: %s", exc)
             return False
 
-    def install_public_key(self, public_key_path: str) -> bool:
+    def install_public_key(self, public_key_path: PathLike) -> SshOk:
         """
         Install A Public Key Into Remote ~/.ssh/authorized_keys.
 
@@ -328,7 +381,7 @@ class SSHConnector:
 
         Returns
         -------
-        bool
+        SshOk
             True on success, False on failure.
         """
         if self.ssh_client is None:
@@ -355,7 +408,7 @@ class SSHConnector:
         self.logger.error("Key install failed: %s", err)
         return False
 
-    def _ensure_remote_dir(self, remote_dir: str) -> None:
+    def _ensure_remote_dir(self, remote_dir: PathLike) -> None:
         """
         Recursively Create Remote Directories Via SFTP.
 

@@ -55,7 +55,7 @@
         "json_transaction_db": ".data/db/json_transactions.json",
         "retries": 5,
         "retrival_method": {
-            "method": "local",
+            "method": "sftp",
             "methods": {
                 "local": {
                     "src_dir": "/srv/tftp"
@@ -78,9 +78,9 @@
                 "sftp": {
                     "host": "localhost",
                     "port": 22,
-                    "user": "user",
-                    "password_enc": "",
-                    "private_key_path": "",
+                    "user": "dev01",
+                    "password_enc": "ENC[v1]:gAAAAABpPJfGQcBJaAbvWkta5c17m-kYMhTN10d4cU_Jay6AweqzPFqZsPWD-uQ47K3SgFBgQmh-0vGxb3roLYef9JPBfBoZiA==",
+                    "private_key_path": "~/.ssh/id_rsa_pypnm",
                     "remote_dir": "/srv/tftp"
                 },
                 "http": {

@@ -1,8 +1,8 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Maurice Garcia
 
 from __future__ import annotations
 
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Maurice Garcia
 from pypnm.api.routes.common.extended.common_process_service import SystemConfigSettings
 from pypnm.config.log_config import LoggerConfigurator
 
@@ -24,7 +24,3 @@ class StartUp:
         LoggerConfigurator(SystemConfigSettings.log_dir(),
                            SystemConfigSettings.log_filename(),
                            SystemConfigSettings.log_level())
-
-
-
-

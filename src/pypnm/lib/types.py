@@ -72,8 +72,8 @@ ProfileId = NewType("ProfileId", int)
 # ────────────────────────────────────────────────────────────────────────────────
 # Paths / filesystem
 # ────────────────────────────────────────────────────────────────────────────────
-PathLike  = str | Path
-PathArray = list[PathLike]
+PathLike    = str | Path
+PathArray   = list[PathLike]
 FileNameStr = NewType("FileNameStr", str)
 
 # ────────────────────────────────────────────────────────────────────────────────
@@ -158,9 +158,25 @@ HttpRtnCode = NewType("HttpRtnCode", int)
 ScalarValue: TypeAlias = float | int | str
 
 # ────────────────────────────────────────────────────────────────────────────────
+# SSH return code type
+# ────────────────────────────────────────────────────────────────────────────────
+UserNameStr         = NewType("UserNameStr", str)
+
+SshOk: TypeAlias    = bool
+SshStdout           = NewType("SshStdout", str)
+SshStderr           = NewType("SshStderr", str)
+SshExitCode         = NewType("SshExitCode", int)
+SshCommandResult: TypeAlias = tuple[SshStdout, SshStderr, SshExitCode]
+
+RemoteDirEntry             = NewType("RemoteDirEntry", str)
+RemoteDirEntries: TypeAlias = list[RemoteDirEntry]
+
+# ────────────────────────────────────────────────────────────────────────────────
 # Explicit public surface
 # ────────────────────────────────────────────────────────────────────────────────
 __all__ = [
+    "SshOk", "SshStdout", "SshStderr", "SshExitCode", "SshCommandResult",
+    "RemoteDirEntry", "RemoteDirEntries", "UserNameStr",
     "ScalarValue",
     "HashStr",
     "TransactionId", "GroupId", "OperationId",

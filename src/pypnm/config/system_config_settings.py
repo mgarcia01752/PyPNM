@@ -10,7 +10,7 @@ from typing import cast
 from pypnm.config.config_manager import ConfigManager
 from pypnm.lib.mac_address import MacAddress
 from pypnm.lib.secret.crypto_manager import SecretCryptoError, SecretCryptoManager
-from pypnm.lib.types import InetAddressStr, IPv4Str, IPv6Str, MacAddressStr
+from pypnm.lib.types import FileNameStr, InetAddressStr, IPv4Str, IPv6Str, MacAddressStr
 
 
 class SystemConfigSettings:
@@ -666,7 +666,7 @@ class SystemConfigSettings:
         return cls._get_str(cls._DEFAULT_LOG_DIR, "logging", "log_dir")
 
     @classmethod
-    def log_filename(cls) -> str:
+    def log_filename(cls) -> FileNameStr:
         return cls._get_str(cls._DEFAULT_LOG_FILENAME, "logging", "log_filename")
 
     @classmethod

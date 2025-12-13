@@ -15,6 +15,8 @@ from pypnm.lib.types import (
     StringEnum,
 )
 
+DEFAULT_SSH_PORT: int   = 22
+
 HZ:  Final[int] = 1
 KHZ: Final[int] = 1_000
 MHZ: Final[int] = 1_000_000
@@ -89,6 +91,7 @@ FEC_SUMMARY_TYPE_LABEL: dict[int, str] = {
 }
 
 __all__ = [
+    "DEFAULT_SSH_PORT",
     "HZ", "KHZ", "MHZ", "GHZ",
     "ZERO_FREQUENCY",
     "FEET_PER_METER", "SPEED_OF_LIGHT",
