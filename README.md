@@ -24,7 +24,12 @@
 
 PyPNM is a DOCSIS 3.x/4.0 Proactive Network Maintenance toolkit for engineers who want repeatable, scriptable visibility into modem health. It can run purely as a Python library or as a FastAPI web service for real-time dashboards and offline analysis workflows.
 
-## Table Of Contents
+## Choose your path
+
+- **Use PyPNM as a library** – install `pypnm-docsis` into an existing virtual environment and import the helpers inside notebooks or other tooling.
+- **Run the full platform** – clone the repo, run `./install.sh`, and use the FastAPI + tooling stack for captures, dashboards, and automation.
+
+## Table of contents
 
 - [Key Features](#key-features)
 - [Prerequisites](#prerequisites)
@@ -46,7 +51,7 @@ PyPNM is a DOCSIS 3.x/4.0 Proactive Network Maintenance toolkit for engineers wh
 - [License](#license)
 - [Maintainer](#maintainer)
 
-## Key Features
+## Key features
 
 - **Structured SNMP Integration**  
   Poll DOCSIS cable modems for RxMER, OFDM/OFDMA profiles, spectrum, upstream pre-EQ, and related telemetry using typed models.
@@ -71,7 +76,7 @@ PyPNM is a DOCSIS 3.x/4.0 Proactive Network Maintenance toolkit for engineers wh
 
 ## Prerequisites
 
-### Operating Systems
+### Operating systems
 
 Linux, validated on:
 
@@ -80,7 +85,7 @@ Linux, validated on:
 
 Other modern Linux distributions may work but are not yet part of the test matrix.
 
-### Shell Dependencies
+### Shell dependencies
 
 From a fresh system, install Git:
 
@@ -91,9 +96,9 @@ sudo apt install -y git
 
 Python and remaining dependencies are handled by the installer.
 
-## Getting Started
+## Getting started
 
-### Install From PyPI (Library Only)
+### Install from PyPI (library only)
 
 If you only need PyPNM as a Python library (for example, to embed DOCSIS PNM capture and analysis into your own tools or notebooks), you can install the published package directly from PyPI into an existing virtual environment:
 
@@ -114,43 +119,27 @@ cd PyPNM
 
 The installer sets up OS prerequisites (where possible), creates a virtual environment, and installs PyPNM in editable mode with development and documentation extras.
 
-Show installer options:
-
 ```bash
 ./install.sh --help
 ```
 
-Install and auto-launch the interactive PNM file retrieval setup helper:
+Common flags (mix and match as needed):
 
-- Don’t know what to choose? See the [PNM File Retrieval Setup](docs/topology/index.md) before proceeding.
+| Flag | Purpose |
+|------|---------|
+| `--pnm-file-retrieval-setup` | Launches `tools/pnm_file_retrieval_setup.py` after install so you can pick a topology. See the [PNM File Retrieval Overview](docs/topology/index.md).
+| `--demo-mode` | Seeds demo data/paths for offline exploration.
+| `--production` | Reverts demo-mode changes and restores your previous `system.json` backup.
+| `--demo-mode .env-demo` | Installs into a named virtual environment instead of `.env`.
 
-```bash
-./install.sh --pnm-file-retrieval-setup
-```
+> **Note:** `--pnm-file-retrieval-setup` backs up `system.json` automatically. Keep that backup handy if you are experimenting with different lab topologies.
 
-When `--pnm-file-retrieval-setup` is used, the installer attempts to run `tools/pnm_file_retrieval_setup.py` at the end of the install in interactive, non-CI environments.
+Installer extras:
 
-Demo-mode install (pre-configured with sample data and demo paths):
+- Runs a silent alias helper (when available) that adds shortcuts—such as `config-menu`—to your shell rc file.
+- After installation, source your shell rc file once (for example, `source ~/.bashrc`) to pick up any new aliases.
 
-```bash
-./install.sh --demo-mode
-```
-
-Revert to production settings (restore your original `system.json`):
-
-```bash
-./install.sh --production
-```
-
-Use a custom virtual environment directory:
-
-```bash
-./install.sh --demo-mode .env-demo
-```
-
-The installer also runs a silent alias helper (when available) that adds convenient shell aliases such as `config-menu` to your shell rc file. After installation, source your shell rc file once (for example, `source ~/.bashrc`) to pick up any new aliases.
-
-### 3) Activate The Virtual Environment
+### 3) Activate the virtual environment
 
 If you used the installer defaults, activate the `.env` environment:
 
@@ -164,136 +153,27 @@ If you installed into a custom environment directory, activate that instead (for
 source .env-demo/bin/activate
 ```
 
-### 4) Configure System Settings
+### 4) Configure system settings
 
-You will need:
+Have the following handy before diving in:
 
 - Cable Modem (CM) MAC address and IP address
-- SNMPv2c write community string  
-- TFTP server IP/hostname reachable by both the CM and PyPNM
+- SNMPv2c write community string
+- A reachable TFTP/SSH path for moving PNM files between the modem, server, and PyPNM host
 
-If `--pnm-file-retrieval-setup` was used during installation, the PNM file retrieval method selection is handled automatically.
+> **Tip:** Capture this info in a lab runbook before running the installer so you can paste it straight into the prompts without hunting for values mid-setup.
 
-System configuration is stored in `system.json`:
+System configuration lives in `src/pypnm/settings/system.json`. Manage it via:
 
-- `src/pypnm/settings/system.json`
-- `https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/settings/system.json`
+- `source ~/.bashrc && config-menu` (alias added by the installer) or `python ./tools/system_config/menu.py`
+- The [System Configuration Reference](docs/system/system-config.md) for field-by-field detail
+- `./tools/pnm_file_retrieval_setup.py` to select and initialize a file-retrieval topology (local, TFTP, SCP/SFTP, etc.)
 
-For detailed field descriptions, see `docs/system/system-config.md`.
+If you installed with `--pnm-file-retrieval-setup`, the helper runs automatically and backs up `system.json` before any edits.
 
-#### System Configuration Menu
+<!-- Removed duplicated Step 3/4 block -->
 
-PyPNM provides an interactive menu wrapper around the individual configuration helpers:
-
-```bash
-source ~/.bashrc
-config-menu
-```
-
-or
-
-```bash
-python ./tools/system_config/menu.py
-```
-
-The menu allows you to edit:
-
-- `FastApiRequestDefault`
-- `SNMP`
-- `PnmBulkDataTransfer`
-- `PnmFileRetrieval`
-- `logging`
-- `TestMode`
-
-Refer to the config menu documentation for details: `docs/system/menu.md`.
-
-#### PNM File Retrieval Setup Helper
-
-PyPNM ships with an interactive helper that configures how PNM files are retrieved into the local `.data/pnm` tree.
-
-Run it any time after installation:
-
-```bash
-./tools/pnm_file_retrieval_setup.py
-```
-
-The helper:
-
-- Backs up `src/pypnm/settings/system.json` before making changes
-- Lets you choose a retrieval method (`local`, `tftp`, `sftp`)  
-- For `sftp`, prompts for host/port/user and optional password and/or private key path  
-- Tests SSH connectivity when credentials are provided  
-- Updates the `PnmFileRetrieval.retrival_method` block in `system.json` so future captures can automatically fetch PNM files through the selected path
-
-In demo mode, paths are redirected to demo directories so you can exercise the analysis stack using pre-captured PNM files without talking to a live modem.
-
-### 3) Activate The Virtual Environment
-
-```bash
-python3 -m venv .env
-source .env/bin/activate
-```
-
-### 4) Configure System Settings
-
-You will need:
-
-- Cable Modem (CM) MAC address and IP address  
-- SNMPv2c write community string  
-- TFTP server IP/hostname reachable by both the CM and PyPNM
-
-If  `--pnm-file-retrieval-setup` was used during installation, this step is handled automatically.
-
-- A PNM file retrieval method (`local`, `tftp`, `scp`, `sftp`) and credentials/paths for your environment  
-
-[System Configuration](docs/system/system-config.md) is stored in [system.json](https://github.com/mgarcia01752/PyPNM/blob/main/src/pypnm/settings/system.json). For detailed field descriptions, see:
-
-#### System Configuration Menu
-
-PyPNM provides an interactive menu wrapper around the individual configuration helpers:
-
-```bash
-config-menu
-```
-
-or
-
-```bash
-python ./tools/system_config/menu.py
-```
-
-The menu allows you to edit:
-
-- `FastApiRequestDefault`
-- `SNMP`  
-- `PnmBulkDataTransfer`
-- `PnmFileRetrieval`
-- `logging`  
-- `TestMode`  
-
-Refer to the [config-menu](docs/system/menu.md) documentation for full details:
-
-#### PNM File Retrieval Setup Helper
-
-PyPNM ships with an interactive helper that configures how PNM files are retrieved from the TFTP or HTTP(S) server into the local `.data/pnm` tree.
-
-Run it any time after installation:
-
-```bash
-./tools/pnm_file_retrieval_setup.py
-```
-
-The helper:
-
-- Backs up `src/pypnm/settings/system.json` before making changes  
-- Lets you choose a retrieval method (`local`, `tftp`, `scp`, `sftp`)  
-- For `scp` or `sftp`, prompts for host/port/user and optional password and/or private key path  
-- Tests SSH connectivity for SCP/SFTP when credentials are provided  
-- Updates the `PnmFileRetrieval.retrival_method` block in `system.json` so future captures can automatically fetch PNM files through the selected path
-
-In **demo mode**, paths are redirected to demo directories so you can exercise the analysis stack using pre-captured PNM files without talking to a live modem.
-
-### 5) [Run The FastAPI Service Launcher](docs/system/pypnm-cli.md)
+### 5) [Run the FastAPI service launcher](docs/system/pypnm-cli.md)
 
 Show help:
 
@@ -319,7 +199,7 @@ Development hot-reload:
 pypnm --reload
 ```
 
-### 6) (Optional) Serve The Documentation
+### 6) (Optional) Serve the documentation
 
 HTTP (default: `http://127.0.0.1:8001`):
 
@@ -327,27 +207,29 @@ HTTP (default: `http://127.0.0.1:8001`):
 mkdocs serve
 ```
 
-### 7) Explore The API
+### 7) Explore the API
 
 - Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)  
 - ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)  
 - MkDocs docs: [http://localhost:8001](http://localhost:8001)  
 - Postman download: [https://www.postman.com/downloads/](https://www.postman.com/downloads/)
 
+> **Tip:** Postman collections are a convenient way to rehearse larger JSON payloads and capture known-good requests for regression testing.
+
 Postman is recommended for larger or nested JSON payloads and for collecting repeatable test collections and visualizations.
 
-## API Documentation Quick Links
+## Documentation
 
-- [Docs index](./docs/index.md)  
-- [FastAPI reference](./docs/api/fast-api/index.md)  
-- [Python API reference](./docs/api/python/index.md)
+- [Docs hub](./docs/index.md) – task-based entry point (install, configure, operate, contribute).
+- [FastAPI reference](./docs/api/fast-api/index.md) – Endpoint details and request/response schemas.
+- [Python API reference](./docs/api/python/index.md) – Importable helpers and data models.
 
-## SNMP Notes
+## SNMP notes
 
 - SNMPv2c is supported  
 - SNMPv3 is currently stubbed and not yet supported
 
-## CableLabs Specifications & MIBs
+## CableLabs specifications & MIBs
 
 - [CM-SP-MULPIv3.1](https://www.cablelabs.com/specifications/CM-SP-MULPIv3.1)  
 - [CM-SP-CM-OSSIv3.1](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv3.1)  
@@ -355,7 +237,7 @@ Postman is recommended for larger or nested JSON payloads and for collecting rep
 - [CM-SP-CM-OSSIv4.0](https://www.cablelabs.com/specifications/CM-SP-CM-OSSIv4.0)  
 - [DOCSIS MIBs](https://mibs.cablelabs.com/MIBs/DOCSIS/)
 
-## PNM Architecture & Guidance
+## PNM architecture & guidance
 
 - [CM-TR-PMA](https://www.cablelabs.com/specifications/CM-TR-PMA)  
 - [CM-GL-PNM-HFC](https://www.cablelabs.com/specifications/CM-GL-PNM-HFC)  
@@ -364,6 +246,12 @@ Postman is recommended for larger or nested JSON payloads and for collecting rep
 ## License
 
 [`MIT LICENSE`](./LICENSE)
+
+## Next steps
+
+- Review [PNM topology options](docs/topology/index.md) to decide how captures will move through your network.
+- Follow the [System Configuration guide](docs/system/system-config.md) to tailor `system.json` for your lab.
+- Explore [system tools](docs/system/menu.md) and [operational scripts](docs/tools/index.md) for day-to-day automation.
 
 ## Maintainer
 

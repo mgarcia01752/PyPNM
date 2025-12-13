@@ -1,4 +1,4 @@
-# PyPNM System Configuration Menu
+# PyPNM system configuration menu
 
 Interactive Wrapper For Editing `system.json` Using Dedicated Helper Scripts.
 
@@ -9,7 +9,7 @@ operate on the canonical PyPNM configuration file managed by `ConfigManager`.
 - **Section Editors**: `tools/system_config/*.py`
 - **File Setup Helper**: `tools/pnm_file_retrieval_setup.py`
 
-## Table Of Contents
+## Table of contents
 
 [Overview](#overview)  
 [Prerequisites](#prerequisites)  
@@ -39,6 +39,8 @@ The menu script itself never modifies `system.json` directly. It only dispatches
 to the underlying editor scripts, each of which shows the current values,
 prompts for new ones, and asks for confirmation before writing anything.
 
+> **Note:** Because the menu shells out to the individual editors, any validation logic or confirmations live in those scripts. You can quit at any time before approving a change.
+
 ## Prerequisites
 
 1. You are running from the **project root**, for example:
@@ -56,7 +58,9 @@ prompts for new ones, and asks for confirmation before writing anything.
 3. `src/` is at the standard location so that `ConfigManager` can resolve the
    canonical configuration file.
 
-## Launching The Menu
+> **Tip:** Activate the same virtual environment you use for `pypnm` before launching the menu so the helper scripts inherit the correct dependencies and config paths.
+
+## Launching the menu
 
 From the project root, run:
 
@@ -83,7 +87,7 @@ Enter selection:
 
 The menu stays active until you choose `q` to quit.
 
-## Menu Options
+## Menu options
 
 Each menu entry launches a dedicated script using the same Python interpreter
 that invoked `menu.py`. The underlying scripts remain fully interactive and
@@ -161,7 +165,7 @@ This lets you switch between local-directory retrieval, TFTP, SFTP, or
 HTTP(S)-based retrieval without accidentally altering any of the PNM storage
 layout fields.
 
-### 5. Edit Logging
+### 5. Edit logging
 
 - **Script**: `tools/system_config/logging_config.py`
 - **Config Section**: `logging`
@@ -196,7 +200,7 @@ Typical usage:
 As with all editors, no changes are written until you confirm the proposed
 configuration.
 
-### 7. Run PnmFileRetrieval Setup (directory initialization)
+### 7. Run PnmFileRetrieval setup (directory initialization)
 
 - **Script**: `tools/pnm_file_retrieval_setup.py`
 - **Config Section(s)**: Reads `PnmFileRetrieval`
@@ -215,7 +219,9 @@ Typical behavior:
 This script does not change `system.json`; it only reconciles the filesystem
 with whatever configuration is already present.
 
-## Configuration Path Handling
+> **Warning:** Run the setup helper from the project root so the relative paths in `system.json` resolve correctly; otherwise you may end up creating directories in unexpected locations.
+
+## Configuration path handling
 
 All of the section editors and the setup helper ultimately operate on the same
 configuration file used by the PyPNM runtime, resolved via `ConfigManager`.
@@ -239,7 +245,7 @@ You can:
 This makes it easy to test changes on a copy of `system.json` before applying
 them to a production configuration.
 
-## Typical Workflow
+## Typical workflow
 
 A suggested flow when bringing up a new environment:
 
@@ -268,7 +274,7 @@ A suggested flow when bringing up a new environment:
    Use options `5` and `6` to control logging verbosity and TestMode behavior
    for development, integration testing, or demo environments.
 
-## Related Files
+## Related files
 
 Key files involved in the system configuration tooling:
 
