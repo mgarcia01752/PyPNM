@@ -1,0 +1,23 @@
+name: Release Deploy Bundle
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy-bundle:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build deploy bundle
+        run: |
+          make deploy-bundle DEPLOY_VERSION=${GITHUB_REF_NAME}
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/pypnm-deploy-${{ github.ref_name }}.tar.gz
